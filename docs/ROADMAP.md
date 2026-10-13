@@ -56,6 +56,16 @@ a phone can draw. Everything after this is checked against it.
 - **021** The landmarks along the route, built from their photos, São João da Ponte first.
 - **022** Braga's light: the real sun, the sky and the haze, and its weather.
 
+## Alongside · The sound
+
+The owner finds the game's audio truly horrible (2026-10-13): the engine, the beeps, the
+clipping and the silence round you. It needs none of the phases above.
+
+- **023** The mix: a limiter, levels, sounds placed where they happen, a recording to judge by,
+  and synthesized sounds that don't grate.
+- **024** The karts: a real kart's recorded engine for every kart, its tyres and the wind.
+- **025** Braga round the track: traffic, parks, the river and the bells, from the map's data.
+
 ## How the work can run in parallel
 
 Phase 1 comes first, but not all of it waits on itself:
@@ -67,6 +77,7 @@ Phase 1 comes first, but not all of it waits on itself:
 - **Phase 2's data tasks** can start before the scorecard, now that 005 has fetched their data:
   009 first, then 010 and 011 on it. Each one is checked on the scorecard when it lands.
 - **The shooter's area** goes first in every task of Phases 2–4, once 015 settles its edges.
+- **The sound** runs beside all of it: 023 can start now, then 024 and 025 on it.
 
 ## Later
 
@@ -78,7 +89,8 @@ Phase 1 comes first, but not all of it waits on itself:
   and at the cafés' terraces.
 - **Night:** the street lamps, the lit windows, Bom Jesus floodlit on the hill.
 - **The seasons:** the plane trees bare in winter, the jacarandas in flower in June.
-- **Sound:** the Sé's bells, the TUB's brakes, the cafés.
+- **More of Braga's sound** (beyond task 025): the cafés' terraces, once the map fetches cafés,
+  and the old town's, the Sé's bells up close.
 - **The rest of the map** at the route's level of detail, as more tracks and games use it.
 - **Inside the buildings,** if the shooter needs it: shops and cafés on the ground floor first.
 - **The Rio Este** with its real banks, walls and weirs, and the streams the map fetches but

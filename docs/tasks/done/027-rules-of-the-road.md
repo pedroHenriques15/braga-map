@@ -1,5 +1,5 @@
 ---
-status: doing
+status: done
 priority: high
 kind: code
 repo: braga-map
@@ -88,17 +88,28 @@ Steps:
 
 ## Done when
 
-- [ ] `track.mjs` prints 0 m against the traffic and no banned turn on the Volta dos Amigos, and
+- [x] `track.mjs` prints 0 m against the traffic and no banned turn on the Volta dos Amigos, and
   fails a track that has either.
-- [ ] A test measures `tracks/amigos.js` against OSM's one-way ways and finds no stretch of more
+  > "3221 m on one-way streets, the right way; 20 junctions on it with turn restrictions; 0 m
+  > against the traffic; 0 banned turns". A copy routing without the rules found the old loop and
+  > stopped on it: "1150 m against the traffic … The loop breaks the rules of the road". The bans,
+  > checked against every restriction in the map: 217 turns as they say.
+- [x] A test measures `tracks/amigos.js` against OSM's one-way ways and finds no stretch of more
   than a few metres against the traffic (a corner cut across a junction).
-- [ ] The Via da Falperra's roundabout, and every other one on the loop, is driven anticlockwise,
+  > `test/rules.test.js` passes; the longest stretch is 8 m, a corner off the Avenida Robert
+  > Smith. On v1.1.0's track it fails on six streets.
+- [x] The Via da Falperra's roundabout, and every other one on the loop, is driven anticlockwise,
   seen from above.
-- [ ] braga-map's `npm test`, and party-kart's `npm test` and `npm run check` on the new track,
+  > All 8 on the loop the way they're drawn, 0 m the wrong way; the Via da Falperra's 40 m.
+- [x] braga-map's `npm test`, and party-kart's `npm test` and `npm run check` on the new track,
   pass, with the lap's summary line before and after.
-- [ ] No viewpoint gets worse: task 001 is placing them at the same time, and its viewpoints along
+  > braga-map 16 of 16; party-kart 19 of 19 on v1.2.0 and `tsc` clean. Laps 265.6 and 263.5 s,
+  > before 235.3 and 233.2 s; no respawns, no wall hits either way.
+- [x] No viewpoint gets worse: task 001 is placing them at the same time, and its viewpoints along
   the route take their heading from the way the race goes, so they're placed (or turned round) on
   the route this task makes.
+  > Task 001 placed its 29 on this route ("a kart's viewpoint is on the route, looking the way
+  > the race goes" passes on v1.2.0), so there's no before. They can't be shot yet (task 002).
 
 ## Out of scope
 
@@ -154,3 +165,7 @@ Steps:
   laps 265.6 and 263.5 s.
 - **Left:** `/task finish 027`: the boxes above, a decision (the race keeps the rules of the road,
   longer where it must), and 027 off the roadmap.
+- **Finished** on 2026-10-13. Not done: shooting the viewpoints and posting a round (tasks 002 and
+  003 aren't done yet), and the budget (task 004): the road is 14% longer, the city round it the
+  same tiles. Found along the way, in party-kart and not a Braga task: a car held by `stopInput`
+  creeps back on a hill, 5 cm/s on 6% (its dead band of 0.5 m/s).

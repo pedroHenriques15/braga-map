@@ -187,3 +187,26 @@ favourite spots first and finding photos for them.
 
 The alternative, the owner's and the friends' favourite spots, would have waited on the photo walk,
 and a spot with no photo can't be judged.
+
+## 010 · The race keeps the rules of the road
+
+*2026-10-13*
+
+The Volta dos Amigos, and every track planned on the map, goes the way a car may: one-way streets
+and roundabouts only the way they go, no turn OpenStreetMap bans for cars, and no street cars may
+not use (`tools/track.mjs`, task 027). The planner fails a loop that breaks one, and
+`test/rules.test.js` checks the tracks against the map's one-way streets.
+
+- **Longer where it must be.** One waypoint's street runs one way against the loop, and the loop
+  drives along each waypoint's street, so it doubles back there: 9.27 km instead of 8.15 km. The
+  owner chose that over taking the houses in another order (8.81 km, without the Avenida da
+  Liberdade, the 31 de Janeiro and the Via da Falperra) and over keeping that one stretch against
+  the traffic (8.38 km). party-kart's tests take a loop of 7–10 km and a second lap of 170–290 s.
+- **The map is the authority.** Where OSM is wrong about a street's direction, it's fixed in OSM
+  (task 006), not worked round here.
+- **Not a departure.** Decision 004's list stays as it was; the `(joined)` links out of dead ends,
+  which a note on the map asked for, are the one way the loop leaves the streets.
+
+The alternative, any street either way, made the start go the wrong way down the Rua do Fujacal
+and the race take the Via da Falperra's roundabout the wrong way round: anyone who drives in Braga
+sees it.

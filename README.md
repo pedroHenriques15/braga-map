@@ -22,7 +22,7 @@ Everything is in metres from the Praça da República, x east, z south and y up,
 ## Using it from a game
 
 ```sh
-npm install github:pedroHenriques15/braga-map#v1.1.0
+npm install github:pedroHenriques15/braga-map#v1.2.0
 ```
 
 ```js

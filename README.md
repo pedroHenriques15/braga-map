@@ -1,45 +1,136 @@
 # A map of Braga
 
-The real Braga, for planning tracks: the streets, buildings, rivers and railway from
-OpenStreetMap, the relief, the zones and landmarks chosen for tracks, and the game's track, the
-Volta dos Amigos. The scripts here also make that track and the city round it for the game.
+The real Braga for games: its streets, buildings, rivers, railway and hills from OpenStreetMap
+and the relief, cut into sections a game can load on its own, and the tracks planned on it. Party
+Kart races on it, and the games after it (a shooter, say) use the same city.
 
-- `index.html` is the map. Run `npm run dev` and open http://localhost:5173/tools/braga-map/.
-  Here it's read-only. The shared copy, where the zones and landmarks were voted on and approved,
-  is the artifact at https://claude.ai/artifact/UdwdhZYkR76J5xyPcRUHUb.
-- In the shared copy you can also click the map to add places: your houses, landmarks and other
-  spots, each with an idea for an easter egg. They live only in that artifact's database, readable
-  by those who can edit it. Don't copy them into this repo, which is public, and when a house goes
-  into the game, put it near the real one, never at the right door.
-- `braga.json` is everything the map draws, in metres from the Praça da República with x east and
-  z south: the same frame as the game's tracks. A point read off the map (hover over it) goes
-  straight into a layout.
-- `course.json` is the Volta dos Amigos for the map's "Pista nova" layer: its centre line, start,
-  checkpoints, item rows, boost pads and easter eggs.
+- **The world** (`world/`) is the whole map, 6.5 × 4.6 km, in 500 m tiles. Nothing in it depends
+  on a track or an arena: the same streets, buildings and trees in every game.
+- **The sections** are named parts of the map, each a set of whole tiles: Centro, Estádio, Gualtar,
+  Lamaçães, Picoto, and Bom Jesus e Sameiro, grown from the six zones voted on for tracks until
+  they cover all of it.
+- **The tracks** (`tracks/`) are the kart tracks planned on the map's streets. Party Kart races
+  the Volta dos Amigos, through Centro, Picoto and Lamaçães.
+- **The map page** (`map/`) draws it all, for planning: `npm run map` and open
+  http://localhost:5180/map/. The shared copy, where the zones and landmarks were voted on and
+  approved and where the friends' houses were added, is the artifact at
+  https://claude.ai/artifact/UdwdhZYkR76J5xyPcRUHUb.
+
+Everything is in metres from the Praça da República, x east, z south and y up, with heights above
+154 m (`elev0`). A point read off the map page (hover over it) is a point in any game.
+
+## Using it from a game
+
+```sh
+npm install github:pedroHenriques15/braga-map#v1.0.0
+```
+
+```js
+import { loadWorld, map } from 'braga-map';
+import amigos from 'braga-map/tracks/amigos.js';
+
+const world = await loadWorld(amigos.box); // or loadWorld({ sections: ['centro'] })
+world.height(x, z); // the relief: every 10 m on the tiles loaded, every 50 m elsewhere
+world.buildings; // [{ kind, roof, color, h, filled, pts }], and areas, lines, trees, rivers, sights…
+```
+
+- `map()` is what every game needs whichever part of the map it's in: the sections and their
+  tiles, the relief over the whole map and the horizon round it, the rivers, the landmarks and the
+  sights. It's small, and it's always there.
+- `loadWorld(box)` or `loadWorld({ sections })` loads the tiles under it, each a module of its own
+  that the game's bundler splits off, so a player only downloads those. The types are in
+  `index.d.ts`, and a track's in `tracks/track.d.ts`.
+- The world knows nothing of your road. A game clears its own road and arena of buildings and
+  trees when it loads (Party Kart's `src/render/city.ts` does it for a track). The map takes every
+  street at least 9 m wide, and the houses it fills in on empty frontages stand clear of that and
+  the pavement.
+- The package is plain JavaScript and data, so Node runs it as it is (its tests, a game's tests)
+  and there's nothing to build.
+
+To change the map for the games: change the scripts, run them again, `npm test`, commit, and tag a
+new version (`git tag v1.1.0 && git push origin main --tags`). Then in each game, change the tag
+in its `package.json` and run `npm install`. A game keeps the version it names until then, so a
+change to the map never breaks a game behind its back.
 
 ## The scripts
 
-None of them is part of the game's build.
-
 ```sh
-node tools/braga-map/fetch.mjs    # the data, into .cache/ (about 20 MB, ignored by git); a few minutes
-node tools/braga-map/build.mjs    # the map's braga.json
-node tools/braga-map/course.mjs   # the track and its scenery: src/track/amigos.ts, src/render/amigos-data.ts, course.json
+npm run fetch    # the data, into .cache/ (about 20 MB, ignored by git): a few minutes
+npm run page     # the map page's map/braga.json
+npm run world    # the world: world/base.js, world/tiles.js and a module per tile
+npm run tracks   # every track: tracks/<id>.js, and map/tracks.json for the page
+npm test         # the world and the tracks as the games read them
 ```
+
+They need Node 22.18 or later. Run them in that order: `world.mjs` and `track.mjs` read the
+landmarks from `map/braga.json`.
 
 - `fetch.mjs` gets OpenStreetMap through Overpass (streets and land, buildings, parishes,
   landmarks, trees, and the crossings, traffic lights and bus stops) and elevation tiles, plus
   coarser ones 16 km round for the horizon. The public Overpass server is often busy: it waits and
-  tries again. `node fetch.mjs trees` fetches only what's named (`base`, `buildings`, `admin`,
-  `pois`, `trees`, `street`, `dem`, `horizon`).
-- `build.mjs` and `course.mjs` read the game's own track code, so they need Node 22.18 or later,
-  like the tests. `geo.mjs` is what they share: the projection and the relief.
-- `course.mjs` also needs the waypoints, `.cache/places.json`: the houses from the shared map's
-  database, as `{ "places": [{ "id", "egg", "x", "z", "rows"? }], "order"?: [ids] }`. They're
-  private, so they stay in the ignored folder. `order`, when it's there, keeps the loop going
-  round the houses in that order. `egg` is the easter egg by that house (`dog`, `dentist`, `supermarket` or
-  null), and `rows: true` lines that street with houses on both sides. How it plans the track, and
-  what to change, is in "The track" in `docs/making-changes.md`.
+  tries again. `node tools/fetch.mjs trees` fetches only what's named (`base`, `buildings`,
+  `admin`, `pois`, `trees`, `street`, `dem`, `horizon`). A new fetch brings the map's changes
+  since, so the tracks may come out different: run the games' tests after.
+- `sections.mjs` has the map's extent, the tiles and the sections. `geo.mjs` has the projection,
+  the relief and `ELEV0`. `osm.mjs` is what `world.mjs` and `track.mjs` share: how wide a street
+  is, what an area is, the buildings' footprints, and packing.
+- `world.mjs` makes the world: the relief, what the ground is (each area cut to the tiles it's
+  on), every street at its width, the railway, every building with its height and roof, houses
+  filled in where the map has none on a built-up street, the trees (woods and parks filled in),
+  the rivers with their water level, and the sights (Bom Jesus, the Sameiro, the cross on the
+  Picoto, the stadium, the Altice Forum, Makro, the Tourigalo's bull), picked out of the map by
+  their OpenStreetMap ids.
+- `track.mjs` plans the tracks in `tracks.mjs`: below.
+
+### How a track is planned
+
+`node tools/track.mjs <id>` plans one track; on its own, every one. What it does, in order:
+
+1. **The loop.** A graph of the streets, and the cheapest loop through the waypoints. `COST` makes
+   bigger roads cheaper and `TURN` prices the turns. The loop never uses a street twice or runs
+   within 28 m of itself, and it drives along each waypoint's own street through it. A waypoint's
+   street that's a dead end gets a link from its end to the nearest street ahead. It tries every
+   order of the waypoints unless the track gives one (`order`): then only the direction through
+   each is chosen. To add a waypoint without reshuffling the loop, put it in the order between the
+   two it falls between. A track with `sections` only has those sections' streets.
+2. **The centre line.** Short jogs at junctions are folded into one corner, and corners are rounded
+   to `R_MIN` (12 m, a street corner) where the streets allow. Heights come from the relief,
+   smoothed over about 50 m. It prints the corners it had to make tighter, the widths, the
+   steepest grade, the sharpest crest, and any place the road comes too close to itself.
+3. **The street as it is.** The width, kerb to kerb, is the map's `width`, or its `lanes`, or what
+   that kind of street usually is (`carriageway` in `osm.mjs`), never under `W_MIN` (9 m). Lane
+   lines follow `lanes` and `lane_markings`; `surface=sett` and the like make granite setts.
+   Beyond each edge (`kerbs`) is a pavement as wide as the buildings leave room for (none where
+   `sidewalk` says no, or out in the open), a central reservation where a one-way carriageway runs
+   alongside, and a gap wherever a side street joins.
+4. **Where things go.** The start on the track's `start` street, on the straightest stretch at
+   least 250 m from every waypoint, 5 checkpoints evenly spaced, a row of item boxes every 820 m,
+   boost pads 30 m into the longest straights, and the easter eggs 44–50 m past their waypoints.
+5. **What's along it.** The street names as it turns into each, the landmarks within 220 m, and
+   from the map the zebra crossings and traffic lights on its streets and the bus stops beside it;
+   the sections it runs through, and the box round it a game draws (500 m round the track).
+
+The layout is a point every 8 m from the start line, each with its options for the stretch to the
+next (`tracks/track.d.ts`). A track that changes is a different race for the games: Party Kart
+needs a new peer id prefix for it, and its tests must still pass.
+
+### A new track
+
+Add it to `tools/tracks.mjs`: an id, a name, its waypoints on the map (read them off the map
+page), and `sections` to keep it to some sections' streets. Run `npm run tracks` and look at it on
+the map page. Then a game races it by importing `braga-map/tracks/<id>.js`. Party Kart's tests
+say what makes a track raceable: a loop of 7–9 km, an autopilot lap without respawns, and so on.
+
+### The friends' houses
+
+The Volta dos Amigos goes through waypoints that stay out of this repo, which is public:
+`.cache/places.json`, the houses from the shared map's database, as
+`{ "places": [{ "id", "egg", "x", "z", "rows"? }], "order"?: [ids] }`. `order` keeps the loop
+going round the houses in that order. `egg` is the easter egg by that house (`dog`, `dentist`,
+`supermarket`, `smoke` or null), and `rows: true` lines that street with houses on both sides
+(`world.mjs` reads that too). Don't copy them anywhere committed. When a house goes into a game,
+put it near the real one, never at the right door: the eggs stand 44–50 m past the houses, and
+nothing names whose street is whose.
 
 ## What's on it
 
@@ -49,28 +140,30 @@ node tools/braga-map/course.mjs   # the track and its scenery: src/track/amigos.
   or dirt tracks) come to 287 km. The main ones (fast roads, primary, secondary, tertiary and
   pedestrian streets) come to 102 km, 65% fewer. Keeping only the fast roads, primary and
   secondary cuts 78%, but loses the Avenida Central and the old town.
-- **Relief** every 20 m, from 55 m in the north-west corner to 570 m on the Sameiro.
-- **The Volta dos Amigos** ("Pista nova"), the game's track: 8.1 km round, through five friends'
+- **Relief** every 20 m on the page and every 10 m in the world, from 55 m in the north-west
+  corner to 570 m on the Sameiro.
+- **The world**: 140 tiles, 13,000 buildings from the map and 11,500 houses filled in, 20,000
+  trees. 2.6 MB in all; a game loads the tiles it needs (the Volta dos Amigos, 48).
+- **The Volta dos Amigos**, Party Kart's track: 8.1 km round, through five friends'
   neighbourhoods.
-- **The first track** ("Pista antiga"), drawn at its real size with its fountain on the real one
-  in the Praça da República. It's 2.5 km round and fits in 851 × 414 m. The real Bom Jesus is
-  3.9 km from that fountain; on the track it's 750 m.
+- **The first track** ("Pista antiga"), Party Kart's cartoon Braga Grand Prix, drawn at its real
+  size with its fountain on the real one in the Praça da República (`tools/first-track.json`).
+  It's 2.5 km round and fits in 851 × 414 m. The real Bom Jesus is 3.9 km from that fountain; on
+  the track it's 750 m.
 - **Six zones** for tracks, 1 to 2.5 km across: Centro, Estádio, Gualtar, Lamaçães, Picoto, and
-  Bom Jesus e Sameiro. They're `ZONES` in `index.html`.
+  Bom Jesus e Sameiro. They're `ZONES` in `map/index.html` and `tools/sections.mjs`.
 - **32 landmarks**, each marked essential, recommended or optional. They're `LANDMARKS` in
-  `build.mjs`, placed by their OpenStreetMap names.
+  `tools/build.mjs`, placed by their OpenStreetMap names.
 
 ## Decisions
 
 Draft 1 was approved on 13 October 2026: every zone and all 32 landmarks stay, with the main
-streets (the 65% cut). `decisions.json` keeps that, by zone and landmark id, and this copy of the
-map shows it. The first track made from the map is the Volta dos Amigos, through the four houses
-added on the shared map, and a fifth added after; the first, cartoon track is kept in the code for
-reference.
+streets (the 65% cut). `map/decisions.json` keeps that, by zone and landmark id, and this copy of
+the map shows it. The first track made from the map is the Volta dos Amigos, through the four
+houses added on the shared map, and a fifth added after.
 
 ## Credits
 
-The data in `braga.json`, `course.json` and the game's `src/render/amigos-data.ts` is
-© OpenStreetMap contributors, under the Open Database Licence (ODbL). Keep that credit wherever
-the map or anything drawn from it is shown (the game says so in How to play, and in the README).
-The relief is from Terrain Tiles on AWS Open Data.
+The data in `world/`, `tracks/` and `map/` is © OpenStreetMap contributors, under the Open
+Database Licence (ODbL). Keep that credit wherever the map or anything drawn from it is shown (in
+a game, its help and its README). The relief is from Terrain Tiles on AWS Open Data.

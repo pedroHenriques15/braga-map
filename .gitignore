@@ -1,2 +1,3 @@
-# What fetch.mjs downloads, about 20 MB. build.mjs turns it into braga.json.
+# What fetch.mjs downloads, about 20 MB, and the private waypoints: never committed.
 .cache/
+node_modules/

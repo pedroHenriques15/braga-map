@@ -1,0 +1,34 @@
+{
+  "name": "braga-map",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Braga's real streets, buildings and hills, from OpenStreetMap, for games: the world in sections, and the tracks planned on it.",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./index.d.ts",
+      "default": "./index.js"
+    },
+    "./tracks/*.js": {
+      "types": "./tracks/track.d.ts",
+      "default": "./tracks/*.js"
+    }
+  },
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "world/",
+    "tracks/"
+  ],
+  "scripts": {
+    "test": "node --test",
+    "map": "node tools/serve.mjs",
+    "fetch": "node tools/fetch.mjs",
+    "page": "node tools/build.mjs",
+    "world": "node tools/world.mjs",
+    "tracks": "node tools/track.mjs"
+  },
+  "engines": {
+    "node": ">=22.18"
+  }
+}

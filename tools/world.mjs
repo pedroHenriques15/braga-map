@@ -1,0 +1,446 @@
+// Makes the world the games share: the whole map, from OpenStreetMap and the relief, cut into
+// 500 m tiles (sections.mjs). Nothing in it depends on a track or an arena: a game clears its own
+// road of buildings and trees when it loads.
+//
+// node tools/world.mjs
+//
+// - world/base.js, which every game loads: the tiles and the sections, the relief over the whole
+//   map every 50 m and 15 km round for the horizon, what the far hills are covered with, the
+//   rivers, the landmarks and the sights.
+// - world/tiles/<id>.js, one per tile: the relief every 10 m, what the ground is (clipped to the
+//   tile), the streets and the railway, the buildings, and the trees.
+// - world/tiles.js, a loader for each tile, for index.js.
+//
+// All in metres from the Praça da República, x east and z south, heights above ELEV0, packed as
+// 16-bit numbers: points in half metres, heights in decimetres (on a grid, each the step from the
+// one before).
+import fs from 'node:fs';
+import path from 'node:path';
+import { CACHE, ELEV0, P, ROOT, readCache, relief } from './geo.mjs';
+import { AREA, AREA_OF, blur, bounds, carriageway, dm, footprints, Grid, half, hash, inside, LINE, minRect, openThin, overlaps, Packer, packGrid, packPts, ringArea, ringOf, seeded, segDist, simplify, W_MIN } from './osm.mjs';
+import { allTiles, EXT, SECTIONS, sectionOf, TILE, tileBox, tileId, tileOf } from './sections.mjs';
+
+const base = readCache('osm/base.json');
+const buildingsOsm = readCache('osm/buildings.json');
+const treesOsm = readCache('osm/trees.json');
+const pois = readCache('osm/pois.json').elements;
+const braga = JSON.parse(fs.readFileSync(path.join(ROOT, 'map/braga.json'), 'utf8'));
+// The private waypoints, if they're here: only for the streets they ask to have lined with houses.
+const places = fs.existsSync(path.join(CACHE, 'places.json')) ? readCache('places.json').places : [];
+const elev = relief(path.join(CACHE, 'dem'));
+const inExt = (x, z, m = 0) => x >= EXT.x0 - m && x <= EXT.x1 + m && z >= EXT.z0 - m && z <= EXT.z1 + m;
+
+const tiles = new Map(allTiles().map(([i, j]) => [tileId(i, j), { id: tileId(i, j), box: tileBox(i, j), areas: [], lines: [], buildings: [], trees: [] }]));
+const tileAt = (x, z) => tiles.get(tileId(...tileOf(x, z)));
+const tilesOver = (b, m = 0) => [...tiles.values()].filter((t) => overlaps(t.box, b, m));
+
+// ---------------------------------------------------------------------------------------------
+// The streets, the railway, and what the ground is.
+
+const streets = []; // { id, k, w, pts, t }
+const areas = []; // [kind, ring]
+for (const e of base.elements) {
+  const t = e.tags || {};
+  if (e.type === 'way' && (LINE[t.highway] != null || t.railway)) {
+    const pts = e.geometry.map(P);
+    if (!pts.some(([x, z]) => inExt(x, z, 50))) continue;
+    const closed = pts.length > 3 && pts[0][0] === pts[pts.length - 1][0] && pts[0][1] === pts[pts.length - 1][1];
+    if (t.highway === 'pedestrian' && (t.area === 'yes' || closed)) { areas.push([AREA.indexOf('plaza'), simplify(pts.slice(0, -1), 0.5)]); continue; }
+    if (t.tunnel && t.tunnel !== 'no') continue;
+    streets.push({ id: e.id, k: t.railway ? 9 : LINE[t.highway], w: t.railway ? 4 : carriageway(t), pts, t });
+    continue;
+  }
+  const c = AREA_OF(t);
+  if (!c) continue;
+  // A relation's member ways are each painted as their own ring: good enough for the ground.
+  const rings = e.type === 'way' ? [e.geometry.map(P)] : e.members.filter((m) => m.type === 'way' && m.geometry).map((m) => m.geometry.map(P));
+  for (const r of rings) if (r.length > 3 && r.some(([x, z]) => inExt(x, z, 200))) areas.push([AREA.indexOf(c), simplify(r, c === 'forest' || c === 'farm' ? 2 : 1)]);
+}
+
+// Big areas first, so smaller ones inside them are painted over them; squares last. Each is cut to
+// the tiles it's on (a metre over, so they meet without a seam), and keeps its place in that order.
+{
+  const plaza = AREA.indexOf('plaza');
+  areas.sort((a, b) => (a[0] === plaza) - (b[0] === plaza) || ringArea(b[1]) - ringArea(a[1]));
+  const cut = (p, q, axis, v) => { const t = (v - p[axis]) / (q[axis] - p[axis]); return axis ? [p[0] + (q[0] - p[0]) * t, v] : [v, p[1] + (q[1] - p[1]) * t]; };
+  // Sutherland-Hodgman, against each side of the box in turn.
+  const clip = (ring, b) => {
+    let pts = ring;
+    for (const [axis, v, keep] of [[0, b.x0, 1], [0, b.x1, -1], [1, b.z0, 1], [1, b.z1, -1]]) {
+      const out = [];
+      for (let i = 0; i < pts.length; i++) {
+        const p = pts[i], q = pts[(i + 1) % pts.length], a = (p[axis] - v) * keep >= 0, c = (q[axis] - v) * keep >= 0;
+        if (a) out.push(p);
+        if (a !== c) out.push(cut(p, q, axis, v));
+      }
+      pts = out;
+      if (pts.length < 3) return [];
+    }
+    return pts;
+  };
+  areas.forEach(([kind, ring], rank) => {
+    if (ring.length < 3) return;
+    for (const t of tilesOver(bounds(ring))) {
+      const b = t.box, piece = clip(ring, { x0: b.x0 - 1, x1: b.x1 + 1, z0: b.z0 - 1, z1: b.z1 + 1 });
+      if (piece.length >= 3 && ringArea(piece) > 0.5) t.areas.push(Math.floor(rank / 32768), rank % 32768, kind, piece.length, ...packPts(piece));
+    }
+  });
+}
+
+// Every street at its width, and the railway: the stretches of each that cross a tile.
+for (const s of streets) {
+  const pts = openThin(s.pts, 0.8);
+  for (const t of tilesOver(bounds(pts), s.w)) {
+    const b = t.box, m = s.w / 2 + 2;
+    let run = [];
+    const flush = () => { if (run.length > 1) t.lines.push(s.k, Math.round(s.w * 10), run.length, ...packPts(run)); run = []; };
+    for (let i = 1; i < pts.length; i++) {
+      const a = pts[i - 1], c = pts[i];
+      if (overlaps(bounds([a, c]), b, m)) { if (!run.length) run.push(a); run.push(c); }
+      else flush();
+    }
+    flush();
+  }
+}
+console.log(`ground: ${areas.length} areas, ${streets.length} streets and railways`);
+
+// ---------------------------------------------------------------------------------------------
+// The buildings: all of them, and houses filled in where the map has none.
+
+const KIND = { house: 0, flats: 1, shop: 2, church: 3, civic: 4 };
+const ROOF = { flat: 0, hipped: 1, gabled: 2 };
+const COLORS = 8; // facade colours, picked from each building's id
+const fps = footprints(buildingsOsm);
+let real = 0;
+{
+  const church = new Set(['church', 'cathedral', 'chapel', 'basilica', 'religious', 'monastery', 'convent']);
+  const flats = new Set(['apartments', 'residential', 'dormitory', 'hotel']);
+  const house = new Set(['house', 'detached', 'semidetached_house', 'terrace', 'bungalow', 'duplex']);
+  const civic = new Set(['school', 'university', 'college', 'kindergarten', 'hospital', 'public', 'civic', 'government', 'museum', 'fire_station']);
+  const low = new Set(['roof', 'carport', 'garage', 'garages', 'shed', 'kiosk']);
+  const rnd = hash;
+  for (const e of fps) {
+    let pts = ringOf(e);
+    if (pts.length > 1 && pts[0][0] === pts[pts.length - 1][0] && pts[0][1] === pts[pts.length - 1][1]) pts = pts.slice(0, -1);
+    if (pts.length < 3) continue;
+    const cx = pts.reduce((s, p) => s + p[0], 0) / pts.length, cz = pts.reduce((s, p) => s + p[1], 0) / pts.length;
+    if (!inExt(cx, cz)) continue;
+    const t = e.tags, a = ringArea(pts);
+    if (a < 12) continue;
+    let kind = church.has(t.building) ? KIND.church : flats.has(t.building) ? KIND.flats : house.has(t.building) ? KIND.house : civic.has(t.building) ? KIND.civic : t.building === 'yes' ? (a < 220 ? KIND.house : a < 1400 ? KIND.flats : KIND.shop) : KIND.shop;
+    const levels = Number(t['building:levels']);
+    let h;
+    if (Number(t.height)) h = Number(t.height);
+    else if (levels) h = levels * 3 + 0.6;
+    else if (low.has(t.building)) h = 3;
+    else h = kind === KIND.house ? 3.4 + 3 * Math.floor(1 + rnd(e.id, 1) * 1.6) : kind === KIND.flats ? 3 * (4 + Math.floor(rnd(e.id, 2) * 4)) + 0.6 : kind === KIND.church ? 12 : kind === KIND.civic ? (a > 4000 ? 14 : 7.5 + Math.floor(rnd(e.id, 3) * 2) * 3) : 7;
+    if (kind === KIND.house && h > 10) kind = KIND.flats;
+    const shape = t['roof:shape'];
+    let roof = shape === 'flat' ? ROOF.flat : shape === 'gabled' ? ROOF.gabled : ['hipped', 'half-hipped', 'pyramidal'].includes(shape) ? ROOF.hipped : null;
+    if (roof === null) roof = kind === KIND.house ? (rnd(e.id, 4) < 0.7 ? ROOF.hipped : ROOF.gabled) : kind === KIND.flats ? (rnd(e.id, 5) < 0.45 ? ROOF.hipped : ROOF.flat) : kind === KIND.church ? ROOF.gabled : kind === KIND.civic ? (rnd(e.id, 6) < 0.5 ? ROOF.hipped : ROOF.flat) : ROOF.flat;
+    if (low.has(t.building)) roof = ROOF.flat;
+    const ring = simplify(pts, 0.3);
+    if (ring.length < 3) continue;
+    tileAt(cx, cz).buildings.push(ring.length, kind, roof, Math.floor(rnd(e.id, 7) * COLORS), Math.round(h * 10), 0, ...packPts(ring));
+    real++;
+  }
+}
+
+// OpenStreetMap is missing many of the buildings: where the land is built-up and a street's
+// frontage is empty, line it with houses, and flats on the main roads. Never in a park, a wood, a
+// field or a pitch, on a street, or over a building. Each street is taken at least W_MIN wide, as
+// the games draw it, with a pavement as wide as the buildings leave room for. The streets a note
+// on the map asked for (the waypoints marked `rows`) get them all down both sides.
+let infill = 0;
+{
+  const allB = [], bgrid = new Grid(40);
+  const addB = (r) => { allB.push(r); for (const [x, z] of r) bgrid.add(x, z, allB.length - 1); };
+  for (const e of fps) { const r = ringOf(e); if (r.some(([x, z]) => inExt(x, z, 50))) addB(r); }
+  const nearB = (x, z, reach) => [...new Set(bgrid.near(x, z, reach))];
+  // The buildings' walls, a point every 2 m, for how much room there is for a pavement.
+  const vgrid = new Grid(20);
+  for (const r of allB) for (let i = 1; i < r.length; i++) {
+    const [ax, az] = r[i - 1], [bx, bz] = r[i], n = Math.max(1, Math.ceil(Math.hypot(bx - ax, bz - az) / 2));
+    for (let f = 0; f < n; f++) vgrid.add(ax + ((bx - ax) * f) / n, az + ((bz - az) * f) / n, [ax + ((bx - ax) * f) / n, az + ((bz - az) * f) / n]);
+  }
+  const GREEN = new Set(['farm', 'grass', 'scrub', 'forest', 'park', 'cemetery', 'sport', 'water']);
+  const agrid = new Grid(100);
+  areas.forEach(([, r], i) => { const b = bounds(r); for (let a = Math.floor(b.x0 / 100); a <= Math.floor(b.x1 / 100); a++) for (let c = Math.floor(b.z0 / 100); c <= Math.floor(b.z1 / 100); c++) agrid.add(a * 100, c * 100, i); });
+  const landAt = (x, z) => { let best = null, ba = Infinity; for (const i of agrid.near(x, z, 0)) { const [k, r] = areas[i]; if (inside(r, x, z)) { const a = ringArea(r); if (a < ba) { ba = a; best = AREA[k]; } } } return best; };
+  // Every street's carriageway, for keeping off them: [x0, z0, x1, z1, its half width, its id].
+  const sgrid = new Grid(30);
+  for (const s of streets) {
+    if (s.k > 6) continue;
+    const hw = Math.max(W_MIN, s.w) / 2;
+    for (let i = 1; i < s.pts.length; i++) {
+      const [ax, az] = s.pts[i - 1], [bx, bz] = s.pts[i], n = Math.max(1, Math.ceil(Math.hypot(bx - ax, bz - az) / 15)), seg = [ax, az, bx, bz, hw, s.id];
+      for (let f = 0; f <= n; f++) sgrid.add(ax + ((bx - ax) * f) / n, az + ((bz - az) * f) / n, seg);
+    }
+  }
+  // Is (x, z) on a street, or within 6 m of one that crosses this one (not `own`)?
+  const onStreet = (x, z, own) => sgrid.near(x, z, 1).some(([ax, az, bx, bz, hw, id]) => segDist(x, z, { x: ax, z: az }, { x: bx, z: bz }) < (id === own ? hw + 1.5 : Math.max(6, hw + 1.5)));
+  const rowNames = new Set(places.filter((p) => p.rows).map((p) => {
+    let best = null, bd = Infinity;
+    for (const s of streets) if (s.k >= 2 && s.k <= 5 && s.t.name) for (let i = 1; i < s.pts.length; i++) { const d = segDist(p.x, p.z, { x: s.pts[i - 1][0], z: s.pts[i - 1][1] }, { x: s.pts[i][0], z: s.pts[i][1] }); if (d < bd) { bd = d; best = s.t.name; } }
+    return best;
+  }));
+  const rand = seeded(4242);
+  const why = { green: 0, empty: 0, street: 0, building: 0 };
+  for (const s of streets) {
+    if (s.k < 2 || s.k > 5 || String(s.t.highway).endsWith('_link')) continue;
+    if (!s.pts.some(([x, z]) => inExt(x, z))) continue;
+    // The street every 2 m.
+    const line = [];
+    for (let i = 1; i < s.pts.length; i++) {
+      const [ax, az] = s.pts[i - 1], [bx, bz] = s.pts[i], n = Math.max(1, Math.round(Math.hypot(bx - ax, bz - az) / 2));
+      for (let f = 0; f < n; f++) line.push([ax + ((bx - ax) * f) / n, az + ((bz - az) * f) / n]);
+    }
+    line.push(s.pts[s.pts.length - 1]);
+    const w = Math.max(W_MIN, s.w), main = s.k <= 4, row = rowNames.has(s.t.name);
+    const sidewalk = (right) => { const t = s.t, v = t[`sidewalk:${right ? 'right' : 'left'}`] ?? t['sidewalk:both'] ?? t.sidewalk; return v == null ? null : !['no', 'none', right ? 'left' : 'right'].includes(v); };
+    for (const side of [-1, 1]) {
+      let k = 0;
+      while (k + 3 < line.length) {
+        const [x, z] = line[k], [x2, z2] = line[k + 3];
+        const tl = Math.hypot(x2 - x, z2 - z) || 1, tx = (x2 - x) / tl, tz = (z2 - z) / tl, rx = -tz * side, rz = tx * side;
+        // The pavement: as wide as the buildings leave room for, or none out in the open.
+        let room = Infinity;
+        for (const [vx, vz] of vgrid.near(x, z, 1)) {
+          const along = (vx - x) * tx + (vz - z) * tz, o = (vx - x) * rx + (vz - z) * rz;
+          if (Math.abs(along) < 8 && o > w / 2 - 1) room = Math.min(room, o - w / 2);
+        }
+        const tag = sidewalk(side > 0), pave = tag === false || (tag === null && room >= 25) ? 0 : Math.max(1.2, Math.min(3.2, room - 0.3));
+        const wide = 9 + rand() * (main ? 9 : 6), deep = main ? 12 + rand() * 6 : 9 + rand() * 4, set = w / 2 + Math.max(1.5, pave) + 0.5;
+        const quad = [[0, set], [wide, set], [wide, set + deep], [0, set + deep]].map(([a, b]) => [x + tx * a + rx * b, z + tz * a + rz * b]);
+        const mid = [x + tx * (wide / 2) + rx * (set + deep / 2), z + tz * (wide / 2) + rz * (set + deep / 2)];
+        const land = landAt(mid[0], mid[1]);
+        const builtUp = row || (land && !GREEN.has(land)) || (!land && nearB(mid[0], mid[1], 2).length >= 4);
+        const clear = builtUp && inExt(mid[0], mid[1]) && !quad.concat([mid]).some(([qx, qz]) => onStreet(qx, qz, s.id));
+        const free = clear && !nearB(mid[0], mid[1], 1).some((b) => quad.concat([mid]).some(([qx, qz]) => inside(allB[b], qx, qz)) || allB[b].some(([bx, bz]) => inside(quad, bx, bz)));
+        if (!builtUp) why[land ? 'green' : 'empty']++;
+        else if (!clear) why.street++;
+        else if (!free) why.building++;
+        if (free && (row || rand() < 0.85)) {
+          const kind = main ? (rand() < 0.75 ? KIND.flats : KIND.house) : rand() < 0.85 ? KIND.house : KIND.flats;
+          const h = kind === KIND.flats ? 3 * (3 + Math.floor(rand() * 4)) + 0.6 : 3.4 + 3 * Math.floor(1 + rand() * 1.5);
+          const roof = kind === KIND.house ? (rand() < 0.65 ? ROOF.hipped : ROOF.gabled) : rand() < 0.5 ? ROOF.hipped : ROOF.flat;
+          tileAt(mid[0], mid[1]).buildings.push(4, kind, roof, Math.floor(rand() * COLORS), Math.round(h * 10), 1, ...packPts(quad));
+          addB(quad);
+          infill++;
+          k += Math.max(2, Math.round((wide + (row || rand() < 0.7 ? 0.4 : 3 + rand() * 4)) / 2));
+        } else k += 3;
+      }
+    }
+  }
+  console.log(`buildings: ${real} from the map, ${infill} filled in (${rowNames.size} streets in rows); frontage skipped for ${JSON.stringify(why)}`);
+}
+
+// ---------------------------------------------------------------------------------------------
+// Trees: the ones on the map, and woods and parks filled in, none on a street. Each is [x, z, how]:
+// how is 1 for a pine, plus 2 for one filled in.
+
+let nTrees = 0;
+{
+  const rnd = seeded(9);
+  const sgrid = new Grid(30);
+  for (const s of streets) {
+    if (s.k > 6) continue;
+    for (let i = 1; i < s.pts.length; i++) { const [ax, az] = s.pts[i - 1], [bx, bz] = s.pts[i], n = Math.max(1, Math.ceil(Math.hypot(bx - ax, bz - az) / 15)); for (let f = 0; f <= n; f++) sgrid.add(ax + ((bx - ax) * f) / n, az + ((bz - az) * f) / n, [ax, az, bx, bz, Math.max(W_MIN, s.w) / 2]); }
+  }
+  const ok = (x, z) => inExt(x, z) && !sgrid.near(x, z, 1).some(([ax, az, bx, bz, hw]) => segDist(x, z, { x: ax, z: az }, { x: bx, z: bz }) < hw + 0.5);
+  const plant = (x, z, how) => { if (ok(x, z)) { tileAt(x, z).trees.push(half(x), half(z), how); nTrees++; } };
+  for (const e of treesOsm.elements) {
+    if (e.type === 'node') { const [x, z] = P(e); plant(x, z, e.tags && e.tags.leaf_type === 'needleleaved' ? 1 : 0); }
+    else for (const g of e.geometry) { const [x, z] = P(g); plant(x, z, 0); }
+  }
+  // One tree to so many square metres, pines among the woods' trees.
+  const fill = { forest: 200, park: 420, scrub: 900 };
+  for (const e of base.elements) {
+    const c = AREA_OF(e.tags || {});
+    if (!fill[c] || e.type !== 'way') continue;
+    const r = e.geometry.map(P), b = bounds(r);
+    if (!overlaps(b, EXT)) continue;
+    const n = Math.min(4000, Math.round(((b.x1 - b.x0) * (b.z1 - b.z0)) / fill[c]));
+    for (let k = 0; k < n; k++) {
+      const x = b.x0 + rnd() * (b.x1 - b.x0), z = b.z0 + rnd() * (b.z1 - b.z0);
+      const pine = c === 'forest' && rnd() < 0.6 ? 1 : 0;
+      if (inside(r, x, z)) plant(x, z, 2 + pine);
+    }
+  }
+  console.log(`trees: ${nTrees}`);
+}
+
+// ---------------------------------------------------------------------------------------------
+// The sights a Bracarense steers by: Bom Jesus and the Sameiro on the hills to the east, the cross
+// on the Picoto, the stadium, the Altice Forum, Makro and the Tourigalo's bull. Footprints and
+// positions from the map, heights from the relief.
+
+const sights = [];
+{
+  // The main roads, for which way a building looks.
+  const mgrid = new Grid(50);
+  for (const s of streets) if (s.k <= 4) for (let i = 1; i < s.pts.length; i++) { const [ax, az] = s.pts[i - 1], [bx, bz] = s.pts[i], n = Math.max(1, Math.ceil(Math.hypot(bx - ax, bz - az) / 25)); for (let f = 0; f <= n; f++) mgrid.add(ax + ((bx - ax) * f) / n, az + ((bz - az) * f) / n, [ax, az, bx, bz]); }
+  // The nearest point of a main road, and how far.
+  const road = (x, z) => {
+    for (let reach = 1; reach <= 8; reach *= 2) {
+      let best = null, bd = Infinity;
+      for (const [ax, az, bx, bz] of mgrid.near(x, z, reach)) {
+        const dx = bx - ax, dz = bz - az, L = dx * dx + dz * dz, t = L ? Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / L)) : 0, px = ax + dx * t, pz = az + dz * t, d = Math.hypot(px - x, pz - z);
+        if (d < bd) { bd = d; best = [px, pz]; }
+      }
+      if (best) return { d: bd, at: best };
+    }
+    return { d: Infinity, at: [x, z] };
+  };
+  const find = (list, type, id) => list.find((e) => e.type === type && e.id === id);
+  const ground = (x, z) => Math.round((elev(x, z) - ELEV0) * 10) / 10;
+  const r1 = (v) => Math.round(v * 10) / 10;
+  const facing = (x, z, tx, tz) => r1(Math.atan2(tz - z, tx - x) * 100) / 100;
+  // A building's front: the middle of its long wall nearest a main road, and which way it looks.
+  const front = (pts) => {
+    let best = null;
+    const cx = pts.reduce((a, q) => a + q[0], 0) / pts.length, cz = pts.reduce((a, q) => a + q[1], 0) / pts.length;
+    const longest = Math.max(...pts.map((q, k) => Math.hypot(pts[(k + 1) % pts.length][0] - q[0], pts[(k + 1) % pts.length][1] - q[1])));
+    for (let k = 0; k < pts.length; k++) {
+      const [ax, az] = pts[k], [bx, bz] = pts[(k + 1) % pts.length], l = Math.hypot(bx - ax, bz - az);
+      if (l < Math.min(30, longest * 0.6)) continue;
+      const mx = (ax + bx) / 2, mz = (az + bz) / 2, d = road(mx, mz).d;
+      if (!best || d < best.d) {
+        let nx = (bz - az) / l, nz = -(bx - ax) / l;
+        if (nx * (mx - cx) + nz * (mz - cz) < 0) { nx = -nx; nz = -nz; }
+        best = { d, x: r1(mx), z: r1(mz), face: r1(Math.atan2(nz, nx) * 100) / 100, L: r1(l / 2) };
+      }
+    }
+    const { d: _d, ...rest } = best;
+    return rest;
+  };
+
+  const basilica = find(fps, 'way', 146373021);
+  if (basilica) {
+    const r = minRect(ringOf(basilica));
+    // It looks west, down the Escadório to the city.
+    const foot = [3420, -352];
+    sights.push({ kind: 'bomjesus', x: r1(r.x), z: r1(r.z), y: ground(r.x, r.z), angle: r1(r.angle * 100) / 100, L: r1(r.L), W: r1(r.W), face: facing(r.x, r.z, ...foot), foot, footY: ground(...foot) });
+  }
+  const sameiro = find(fps, 'way', 146227475);
+  const statue = find(pois, 'node', 6562581627);
+  if (sameiro && statue) {
+    const r = minRect(ringOf(sameiro)), [sx, sz] = P(statue);
+    sights.push({ kind: 'sameiro', x: r1(r.x), z: r1(r.z), y: ground(r.x, r.z), angle: r1(r.angle * 100) / 100, L: r1(r.L), W: r1(r.W), face: facing(r.x, r.z, sx, sz), statue: [r1(sx), r1(sz)], statueY: ground(sx, sz) });
+  }
+  const cross = find(pois, 'node', 3917613795);
+  if (cross) { const [x, z] = P(cross); sights.push({ kind: 'cruzeiro', x: r1(x), z: r1(z), y: ground(x, z) }); }
+  const bull = find(pois, 'node', 4872503160);
+  if (bull) { const [x, z] = P(bull); sights.push({ kind: 'tourigalo', x: r1(x), z: r1(z), y: ground(x, z), face: facing(x, z, ...road(x, z).at) }); }
+  const makro = find(fps, 'way', 41677157);
+  if (makro) sights.push({ kind: 'makro', ...front(ringOf(makro)), y: ground(...P(makro.geometry[0])) });
+  const altice = fps.filter((e) => Math.floor(e.id / 16) === 19915703).map(ringOf).sort((a, b) => ringArea(b) - ringArea(a))[0];
+  if (altice) sights.push({ kind: 'altice', ...front(altice), y: ground(altice[0][0], altice[0][1]) });
+  const pitch = find(base.elements, 'way', 22660434);
+  if (pitch) {
+    const r = minRect(ringOf(pitch));
+    sights.push({ kind: 'stadium', x: r1(r.x), z: r1(r.z), y: ground(r.x, r.z), angle: r1(r.angle * 100) / 100, L: r1(r.L), W: r1(r.W) });
+  }
+  console.log(`sights: ${sights.map((q) => q.kind).join(', ')}`);
+}
+
+// ---------------------------------------------------------------------------------------------
+// The base: everything every game needs, whatever part of the map it's in.
+
+const out = new Packer();
+{
+  const grid = (b, step, h = (x, z) => elev(x, z)) => {
+    const nx = Math.round((b.x1 - b.x0) / step) + 1, nz = Math.round((b.z1 - b.z0) / step) + 1, v = [];
+    for (let j = 0; j < nz; j++) for (let i = 0; i < nx; i++) v.push(dm(h(b.x0 + i * step, b.z0 + j * step) - ELEV0));
+    return { v: packGrid(v, nx), meta: { x0: b.x0, z0: b.z0, step, nx, nz } };
+  };
+  // The whole map every 50 m, for the hills in the distance.
+  const far = grid(EXT, 50);
+  out.part('far', far.v, far.meta);
+  // The horizon: the hills 15 km round the map, every 250 m, from the coarser tiles.
+  const hz = relief(path.join(CACHE, 'dem'), 11), cx = Math.round((EXT.x0 + EXT.x1) / 500) * 250, cz = Math.round((EXT.z0 + EXT.z1) / 500) * 250;
+  const H = grid({ x0: cx - 15000, x1: cx + 15000, z0: cz - 15000, z1: cz + 15000 }, 250, (x, z) => Math.max(ELEV0 - 50, hz(x, z)));
+  out.part('horizon', H.v, H.meta);
+  // What the far hills are covered with, at each point of their grid: 0 fields and scrub, 1 woods,
+  // 2 town.
+  const f = out.header.far, cover = new Array(f.nx * f.nz).fill(0), kinds = [];
+  for (const e of base.elements) {
+    const c = AREA_OF(e.tags || {});
+    const k = c === 'forest' ? 1 : ['urban', 'industrial'].includes(c) ? 2 : 0;
+    if (!k) continue;
+    const rings = e.type === 'way' ? [e.geometry.map(P)] : e.members.filter((m) => m.type === 'way' && m.geometry && m.role !== 'inner').map((m) => m.geometry.map(P));
+    for (const r of rings) if (r.length > 3) kinds.push([k, r]);
+  }
+  // Woods last, so a wood inside a town's boundary is still a wood.
+  kinds.sort((a, b) => b[0] - a[0]);
+  for (const [k, r] of kinds) {
+    const b = bounds(r);
+    for (let j = Math.max(0, Math.ceil((b.z0 - f.z0) / f.step)); j <= Math.min(f.nz - 1, Math.floor((b.z1 - f.z0) / f.step)); j++) {
+      for (let i = Math.max(0, Math.ceil((b.x0 - f.x0) / f.step)); i <= Math.min(f.nx - 1, Math.floor((b.x1 - f.x0) / f.step)); i++) {
+        if (inside(r, f.x0 + i * f.step, f.z0 + j * f.step)) cover[j * f.nx + i] = k;
+      }
+    }
+  }
+  out.part('cover', cover);
+  // The rivers: each one's course and water level, falling downstream.
+  const R = [];
+  for (const e of base.elements) {
+    const t = e.tags || {};
+    if (e.type !== 'way' || t.waterway !== 'river' || (t.tunnel && t.tunnel !== 'no')) continue;
+    const pts = e.geometry.map(P).filter(([x, z]) => inExt(x, z, 100));
+    if (pts.length < 2) continue;
+    const lv = blur(pts.map(([x, z]) => elev(x, z)), 4);
+    for (let i = 1; i < lv.length; i++) lv[i] = Math.min(lv[i], lv[i - 1]); // water runs downhill
+    R.push(pts.length, ...pts.flatMap(([x, z], i) => [half(x), half(z), dm(lv[i] - ELEV0 - 2.2)]));
+  }
+  out.part('rivers', R, { halfWidth: 6 });
+}
+
+// ---------------------------------------------------------------------------------------------
+// The tiles, each a module of its own, and the base with what's in them.
+
+const dir = path.join(ROOT, 'world');
+fs.rmSync(path.join(dir, 'tiles'), { recursive: true, force: true });
+fs.mkdirSync(path.join(dir, 'tiles'), { recursive: true });
+const HEAD = `// Made by tools/world.mjs from OpenStreetMap and the relief: run that again rather than editing it.
+// A JSON header, then 16-bit numbers, in base64; index.js reads it. © OpenStreetMap contributors (ODbL).
+`;
+let bytes = 0;
+const sizes = [];
+for (const t of tiles.values()) {
+  const p = new Packer(), b = t.box, step = 10, n = TILE / step + 1, h = [];
+  for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) h.push(dm(elev(b.x0 + i * step, b.z0 + j * step) - ELEV0));
+  p.part('terrain', packGrid(h, n), { x0: b.x0, z0: b.z0, step, nx: n, nz: n });
+  p.part('areas', t.areas);
+  p.part('lines', t.lines);
+  p.part('buildings', t.buildings);
+  p.part('trees', t.trees);
+  const b64 = p.encode();
+  fs.writeFileSync(path.join(dir, 'tiles', t.id + '.js'), `${HEAD}export default '${b64}';\n`);
+  bytes += b64.length;
+  sizes.push([t.id, Math.round(b64.length / 1024)]);
+}
+fs.writeFileSync(path.join(dir, 'tiles.js'), `// Made by tools/world.mjs: a loader for each of the map's tiles, so a game only downloads those it needs.
+export const TILES = {
+${[...tiles.keys()].map((id) => `  '${id}': () => import('./tiles/${id}.js'),`).join('\n')}
+};
+`);
+
+const landmarks = braga.landmarks.map((l) => ({ id: l.id, name: l.name, x: l.x, z: l.z, section: sectionOf(l.x, l.z) }));
+out.header.meta = {
+  credit: '© OpenStreetMap contributors (ODbL). Relief: Terrain Tiles (AWS Open Data).',
+  osmTime: base.osm3s.timestamp_osm_base,
+  elev0: ELEV0,
+  ext: EXT,
+  tile: TILE,
+  tiles: [...tiles.keys()],
+  sections: SECTIONS,
+  areas: AREA,
+  landmarks,
+  sights,
+};
+const b64 = out.encode();
+fs.writeFileSync(path.join(dir, 'base.js'), `${HEAD}export default '${b64}';\n`);
+sizes.sort((a, b) => b[1] - a[1]);
+console.log(`base ${Math.round(b64.length / 1024)} KB; ${tiles.size} tiles, ${Math.round(bytes / 1024)} KB in all, the biggest ${sizes.slice(0, 4).map(([id, kb]) => `${id} ${kb} KB`).join(', ')}`);
+console.log(`sections: ${SECTIONS.map((s) => `${s.id} ${s.tiles.length}`).join(', ')}`);

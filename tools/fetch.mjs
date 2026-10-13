@@ -6,7 +6,7 @@
 //
 // node tools/fetch.mjs            everything but DGT's
 // node tools/fetch.mjs trees      only what's named (base, buildings, admin, pois, trees, street,
-//                                 dem, horizon, lidar, ortho, cos)
+//                                 restrictions, dem, horizon, lidar, ortho, cos)
 import fs from 'node:fs';
 import path from 'node:path';
 import https from 'node:https';
@@ -61,6 +61,11 @@ out geom;`,
   node["crossing"];
 );
 out;`,
+  // The turns the map bans or makes the only one (no left turn, only straight on), for the routes
+  // the tracks take: their ways and nodes by id, as in `base`.
+  restrictions: `[out:json][timeout:120][bbox:${BOX}];
+relation["type"="restriction"];
+out body;`,
   // Places with a name that might be landmarks. build.mjs picks its list from these by name.
   pois: `[out:json][timeout:120][bbox:${BOX}];
 (

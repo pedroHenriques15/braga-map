@@ -44,6 +44,8 @@ a phone can draw. Everything after this is checked against it.
   *Blocked on the owner's answers.*
 - **026** The track on the real carriageway: its centre line where the street's middle is, from
   the LiDAR and the orthophoto.
+- **027** The route by the rules of the road: one-way streets the right way, roundabouts the right
+  way round, no banned turns.
 
 ## Phase 3 · Surfaces and colours
 
@@ -74,6 +76,9 @@ Phase 1 comes first, but not all of it waits on itself:
 
 - **Now, side by side:** 001 (viewpoints), 004's reading of the code, 006 (audit), 008 (the
   photo walk, the owner's), and the answers to 007 and 015.
+- **The route's direction first:** 027 changes which way the race goes on a seventh of the loop,
+  so 001's viewpoints along the route are placed on the route it makes; the ones on foot and of
+  the skyline needn't wait.
 - **Then:** 002 once 001 has its viewpoints, 003 once 002 has a baseline, and 004's
   measurements with 002.
 - **Phase 2's data tasks** can start before the scorecard, now that 005 has fetched their data:

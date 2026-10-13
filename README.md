@@ -73,11 +73,12 @@ landmarks from `map/braga.json`, and `world.mjs` makes the ground finer on the t
 in `tracks/` run through. All three need the LiDAR.
 
 - `fetch.mjs` gets OpenStreetMap through Overpass (streets and land, buildings, parishes,
-  landmarks, trees, and the crossings, traffic lights and bus stops) and elevation tiles, plus
-  coarser ones 16 km round for the horizon. The public Overpass server is often busy: it waits and
-  tries again. `node tools/fetch.mjs trees` fetches only what's named (`base`, `buildings`,
-  `admin`, `pois`, `trees`, `street`, `dem`, `horizon`). A new fetch brings the map's changes
-  since, so the tracks may come out different: run the games' tests after.
+  landmarks, trees, the crossings, traffic lights and bus stops, and the turn restrictions) and
+  elevation tiles, plus coarser ones 16 km round for the horizon. The public Overpass server is
+  often busy: it waits and tries again. `node tools/fetch.mjs trees` fetches only what's named
+  (`base`, `buildings`, `admin`, `pois`, `trees`, `street`, `restrictions`, `dem`, `horizon`). A
+  new fetch brings the map's changes since, so the tracks may come out different: run the games'
+  tests after.
 - DGT's open data comes only when it's named, into `.cache/dgt/`, for the Volta dos Amigos' box
   and the shooter's area: `node tools/fetch.mjs ortho cos` (the 2025 orthophoto at 25 cm and
   the COS2025 land use, about 70 MB, no account) and `node tools/fetch.mjs lidar` (the 2025
@@ -106,12 +107,16 @@ in `tracks/` run through. All three need the LiDAR.
 `node tools/track.mjs <id>` plans one track; on its own, every one. What it does, in order:
 
 1. **The loop.** A graph of the streets, and the cheapest loop through the waypoints. `COST` makes
-   bigger roads cheaper and `TURN` prices the turns. The loop never uses a street twice or runs
-   within 28 m of itself, and it drives along each waypoint's own street through it. A waypoint's
-   street that's a dead end gets a link from its end to the nearest street ahead. It tries every
-   order of the waypoints unless the track gives one (`order`): then only the direction through
-   each is chosen. To add a waypoint without reshuffling the loop, put it in the order between the
-   two it falls between. A track with `sections` only has those sections' streets.
+   bigger roads cheaper and `TURN` prices the turns. The loop keeps the rules of the road: one-way
+   streets and roundabouts only the way they go (`driven` in `osm.mjs`), no turn the map bans
+   (OSM's turn restrictions, for cars at any hour), and no street cars may not use; it fails if
+   it can't, and prints how much of it is one-way. It never uses a street twice or runs within
+   28 m of itself, and it drives along each waypoint's own street through it. A waypoint's street
+   that's a dead end gets a link from its end to the nearest street ahead, both ways. It tries
+   every order of the waypoints unless the track gives one (`order`): then only that order, round
+   one way and the other, and the direction through each. To add a waypoint without reshuffling
+   the loop, put it in the order between the two it falls between. A track with `sections` only
+   has those sections' streets.
 2. **The centre line.** Short jogs at junctions are folded into one corner, and corners are rounded
    to `R_MIN` (12 m, a street corner) where the streets allow. The heights are the street's own
    surface, from the LiDAR: at each point a line across the carriageway (the median of the slopes
@@ -143,7 +148,7 @@ needs a new peer id prefix for it, and its tests must still pass.
 Add it to `tools/tracks.mjs`: an id, a name, its waypoints on the map (read them off the map
 page), and `sections` to keep it to some sections' streets. Run `npm run tracks` and look at it on
 the map page. Then a game races it by importing `braga-map/tracks/<id>.js`. Party Kart's tests
-say what makes a track raceable: a loop of 7–9 km, an autopilot lap without respawns, and so on.
+say what makes a track raceable: a loop of 7–10 km, an autopilot lap without respawns, and so on.
 
 ### The friends' houses
 
@@ -171,8 +176,8 @@ nothing names whose street is whose.
 - **The world**: 140 tiles, 13,000 buildings from the map and 11,500 houses filled in, 20,000
   trees. 5.8 MB in all (2 MB gzipped); a game loads the tiles it needs (the Volta dos Amigos, 48:
   4.1 MB, 1.2 MB gzipped).
-- **The Volta dos Amigos**, Party Kart's track: 8.1 km round, through five friends'
-  neighbourhoods.
+- **The Volta dos Amigos**, Party Kart's track: 9.3 km round, through five friends'
+  neighbourhoods, the way the traffic goes.
 - **The first track** ("Pista antiga"), Party Kart's cartoon Braga Grand Prix, drawn at its real
   size with its fountain on the real one in the Praça da República (`tools/first-track.json`).
   It's 2.5 km round and fits in 851 × 414 m. The real Bom Jesus is 3.9 km from that fountain; on

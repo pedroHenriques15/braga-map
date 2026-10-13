@@ -17,7 +17,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { CACHE, ELEV0, P, readCache, ROOT } from './geo.mjs';
-import { blur, carriageway, COBBLE, footprints, isOneway, lanesOf, segDist, simplify, W_MIN } from './osm.mjs';
+import { blur, carriageway, COBBLE, driven, footprints, isOneway, lanesOf, segDist, simplify, W_MIN } from './osm.mjs';
 import { EXT, sectionOf } from './sections.mjs';
 import { terrain } from './terrain.mjs';
 import { TRACKS } from './tracks.mjs';
@@ -46,20 +46,60 @@ places = places.map((p) => ({ ...p }));
 const RES = Number(process.env.RES || 1.15), TURN = Number(process.env.TURN || 15);
 const COST = { primary: 1, secondary: 1, tertiary: 1.05, primary_link: 1.3, secondary_link: 1.3, tertiary_link: 1.3, unclassified: Math.min(1.3, RES), residential: RES, living_street: 2 };
 
-const nodes = new Map(); // id -> { x, z, adj: [{ to, len, kind, name }] }
+// The rules of the road. A car may use a street unless the most specific of its access tags says
+// no, and drives it only the way it may (`driven` in osm.mjs: one-way streets, roundabouts).
+const NO_CARS = new Set(['no', 'private', 'permit', 'forestry', 'agricultural']);
+const carsMay = (t) => !NO_CARS.has(t.motorcar ?? t.motor_vehicle ?? t.vehicle ?? t.access);
+
+const nodes = new Map(); // id -> { x, z, adj: [{ to, len, kind, name, way, fwd, legal }] }
 for (const e of base.elements) {
   const t = e.tags || {};
-  if (e.type !== 'way' || !COST[t.highway] || (t.tunnel && t.tunnel !== 'no') || t.area === 'yes' || t.access === 'private') continue;
+  if (e.type !== 'way' || !COST[t.highway] || (t.tunnel && t.tunnel !== 'no') || t.area === 'yes' || !carsMay(t)) continue;
   e.nodes.forEach((id, i) => {
     if (!nodes.has(id)) { const [x, z] = P(e.geometry[i]); nodes.set(id, { id, x, z, adj: [] }); }
   });
+  const dir = driven(t);
   for (let i = 1; i < e.nodes.length; i++) {
     const a = nodes.get(e.nodes[i - 1]), b = nodes.get(e.nodes[i]);
     const len = Math.hypot(b.x - a.x, b.z - a.z);
     const edge = { kind: t.highway, name: t.name || '', len, way: e.id, tags: t };
-    a.adj.push({ to: b.id, ...edge, fwd: true });
-    b.adj.push({ to: a.id, ...edge, fwd: false });
+    // Both ways are in the graph, for the streets that join the loop; `legal` says which may be
+    // driven.
+    a.adj.push({ to: b.id, ...edge, fwd: true, legal: dir >= 0 });
+    b.adj.push({ to: a.id, ...edge, fwd: false, legal: dir <= 0 });
   }
+}
+
+// The turns the map bans at a junction, from one street onto another (`only_` ones ban every
+// other turn from that street there), for cars at any hour. Their streets all end at the junction.
+const restrictionsFile = path.join(CACHE, 'osm', 'restrictions.json');
+if (!fs.existsSync(restrictionsFile)) throw new Error('No turn restrictions: node tools/fetch.mjs restrictions');
+const bans = new Map(); // via node -> [{ from: Set of ways, to: Set of ways, only, uturn }]
+const viaWay = [];
+for (const r of readCache('osm/restrictions.json').elements) {
+  const t = r.tags || {}, kind = t['restriction:motorcar'] ?? t['restriction:motor_vehicle'] ?? t.restriction;
+  if (r.type !== 'relation' || !kind || /\b(motorcar|motor_vehicle)\b/.test(t.except || '')) continue;
+  const role = (k) => r.members.filter((m) => m.role === k);
+  const via = role('via');
+  if (via.length === 0) continue;
+  if (via.length > 1 || via[0].type !== 'node') { viaWay.push(r); continue; }
+  const rule = { from: new Set(role('from').map((m) => m.ref)), to: new Set(role('to').map((m) => m.ref)), only: kind.startsWith('only_'), uturn: kind === 'no_u_turn', id: r.id };
+  if (!bans.has(via[0].ref)) bans.set(via[0].ref, []);
+  bans.get(via[0].ref).push(rule);
+}
+// The street driven from a to b: the legal one, where two run between the same nodes.
+const edgeOf = (a, b) => nodes.get(a).adj.find((e) => e.to === b && e.legal) ?? nodes.get(a).adj.find((e) => e.to === b);
+// Whether the turn from a through n to b is banned. A U-turn ban from a street back onto itself
+// is kept for turning back, not for going on along it.
+function banned(a, n, b) {
+  const rules = bans.get(n);
+  if (!rules) return null;
+  const from = edgeOf(a, n)?.way, to = edgeOf(n, b)?.way;
+  for (const r of rules) {
+    if (!r.from.has(from)) continue;
+    if (r.only ? !r.to.has(to) : r.to.has(to) && (!(r.uturn && from === to) || turn(nodes.get(a), nodes.get(n), nodes.get(b)) > Math.PI / 2)) return r;
+  }
+  return null;
 }
 // A track kept to some sections only has their streets.
 if (cfg.sections) {
@@ -119,8 +159,8 @@ for (const p of places) {
     }
     if (!to) continue;
     const edge = { kind: 'residential', name: '(joined)', len: d, tags: { highway: 'residential' } };
-    end.adj.push({ to: to.id, ...edge });
-    to.adj.push({ to: end.id, ...edge });
+    end.adj.push({ to: to.id, ...edge, legal: true });
+    to.adj.push({ to: end.id, ...edge, legal: true });
     joins.push({ from: [Math.round(end.x), Math.round(end.z)], to: [Math.round(to.x), Math.round(to.z)], len: Math.round(d), street: s.name });
   }
   p.node = s.node.id;
@@ -140,10 +180,14 @@ const turn = (a, b, c) => {
   return Math.abs(Math.atan2(ux * vz - uz * vx, ux * vx + uz * vz));
 };
 
+// Whether a kart coming from a may go on through n to b: the right way down b's street, by a turn
+// that isn't banned and isn't a hairpin.
+const mayGo = (a, n, b) => !!edgeOf(n, b)?.legal && !banned(a, n, b) && turn(nodes.get(a), nodes.get(n), nodes.get(b)) <= 2.4;
+
 // Cheapest path from `from` (arriving there from `prev`, which it mustn't turn back to) to `to`,
-// not arriving from `notFrom`, over directed edges so turns can be priced. `extra(a, b)` adds the
-// cost of reusing streets.
-function route(from, prev, to, notFrom, extra) {
+// not arriving from `notFrom`, and able to go on to `after`, over directed edges so turns can be
+// priced and the rules of the road kept. `extra(a, b)` adds the cost of reusing streets.
+function route(from, prev, to, notFrom, extra, after) {
   const key = (n, p) => n + ',' + p;
   const best = new Map(), back = new Map();
   const heap = new Heap();
@@ -153,7 +197,7 @@ function route(from, prev, to, notFrom, extra) {
   while (heap.size) {
     const [c, k, n, p] = heap.pop();
     if (c > best.get(k)) continue;
-    if (n === to && p !== notFrom) {
+    if (n === to && p !== notFrom && (after == null || mayGo(p, n, after))) {
       const path = [n];
       let kk = k;
       while (back.has(kk)) { const [pk, pn] = back.get(kk); path.push(pn); kk = pk; }
@@ -161,11 +205,12 @@ function route(from, prev, to, notFrom, extra) {
     }
     const N = nodes.get(n);
     for (const e of N.adj) {
-      if (e.to === p) continue; // no turning back
+      if (e.to === p || !e.legal) continue; // no turning back, nor against the traffic
       let cost = e.len * COST[e.kind] + extra(n, e.to);
       if (p != null && p !== '') {
         const th = turn(nodes.get(p), N, nodes.get(e.to));
         if (th > 2.4) continue; // a hairpin a kart can't make in a street
+        if (banned(p, n, e.to)) continue;
         cost += TURN * (th / (Math.PI / 2)) ** 2;
       }
       const kk = key(e.to, n), nc = c + cost;
@@ -194,6 +239,8 @@ function through(p) {
 function loopThrough(order, flips) {
   const ids = order.map((p) => p.node);
   const ends = order.map((p, k) => (flips[k] ? [...through(p)].reverse() : through(p)));
+  // Each waypoint's street driven the right way, by a turn that's allowed.
+  if (ends.some(([a, b], k) => !edgeOf(a, ids[k]).legal || !mayGo(a, ids[k], b))) return null;
   const used = new Set(), near = new Map();
   const cellOf = (x, z) => Math.floor(x / 30) + ',' + Math.floor(z / 30);
   const mark = (id) => {
@@ -215,7 +262,7 @@ function loopThrough(order, flips) {
   let cost = 0;
   for (let k = 0; k < ids.length; k++) {
     const [, out] = ends[k], [into] = ends[(k + 1) % ids.length], next = ids[(k + 1) % ids.length];
-    const r = route(out, ids[k], into, next, extra);
+    const r = route(out, ids[k], into, next, extra, next);
     if (!r) return null;
     for (let i = 1; i < r.path.length; i++) use(r.path[i - 1], r.path[i]);
     path.push(ids[k], ...r.path);
@@ -226,13 +273,16 @@ function loopThrough(order, flips) {
   return { path: clean, cost, closeTurn: 0 };
 }
 
-// Every order of the waypoints, unless places.json gives one (`order`, their ids): then only the
-// directions through each are tried. That keeps the loop as it was when a house is added.
+// Every order of the waypoints, unless places.json gives one (`order`, their ids): then only that
+// order, round one way and the other (one-way streets may only allow one), and the directions
+// through each. That keeps the loop as it was when a house is added.
 const orders = [];
 const [first, ...rest] = places;
 const perms = (xs) => (xs.length <= 1 ? [xs] : xs.flatMap((x, i) => perms([...xs.slice(0, i), ...xs.slice(i + 1)]).map((p) => [x, ...p])));
-if (fixed) orders.push(fixed.map((id) => places.find((p) => p.id === id)));
-else for (const p of perms(rest)) orders.push([first, ...p]);
+if (fixed) {
+  const o = fixed.map((id) => places.find((p) => p.id === id));
+  orders.push(o, [o[0], ...o.slice(1).reverse()]);
+} else for (const p of perms(rest)) orders.push([first, ...p]);
 let bestLoop = null;
 for (const o of orders) {
   for (let f = 0; f < 1 << o.length; f++) {
@@ -252,7 +302,7 @@ const loop = bestLoop.path.map((id) => nodes.get(id));
   const parts = [];
   for (let i = 0; i < loop.length; i++) {
     const a = loop[i], b = loop[(i + 1) % loop.length];
-    const e = a.adj.find((x) => x.to === b.id);
+    const e = edgeOf(a.id, b.id);
     const name = e ? e.name || '(' + e.kind + ')' : '?';
     if (name !== lastName && lastName !== null) { parts.push(`${lastName} ${Math.round(run)}`); run = 0; }
     lastName = name;
@@ -265,11 +315,40 @@ const loop = bestLoop.path.map((id) => nodes.get(id));
   console.log('joins', JSON.stringify(joins));
 }
 
+// The loop checked against the rules of the road: every street driven the right way and every turn
+// allowed. The map's few bans on a turn through a short street (`via` a way) aren't kept by
+// `route`, only checked here.
+{
+  const N = loop.length, wrong = [], turns = [];
+  let oneway = 0, ruled = 0;
+  for (let i = 0; i < N; i++) {
+    const a = loop[(i - 1 + N) % N], n = loop[i], b = loop[(i + 1) % N], e = edgeOf(n.id, b.id);
+    if (!e.legal) wrong.push({ street: e.name || e.kind, at: [Math.round(n.x), Math.round(n.z)], m: Math.round(e.len) });
+    else if (driven(e.tags)) oneway += e.len;
+    const r = banned(a.id, n.id, b.id);
+    if (r) turns.push({ relation: r.id, at: [Math.round(n.x), Math.round(n.z)] });
+    if (bans.has(n.id)) ruled++;
+  }
+  const ways = loop.map((n, i) => edgeOf(n.id, loop[(i + 1) % N].id).way).filter((w, i, all) => w !== all[(i - 1 + all.length) % all.length]);
+  for (const r of viaWay) {
+    const t = r.tags, only = (t['restriction:motorcar'] ?? t['restriction:motor_vehicle'] ?? t.restriction).startsWith('only_');
+    const seq = (role) => r.members.filter((m) => m.role === role).map((m) => m.ref);
+    const from = seq('from'), via = seq('via'), to = seq('to');
+    ways.forEach((w, i) => {
+      if (!from.includes(w) || !via.every((v, k) => ways[(i + 1 + k) % ways.length] === v)) return;
+      const next = ways[(i + 1 + via.length) % ways.length];
+      if (only ? !to.includes(next) : to.includes(next)) turns.push({ relation: r.id, via: 'way' });
+    });
+  }
+  console.log(`rules of the road: ${Math.round(oneway)} m on one-way streets, the right way; ${ruled} junctions on it with turn restrictions; ${wrong.reduce((s, w) => s + w.m, 0)} m against the traffic; ${turns.length} banned turns`);
+  if (wrong.length || turns.length) throw new Error(`The loop breaks the rules of the road: ${JSON.stringify({ wrong, turns })}`);
+}
+
 
 // ---------------------------------------------------------------------------------------------
 // 2. The centre line.
 
-const loopEdges = loop.map((a, i) => a.adj.find((e) => e.to === loop[(i + 1) % loop.length].id));
+const loopEdges = loop.map((a, i) => edgeOf(a.id, loop[(i + 1) % loop.length].id));
 // The race is never narrower than W_MIN, so eight karts still fit.
 const R_MIN = 12; // the corner radius aimed for: a street corner, about 80 km/h for a kart
 

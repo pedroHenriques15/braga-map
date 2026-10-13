@@ -20,8 +20,8 @@ Wherever the map, or anything drawn from it, is shown (a game, its help, its REA
 ### OpenStreetMap
 
 - **What:** the streets, buildings, land use, trees, rivers, railway, crossings, traffic lights,
-  bus stops, landmarks and parishes. The world's `osmTime` says when it was fetched (now
-  2026-10-13).
+  bus stops, turn restrictions, landmarks and parishes. The world's `osmTime` says when it was
+  fetched (now 2026-10-13).
 - **Access:** the Overpass API, no account (`node tools/fetch.mjs`).
 - **Licence:** Open Database Licence 1.0. The world, the tracks and the map page's data are
   derived from it, and stay under the ODbL.

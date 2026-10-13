@@ -9,6 +9,14 @@ export const W_MIN = 9;
 const LANE_W = { motorway: 3.6, trunk: 3.5, primary: 3.4, secondary: 3.3, tertiary: 3.2 }; // others 3
 const BARE = { motorway: 11, trunk: 10, primary: 10, secondary: 9, tertiary: 8, residential: 6.5, unclassified: 6, living_street: 5, pedestrian: 6, service: 4, track: 3 };
 export const isOneway = (t) => t.oneway === 'yes' || t.oneway === '-1' || t.junction === 'roundabout';
+// Which way a car may drive a street: 1 only the way it's drawn (a one-way street, a roundabout
+// anticlockwise), -1 only against it (`oneway=-1`), 0 both. A car's own `oneway:` tag wins.
+export function driven(t = {}) {
+  const v = t['oneway:motorcar'] ?? t['oneway:motor_vehicle'] ?? t.oneway;
+  if (v === '-1') return -1;
+  if (v === 'yes' || v === '1' || v === 'true' || (v == null && (t.junction === 'roundabout' || t.junction === 'circular'))) return 1;
+  return 0;
+}
 // The carriageway, kerb to kerb: the map's width where it gives one, else its lanes, else what that
 // kind of street usually is.
 export function carriageway(t = {}) {

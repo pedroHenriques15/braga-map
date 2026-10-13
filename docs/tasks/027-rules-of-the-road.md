@@ -147,6 +147,10 @@ Steps:
     level 300 m: at 150 m from the new start the road climbs 6%, and a car held by `stopInput`
     creeps back 5 cm/s there (its dead band of 0.5 m/s; 11 cm/s on a 4% descent). Not fixed: a
     party-kart matter. The widened tests pass on `v1.1.0` too.
-  - Left for the release, when the owner asks: tag braga-map, change party-kart's tag and its
-    peer id prefix (`partykart-pk29-`), its README's "8.1 km" and `CLAUDE.md`'s "about 8.1 km
-    (N ≈ 8150)", and deploy. Then task 001's viewpoints along the route are checked on it.
+- **Released** on 2026-10-13: braga-map `e909c28`, tagged `v1.2.0` (with task 001's viewpoints,
+  placed on this route); party-kart `c14a139`, on it, deployed to
+  https://pedrohenriques15.github.io/party-kart/. The peer id prefix is `pk30` (the track changed),
+  so players on the old build must reload to race. On v1.2.0: party-kart's `npm test` 19 of 19,
+  laps 265.6 and 263.5 s.
+- **Left:** `/task finish 027`: the boxes above, a decision (the race keeps the rules of the road,
+  longer where it must), and 027 off the roadmap.

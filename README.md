@@ -15,6 +15,9 @@ it. Party Kart races on it, and the games after it (a shooter, say) use the same
   http://localhost:5180/map/. The shared copy, where the zones and landmarks were voted on and
   approved and where the friends' houses were added, is the artifact at
   https://claude.ai/artifact/UdwdhZYkR76J5xyPcRUHUb.
+- **The scorecard** (`scorecard/`), "Braga real", sets each viewpoint's real photo over the game's
+  shot from the same place, round after round, for the people the owner invites to rate how much
+  it looks like Braga (task 003): the artifact at https://claude.ai/artifact/MsA5VZHSqxfD3e4BDYrYPs.
 
 Everything is in metres from the Praça da República, x east, z south and y up, with heights above
 154 m (`elev0`). A point read off the map page (hover over it) is a point in any game.
@@ -67,6 +70,7 @@ npm run world    # the world: world/base.js, world/tiles.js and a module per til
 npm test         # the world and the tracks as the games read them, and DGT's data where fetched
 node tools/relief.mjs  # the ground checked: known places, bridges, and each track's profile
 node tools/refs.mjs    # each viewpoint's real photo, into .cache/refs/ (with Mapillary's free token)
+node tools/round.mjs <round> --label "…"  # a round of party-kart's shots, for the scorecard
 ```
 
 They need Node 22.18 or later. Run them in that order: `track.mjs` and `world.mjs` read the
@@ -112,6 +116,11 @@ in `tracks/` run through. All three need the LiDAR.
   taken, at eye level, and at least 150 m from every waypoint and egg. party-kart's
   `node scripts/shots.mjs <label>` shoots its city from every viewpoint, at the photo's field of
   view and shape, into a round beside the photos and the round before (task 002, decision 011).
+- `round.mjs` prepares one of those rounds for the scorecard (`scorecard/index.html`): its High
+  shots and the photos, 960 pixels wide, and the lists the page reads, in `.cache/scorecard/` as
+  they're published beside the page. It records the round in `refs/rounds.json` (committed): its
+  label, the tasks it shows, a note, and the commits it was shot on. The page keeps each person's
+  ratings and comments in the artifact's database, one document each (`scores/<their id>`).
 
 ### How a track is planned
 

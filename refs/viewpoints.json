@@ -1,10 +1,11 @@
 {
-  "about": "Viewpoints: where the game is set against the real Braga (task 001). Metres from the Praça da República, x east, z south, y above elev0 (154 m). The camera at (x, y, z) looks at (tx, ty, tz); fov is its vertical field of view in degrees. photo is the real one from the same place: its source, author, licence and link, and the camera that took it (lat, lon, heading, pitch and roll in degrees). Fetch the photos with node tools/refs.mjs.",
+  "about": "Viewpoints: where the game is set against the real Braga (task 001). Metres from the Praça da República, x east, z south, y above elev0 (154 m). name is in English and nome in Portuguese, for the scorecard (task 003). The camera at (x, y, z) looks at (tx, ty, tz); fov is its vertical field of view in degrees. photo is the real one from the same place: its source, author, licence and link, and the camera that took it (lat, lon, heading, pitch and roll in degrees). Fetch the photos with node tools/refs.mjs.",
   "credit": "Photos © Mapillary contributors, CC BY-SA 4.0: the author and link of each are under photo.",
   "viewpoints": [
     {
       "id": "fujacal-start",
       "name": "The start, on the Rua do Fujacal",
+      "nome": "A partida, na Rua do Fujacal",
       "kind": "kart",
       "x": -184.9,
       "y": 9.3,
@@ -31,6 +32,7 @@
     {
       "id": "imaculada-conceicao",
       "name": "Avenida Imaculada Conceição, under its trees",
+      "nome": "Avenida Imaculada Conceição, debaixo das árvores",
       "kind": "kart",
       "x": -260.7,
       "y": 13.1,
@@ -57,6 +59,7 @@
     {
       "id": "liberdade",
       "name": "Avenida da Liberdade, towards São João da Ponte",
+      "nome": "Avenida da Liberdade, para São João da Ponte",
       "kind": "foot",
       "x": 278,
       "y": 10.6,
@@ -84,6 +87,7 @@
     {
       "id": "sao-joao-da-ponte",
       "name": "Largo de São João da Ponte",
+      "nome": "Largo de São João da Ponte",
       "kind": "foot",
       "x": 345.3,
       "y": 12.1,
@@ -111,6 +115,7 @@
     {
       "id": "devesa",
       "name": "Largo da Devesa",
+      "nome": "Largo da Devesa",
       "kind": "foot",
       "x": 384.5,
       "y": 13.8,
@@ -138,6 +143,7 @@
     {
       "id": "alvaro-carneiro",
       "name": "Rua Álvaro Carneiro",
+      "nome": "Rua Álvaro Carneiro",
       "kind": "kart",
       "x": 748,
       "y": 18.9,
@@ -164,6 +170,7 @@
     {
       "id": "porfirio-da-silva",
       "name": "Avenida Doutor Porfírio da Silva",
+      "nome": "Avenida Doutor Porfírio da Silva",
       "kind": "kart",
       "x": 782.3,
       "y": 18.3,
@@ -190,6 +197,7 @@
     {
       "id": "31-de-janeiro",
       "name": "Avenida 31 de Janeiro",
+      "nome": "Avenida 31 de Janeiro",
       "kind": "kart",
       "x": 668.9,
       "y": 17.6,
@@ -216,6 +224,7 @@
     {
       "id": "joao-xxi",
       "name": "Avenida João XXI",
+      "nome": "Avenida João XXI",
       "kind": "kart",
       "x": 693.6,
       "y": 24.6,
@@ -242,6 +251,7 @@
     {
       "id": "bernardo-sequeira",
       "name": "Rua Bernardo Sequeira",
+      "nome": "Rua Bernardo Sequeira",
       "kind": "kart",
       "x": 1036,
       "y": 18.5,
@@ -268,6 +278,7 @@
     {
       "id": "bom-jesus",
       "name": "Bom Jesus's hill, at the end of the Rua Jaime Sotto Mayor",
+      "nome": "O monte do Bom Jesus, ao fundo da Rua Jaime Sotto Mayor",
       "kind": "skyline",
       "x": 1262.6,
       "y": 25.6,
@@ -294,6 +305,7 @@
     {
       "id": "pascoal-fernandes",
       "name": "Rua Mestre Arquitecto Pascoal Fernandes",
+      "nome": "Rua Mestre Arquitecto Pascoal Fernandes",
       "kind": "kart",
       "x": 1656.8,
       "y": 29.6,
@@ -320,6 +332,7 @@
     {
       "id": "egidio-guimaraes",
       "name": "Rua Doutor Egídio Guimarães, at the glass tower",
+      "nome": "Rua Doutor Egídio Guimarães, junto à torre de vidro",
       "kind": "kart",
       "x": 1686.7,
       "y": 37.1,
@@ -346,6 +359,7 @@
     {
       "id": "robert-smith",
       "name": "Avenida Robert Smith",
+      "nome": "Avenida Robert Smith",
       "kind": "kart",
       "x": 1649.9,
       "y": 40.7,
@@ -372,6 +386,7 @@
     {
       "id": "robert-smith-picoto",
       "name": "Avenida Robert Smith, the Picoto ahead",
+      "nome": "Avenida Robert Smith, com o Picoto à frente",
       "kind": "kart",
       "x": 1208.9,
       "y": 42.4,
@@ -398,6 +413,7 @@
     {
       "id": "falperra",
       "name": "The Via da Falperra's roundabout, from the Rua do Espadanido",
+      "nome": "A rotunda da Via da Falperra, vista da Rua do Espadanido",
       "kind": "kart",
       "x": 880.5,
       "y": 36.2,
@@ -424,6 +440,7 @@
     {
       "id": "sameiro",
       "name": "The Sameiro, from the Picoto road",
+      "nome": "O Sameiro, da estrada do Picoto",
       "kind": "skyline",
       "x": 574.1,
       "y": 47.4,
@@ -450,6 +467,7 @@
     {
       "id": "estadio",
       "name": "The Estádio 1.º de Maio, at the foot of the Picoto road",
+      "nome": "O Estádio 1.º de Maio, ao fundo da estrada do Picoto",
       "kind": "kart",
       "x": 332.1,
       "y": 36.2,
@@ -476,6 +494,7 @@
     {
       "id": "viriato-amaral-nunes",
       "name": "Avenida Doutor Viriato Amaral Nunes",
+      "nome": "Avenida Doutor Viriato Amaral Nunes",
       "kind": "kart",
       "x": 28.6,
       "y": 45.8,
@@ -502,6 +521,7 @@
     {
       "id": "monte-da-forca",
       "name": "Rua do Monte da Forca, over the city",
+      "nome": "Rua do Monte da Forca, sobre a cidade",
       "kind": "kart",
       "x": -418.7,
       "y": 44.8,
@@ -528,6 +548,7 @@
     {
       "id": "couteiro",
       "name": "Rua do Couteiro",
+      "nome": "Rua do Couteiro",
       "kind": "kart",
       "x": -613,
       "y": 20.2,
@@ -554,6 +575,7 @@
     {
       "id": "conselheiro-lobato",
       "name": "Rua Conselheiro Lobato",
+      "nome": "Rua Conselheiro Lobato",
       "kind": "kart",
       "x": -227.9,
       "y": 2.5,
@@ -580,6 +602,7 @@
     {
       "id": "fujacal-west",
       "name": "Rua do Fujacal, at the Travessa and its billboards",
+      "nome": "Rua do Fujacal, junto à Travessa e aos painéis",
       "kind": "foot",
       "x": -242.3,
       "y": 10.1,
@@ -606,6 +629,7 @@
     {
       "id": "travessa-fujacal",
       "name": "Travessa do Fujacal, at the steps",
+      "nome": "Travessa do Fujacal, nas escadas",
       "kind": "foot",
       "x": -261,
       "y": 10.2,
@@ -632,6 +656,7 @@
     {
       "id": "alameda-fujacal",
       "name": "Alameda do Fujacal",
+      "nome": "Alameda do Fujacal",
       "kind": "foot",
       "x": -217.2,
       "y": 6.8,
@@ -658,6 +683,7 @@
     {
       "id": "lobato-pavement",
       "name": "Rua Conselheiro Lobato, on the pavement",
+      "nome": "Rua Conselheiro Lobato, no passeio",
       "kind": "foot",
       "x": 167.1,
       "y": 7.6,
@@ -684,6 +710,7 @@
     {
       "id": "lobato-crossing",
       "name": "Rua Conselheiro Lobato, at the crossing",
+      "nome": "Rua Conselheiro Lobato, na passadeira",
       "kind": "foot",
       "x": 277.9,
       "y": 10.6,
@@ -711,6 +738,7 @@
     {
       "id": "travessa-lobato",
       "name": "Travessa Conselheiro Lobato",
+      "nome": "Travessa Conselheiro Lobato",
       "kind": "foot",
       "x": -82.2,
       "y": 3.8,
@@ -737,6 +765,7 @@
     {
       "id": "lobato-east",
       "name": "Rua Conselheiro Lobato, from the Travessa, looking east",
+      "nome": "Rua Conselheiro Lobato, da Travessa, a olhar para nascente",
       "kind": "foot",
       "x": 4.7,
       "y": 4.3,

@@ -1,0 +1,48 @@
+{
+  "about": "The rounds of shots on the scorecard \"Braga real\" (task 003), oldest first: each one's label, the tasks it shows, a note, when it was shot, on which party-kart commit and braga-map version, and the size of each viewpoint's shot. The pictures are in party-kart's shots/<id>/; node tools/round.mjs <id> prepares them for the page.",
+  "rounds": [
+    {
+      "id": "2026-10-13-baseline",
+      "label": "Ponto de partida",
+      "date": "2026-10-13",
+      "tasks": [
+        "002"
+      ],
+      "note": "O jogo como estava antes de qualquer melhoria: a referência para as rondas seguintes.",
+      "made": "2026-10-13T21:53:14.991Z",
+      "game": "ac47bf0",
+      "map": "1.2.0",
+      "shots": {
+        "fujacal-start": [960, 720],
+        "imaculada-conceicao": [960, 720],
+        "liberdade": [960, 540],
+        "sao-joao-da-ponte": [960, 540],
+        "devesa": [960, 540],
+        "alvaro-carneiro": [960, 720],
+        "porfirio-da-silva": [960, 720],
+        "31-de-janeiro": [960, 720],
+        "joao-xxi": [960, 720],
+        "bernardo-sequeira": [960, 720],
+        "bom-jesus": [960, 720],
+        "pascoal-fernandes": [960, 720],
+        "egidio-guimaraes": [960, 720],
+        "robert-smith": [960, 720],
+        "robert-smith-picoto": [960, 720],
+        "falperra": [960, 720],
+        "sameiro": [960, 720],
+        "estadio": [960, 720],
+        "viriato-amaral-nunes": [960, 720],
+        "monte-da-forca": [960, 720],
+        "couteiro": [960, 720],
+        "conselheiro-lobato": [960, 720],
+        "fujacal-west": [960, 720],
+        "travessa-fujacal": [960, 720],
+        "alameda-fujacal": [960, 720],
+        "lobato-pavement": [960, 432],
+        "lobato-crossing": [960, 540],
+        "travessa-lobato": [960, 720],
+        "lobato-east": [960, 720]
+      }
+    }
+  ]
+}

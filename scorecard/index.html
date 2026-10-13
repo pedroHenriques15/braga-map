@@ -1,0 +1,491 @@
+<title>Braga real</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..800&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+/* A field book of the places: each card sets Braga and the game in one frame, split by a slider,
+   with five marks below. Granite greys, and Braga's red for how much it looks like Braga. */
+:root {
+  --bg: #e9ecec;
+  --panel: #f8f9f8;
+  --ink: #1a1f23;
+  --dim: #58636a;
+  --line: #cfd5d7;
+  --accent: #b5212d;
+  --accent-ink: #ffffff;
+  --r1: #e9d6d3; --r2: #dcaea8; --r3: #cf7f78; --r4: #c24b4b; --r5: #b5212d;
+  --good: #2f7a4f;
+  --warn: #9a6a12;
+  --display: 'Archivo', 'Arial Narrow', system-ui, sans-serif;
+  --body: 'Atkinson Hyperlegible', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #131719; --panel: #1b2023; --ink: #e6eaeb; --dim: #9aa6ac; --line: #2d3539;
+    --accent: #e0535c; --accent-ink: #1a0b0c;
+    --r1: #3a2a2b; --r2: #5c3134; --r3: #85383d; --r4: #b44148; --r5: #e0535c;
+    --good: #6cc191; --warn: #e0b45c;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #131719; --panel: #1b2023; --ink: #e6eaeb; --dim: #9aa6ac; --line: #2d3539;
+  --accent: #e0535c; --accent-ink: #1a0b0c;
+  --r1: #3a2a2b; --r2: #5c3134; --r3: #85383d; --r4: #b44148; --r5: #e0535c;
+  --good: #6cc191; --warn: #e0b45c;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font: 16px/1.5 var(--body); padding-inline: 16px; padding-block: 0 48px; }
+.wrap { max-width: 980px; margin: 0 auto; }
+a { color: inherit; }
+button, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.top { display: flex; flex-wrap: wrap; gap: 12px 24px; align-items: end; justify-content: space-between; padding-block: 28px 16px; border-bottom: 2px solid var(--ink); }
+h1 { font: 800 clamp(40px, 9vw, 72px)/0.9 var(--display); font-stretch: 125%; letter-spacing: -0.02em; margin: 0; text-wrap: balance; }
+h1 span { color: var(--accent); }
+.lede { margin: 8px 0 0; color: var(--dim); max-width: 46ch; }
+.pick { display: grid; gap: 6px; justify-items: end; }
+.pick label { font: 700 12px/1 var(--display); font-stretch: 112%; letter-spacing: 0.08em; text-transform: uppercase; color: var(--dim); }
+select { background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; max-width: 100%; }
+.pill { font-size: 13px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line); color: var(--dim); background: var(--panel); }
+.pill.ok { color: var(--good); border-color: currentColor; }
+.pill.off { color: var(--warn); border-color: currentColor; }
+
+.round { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 24px; padding-block: 16px; border-bottom: 1px solid var(--line); }
+.round h2 { font: 700 22px/1.2 var(--display); font-stretch: 112%; margin: 0; }
+.round p { margin: 4px 0 0; color: var(--dim); }
+.progress { text-align: right; font-variant-numeric: tabular-nums; }
+.progress b { font: 800 28px/1 var(--display); display: block; }
+.bar { height: 6px; background: var(--line); border-radius: 3px; overflow: hidden; margin-top: 6px; min-width: 120px; }
+.bar i { display: block; height: 100%; background: var(--accent); width: 0; }
+@media (max-width: 560px) { .round { grid-template-columns: 1fr; } .progress { text-align: left; } .pick { justify-items: start; } }
+
+.filters { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; padding-block: 14px; }
+.chip { border: 1px solid var(--line); background: var(--panel); border-radius: 999px; padding: 5px 12px; cursor: pointer; font-size: 14px; }
+.chip[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+.filters .sep { flex: 1; }
+
+.vp { padding-block: 22px 26px; border-bottom: 1px solid var(--line); display: grid; gap: 12px; }
+.vp[hidden] { display: none; }
+.vp-head { display: flex; flex-wrap: wrap; gap: 4px 12px; align-items: baseline; justify-content: space-between; }
+.vp h3 { font: 700 20px/1.2 var(--display); font-stretch: 106%; margin: 0; text-wrap: balance; min-width: 0; }
+.tags { font: 600 12px/1 var(--display); letter-spacing: 0.08em; text-transform: uppercase; color: var(--dim); }
+
+.compare { position: relative; width: 100%; max-width: 100%; border-radius: 6px; overflow: hidden; background: var(--line); --pos: 50%; touch-action: pan-y; }
+.compare img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; user-select: none; -webkit-user-drag: none; }
+.compare .photo { clip-path: inset(0 calc(100% - var(--pos)) 0 0); }
+.compare .split { position: absolute; top: 0; bottom: 0; left: var(--pos); width: 2px; margin-left: -1px; background: #fff; box-shadow: 0 0 0 1px rgba(0,0,0,0.35); pointer-events: none; }
+.compare .split::after { content: ''; position: absolute; top: 50%; left: 50%; width: 30px; height: 30px; margin: -15px 0 0 -15px; border-radius: 50%; background: #fff; box-shadow: 0 1px 4px rgba(0,0,0,0.4); }
+.compare input { position: absolute; inset: 0; width: 100%; height: 100%; margin: 0; opacity: 0; cursor: ew-resize; }
+.compare:focus-within { outline: 2px solid var(--accent); outline-offset: 2px; }
+.compare .lab { position: absolute; top: 10px; font: 700 12px/1 var(--display); letter-spacing: 0.08em; text-transform: uppercase; padding: 5px 8px; border-radius: 4px; background: rgba(0,0,0,0.6); color: #fff; pointer-events: none; }
+.compare .lab.l { left: 10px; }
+.compare .lab.r { right: 10px; }
+.compare .missing { position: absolute; inset: 0; display: grid; place-items: center; color: var(--dim); }
+
+.below { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; justify-content: space-between; font-size: 13px; color: var(--dim); }
+.below small { min-width: 0; }
+.link { background: none; border: 0; padding: 0; color: var(--ink); text-decoration: underline; text-underline-offset: 3px; cursor: pointer; font-size: 14px; }
+.link[aria-pressed="true"] { color: var(--accent); }
+
+.rate { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 6px; }
+.rate button { border: 1px solid var(--line); background: var(--panel); border-radius: 6px; padding: 8px 4px 6px; cursor: pointer; display: grid; gap: 2px; justify-items: center; min-height: 54px; }
+.rate button b { font: 800 22px/1 var(--display); font-variant-numeric: tabular-nums; }
+.rate button small { font-size: 11px; line-height: 1.2; color: var(--dim); text-align: center; }
+.rate button[aria-checked="true"] { border-color: transparent; }
+.rate button[aria-checked="true"][data-s="1"] { background: var(--r1); }
+.rate button[aria-checked="true"][data-s="2"] { background: var(--r2); }
+.rate button[aria-checked="true"][data-s="3"] { background: var(--r3); color: #fff; }
+.rate button[aria-checked="true"][data-s="4"] { background: var(--r4); color: #fff; }
+.rate button[aria-checked="true"][data-s="5"] { background: var(--r5); color: var(--accent-ink); }
+.rate button[aria-checked="true"] small { color: inherit; }
+.rate button:disabled { cursor: default; opacity: 0.55; }
+
+.others { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; font-size: 14px; color: var(--dim); min-height: 28px; }
+.others .avg { font: 800 18px/1 var(--display); color: var(--ink); font-variant-numeric: tabular-nums; }
+.person { display: inline-flex; gap: 6px; align-items: center; color: var(--ink); }
+.person img { width: 22px; height: 22px; border-radius: 50%; }
+.score { display: inline-grid; place-items: center; min-width: 22px; height: 22px; border-radius: 4px; font: 700 13px/1 var(--display); font-variant-numeric: tabular-nums; }
+.score[data-s="1"] { background: var(--r1); } .score[data-s="2"] { background: var(--r2); }
+.score[data-s="3"] { background: var(--r3); color: #fff; } .score[data-s="4"] { background: var(--r4); color: #fff; }
+.score[data-s="5"] { background: var(--r5); color: var(--accent-ink); }
+
+.note { display: grid; gap: 4px; }
+.note label { font-size: 13px; color: var(--dim); }
+.note textarea { width: 100%; min-height: 64px; resize: vertical; background: var(--panel); border: 1px solid var(--line); border-radius: 6px; padding: 8px 10px; }
+.note .state { font-size: 12px; color: var(--dim); min-height: 1.2em; }
+.comments { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+.comments li { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 8px; font-size: 14px; }
+.comments li img { width: 24px; height: 24px; border-radius: 50%; }
+.comments li p { margin: 0; overflow-wrap: anywhere; }
+.comments li b { font-weight: 700; margin-right: 6px; }
+
+.summary { padding-block: 32px 0; }
+.summary h2 { font: 800 28px/1.1 var(--display); font-stretch: 118%; margin: 0 0 6px; }
+.summary > p { color: var(--dim); margin: 0 0 14px; max-width: 65ch; }
+.scroll { overflow-x: auto; border: 1px solid var(--line); border-radius: 6px; background: var(--panel); }
+table { border-collapse: collapse; width: 100%; font-variant-numeric: tabular-nums; font-size: 14px; }
+th, td { padding: 7px 10px; text-align: right; border-bottom: 1px solid var(--line); white-space: nowrap; }
+th:first-child, td:first-child { text-align: left; white-space: normal; min-width: 180px; }
+thead th { font: 700 12px/1.2 var(--display); letter-spacing: 0.05em; text-transform: uppercase; color: var(--dim); vertical-align: bottom; }
+tr.area td { font-weight: 700; background: var(--bg); }
+td .n { color: var(--dim); font-size: 12px; margin-left: 4px; }
+td.hide { color: var(--dim); }
+
+.empty { padding-block: 40px; color: var(--dim); text-align: center; }
+footer { margin-top: 36px; padding-top: 14px; border-top: 1px solid var(--line); font-size: 12px; color: var(--dim); display: grid; gap: 6px; }
+footer p { margin: 0; max-width: 90ch; }
+@media (prefers-reduced-motion: no-preference) { .bar i { transition: width 0.4s ease; } }
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <h1>Braga <span>real</span></h1>
+      <p class="lede">A foto de cada sítio por cima do jogo, no mesmo sítio e para o mesmo lado. Arrasta para comparar e diz quanto se parece com Braga.</p>
+    </div>
+    <div class="pick">
+      <label for="round">Ronda</label>
+      <select id="round" disabled><option>A carregar…</option></select>
+      <span id="conn" class="pill">A ligar…</span>
+    </div>
+  </header>
+
+  <section class="round" id="roundInfo" aria-live="polite">
+    <div><h2 id="roundTitle">A carregar as rondas…</h2><p id="roundNote"></p></div>
+    <div class="progress" id="progress" hidden><b id="progressNum">0 de 0</b><span>avaliados por ti</span><div class="bar"><i id="progressBar"></i></div></div>
+  </section>
+
+  <nav class="filters" aria-label="Filtrar sítios">
+    <button class="chip" type="button" data-area="all" aria-pressed="true">Todos</button>
+    <button class="chip" type="button" data-area="route" aria-pressed="false">Percurso</button>
+    <button class="chip" type="button" data-area="shooter" aria-pressed="false">Fujacal</button>
+    <button class="chip" type="button" data-area="skyline" aria-pressed="false">Horizonte</button>
+    <span class="sep"></span>
+    <button class="chip" type="button" id="todo" aria-pressed="false" hidden>Só os que faltam</button>
+  </nav>
+
+  <main id="cards"><p class="empty">A carregar os sítios…</p></main>
+
+  <section class="summary" id="summary" hidden>
+    <h2>Resumo</h2>
+    <p>A média de cada sítio em cada ronda, de 1 (não é Braga) a 5 (juro que é real), e quantas pessoas o avaliaram. Na ronda aberta, só vês a média de um sítio depois de lhe dares a tua nota.</p>
+    <div class="scroll"><table id="table"></table></div>
+  </section>
+
+  <footer>
+    <p>Fotos © contribuidores do Mapillary, CC BY-SA 4.0: o autor e a ligação de cada uma estão por baixo dela.</p>
+    <p>O jogo é o Party Kart, feito com o mapa braga-map: © OpenStreetMap contributors (ODbL). Relevo: LiDAR, informação geográfica cedida pela Direção-Geral do Território (CC BY 4.0); para lá do mapa, Terrain Tiles (AWS Open Data): Europe terrain data produced using Copernicus data and information funded by the European Union - EU-DEM layers.</p>
+  </footer>
+</div>
+
+<script>
+(() => {
+  const $ = (s) => document.querySelector(s);
+  // A small DOM builder that only ever sets text: names and comments come from other people.
+  function h(tag, props = {}, ...kids) {
+    const el = document.createElement(tag);
+    for (const [k, v] of Object.entries(props)) {
+      if (v === undefined || v === null || v === false) continue;
+      if (k.startsWith('on')) el.addEventListener(k.slice(2), v);
+      else if (k === 'class') el.className = v;
+      else if (k === 'style') el.setAttribute('style', v);
+      else el.setAttribute(k, v === true ? '' : String(v));
+    }
+    for (const c of kids) if (c !== null && c !== undefined && c !== false) el.append(c);
+    return el;
+  }
+
+  const AREAS = { route: 'Percurso', shooter: 'Fujacal', skyline: 'Horizonte' };
+  const LEVELS = ['', 'Não é Braga', 'Pouco parecido', 'Parecido', 'Muito parecido', 'Juro que é real'];
+  const MAX_NOTE = 400;
+  const one = (x) => x.toLocaleString('pt-PT', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  const day = (d) => new Date(d + 'T12:00:00').toLocaleDateString('pt-PT', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  const S = {
+    views: [], rounds: [], round: null, area: 'all', todo: false,
+    db: null, user: null, uid: null, write: false, live: false,
+    scores: {}, // each rater's id → their rounds, as the store has them
+    overlay: {}, // this viewer's writes not yet back from the store: round → place → entry
+    ownExists: false, chain: Promise.resolve(), cards: new Map(),
+  };
+
+  // ---- What the store holds, checked: everything in it was written by someone else's page. ----
+  function clean(d) {
+    const out = {};
+    const rounds = d && typeof d.rounds === 'object' && d.rounds ? d.rounds : {};
+    for (const [r, places] of Object.entries(rounds)) {
+      if (!places || typeof places !== 'object') continue;
+      out[r] = {};
+      for (const [vp, e] of Object.entries(places)) {
+        if (!e || typeof e !== 'object') continue;
+        const s = Number.isInteger(e.s) && e.s >= 1 && e.s <= 5 ? e.s : null;
+        const c = typeof e.c === 'string' ? e.c.slice(0, MAX_NOTE) : '';
+        if (s || c) out[r][vp] = { s, c, at: Number(e.at) || 0 };
+      }
+    }
+    return out;
+  }
+  const latest = () => S.rounds[S.rounds.length - 1];
+  const isOpen = (r) => r === latest()?.id;
+  function mine(r, vp) {
+    return S.overlay[r]?.[vp] ?? (S.uid ? S.scores[S.uid]?.[r]?.[vp] : undefined);
+  }
+  // Every rater's entry for a place in a round, this viewer's own included.
+  function entries(r, vp) {
+    const out = [];
+    for (const [uid, rounds] of Object.entries(S.scores)) {
+      const e = uid === S.uid ? mine(r, vp) : rounds[r]?.[vp];
+      if (e) out.push({ uid, ...e });
+    }
+    if (S.uid && !S.scores[S.uid] && mine(r, vp)) out.push({ uid: S.uid, ...mine(r, vp) });
+    return out;
+  }
+  // Whether this viewer may see the others' marks for a place: always in a closed round, and in the
+  // open one once they've given theirs (or when they can't give one).
+  const shows = (r, vp) => !isOpen(r) || !S.write || !!mine(r, vp)?.s;
+
+  // ---- Loading the places and the rounds, published beside this page. ----
+  async function load() {
+    try {
+      const [v, r] = await Promise.all(['data/viewpoints.json', 'data/rounds.json'].map((f) => fetch(f).then((x) => { if (!x.ok) throw new Error(f); return x.json(); })));
+      S.views = v.viewpoints;
+      S.rounds = r.rounds;
+    } catch {
+      $('#cards').replaceChildren(h('p', { class: 'empty' }, 'Não foi possível carregar os sítios. Recarrega a página.'));
+      return;
+    }
+    if (!S.rounds.length) {
+      $('#roundTitle').textContent = 'Ainda não há rondas';
+      $('#cards').replaceChildren(h('p', { class: 'empty' }, 'Quando houver imagens do jogo, aparecem aqui ao lado das fotos.'));
+      return;
+    }
+    const sel = $('#round');
+    sel.replaceChildren(...[...S.rounds].reverse().map((r, i) => h('option', { value: r.id }, `${r.label}${i === 0 ? ' (aberta)' : ''}`)));
+    sel.disabled = S.rounds.length < 2;
+    sel.addEventListener('change', () => { S.round = sel.value; build(); });
+    S.round = latest().id;
+    build();
+    connect();
+  }
+
+  // ---- The cards, built once per round; refresh() fills in the marks. ----
+  function build() {
+    const r = S.rounds.find((x) => x.id === S.round);
+    const i = S.rounds.indexOf(r);
+    const before = i > 0 ? S.rounds[i - 1] : null;
+    $('#roundTitle').textContent = `${r.label}, ${day(r.date)}`;
+    const tasks = r.tasks.length ? ` Mostra ${r.tasks.length > 1 ? 'as tarefas' : 'a tarefa'} ${r.tasks.join(', ')}.` : '';
+    $('#roundNote').textContent = `${r.note}${tasks}${isOpen(r.id) ? '' : ' Esta ronda está fechada: as notas dão-se na mais recente.'}`;
+    S.cards.clear();
+    const cards = S.views.map((v) => card(v, r, before));
+    $('#cards').replaceChildren(...cards);
+    $('#summary').hidden = false;
+    refresh();
+  }
+
+  function card(v, r, before) {
+    const size = r.shots[v.id] || [v.photo.w, v.photo.h];
+    const shot = r.shots[v.id] ? `rounds/${r.id}/${v.id}.jpg` : null;
+    const prev = before?.shots[v.id] ? `rounds/${before.id}/${v.id}.jpg` : null;
+    const game = shot ? h('img', { class: 'shot', src: shot, alt: `O jogo: ${v.nome}`, loading: 'lazy', decoding: 'async' }) : h('div', { class: 'missing' }, 'Sem imagem do jogo nesta ronda');
+    const right = h('span', { class: 'lab r' }, 'Jogo');
+    const slider = h('input', { type: 'range', min: 0, max: 100, value: 50, step: 1, 'aria-label': 'Mostrar mais da foto ou mais do jogo', id: `slide-${v.id}` });
+    const frame = h('div', { class: 'compare', style: `aspect-ratio: ${size[0]} / ${size[1]}` },
+      game,
+      h('img', { class: 'photo', src: `photos/${v.id}.jpg`, alt: `A foto: ${v.nome}`, loading: 'lazy', decoding: 'async' }),
+      h('div', { class: 'split' }),
+      h('span', { class: 'lab l' }, 'Foto'), right, slider);
+    slider.addEventListener('input', () => frame.style.setProperty('--pos', slider.value + '%'));
+    for (const img of frame.querySelectorAll('img')) img.addEventListener('error', () => { img.hidden = true; });
+
+    let back = null;
+    if (prev && shot) {
+      back = h('button', { class: 'link', type: 'button', 'aria-pressed': 'false' }, `Ver a ronda anterior (${before.label})`);
+      back.addEventListener('click', () => {
+        const on = back.getAttribute('aria-pressed') !== 'true';
+        back.setAttribute('aria-pressed', String(on));
+        game.src = on ? prev : shot;
+        right.textContent = on ? `Jogo, ${before.label}` : 'Jogo';
+      });
+    }
+    const p = v.photo;
+    const credit = h('small', {}, 'Foto: ', h('a', { href: p.url, target: '_blank', rel: 'noopener' }, p.author), `, ${p.licence}, ${p.source === 'mapillary' ? 'Mapillary' : p.source}, ${p.date.slice(0, 4)}`);
+
+    const buttons = [1, 2, 3, 4, 5].map((s) => h('button', { type: 'button', role: 'radio', 'aria-checked': 'false', 'data-s': s, title: LEVELS[s], onclick: () => rate(v.id, s) },
+      h('b', {}, String(s)), h('small', {}, s === 1 || s === 5 ? LEVELS[s] : '')));
+    const others = h('div', { class: 'others' });
+    const area = h('textarea', { id: `c-${v.id}`, maxlength: MAX_NOTE, rows: 2, placeholder: 'Por exemplo: o prédio da esquerda é amarelo, não branco' });
+    const state = h('span', { class: 'state' });
+    let timer = 0;
+    area.addEventListener('input', () => { area.dataset.dirty = '1'; state.textContent = ''; clearTimeout(timer); timer = setTimeout(() => note(v.id, area, state), 1500); });
+    area.addEventListener('blur', () => { if (area.dataset.dirty) { clearTimeout(timer); note(v.id, area, state); } });
+    const comments = h('ul', { class: 'comments' });
+    const el = h('article', { class: 'vp', id: `vp-${v.id}` },
+      h('div', { class: 'vp-head' }, h('h3', {}, v.nome), h('span', { class: 'tags' }, v.areas.map((a) => AREAS[a]).join(' · '))),
+      frame,
+      h('div', { class: 'below' }, credit, back),
+      h('div', { class: 'rate', role: 'radiogroup', 'aria-label': `Quanto se parece com Braga: ${v.nome}` }, ...buttons),
+      others,
+      h('div', { class: 'note' }, h('label', { for: `c-${v.id}` }, 'O que está diferente?'), area, state),
+      comments);
+    S.cards.set(v.id, { el, v, buttons, others, area, state, comments });
+    return el;
+  }
+
+  // ---- Filling in the marks and comments, and the summary. ----
+  async function refresh() {
+    const r = S.round;
+    if (!r) return;
+    const ids = new Set(Object.keys(S.scores));
+    if (S.uid) ids.add(S.uid);
+    let ps = {};
+    if (S.user && ids.size) { try { ps = await S.user.profiles([...ids]); } catch { ps = {}; } }
+    const who = (uid) => {
+      const p = ps[uid];
+      return { name: uid === S.uid ? 'Tu' : (p && p.name) || 'Alguém', avatar: p && p.avatarUrl };
+    };
+    const open = isOpen(r);
+    let done = 0;
+    for (const { el, v, buttons, others, area, state, comments } of S.cards.values()) {
+      const m = mine(r, v.id);
+      if (m?.s) done++;
+      for (const b of buttons) {
+        b.setAttribute('aria-checked', String(m?.s === Number(b.dataset.s)));
+        b.disabled = !open || !S.write;
+      }
+      area.disabled = !open || !S.write;
+      area.hidden = !open && !m?.c;
+      area.previousElementSibling.hidden = area.hidden;
+      if (document.activeElement !== area && !area.dataset.dirty) area.value = m?.c || '';
+      const all = entries(r, v.id);
+      const rated = all.filter((e) => e.s);
+      if (!rated.length) others.replaceChildren(open && S.write && !m?.s ? 'Ainda ninguém avaliou este sítio.' : 'Sem notas.');
+      else if (!shows(r, v.id)) others.replaceChildren(`${rated.length === 1 ? 'Uma pessoa já avaliou' : `${rated.length} pessoas já avaliaram`}. As notas aparecem depois de dares a tua.`);
+      else {
+        const avg = rated.reduce((s, e) => s + e.s, 0) / rated.length;
+        others.replaceChildren(
+          h('span', {}, h('span', { class: 'avg' }, one(avg)), ` de média, ${rated.length} ${rated.length === 1 ? 'nota' : 'notas'}`),
+          ...rated.sort((a, b) => b.s - a.s).map((e) => { const w = who(e.uid); return h('span', { class: 'person' }, w.avatar ? h('img', { src: w.avatar, alt: '' }) : null, w.name, h('span', { class: 'score', 'data-s': e.s }, String(e.s))); }));
+      }
+      comments.replaceChildren(...all.filter((e) => e.c && e.uid !== S.uid).sort((a, b) => a.at - b.at).map((e) => {
+        const w = who(e.uid);
+        return h('li', {}, w.avatar ? h('img', { src: w.avatar, alt: '' }) : h('span'), h('p', {}, h('b', {}, w.name), e.c));
+      }));
+      el.hidden = (S.area !== 'all' && !v.areas.includes(S.area)) || (S.todo && !!m?.s);
+    }
+    const n = S.cards.size;
+    $('#progress').hidden = !(open && S.write);
+    $('#todo').hidden = !(open && S.write);
+    $('#progressNum').textContent = `${done} de ${n}`;
+    $('#progressBar').style.width = `${n ? (100 * done) / n : 0}%`;
+    summary();
+  }
+
+  function summary() {
+    const avgOf = (r, vp) => {
+      const rated = entries(r, vp).filter((e) => e.s);
+      return rated.length ? { a: rated.reduce((s, e) => s + e.s, 0) / rated.length, n: rated.length } : null;
+    };
+    const cell = (r, vp) => {
+      if (!shows(r.id, vp)) return h('td', { class: 'hide', title: 'Dá a tua nota primeiro' }, '·');
+      const x = avgOf(r.id, vp);
+      return x ? h('td', {}, one(x.a), h('span', { class: 'n' }, `(${x.n})`)) : h('td', { class: 'hide' }, '–');
+    };
+    // An area's average: its places' averages, each place counting once, when all of them show.
+    const areaCell = (r, key) => {
+      const vps = S.views.filter((v) => key === 'all' || v.areas.includes(key));
+      if (vps.some((v) => !shows(r.id, v.id))) return h('td', { class: 'hide', title: 'Avalia os sítios todos desta zona primeiro' }, '·');
+      const xs = vps.map((v) => avgOf(r.id, v.id)).filter(Boolean);
+      return xs.length ? h('td', {}, one(xs.reduce((s, x) => s + x.a, 0) / xs.length), h('span', { class: 'n' }, `(${xs.length} sítios)`)) : h('td', { class: 'hide' }, '–');
+    };
+    const head = h('tr', {}, h('th', {}, 'Sítio'), ...S.rounds.map((r) => h('th', {}, r.label, h('br'), day(r.date))));
+    const areas = [['all', 'Todos os sítios'], ['route', 'Percurso'], ['shooter', 'Fujacal'], ['skyline', 'Horizonte']]
+      .map(([k, label]) => h('tr', { class: 'area' }, h('td', {}, label), ...S.rounds.map((r) => areaCell(r, k))));
+    const rows = S.views.map((v) => h('tr', {}, h('td', {}, v.nome), ...S.rounds.map((r) => cell(r, v.id))));
+    $('#table').replaceChildren(h('thead', {}, head), h('tbody', {}, ...areas, ...rows));
+  }
+
+  // ---- Writing this viewer's marks: one document each, scores/<their id>, one write at a time. ----
+  function save(vp, patch) {
+    const r = S.round;
+    if (!S.write || !isOpen(r)) return Promise.resolve(false);
+    const prev = mine(r, vp) || { s: null, c: '' };
+    const entry = { s: patch.s !== undefined ? patch.s : prev.s, c: patch.c !== undefined ? patch.c : prev.c, at: Date.now() };
+    (S.overlay[r] ||= {})[vp] = entry;
+    refresh();
+    const ref = S.db.doc('scores/' + S.uid);
+    const run = async () => {
+      if (S.ownExists) await ref.update({ rounds: { [r]: { [vp]: entry } } });
+      else {
+        const rounds = {};
+        for (const [rr, places] of Object.entries(S.overlay)) rounds[rr] = { ...places };
+        await ref.set({ rounds });
+        S.ownExists = true;
+      }
+      return true;
+    };
+    const p = S.chain.then(run).catch((e) => { failed(e); return false; });
+    S.chain = p;
+    return p;
+  }
+  const rate = (vp, s) => save(vp, { s });
+  async function note(vp, area, state) {
+    const c = area.value.trim().slice(0, MAX_NOTE);
+    delete area.dataset.dirty;
+    if (c === (mine(S.round, vp)?.c || '')) return;
+    state.textContent = 'A guardar…';
+    state.textContent = (await save(vp, { c })) ? 'Guardado.' : 'Não ficou guardado.';
+  }
+  function failed(e) {
+    if (e && (e.code === 'invalid_argument' || e.code === 'not_granted' || e.code === 'revoked')) {
+      S.write = false;
+      setConn('off', 'Só leitura: pede para te convidarem como editor');
+    } else if (e && e.code === 'quota_exceeded') setConn('off', 'O espaço para notas acabou: avisa quem partilhou a página');
+    else setConn('off', 'Não ficou guardado: tenta outra vez');
+    S.overlay = {};
+    refresh();
+  }
+
+  // ---- The connection: who's looking, and whether they can mark. ----
+  function setConn(kind, text) { const c = $('#conn'); c.className = 'pill ' + kind; c.textContent = text; }
+  async function connect() {
+    const claude = window.claude;
+    if (!claude || !claude.use) { setConn('off', 'Só leitura: abre no claude.ai para avaliar'); return; }
+    const [db, user] = await Promise.all([claude.use('db'), claude.use('user')].map((p) => p.catch(() => null)));
+    S.user = user;
+    if (!db) { setConn('off', 'Só leitura: inicia sessão no claude.ai para avaliar'); return; }
+    S.db = db;
+    S.uid = user ? await user.id() : null;
+    const can = user ? await user.can('data.write') : null;
+    S.write = !!S.uid && can !== false;
+    setConn(S.write ? 'ok' : 'off', S.write ? 'Ligado: as tuas notas ficam guardadas' : 'Só leitura: pede para te convidarem como editor');
+    db.collection('scores').onSnapshot((snap) => {
+      const next = {};
+      for (const d of snap.docs) next[d.id] = clean(d.data());
+      S.scores = next;
+      if (S.uid && next[S.uid]) {
+        S.ownExists = true;
+        // Drop the writes the store now has.
+        for (const [r, places] of Object.entries(S.overlay)) for (const [vp, e] of Object.entries(places)) {
+          const got = next[S.uid][r]?.[vp];
+          if (got && got.at >= e.at) delete places[vp];
+        }
+      }
+      refresh();
+    }, (e) => { if (e && e.code === 'revoked') { S.write = false; setConn('off', 'Já não tens acesso a esta página'); } else setConn('off', 'Ligação perdida: recarrega a página'); refresh(); });
+  }
+
+  // ---- Filters. ----
+  for (const b of document.querySelectorAll('[data-area]')) b.addEventListener('click', () => {
+    S.area = b.dataset.area;
+    for (const x of document.querySelectorAll('[data-area]')) x.setAttribute('aria-pressed', String(x === b));
+    refresh();
+  });
+  $('#todo').addEventListener('click', () => { S.todo = !S.todo; $('#todo').setAttribute('aria-pressed', String(S.todo)); refresh(); });
+
+  load();
+})();
+</script>

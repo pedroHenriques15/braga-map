@@ -143,6 +143,8 @@ Steps:
   beside it, and the map's centre line runs along that edge, so the track overhangs the drop:
   task 026 (drafted). The retaining walls are plain granite (task 013), the flyovers' decks plain
   slabs (task 012).
-- **Before release:** braga-map needs a commit and a tag (`v1.1.0`), then party-kart's
-  `package.json` back from `file:../braga-map` to that tag. The peer id prefix is `pk29` now (the
-  track changed: its heights, its banks), so this build doesn't share rooms with the deployed one.
+- **Released** on 2026-10-13: braga-map `78c56db`, tagged `v1.1.0`; party-kart `8a97f32`, on it,
+  deployed to https://pedrohenriques15.github.io/party-kart/. The peer id prefix is `pk29` (the
+  track changed: its heights, its banks), so players on the old build must reload to race.
+- **Left for the owner:** the last box above, judged on the before-and-after page; then the task
+  moves to `done/` and 009 comes off the roadmap.

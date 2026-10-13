@@ -66,6 +66,7 @@ npm run tracks   # every track: tracks/<id>.js, and map/tracks.json for the page
 npm run world    # the world: world/base.js, world/tiles.js and a module per tile
 npm test         # the world and the tracks as the games read them, and DGT's data where fetched
 node tools/relief.mjs  # the ground checked: known places, bridges, and each track's profile
+node tools/refs.mjs    # each viewpoint's real photo, into .cache/refs/ (with Mapillary's free token)
 ```
 
 They need Node 22.18 or later. Run them in that order: `track.mjs` and `world.mjs` read the
@@ -101,6 +102,14 @@ in `tracks/` run through. All three need the LiDAR.
   Sameiro, the cross on the Picoto, the stadium, the Altice Forum, Makro, the Tourigalo's bull),
   picked out of the map by their OpenStreetMap ids.
 - `track.mjs` plans the tracks in `tracks.mjs`: below.
+- `refs/viewpoints.json` lists the viewpoints, the places where a game is set against the real
+  Braga (task 001): 29 cameras along the Volta dos Amigos, on foot in Fujacal, and on Bom Jesus
+  and the Sameiro, each at the spot, heading and height of a real photo (from Mapillary), with its
+  author, licence and link. `refs.mjs` fetches the photos into `.cache/refs/<id>.jpg`, cutting a
+  panorama to the viewpoint's own view, level; they're not committed. It needs Mapillary's free
+  client token, in `.cache/credentials.json` as `{ "mapillary": { "token": "MLY|…" } }` or in
+  `MAPILLARY_TOKEN`. `test/viewpoints.test.js` checks each viewpoint stands where its photo was
+  taken, at eye level, and at least 150 m from every waypoint and egg.
 
 ### How a track is planned
 
@@ -203,6 +212,10 @@ credit wherever the ODbL's goes: "Informação geográfica cedida pela Direção
 The horizon beyond the map is from Terrain Tiles on AWS Open Data, which over Braga are made from
 EU-DEM, and owe this credit too: "Europe terrain data produced using Copernicus data and
 information funded by the European Union - EU-DEM layers." `map().credit` gives all three.
+
+The viewpoints' photos (`refs/viewpoints.json`, fetched into `.cache/refs/`, not committed) are
+© Mapillary contributors, under CC BY-SA 4.0: wherever one is shown, show its author and link,
+which `photo` gives.
 
 Every source the map uses or may use, with its licence, its exact credit and what it may be used
 for, is in [docs/SOURCES.md](docs/SOURCES.md).

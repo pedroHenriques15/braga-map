@@ -162,3 +162,28 @@ block, and was 34 m low on the Picoto's top.
 The alternatives were the 2 m model everywhere (simpler, but the steps and walls along the
 streets go) and the 50 cm model in the tiles (four times the 2 m tiles' size, for detail the
 games' meshes can't show yet).
+
+## 009 · Viewpoints are set where open photos were taken
+
+*2026-10-13*
+
+The viewpoints the city is judged from (decision 005, task 001) are chosen where a good open photo
+of the place already exists online, and each stands exactly where its photo was taken: the
+camera's position, heading, pitch and roll as Mapillary's reconstruction gives them, at eye level
+(the track + 1.2 m for a kart, the ground + 1.7 m on foot). The owner chose this over picking
+favourite spots first and finding photos for them.
+
+- **Mapillary for the streets.** It had 33,764 photos round the route and Fujacal; Wikimedia
+  Commons had 24 near the route, Panoramax 3, and KartaView answered nothing. Its photos are CC
+  BY-SA 4.0: each viewpoint keeps its author and link, to show wherever it's shown. Its token is
+  the owner's, kept out of git in `.cache/credentials.json`.
+- **The list is committed, the photos aren't.** `refs/viewpoints.json` holds the viewpoints and
+  their credits; `tools/refs.mjs` fetches the photos into `.cache/refs/`, until task 007 decides
+  where images live.
+- **The friends' houses stay out of them:** 150 m from every waypoint and egg, never looking at one
+  within 300 m, checked by `test/viewpoints.test.js`; nowhere says which places that left out.
+- **A photo the owner or a friend takes** from the same place and heading (task 008) may replace
+  one later; Google Street View never (decision 006).
+
+The alternative, the owner's and the friends' favourite spots, would have waited on the photo walk,
+and a spot with no photo can't be judged.

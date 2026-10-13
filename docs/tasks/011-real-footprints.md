@@ -68,3 +68,8 @@ street), seeded RNG 4242. A filled building is flagged `filled` in the tiles.
 - From task 005: DGT's `MAPACONST-2024` (building outlines from the LiDAR, over 10 m²) is another
   source of footprints, open under CC BY 4.0 in the CDD; not fetched yet. Microsoft's footprints are
   CDLA-Permissive-2.0, confirmed on 2026-10-13 (`docs/SOURCES.md`).
+- From task 001 (2026-10-13): invented houses stand in real streets, where the photos show road,
+  a wall or a landmark. In the game the camera stands inside one at `sao-joao-da-ponte` (on the
+  roundabout) and `alameda-fujacal`; one stands in the street 6 m ahead at `lobato-east`, others
+  where the photo shows a painted wall at `viriato-amaral-nunes` and in front of the stadium at
+  `estadio`. They're the viewpoints to look at first; `refs/viewpoints.json` has them.

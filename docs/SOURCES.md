@@ -149,6 +149,48 @@ millimetre (the test).
 - **Fetched:** the 855 polygons that touch the map's box, whole, as GeoJSON
   (`.cache/dgt/cos2025.json`, 18 MB).
 
+## For the viewpoints
+
+The real photos the game is set against (task 001, `refs/viewpoints.json`). Only their list is
+committed; `node tools/refs.mjs` fetches the photos into `.cache/refs/`.
+
+### Mapillary
+
+- **What:** street-level photos, each with its camera's position and rotation as Mapillary's
+  reconstruction computes them (`computed_geometry`, `computed_rotation`). Checked on 2026-10-13
+  within about 150 m of the Volta dos Amigos and over the shooter's area: 33,764 photos. Most are
+  from phones on a car's dashboard in 2018–2019 (one contributor took half), a few hundred on foot
+  in 2024. 4,296 are 360° panoramas (GoPro Max): sharp and level ones taken on foot with a pole in
+  July 2024 on the Avenida da Liberdade, São João da Ponte, the Devesa and through Fujacal, and
+  others from a bicycle helmet in March 2026, blurred, tilted, and with headings that can't be
+  trusted. Most of the route has photos; the Avenida Doutor António Alves Palha's are all of
+  the verge.
+- **Access:** the Graph API (`https://graph.mapillary.com/images?bbox=…`, at most 2,000 photos a
+  request) with a free client token from https://www.mapillary.com/dashboard/developers, kept out
+  of git in `.cache/credentials.json` as `{ "mapillary": { "token": "MLY|…" } }`, or in
+  `MAPILLARY_TOKEN`. A photo's file links are signed and expire: `refs.mjs` asks for them each
+  time.
+- **Licence:** the photos are CC BY-SA 4.0. The map features it detects in them (signs, lamps) are
+  under Mapillary's own terms, which it can revoke, not an open licence.
+- **Credit:** "© Mapillary contributors, CC BY-SA 4.0", with each photo's author and link
+  (`photo` in `refs/viewpoints.json` has both).
+- **May be used for:** the photos as references, with the credit and link, and their cameras'
+  positions to place the viewpoints. The detected features never get copied into this
+  repository; they may guide someone mapping those things in OpenStreetMap, which then brings them
+  here.
+- **Used:** all 29 viewpoints' photos.
+
+### Checked and not used
+
+- **Wikimedia Commons** (below) for the streets: of its 1,594 geotagged photos over the route's
+  box, 24 were taken within 80 m of the route and 150 m or more from any waypoint, mostly
+  close-ups of monuments and tiles. Some are placed kilometres out (photos of Bom Jesus put in the
+  city).
+- **Panoramax** (`https://api.panoramax.xyz/api/search`, open, CC BY-SA 4.0 on its OSM-France
+  instance): 3 photos in the route's box.
+- **KartaView** (`https://api.openstreetcam.org/2.0/photo/`): every query near Braga timed out or
+  answered "Restricted access" on 2026-10-13.
+
 ## Not fetched
 
 ### Microsoft's building footprints
@@ -174,17 +216,6 @@ millimetre (the test).
 - **Credit:** each photo's author, licence and link, wherever it's used as a texture.
 - **May be used for:** reference, always. Textures, with the credit; a CC BY-SA photo makes the
   texture CC BY-SA.
-
-### Mapillary
-
-- **What:** street-level photos. Coverage of Braga not checked: its API needs a free client
-  token, which task 001 asks for.
-- **Licence:** the photos are CC BY-SA 4.0. The map features it detects in them (signs, lamps) are
-  under Mapillary's own terms, which it can revoke, not an open licence.
-- **Credit:** "© Mapillary contributors, CC BY-SA 4.0", with a link to each photo.
-- **May be used for:** the photos as references, with the credit and link. The detected features
-  never get copied into this repository; they may guide someone mapping those things in
-  OpenStreetMap, which then brings them here.
 
 ### The owner's and the friends' photos
 

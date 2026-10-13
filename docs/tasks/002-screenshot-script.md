@@ -68,3 +68,10 @@ holds only `deploy.sh`).
 - Setting the budget's numbers: task 004.
 
 ## Notes
+
+- From task 001 (2026-10-13): `?view=` sets the camera's position and aim but not its field of
+  view, which stays at the camera's 68° (vertical). Each viewpoint's `fov` is its photo's vertical
+  field of view (33–60°), so a shot should set `camera.fov` from it, and take the photo's shape
+  (a phone's 4:3, a panorama's cut 16:9, or 20:9), or be cropped to it. Starting a race alone, then
+  waiting 6 s, gave a still scene from `?view=` in about 8 s a viewpoint (Playwright, Chromium
+  headless with `--use-angle=d3d11`); the HUD and the race's own banners are in the shot.

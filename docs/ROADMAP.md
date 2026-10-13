@@ -13,15 +13,13 @@ holds ideas with no task yet. Settled decisions go to [DECISIONS.md](DECISIONS.m
 | The library | braga-map is a package for games: the world in 500 m tiles grouped in six sections (`index.js`, `world/`), and the tracks planned on it (`tracks/`). party-kart loads it, pinned to a tag (`v1.1.0` since task 009) |
 | The kart race's city | Real-width streets (the track never under 9 m), granite kerbs, calçada, lane lines, zebra crossings, traffic lights and bus stops from OSM, buildings at their place with guessed heights and hashed colours, trees, the Rio Este and its bridges, the hills 15 km round, Bom Jesus and the Sameiro (twice their size), the Picoto's cross, the Estádio 1.º de Maio, the Tourigalo, Makro and the Altice Forum's signs. The ground as it is (task 009): the streets tip sideways, the pavements meet the ground, retaining walls where it's higher, buildings stepped on their slopes. The first four-point plan (skyline, street level, real widths, landmarks) was done on 2026-10-13: "Braga as it is", braga-map `017bdd4` and party-kart `1d7a921` |
 | **In flight** | Braga's own pavement pattern (the calçada drawn is Lisbon's), and a pale patch near São João da Ponte, in a party-kart session |
-| Realism, measured | Not yet: no viewpoints, no scorecard, no budget (Phase 1) |
+| Realism, measured | 29 viewpoints, each set where a real photo was taken (task 001, `refs/viewpoints.json`, decision 009): along the Volta dos Amigos, on foot in Fujacal, and of Bom Jesus and the Sameiro. No shots of them yet, no scorecard, no budget (Phase 1) |
 
 ## Phase 1 · See it: references, the scorecard and the budget
 
 Before changing the city, know what the real one looks like, how close the game is, and how much
 a phone can draw. Everything after this is checked against it.
 
-- **001** Viewpoints: 20–30 places on the route, in the shooter's area and of the skyline, each
-  with a real photo.
 - **002** A script that shoots every viewpoint in the game, with the frame's cost.
 - **003** The scorecard: a shared page where the friends rate each viewpoint, round after round.
 - **004** The budget: what a phone can draw, measured, and written down.
@@ -74,13 +72,10 @@ clipping and the silence round you. It needs none of the phases above.
 
 Phase 1 comes first, but not all of it waits on itself:
 
-- **Now, side by side:** 001 (viewpoints), 004's reading of the code, 006 (audit), 008 (the
-  photo walk, the owner's), and the answers to 007 and 015.
-- **The route's direction first:** 027 changes which way the race goes on a seventh of the loop,
-  so 001's viewpoints along the route are placed on the route it makes; the ones on foot and of
-  the skyline needn't wait.
-- **Then:** 002 once 001 has its viewpoints, 003 once 002 has a baseline, and 004's
-  measurements with 002.
+- **Now, side by side:** 002 (the shots, now that 001's viewpoints are placed on 027's route),
+  004's reading of the code, 006 (audit), 008 (the photo walk, the owner's), and the answers to
+  007 and 015.
+- **Then:** 003 once 002 has a baseline, and 004's measurements with 002.
 - **Phase 2's data tasks** can start before the scorecard, now that 005 has fetched their data:
   009 first, then 010 and 011 on it. Each one is checked on the scorecard when it lands.
 - **The shooter's area** goes first in every task of Phases 2–4, once 015 settles its edges.

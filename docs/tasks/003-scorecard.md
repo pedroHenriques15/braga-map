@@ -64,3 +64,10 @@ in `../party-kart/shots/<round>/`.
 - Fixing what the comments find: each becomes its own task.
 
 ## Notes
+
+- From task 002 (2026-10-13): a round is `../party-kart/shots/<date>-<label>/`: `high/<id>.png`
+  and `low/<id>.png`, each its photo's shape and 720 pixels high; `stats.json` (`round`, `made`,
+  the party-kart commit as `game`, braga-map's version as `map`, the GPU, and each shot's cost
+  under `shots.<quality>.<id>`); and `index.html`, a sheet of photo, shot and the round before's.
+  The photos aren't copied into the round: they're `.cache/refs/<id>.jpg` here. The baseline is
+  `2026-10-13-baseline`.

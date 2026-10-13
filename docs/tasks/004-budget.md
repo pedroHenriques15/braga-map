@@ -79,3 +79,13 @@ Steps:
   to 117k on Low; the start view from 885k to 1,065k on High. The city builds about 0.6 s slower.
   The track's 48 tiles are 4.1 MB (1.2 MB gzipped), with the ground every 2 m on 18 of them. The
   land's detail near the road (`band` and `tol` in `city.ts`) is the first thing to trade.
+- From task 002 (2026-10-13): `node scripts/shots.mjs <label>` in party-kart records, per
+  viewpoint and quality, the build time (loading the tiles from the local dev server and
+  building), draw calls, triangles, and the number of textures and geometries: not texture memory.
+  It shoots High and Low only; Medium is one word in its `QUALITIES`. Its frame time is 60 frames
+  drawn back to back, the middle of three runs. On the owner's PC (RTX 4060 Ti, 1 pixel per pixel)
+  that's 0.2–2.5 ms on both tiers, varying by about 1 ms from run to run, so it can't tell the
+  tiers apart there: the phone (step 2) has to give the frame rate. Draw calls and triangles don't
+  vary between runs. Baseline (`shots/2026-10-13-baseline/stats.json`): High 48–190 calls,
+  0.76–1.07 M triangles, built in 1.3–1.4 s; Low 33–173 calls, 0.42–0.53 M triangles, 0.7–0.8 s.
+  High's 2× pixel ratio on a sharp screen isn't in these numbers.

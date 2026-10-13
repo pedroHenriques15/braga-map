@@ -210,3 +210,27 @@ not use (`tools/track.mjs`, task 027). The planner fails a loop that breaks one,
 The alternative, any street either way, made the start go the wrong way down the Rua do Fujacal
 and the race take the Via da Falperra's roundabout the wrong way round: anyone who drives in Braga
 sees it.
+
+## 011 · A round of shots is the city alone, the same every time
+
+*2026-10-13*
+
+Every task that changes the look is judged by shooting the viewpoints again (decision 005), so a
+round has to differ from the one before only where the city did. party-kart's
+`scripts/shots.mjs` (task 002) shoots them with `?scenery`: the city built as a race builds it,
+with no menus, karts, HUD or race, its textures' noise seeded and its animations held at 0 s.
+Two runs on the same tree give identical PNGs.
+
+- **The photo's frame.** Each shot takes its viewpoint's field of view and its photo's shape,
+  720 pixels high, so shot and photo can be set side by side or over each other.
+- **Its own dev server.** The script never uses one already running: Vite doesn't watch
+  `node_modules`, and one started before braga-map was last installed serves the old map.
+- **No network.** Everything off the dev server is refused, and nothing asks for it.
+- **The baseline** is `shots/2026-10-13-baseline/` in party-kart (ignored by git, 24 MB), shot
+  on party-kart `ac47bf0` and braga-map v1.2.0. Being deterministic, it can be shot again from
+  that commit.
+- **Changing how shots are taken** (the light, the shadows' reach, the size) makes rounds
+  incomparable: shoot a new baseline with it, and say so in the round's label.
+
+The alternative, a race started alone and its camera held with `?view=`, put the HUD, the
+countdown and moving karts in the shot, and needed PeerJS's server, so the internet.

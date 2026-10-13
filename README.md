@@ -109,7 +109,9 @@ in `tracks/` run through. All three need the LiDAR.
   panorama to the viewpoint's own view, level; they're not committed. It needs Mapillary's free
   client token, in `.cache/credentials.json` as `{ "mapillary": { "token": "MLY|…" } }` or in
   `MAPILLARY_TOKEN`. `test/viewpoints.test.js` checks each viewpoint stands where its photo was
-  taken, at eye level, and at least 150 m from every waypoint and egg.
+  taken, at eye level, and at least 150 m from every waypoint and egg. party-kart's
+  `node scripts/shots.mjs <label>` shoots its city from every viewpoint, at the photo's field of
+  view and shape, into a round beside the photos and the round before (task 002, decision 011).
 
 ### How a track is planned
 

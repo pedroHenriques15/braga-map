@@ -267,7 +267,7 @@ const game = JSON.parse(fs.readFileSync(path.join(ROOT, 'tools/first-track.json'
 const km = (o) => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, Math.round(v)]));
 
 const data = {
-  credit: '© OpenStreetMap contributors (ODbL). Relevo: Terrain Tiles (AWS Open Data).',
+  credit: '© OpenStreetMap contributors (ODbL). Relevo: Terrain Tiles (AWS Open Data). Europe terrain data produced using Copernicus data and information funded by the European Union - EU-DEM layers.',
   osmTime: base.osm3s.timestamp_osm_base,
   origin: { lat: LAT0, lon: LON0, kx: KX, kz: KZ },
   ext: EXT, core: CORE,

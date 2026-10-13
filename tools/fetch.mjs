@@ -1,12 +1,17 @@
 // Downloads what the map of Braga is made of: OpenStreetMap data through the Overpass API, and
 // elevation tiles (Terrain Tiles, on AWS Open Data). It keeps them in .cache/ for the other scripts.
+// DGT's open data (docs/SOURCES.md) comes only when it's named, into .cache/dgt/: the 2025 LiDAR
+// (`lidar`, about 1.7 GB, with the CDD's free account), the 2025 orthophoto (`ortho`, about 60 MB)
+// and the COS2025 land use (`cos`).
 //
-// node tools/fetch.mjs            everything
+// node tools/fetch.mjs            everything but DGT's
 // node tools/fetch.mjs trees      only what's named (base, buildings, admin, pois, trees, street,
-//                                 dem, horizon)
+//                                 dem, horizon, lidar, ortho, cos)
 import fs from 'node:fs';
 import path from 'node:path';
-import { CACHE as cache } from './geo.mjs';
+import https from 'node:https';
+import { pipeline } from 'node:stream/promises';
+import { CACHE as cache, LAT0, LON0, KX, KZ, P, unP } from './geo.mjs';
 
 fs.mkdirSync(path.join(cache, 'osm'), { recursive: true });
 fs.mkdirSync(path.join(cache, 'dem'), { recursive: true });
@@ -131,3 +136,207 @@ for (let y = hy(lat0 + dLat); y <= hy(lat0 - dLat) && wanted('horizon'); y++) {
   }
 }
 if (m) console.log(`horizon: ${m} tiles`);
+
+// ---- DGT's open data, only when named ----
+
+const dgtParts = ['lidar', 'ortho', 'cos'].filter((p) => only.includes(p));
+if (dgtParts.length) {
+  const { DGT, ORTHO_PX, fromTM, tileBox, tileKey, tilesAlong, tilesOver, toTM } = await import('./dgt.mjs');
+  const amigos = (await import('../tracks/amigos.js')).default;
+  fs.mkdirSync(DGT, { recursive: true });
+
+  // Where the detail goes first (decision 003): the box a game draws round the Volta dos Amigos,
+  // and the shooter's streets in Fujacal (task 015 settles their edge).
+  const SHOOTER = { x0: -350, x1: 350, z0: 600, z1: 1050 };
+  const boxTiles = tilesOver(amigos.box);
+  // The point cloud is heavier (about 120 MB a tile): only along the route, 200 m each side, over
+  // the shooter's area, and where the map's (0, 0) is, for the check in test/sources.test.js.
+  const lazTiles = [...new Set([...tilesAlong(amigos.points.map(({ p }) => [p[0], p[2]]), 200), ...tilesOver(SHOOTER), tileKey(...toTM(0, 0))])].sort();
+
+  // The orthophoto, 25 cm, from DGT's WMS: a JPEG per tile, on the LiDAR's own tiles. (The
+  // cloud-optimised GeoTIFFs it's made from need the CDD's account; the WMS doesn't.)
+  const WMS = 'https://cartografia.dgterritorio.gov.pt/wms/ortos2025?service=WMS&version=1.3.0&request=GetMap&layers=Ortos2025-RGB&styles=&format=image/jpeg';
+  const getJPEG = async (url, what) => {
+    for (let attempt = 1; ; attempt++) {
+      const res = await fetch(url, { headers: { 'user-agent': UA } });
+      const buf = Buffer.from(await res.arrayBuffer());
+      if (res.ok && buf[0] === 0xff && buf[1] === 0xd8) return buf;
+      if (attempt === 4) throw new Error(`${what}: the WMS answered ${res.status} ${buf.subarray(0, 200)}`);
+      await sleep(10000 * attempt);
+    }
+  };
+  if (dgtParts.includes('ortho')) {
+    const dir = path.join(DGT, 'ortho');
+    fs.mkdirSync(dir, { recursive: true });
+    let got = 0, bytes = 0;
+    for (const key of boxTiles) {
+      const file = path.join(dir, key + '.jpg');
+      if (fs.existsSync(file)) continue;
+      const b = tileBox(key);
+      const buf = await getJPEG(`${WMS}&crs=EPSG:3763&bbox=${b.e0},${b.n0},${b.e1},${b.n1}&width=${ORTHO_PX}&height=${ORTHO_PX}`, `orthophoto ${key}`);
+      fs.writeFileSync(file, buf);
+      got++, bytes += buf.length;
+      await sleep(1000);
+    }
+    // A cut 80 m across round the map's (0, 0), in latitude and longitude, which DGT's server
+    // projects with its own software: the test checks the tiles above against it.
+    const C = 80, px = 320, dLat = C / KZ / 2, dLon = C / KX / 2;
+    fs.writeFileSync(path.join(dir, 'check-4326.jpg'), await getJPEG(`${WMS}&crs=EPSG:4326&bbox=${LAT0 - dLat},${LON0 - dLon},${LAT0 + dLat},${LON0 + dLon}&width=${px}&height=${px}`, 'the check'));
+    fs.writeFileSync(path.join(dir, 'check-4326.json'), JSON.stringify({ lat0: LAT0, lon0: LON0, size: C, px }));
+    console.log(`ortho: ${got} tiles, ${(bytes / 1e6).toFixed(0)} MB (${boxTiles.length} in the box)`);
+  }
+
+  // The land use, COS2025, from DGT's OGC API: every polygon over the map's box, as GeoJSON.
+  if (dgtParts.includes('cos')) {
+    const features = [];
+    let url = `https://ogcapi.dgterritorio.gov.pt/collections/cos2025v1/items?f=json&bbox=${W},${S},${E},${N}&limit=200`;
+    while (url) {
+      const res = await fetch(url, { headers: { 'user-agent': UA } });
+      if (!res.ok) throw new Error(`COS2025: ${res.status} ${(await res.text()).slice(0, 200)}`);
+      const page = await res.json();
+      features.push(...page.features);
+      url = page.features.length ? page.links.find((l) => l.rel === 'next')?.href : null;
+    }
+    const text = JSON.stringify({ type: 'FeatureCollection', features });
+    fs.writeFileSync(path.join(DGT, 'cos2025.json'), text);
+    console.log(`cos: ${features.length} areas, ${(text.length / 1e6).toFixed(1)} MB`);
+  }
+
+  // The LiDAR: the terrain and surface models at 50 cm over the box, and the point cloud on the
+  // tiles above. DGT's tile index is open; the downloads need the CDD's account.
+  if (dgtParts.includes('lidar')) {
+    const cdd = await cddLogin();
+    const want = { 'MDT-50cm': ['.tif', boxTiles], 'MDS-50cm': ['.tif', boxTiles], LAZ: ['.laz', lazTiles] };
+    const record = {};
+    for (const [collection, [ext, keys]] of Object.entries(want)) {
+      const items = await cddTiles(cdd, collection, keys);
+      fs.mkdirSync(path.join(DGT, collection), { recursive: true });
+      let got = 0, bytes = 0;
+      for (const key of keys) {
+        const it = items.get(key);
+        if (!it) throw new Error(`${collection}: DGT has no tile at ${key}`);
+        const file = path.join(DGT, collection, key + ext);
+        if (!(fs.existsSync(file) && fs.statSync(file).size === it.size)) {
+          await cdd.download(async (fresh) => (fresh ? (await cddTiles(cdd, collection, [key])).get(key) : it).href, file, it.size);
+          got++, bytes += it.size;
+          await sleep(2000);
+        }
+        (record[collection] ??= {})[key] = { id: it.id, size: it.size, published: it.published };
+      }
+      console.log(`${collection}: ${got} tiles, ${(bytes / 1e6).toFixed(0)} MB (${keys.length} wanted)`);
+    }
+    // Which of DGT's tiles, and which version, each file is.
+    fs.writeFileSync(path.join(DGT, 'lidar.json'), JSON.stringify(record, null, 1));
+  }
+
+  // DGT's tiles in a collection, by their key here: id, size, when published and the CDD's link,
+  // which the CDD makes anew for each search, so the search is made in the session that downloads.
+  async function cddTiles(cdd, collection, keys) {
+    const corners = keys.flatMap((k) => { const b = tileBox(k); return [unP(...fromTM(b.e0, b.n0)), unP(...fromTM(b.e1, b.n1))]; });
+    const lats = corners.map((c) => c[0]), lons = corners.map((c) => c[1]);
+    const found = await cdd.search({ collections: [collection], bbox: [Math.min(...lons), Math.min(...lats), Math.max(...lons), Math.max(...lats)], limit: 200 });
+    // Each tile by its centre, from its bbox in longitude and latitude: the one field every
+    // collection has (the models give no `proj:bbox`, and their `proj:geometry` isn't in EPSG:3763).
+    // The point cloud's bbox has heights too: [w, s, low, e, n, high].
+    const items = new Map();
+    for (const f of found.features) {
+      const b = f.bbox, [w, s, e, n] = b.length === 6 ? [b[0], b[1], b[3], b[4]] : b;
+      items.set(tileKey(...toTM(...P({ lat: (s + n) / 2, lon: (w + e) / 2 }))), { id: f.id, size: f.properties['file:size'], published: f.properties.published, href: f.assets.data.href });
+    }
+    return items;
+  }
+}
+
+// The CDD's downloads need its free account: a login on its Keycloak, then a session cookie that
+// lasts half an hour. The username and password are the owner's, kept out of git in
+// .cache/credentials.json as { "cdd": { "username": "…", "password": "…" } }.
+async function cddLogin() {
+  const file = path.join(cache, 'credentials.json');
+  const { username, password } = (fs.existsSync(file) && JSON.parse(fs.readFileSync(file, 'utf8')).cdd) || {};
+  if (!username || !password) throw new Error(`The LiDAR needs a free account at https://cdd.dgterritorio.gov.pt: put { "cdd": { "username": "…", "password": "…" } } in ${file}.`);
+  const jar = new Map();
+  // One request with only the headers given, not fetch(): fetch adds `sec-fetch-mode: cors` to
+  // every request, can't be told not to, and the CDD answers a download that has it with a 500.
+  const request = (url, { method = 'GET', headers = {}, body } = {}) => new Promise((ok, no) => {
+    const req = https.request(url, { method, headers: body ? { ...headers, 'content-length': Buffer.byteLength(body) } : headers }, ok);
+    req.on('error', no);
+    req.end(body);
+  });
+  const text = async (res) => { let s = ''; for await (const c of res) s += c; return s; };
+  const ok = (res) => res.statusCode >= 200 && res.statusCode < 300;
+  // A request that follows redirects itself, sending each host only its own cookies.
+  async function go(url, init = {}) {
+    for (let hop = 0; hop < 12; hop++) {
+      const host = new URL(url).host, cookies = jar.get(host) ?? new Map();
+      const headers = { 'user-agent': UA, accept: '*/*', ...init.headers };
+      if (cookies.size) headers.cookie = [...cookies].map(([k, v]) => `${k}=${v}`).join('; ');
+      const res = await request(url, { ...init, headers });
+      for (const c of res.headers['set-cookie'] ?? []) {
+        const [pair, ...attrs] = c.split(';'), i = pair.indexOf('='), name = pair.slice(0, i).trim(), value = pair.slice(i + 1).trim();
+        if (!value || attrs.some((a) => /^\s*max-age=0\s*$/i.test(a))) cookies.delete(name);
+        else cookies.set(name, value);
+      }
+      jar.set(host, cookies);
+      const to = res.headers.location;
+      if (res.statusCode >= 300 && res.statusCode < 400 && to) {
+        res.resume();
+        url = new URL(to, url).href;
+        init = {};
+        continue;
+      }
+      return { res, url };
+    }
+    throw new Error(`Too many redirects from ${url}`);
+  }
+  async function login() {
+    const page = await go('https://cdd.dgterritorio.gov.pt/auth/login');
+    // Still logged in: the CDD sends the login straight back to itself.
+    if (new URL(page.url).host === 'cdd.dgterritorio.gov.pt') return void page.res.resume();
+    const html = await text(page.res);
+    const form = html.match(/<form\b[^>]*\bid="kc-form-login"[^>]*>([\s\S]*?)<\/form>/);
+    const action = form?.[0].match(/\baction="([^"]+)"/)?.[1].replaceAll('&amp;', '&');
+    if (!action) throw new Error(`The CDD's login page isn't what fetch.mjs knows (${page.url}).`);
+    const fields = new URLSearchParams();
+    for (const [input] of form[1].matchAll(/<input\b[^>]*type="hidden"[^>]*>/g)) fields.set(input.match(/\bname="([^"]*)"/)?.[1] ?? '', input.match(/\bvalue="([^"]*)"/)?.[1] ?? '');
+    fields.set('username', username);
+    fields.set('password', password);
+    const done = await go(action, { method: 'POST', headers: { 'content-type': 'application/x-www-form-urlencoded' }, body: fields.toString() });
+    done.res.resume();
+    if (new URL(done.url).host !== 'cdd.dgterritorio.gov.pt') throw new Error(`The CDD didn't accept the username and password in ${file}.`);
+  }
+  await login();
+  console.log('lidar: logged in to the CDD');
+  return {
+    // The CDD's tile index, in the session.
+    async search(query) {
+      const { res } = await go('https://cdd.dgterritorio.gov.pt/dgt-be/v1/search', { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(query) });
+      const body = await text(res);
+      if (!ok(res)) throw new Error(`The CDD's tile index: ${res.statusCode} ${body.slice(0, 200)}`);
+      return JSON.parse(body);
+    },
+    // A tile to a file, from link(fresh), its link: the CDD sends it on to the file's own signed
+    // link on its storage. Each link works once, so a try after the first asks for a fresh one. A
+    // trip to the login means the session ran out: log in again. Other errors: wait and try again,
+    // then say what the server said.
+    async download(link, to, size) {
+      let said = '';
+      for (let attempt = 1; attempt <= 3; attempt++) {
+        const { res, url } = await go(await link(attempt > 1)), type = res.headers['content-type'] ?? '';
+        if (ok(res) && !/^(text\/html|application\/json)/.test(type)) {
+          await pipeline(res, fs.createWriteStream(to + '.part'));
+          if (fs.statSync(to + '.part').size === size) return fs.renameSync(to + '.part', to);
+          said = `${fs.statSync(to + '.part').size} bytes of ${size}`;
+          fs.rmSync(to + '.part');
+        } else if (new URL(url).host === 'auth.cdd.dgterritorio.gov.pt') {
+          res.resume();
+          said = 'it asked for the login again';
+          await login();
+        } else {
+          said = `${res.statusCode} ${(await text(res)).slice(0, 200)}`;
+          await sleep(10000 * attempt);
+        }
+      }
+      throw new Error(`The CDD wouldn't give ${path.basename(to)}: ${said}`);
+    },
+  };
+}

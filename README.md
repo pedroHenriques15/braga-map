@@ -59,7 +59,7 @@ npm run fetch    # the data, into .cache/ (about 20 MB, ignored by git): a few m
 npm run page     # the map page's map/braga.json
 npm run world    # the world: world/base.js, world/tiles.js and a module per tile
 npm run tracks   # every track: tracks/<id>.js, and map/tracks.json for the page
-npm test         # the world and the tracks as the games read them
+npm test         # the world and the tracks as the games read them, and DGT's data where fetched
 ```
 
 They need Node 22.18 or later. Run them in that order: `world.mjs` and `track.mjs` read the
@@ -71,6 +71,13 @@ landmarks from `map/braga.json`.
   tries again. `node tools/fetch.mjs trees` fetches only what's named (`base`, `buildings`,
   `admin`, `pois`, `trees`, `street`, `dem`, `horizon`). A new fetch brings the map's changes
   since, so the tracks may come out different: run the games' tests after.
+- DGT's open data comes only when it's named, into `.cache/dgt/`, for the Volta dos Amigos' box
+  and the shooter's area: `node tools/fetch.mjs ortho cos` (the 2025 orthophoto at 25 cm and
+  the COS2025 land use, about 70 MB, no account) and `node tools/fetch.mjs lidar` (the 2025
+  LiDAR: the ground and surface at 50 cm, and the point cloud along the route, about 1.7 GB). The
+  LiDAR needs a free account at DGT's CDD, in `.cache/credentials.json` as
+  `{ "cdd": { "username", "password" } }`. `dgt.mjs` reads them all in the map's metres.
+  [docs/SOURCES.md](docs/SOURCES.md) has what each is, and its licence and credit.
 - `sections.mjs` has the map's extent, the tiles and the sections. `geo.mjs` has the projection,
   the relief and `ELEV0`. `osm.mjs` is what `world.mjs` and `track.mjs` share: how wide a street
   is, what an area is, the buildings' footprints, and packing.
@@ -166,4 +173,10 @@ houses added on the shared map, and a fifth added after.
 
 The data in `world/`, `tracks/` and `map/` is © OpenStreetMap contributors, under the Open
 Database Licence (ODbL). Keep that credit wherever the map or anything drawn from it is shown (in
-a game, its help and its README). The relief is from Terrain Tiles on AWS Open Data.
+a game, its help and its README). The relief is from Terrain Tiles on AWS Open Data, which over
+Braga are made from EU-DEM, and owe this credit wherever the ODbL's goes: "Europe terrain data
+produced using Copernicus data and information funded by the European Union - EU-DEM layers."
+`map().credit` gives both.
+
+Every source the map uses or may use, with its licence, its exact credit and what it may be used
+for, is in [docs/SOURCES.md](docs/SOURCES.md).

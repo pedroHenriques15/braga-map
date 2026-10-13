@@ -30,5 +30,11 @@
   },
   "engines": {
     "node": ">=22.18"
+  },
+  "devDependencies": {
+    "geotiff": "^3.0.5",
+    "jpeg-js": "^0.4.4",
+    "laz-perf": "^0.0.7",
+    "proj4": "^2.22.0"
   }
 }

@@ -1,3 +1,4 @@
-# What fetch.mjs downloads, about 20 MB, and the private waypoints: never committed.
+# What fetch.mjs downloads (about 20 MB, and DGT's data about 1.8 GB more), the private waypoints, and
+# the owner's credentials: never committed.
 .cache/
 node_modules/

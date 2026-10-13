@@ -428,7 +428,7 @@ ${[...tiles.keys()].map((id) => `  '${id}': () => import('./tiles/${id}.js'),`).
 
 const landmarks = braga.landmarks.map((l) => ({ id: l.id, name: l.name, x: l.x, z: l.z, section: sectionOf(l.x, l.z) }));
 out.header.meta = {
-  credit: '© OpenStreetMap contributors (ODbL). Relief: Terrain Tiles (AWS Open Data).',
+  credit: '© OpenStreetMap contributors (ODbL). Relief: Terrain Tiles (AWS Open Data). Europe terrain data produced using Copernicus data and information funded by the European Union - EU-DEM layers.',
   osmTime: base.osm3s.timestamp_osm_base,
   elev0: ELEV0,
   ext: EXT,

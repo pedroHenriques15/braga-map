@@ -120,7 +120,9 @@ in `tracks/` run through. All three need the LiDAR.
   shots and the photos, 960 pixels wide, and the lists the page reads, in `.cache/scorecard/` as
   they're published beside the page. It records the round in `refs/rounds.json` (committed): its
   label, the tasks it shows, a note, and the commits it was shot on. The page keeps each person's
-  ratings and comments in the artifact's database, one document each (`scores/<their id>`).
+  ratings and comments in the artifact's database, one document each (`scores/<their id>`). A
+  round goes up by publishing the page again with the round's files and `data/rounds.json`
+  beside it; the files already up stay.
 
 ### How a track is planned
 

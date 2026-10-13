@@ -13,14 +13,13 @@ holds ideas with no task yet. Settled decisions go to [DECISIONS.md](DECISIONS.m
 | The library | braga-map is a package for games: the world in 500 m tiles grouped in six sections (`index.js`, `world/`), and the tracks planned on it (`tracks/`). party-kart loads it, pinned to a tag (`v1.2.0` since task 027) |
 | The kart race's city | Real-width streets (the track never under 9 m), granite kerbs, calçada, lane lines, zebra crossings, traffic lights and bus stops from OSM, buildings at their place with guessed heights and hashed colours, trees, the Rio Este and its bridges, the hills 15 km round, Bom Jesus and the Sameiro (twice their size), the Picoto's cross, the Estádio 1.º de Maio, the Tourigalo, Makro and the Altice Forum's signs. The ground as it is (task 009): the streets tip sideways, the pavements meet the ground, retaining walls where it's higher, buildings stepped on their slopes. The race the way the traffic goes (task 027, decision 010): one-way streets the right way, no banned turns, 9.3 km. The first four-point plan (skyline, street level, real widths, landmarks) was done on 2026-10-13: "Braga as it is", braga-map `017bdd4` and party-kart `1d7a921` |
 | **In flight** | Braga's own pavement pattern (the calçada drawn is Lisbon's), and a pale patch near São João da Ponte, in a party-kart session |
-| Realism, measured | 29 viewpoints, each set where a real photo was taken (task 001, `refs/viewpoints.json`, decision 009): along the Volta dos Amigos, on foot in Fujacal, and of Bom Jesus and the Sameiro. Shot in the game at High and Low by party-kart's `scripts/shots.mjs` (task 002, decision 011), the same every time, beside their photos: the baseline round is `2026-10-13-baseline`. No scorecard and no budget yet (Phase 1) |
+| Realism, measured | 29 viewpoints, each set where a real photo was taken (task 001, `refs/viewpoints.json`, decision 009): along the Volta dos Amigos, on foot in Fujacal, and of Bom Jesus and the Sameiro. Shot in the game at High and Low by party-kart's `scripts/shots.mjs` (task 002, decision 011), the same every time, beside their photos: the baseline round is `2026-10-13-baseline`. Rated on the scorecard "Braga real" (task 003, decision 012, https://claude.ai/artifact/MsA5VZHSqxfD3e4BDYrYPs), by the owner alone for now: the baseline averages 2.6 of 5. No budget yet (Phase 1) |
 
 ## Phase 1 · See it: references, the scorecard and the budget
 
 Before changing the city, know what the real one looks like, how close the game is, and how much
 a phone can draw. Everything after this is checked against it.
 
-- **003** The scorecard: a shared page where the friends rate each viewpoint, round after round.
 - **004** The budget: what a phone can draw, measured, and written down.
 - **006** An audit of every street: what the map has, what the game draws, what's missing.
 - **007** Photo textures: where they live, their format, their loading and their credits.
@@ -69,11 +68,10 @@ clipping and the silence round you. It needs none of the phases above.
 
 Phase 1 comes first, but not all of it waits on itself:
 
-- **Now, side by side:** 003 (the scorecard, on 002's baseline), 004 (its measurements with 002's
-  script, and the phone), 006 (audit), 008 (the photo walk, the owner's), and the answers to
+- **Now, side by side:** 004 (its measurements with 002's script, and the phone), 006 (audit), 008 (the photo walk, the owner's), and the answers to
   007 and 015.
-- **Phase 2's data tasks** can start before the scorecard, now that 005 has fetched their data:
-  009 first, then 010 and 011 on it. Each one is checked on the scorecard when it lands.
+- **Phase 2's data tasks** can start now that 005 has fetched their data: 009 first, then 010
+  and 011 on it. Each one is checked on the scorecard when it lands.
 - **The shooter's area** goes first in every task of Phases 2–4, once 015 settles its edges.
 - **The sound** runs beside all of it: 023 can start now, then 024 and 025 on it.
 

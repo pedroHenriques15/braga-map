@@ -73,3 +73,6 @@ street), seeded RNG 4242. A filled building is flagged `filled` in the tiles.
   roundabout) and `alameda-fujacal`; one stands in the street 6 m ahead at `lobato-east`, others
   where the photo shows a painted wall at `viriato-amaral-nunes` and in front of the stadium at
   `estadio`. They're the viewpoints to look at first; `refs/viewpoints.json` has them.
+- From the scorecard's baseline (task 003, 2026-10-13): the owner's comment at `lobato-east`,
+  rated 3, is "Edifícios e lugares de estacionamento": the buildings, and the parking along the
+  street (task 020).

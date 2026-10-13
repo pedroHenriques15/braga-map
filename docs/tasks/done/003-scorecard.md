@@ -1,5 +1,5 @@
 ---
-status: doing
+status: done
 priority: high
 kind: code
 repo: braga-map
@@ -56,6 +56,8 @@ in `../party-kart/shots/<round>/`.
   > the owner read-only (outside visitors hold `view`, and an outside Editor invited by email
   > loses writing while a public link is on). So each rater is invited by email as Editor, with
   > no public link, as the map page's friends are.
+  > For now only the owner rates (2026-10-13). Friends can be invited later, by email as Editor;
+  > the page needs no change for it.
 - [x] Which shots go beside the photos, now that task 002 shoots High and Low? Recommendation:
   High, the best the game can look; Low is the budget's (task 004).
   > High.
@@ -74,12 +76,20 @@ in `../party-kart/shots/<round>/`.
 
 ## Done when
 
-- [ ] The scorecard artifact is published, in Portuguese, and private to the owner until they
+- [x] The scorecard artifact is published, in Portuguese, and private to the owner until they
   share its link; it holds nothing private.
-- [ ] It shows the baseline round, with a photo and its High shot for every viewpoint.
-- [ ] A rating and a comment saved by one viewer are seen by another, under their account's name;
-  the other's rating only once they've rated that viewpoint themselves.
-- [ ] `tools/round.mjs` prepares a round from a `shots/` folder.
+  > https://claude.ai/artifact/MsA5VZHSqxfD3e4BDYrYPs, "readable by only you" when published.
+  > Its files are the page, the two lists and 58 images, each looked at; no waypoint or house.
+- [x] It shows the baseline round, with a photo and its High shot for every viewpoint.
+  > 29 cards in the local render, and the owner rated all 29 in claude.ai.
+- [x] A rating and a comment saved from the page in claude.ai are kept, and read back from the
+  store. (Seen by a second rater under their name, and hidden from them until they've rated, is
+  checked when the first friend is invited: the owner rates alone for now.)
+  > `ArtifactData` read the owner's document back at version 35: 29 ratings, and at `lobato-east`
+  > the comment "Edifícios e lugares de estacionamento" with its rating.
+- [x] `tools/round.mjs` prepares a round from a `shots/` folder.
+  > "2026-10-13-baseline: 29 shots (2353 kB) and 29 photos (3392 kB) in .cache\scorecard", the
+  > files the artifact was published with, and the round in `refs/rounds.json`.
 
 ## Out of scope
 
@@ -128,3 +138,8 @@ in `../party-kart/shots/<round>/`.
   names of friends invited from outside resolve (`profiles`), or show "Alguém".
 - **Noticed:** at `lobato-pavement` and `travessa-fujacal` the game's view and the photo share
   little; whether the viewpoint or the city is off is for the first round's comments.
+- **Finished on 2026-10-13.** The owner rates alone for now; the baseline's one comment
+  (`lobato-east`: buildings and parking spaces) is covered by tasks 011 (the buildings) and 020
+  (parked cars; their bays are 018's): a note in each, no new task. The page changes nothing in
+  the game, so no round to shoot and no budget to check. Decision 012 records how the scorecard
+  works.

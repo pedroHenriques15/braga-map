@@ -61,8 +61,8 @@ its box.
 
 Every task that changes what a game shows names, in "Done when", the **viewpoints** it should
 improve (task 001's `refs/viewpoints.json`). Finishing it means shooting those viewpoints again
-(task 002) and, once the scorecard exists (task 003), posting them as a new round for the
-friends to rate. A task that makes a viewpoint look less like Braga isn't done.
+(task 002) and posting them as a new round on the scorecard, "Braga real" (task 003, decision
+012), for the owner, and the friends they invite, to rate. A task that makes a viewpoint look less like Braga isn't done.
 
 Every task that adds geometry or textures also checks the budget (task 004): the frame rate,
 draw calls, triangles and download size, on High and on Low.

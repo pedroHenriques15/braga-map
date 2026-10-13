@@ -234,3 +234,26 @@ Two runs on the same tree give identical PNGs.
 
 The alternative, a race started alone and its camera held with `?view=`, put the HUD, the
 countdown and moving karts in the shot, and needed PeerJS's server, so the internet.
+
+## 012 · The scorecard: the owner's, in Portuguese, one round open at a time
+
+*2026-10-13*
+
+"Braga real" (task 003, https://claude.ai/artifact/MsA5VZHSqxfD3e4BDYrYPs) is where the rounds of
+decision 011 are judged (decision 005): each viewpoint's photo over the game's High shot, a mark
+from 1 ("não é Braga") to 5 ("juro que é real") and a comment, per person and per round.
+
+- **Who rates.** The owner, alone for now. Anyone else rates once the owner invites them by email
+  as Editor, with no public link: a public link leaves everyone but the owner read-only. Names
+  come from each person's claude.ai account; nobody types one.
+- **In Portuguese,** like the map page; the viewpoints carry a `nome` for it.
+- **High shots.** Realism is judged on the best the game draws; Low is the budget's (task 004).
+- **One round open.** Only the newest round takes marks; older ones are its history. In it, the
+  others' marks for a place show once you've given yours, so nobody follows the first.
+- **The page carries the pictures,** as its own published files, and the database only the marks
+  (`scores/<their id>`, written only by them). A round goes up with `tools/round.mjs` and a
+  republish, and is recorded in `refs/rounds.json`.
+- **Comments become tasks.** After a round, its comments are read, and each goes to the task that
+  covers it, naming the viewpoint, or to a new one.
+
+The alternative the task first had, anyone with the link rating, can't save a mark on this plan.

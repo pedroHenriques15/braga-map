@@ -65,3 +65,7 @@ route. Traffic lights cycle 20 s.
 - Road markings: task 018.
 
 ## Notes
+
+- From the scorecard's baseline (task 003, 2026-10-13): the owner's comment at `lobato-east`,
+  rated 3, is "Edifícios e lugares de estacionamento": the parking along the street, its parked
+  cars here and its bays in task 018 (the buildings are task 011's).

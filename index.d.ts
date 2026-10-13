@@ -60,12 +60,13 @@ export interface Line {
 }
 
 // kind: 0 house, 1 flats, 2 shop, 3 church, 4 civic. roof: 0 flat, 1 hipped, 2 gabled. color: one
-// of 8 facade colours. h: its height in metres. filled: a house the map didn't have, put on an
-// empty frontage of a built-up street.
+// of 8 facade colours. y: the ground it stands on, at its lowest corner. h: its height in metres,
+// from there. filled: a house the map didn't have, put on an empty frontage of a built-up street.
 export interface Building {
   kind: number;
   roof: number;
   color: number;
+  y: number;
   h: number;
   filled: boolean;
   pts: [number, number][];
@@ -94,7 +95,8 @@ export interface BragaMap {
   landmarks: Landmark[];
   sights: Sight[];
   areaKinds: AreaKind[];
-  // The relief over the whole map every 50 m, and 15 km round it every 250 m.
+  // The relief over the whole map every 50 m, and 15 km round it every 250 m. The ground, from DGT's
+  // LiDAR on the map and the Terrain Tiles (EU-DEM) beyond it.
   far: Grid;
   horizon: Grid;
   // What the far grid's points are covered with: 0 fields and scrub, 1 woods, 2 town.
@@ -109,7 +111,9 @@ export interface World extends BragaMap {
   // The tiles loaded, and the box they make together.
   tiles: string[];
   box: Box;
-  // The relief: every 10 m on the tiles loaded, every 50 m elsewhere.
+  // The ground, from DGT's LiDAR: every 2 m on the tiles loaded within 60 m of a track and over the
+  // shooter's area, every 10 m on the other tiles loaded, every 50 m elsewhere. Bridges' decks aren't
+  // in it: it's the ground under them.
   height(x: number, z: number): number;
   // In the order they're painted on the ground.
   areas: Area[];

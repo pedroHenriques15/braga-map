@@ -73,3 +73,8 @@ Steps:
 - Buildings' own facades: task 017.
 
 ## Notes
+
+- From task 009: where the ground behind a pavement is higher than its back edge, party-kart draws
+  a plain granite wall from the pavement up to the ground (`edges` in `city.ts`, `wallBetween` in
+  `road.ts`), so the cuttings along the route already have a wall, of the wrong kind in places.
+  This task's walls replace them where they're found.

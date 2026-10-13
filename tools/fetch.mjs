@@ -1,7 +1,7 @@
 // Downloads what the map of Braga is made of: OpenStreetMap data through the Overpass API, and
 // elevation tiles (Terrain Tiles, on AWS Open Data). It keeps them in .cache/ for the other scripts.
 // DGT's open data (docs/SOURCES.md) comes only when it's named, into .cache/dgt/: the 2025 LiDAR
-// (`lidar`, about 1.7 GB, with the CDD's free account), the 2025 orthophoto (`ortho`, about 60 MB)
+// (`lidar`, about 1.8 GB, with the CDD's free account), the 2025 orthophoto (`ortho`, about 60 MB)
 // and the COS2025 land use (`cos`).
 //
 // node tools/fetch.mjs            everything but DGT's
@@ -142,13 +142,15 @@ if (m) console.log(`horizon: ${m} tiles`);
 const dgtParts = ['lidar', 'ortho', 'cos'].filter((p) => only.includes(p));
 if (dgtParts.length) {
   const { DGT, ORTHO_PX, fromTM, tileBox, tileKey, tilesAlong, tilesOver, toTM } = await import('./dgt.mjs');
+  const { EXT, SHOOTER } = await import('./sections.mjs');
   const amigos = (await import('../tracks/amigos.js')).default;
   fs.mkdirSync(DGT, { recursive: true });
 
   // Where the detail goes first (decision 003): the box a game draws round the Volta dos Amigos,
-  // and the shooter's streets in Fujacal (task 015 settles their edge).
-  const SHOOTER = { x0: -350, x1: 350, z0: 600, z1: 1050 };
+  // and the shooter's streets in Fujacal.
   const boxTiles = tilesOver(amigos.box);
+  // The whole map, and 200 m round it, for the terrain at 2 m.
+  const mapTiles = tilesOver({ x0: EXT.x0 - 200, x1: EXT.x1 + 200, z0: EXT.z0 - 200, z1: EXT.z1 + 200 });
   // The point cloud is heavier (about 120 MB a tile): only along the route, 200 m each side, over
   // the shooter's area, and where the map's (0, 0) is, for the check in test/sources.test.js.
   const lazTiles = [...new Set([...tilesAlong(amigos.points.map(({ p }) => [p[0], p[2]]), 200), ...tilesOver(SHOOTER), tileKey(...toTM(0, 0))])].sort();
@@ -202,11 +204,12 @@ if (dgtParts.length) {
     console.log(`cos: ${features.length} areas, ${(text.length / 1e6).toFixed(1)} MB`);
   }
 
-  // The LiDAR: the terrain and surface models at 50 cm over the box, and the point cloud on the
-  // tiles above. DGT's tile index is open; the downloads need the CDD's account.
+  // The LiDAR: the terrain and surface models at 50 cm over the box, the terrain at 2 m over the
+  // whole map, and the point cloud on the tiles above. DGT's tile index is open; the downloads need
+  // the CDD's account.
   if (dgtParts.includes('lidar')) {
     const cdd = await cddLogin();
-    const want = { 'MDT-50cm': ['.tif', boxTiles], 'MDS-50cm': ['.tif', boxTiles], LAZ: ['.laz', lazTiles] };
+    const want = { 'MDT-50cm': ['.tif', boxTiles], 'MDS-50cm': ['.tif', boxTiles], 'MDT-2m': ['.tif', mapTiles], LAZ: ['.laz', lazTiles] };
     const record = {};
     for (const [collection, [ext, keys]] of Object.entries(want)) {
       const items = await cddTiles(cdd, collection, keys);

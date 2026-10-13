@@ -1,12 +1,13 @@
-// Turns what fetch.mjs downloaded (OpenStreetMap data and elevation tiles) into map/braga.json for
+// Turns what fetch.mjs downloaded (OpenStreetMap data and DGT's LiDAR) into map/braga.json for
 // the map page. Everything ends up in metres from the Praça da República, x east and z south, the
 // frame the games use.
 //
 // node tools/build.mjs
 import fs from 'node:fs';
 import path from 'node:path';
-import { CACHE, KX, KZ, LAT0, LON0, P, readCache, relief, ROOT } from './geo.mjs';
+import { CACHE, KX, KZ, LAT0, LON0, P, readCache, ROOT } from './geo.mjs';
 import { CORE, EXT, SECTIONS, TILE } from './sections.mjs';
+import { terrain } from './terrain.mjs';
 
 const outFile = path.join(ROOT, 'map/braga.json');
 if (!fs.existsSync(path.join(CACHE, 'osm', 'base.json'))) throw new Error('No data yet: run fetch.mjs first.');
@@ -247,13 +248,13 @@ for (const [zone, tier, id, name, osm, blurb] of LANDMARKS) {
   landmarks.push({ id, zone, tier, name, blurb, x: Math.round(at[0]), z: Math.round(at[1]) });
 }
 
-// ---- Elevation ----
-const elev = relief(path.join(CACHE, 'dem'));
+// ---- Elevation: the ground from DGT's LiDAR, the mean over each 20 m ----
+const ground = await terrain();
 const STEP = 20, nx = (EXT.x1 - EXT.x0) / STEP + 1, nz = (EXT.z1 - EXT.z0) / STEP + 1;
 const H = new Uint16Array(nx * nz);
 let hmin = Infinity, hmax = -Infinity;
 for (let j = 0; j < nz; j++) for (let i = 0; i < nx; i++) {
-  const e = elev(EXT.x0 + i * STEP, EXT.z0 + j * STEP);
+  const e = ground.mean(EXT.x0 + i * STEP, EXT.z0 + j * STEP, STEP);
   H[j * nx + i] = Math.max(0, Math.round(e * 4));
   hmin = Math.min(hmin, e); hmax = Math.max(hmax, e);
 }
@@ -267,7 +268,7 @@ const game = JSON.parse(fs.readFileSync(path.join(ROOT, 'tools/first-track.json'
 const km = (o) => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, Math.round(v)]));
 
 const data = {
-  credit: '© OpenStreetMap contributors (ODbL). Relevo: Terrain Tiles (AWS Open Data). Europe terrain data produced using Copernicus data and information funded by the European Union - EU-DEM layers.',
+  credit: '© OpenStreetMap contributors (ODbL). Relevo: LiDAR 2025, informação geográfica cedida pela Direção-Geral do Território (CC BY 4.0).',
   osmTime: base.osm3s.timestamp_osm_base,
   origin: { lat: LAT0, lon: LON0, kx: KX, kz: KZ },
   ext: EXT, core: CORE,

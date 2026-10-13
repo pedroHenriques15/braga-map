@@ -1,5 +1,5 @@
 ---
-status: todo
+status: doing
 priority: high
 kind: code
 repo: both
@@ -59,12 +59,24 @@ Steps:
 
 ## Done when
 
-- [ ] The tiles along the route and in the shooter's area carry 2 m terrain from the LiDAR.
-- [ ] Known points match the LiDAR within 0.3 m.
-- [ ] party-kart's `npm test` and `npm run check` pass, and the lap's summary line is recorded
+- [x] The tiles along the route and in the shooter's area carry 2 m terrain from the LiDAR.
+  > 18 tiles: every one within 60 m of the Volta dos Amigos, and the shooter's four.
+  > `test/relief.test.js` checks each tile the track and the shooter's area are on has a 2 m grid
+  > (and the Sameiro's a 10 m one).
+- [x] Known points match the LiDAR within 0.3 m.
+  > On the 2 m tiles: the Praça 190.60 m in the tile and the LiDAR; the Picoto's top 298.63 m in
+  > the tile, 298.89 m in the LiDAR. The Sameiro's top is on a 10 m tile, 0.69 m low. The six
+  > bridges' decks are within 0.25 m. `node tools/relief.mjs`, and `test/relief.test.js`.
+- [x] party-kart's `npm test` and `npm run check` pass, and the lap's summary line is recorded
   before and after.
+  > 19 of 19 and `tsc` clean. Before: `laps 235.4, 233.2 s; respawns 0; longest air 0.00 s; top
+  > 217 km/h; wall hits 0`. After: `laps 235.3, 233.2 s; respawns 0; longest air 0.00 s; top
+  > 217 km/h; wall hits 0`.
 - [ ] The viewpoints on slopes (the Picoto, the Via da Falperra) score higher than at the
   baseline.
+  > No scorecard to score them on yet (tasks 001–003). Six places shot before and after, the
+  > Picoto and the Via da Falperra among them, for the owner to judge:
+  > https://claude.ai/artifact/5uirH2Y8A32ACJsDoEwnJ3 (private). Tick this when the owner has.
 
 ## Out of scope
 
@@ -77,3 +89,60 @@ Steps:
   box)`). Their heights are above the Cascais datum; whether EU-DEM's are above the same sea level
   is still to check. The models mark a cell's centre as their origin. Braga was flown on 14, 16 and
   21 July 2025.
+
+### Started 2026-10-13
+
+- **Done, in braga-map (uncommitted):** `tools/terrain.mjs` (the ground: the LiDAR's MDT at 50 cm
+  where fetched, at 2 m over the rest of the map, EU-DEM beyond), and `fetch.mjs lidar` now also
+  gets the MDT at 2 m for the whole map and 200 m round it (48 tiles, 54 MB). `world.mjs`: the
+  ground every 2 m on the 18 tiles within 60 m of a track in `tracks/` and over the shooter's area
+  (`SHOOTER`, now in `sections.mjs`), every 10 m elsewhere, each the mean of the LiDAR over its
+  cell; the far grid and the horizon from the LiDAR where it reaches; each building's ground at its
+  lowest corner (`y`, a new field, read by `index.js`); the rivers' level from the lowest ground
+  within 4 m of their course. `track.mjs`: heights and `bank` from the LiDAR (below), a `bridge`
+  flag. `build.mjs`: the map page's relief from the LiDAR. `tools/relief.mjs` (the check) and
+  `test/relief.test.js`. Credits: README, `SOURCES.md`, `map().credit`, the map page.
+- **Done, in party-kart (uncommitted, `package.json` points at `file:../braga-map`):** the land's
+  mesh of 10 m cells split into 2 m ones where needed (20 m and 4 m on Low), kept under the road
+  and pavements; verges at the ground's height beside the road; pavements sloping to the ground at
+  their back; granite retaining walls up and skirts down to the ground; a deck under the bridges
+  over roads; the road banked as the street is; buildings on `y`. Credits in the README and help.
+- **Rebuilding the world:** the same OSM cache gives the same world as before but for the ground:
+  areas, lines, trees, sections, landmarks and cover unchanged; buildings unchanged but for `y`.
+  The scripts now run page, tracks, world (the world takes its 2 m tiles from the tracks), and all
+  three need the LiDAR. Running them twice gives the same files.
+- **The datum** (the question from task 005): the LiDAR is on DGT's own sea level, within
+  0.15–0.85 m of the geodetic marks on the Sameiro and 0.2 m of Pedroso's (a mark's height may be
+  its own, not the ground's: PICOTO 1 stands on the viewpoint's platform, 3 m up), and 0.3–1.1 m
+  of the old maps' whole-metre spot heights. EU-DEM is off by more than any datum would be: 34 m
+  too low on the Picoto's top, 11 m on the Sameiro's, 2 m too high along the route on average.
+- **Known points** (`node tools/relief.mjs`): the Praça 190.60 m, tile 190.60; the Picoto's top
+  298.89, tile 298.63 (2 m tile); the Sameiro's top 573.17, tile 572.48 (a 10 m tile).
+- **The track:** heights 153–221 m (157–221 before), steepest 19.3% (13.0%), sharpest crest
+  radius 103 m (340 m). Smoothed over about 10 m (two Gaussian blurs of σ 5 m), not 50 m. A third
+  of the route tips sideways by more than 2%, 5% of it at the 8% limit (the Avenida Doutor Viriato
+  Amaral Nunes really tips 10%). The tilt is the median of the slopes across the carriageway: a
+  plain line fit was thrown by drops and flyovers beside the street. Six bridges are crossed
+  straight, and each one's middle is within 0.25 m of the LiDAR's points on its deck; two of them
+  (the Avenidas Doutor António Alves Palha and Robert Smith) stand 7 m over the road below, where
+  the bare ground would have dropped the track 7 m.
+- **DGT's point cloud classes bridge decks 26,** not 17 (the LAS standard's): no point is 17 in
+  the tiles counted. `CLASS.bridge` and `SOURCES.md` say so now.
+- **The lap:** `laps 235.4, 233.2 s; respawns 0; longest air 0.00 s; top 217 km/h; wall hits 0`
+  before, `laps 235.3, 233.2 s; respawns 0; longest air 0.00 s; top 217 km/h; wall hits 0` after.
+  party-kart's `npm test` 19 of 19 and `npm run check` pass; braga-map's `npm test` 10 of 10.
+- **What it costs (for task 004):** the land and verges, before and after, in triangles: High
+  173k → 352k, Medium 173k → 317k, Low 43k → 117k; the start view 885k → 1,065k on High. The
+  city takes about 0.6 s longer to build. The world is 5.8 MB (2.0 MB gzipped), was 2.7 MB (1.2);
+  the track's 48 tiles 4.1 MB (1.2 MB gzipped). Most cells split are for detail near the road:
+  the city's ground has walls, terraces and steps everywhere; the splits that keep the land under
+  the road and verges cost about 55k on High.
+- **The viewpoints** can't be scored yet (no tasks 001–003): six places shot before and after,
+  for the owner, at https://claude.ai/artifact/5uirH2Y8A32ACJsDoEwnJ3 (private).
+- **Not done here:** the Avenida João XXI's carriageway is 1.5 m from a 5.5 m drop to the road
+  beside it, and the map's centre line runs along that edge, so the track overhangs the drop:
+  task 026 (drafted). The retaining walls are plain granite (task 013), the flyovers' decks plain
+  slabs (task 012).
+- **Before release:** braga-map needs a commit and a tag (`v1.1.0`), then party-kart's
+  `package.json` back from `file:../braga-map` to that tag. The peer id prefix is `pk29` now (the
+  track changed: its heights, its banks), so this build doesn't share rooms with the deployed one.

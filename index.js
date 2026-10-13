@@ -1,7 +1,8 @@
 // The map of Braga, for games: the world in 500 m tiles grouped into named sections, and the tracks
 // planned on it (tracks/). Everything is in metres from the Praça da República, x east, z south and
-// y up, with heights above ELEV0. Made by the scripts in tools/ from OpenStreetMap and the relief.
-// © OpenStreetMap contributors (ODbL).
+// y up, with heights above ELEV0. Made by the scripts in tools/ from OpenStreetMap and DGT's LiDAR.
+// © OpenStreetMap contributors (ODbL); the ground: informação geográfica cedida pela Direção-Geral do
+// Território (CC BY 4.0).
 import BASE from './world/base.js';
 import { TILES } from './world/tiles.js';
 
@@ -141,8 +142,8 @@ export async function loadWorld(area) {
     const B = head.buildings;
     for (let i = B.at; i < B.at + B.n; ) {
       const n = nums[i];
-      buildings.push({ kind: nums[i + 1], roof: nums[i + 2], color: nums[i + 3], h: nums[i + 4] / 10, filled: nums[i + 5] === 1, pts: points(nums, i + 6, n) });
-      i += 6 + n * 2;
+      buildings.push({ kind: nums[i + 1], roof: nums[i + 2], color: nums[i + 3], h: nums[i + 4] / 10, filled: nums[i + 5] === 1, y: nums[i + 6] / 10, pts: points(nums, i + 7, n) });
+      i += 7 + n * 2;
     }
     const T = head.trees;
     for (let i = T.at; i < T.at + T.n; i += 3) trees.push({ x: nums[i] / 2, z: nums[i + 1] / 2, pine: (nums[i + 2] & 1) === 1, filled: (nums[i + 2] & 2) === 2 });

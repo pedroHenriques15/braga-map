@@ -5,6 +5,9 @@
 export const EXT = { x0: -1600, x1: 4900, z0: -2450, z1: 2150 };
 // The area first asked for, inside it.
 export const CORE = { x0: -1500, x1: 2830, z0: -2300, z1: 2010 };
+// Where the first shooter is played: the streets of Fujacal and Conselheiro Lobato (decision 003;
+// task 015 settles their edge). It gets the detail the tracks get.
+export const SHOOTER = { x0: -350, x1: 350, z0: 600, z1: 1050 };
 
 // Tiles are TILE metres square, on a grid from the Praça da República: tile (i, j) runs from
 // x = i·TILE to (i + 1)·TILE and z = j·TILE to (j + 1)·TILE. They cover EXT.

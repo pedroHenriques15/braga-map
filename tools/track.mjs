@@ -7,7 +7,7 @@
 //    cost less, sharp turns cost more, and the loop never uses a street twice or runs alongside
 //    itself.
 // 2. That loop turned into a raceable centre line: corners rounded to a radius a kart can take,
-//    heights from the real relief, smoothed.
+//    heights and how the street tips sideways from DGT's LiDAR, smoothed.
 // 3. Where things go on it: the start, checkpoints, item boxes, boost pads and easter eggs.
 // 4. The layout: a point every 8 m, with its width and how it's dressed.
 // 5. What's along it: street names, landmarks, crossings, traffic lights and bus stops.
@@ -16,9 +16,10 @@ import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { CACHE, ELEV0, P, readCache, relief, ROOT } from './geo.mjs';
+import { CACHE, ELEV0, P, readCache, ROOT } from './geo.mjs';
 import { blur, carriageway, COBBLE, footprints, isOneway, lanesOf, segDist, simplify, W_MIN } from './osm.mjs';
 import { EXT, sectionOf } from './sections.mjs';
+import { terrain } from './terrain.mjs';
 import { TRACKS } from './tracks.mjs';
 
 if (!process.argv[2]) {
@@ -359,12 +360,40 @@ const widths = blur(onStreet.map((e) => Math.max(W_MIN, carriageway(e.tags))), 1
 const heading = line.map((p, i) => { const q = line[(i + 1) % n2]; return Math.atan2(q[1] - p[1], q[0] - p[0]); });
 const curvature = line.map((_, i) => { let d = heading[(i + 2) % n2] - heading[(i - 1 + n2) % n2]; d = Math.atan2(Math.sin(d), Math.cos(d)); return Math.abs(d) / 6; });
 
-// The heights: the relief under the road, smoothed over about 50 m so the DEM's bumps don't throw
-// the karts, above the map's zero.
-const elev = relief(path.join(CACHE, 'dem'));
-const ground = line.map(([x, z]) => elev(x, z));
-const smooth = blur(blur(ground, 25), 25);
-const ys = smooth.map((h) => h - ELEV0);
+// The heights: the street's own surface, from DGT's LiDAR (its terrain model is the bare ground,
+// and a street is ground). At each point, a line across the carriageway through the heights there
+// gives the height in the middle and how much the street tips sideways: the median of the slopes
+// between every two of them, so a kerb, a wall or a drop beside the street (where the map's centre
+// line is a metre or two off it) don't tip it. A bridge's deck isn't in the terrain, which has the
+// ground under it: the road crosses each bridge straight, from one end to the other. Then both are
+// smoothed just enough for karts.
+const ground = await terrain();
+const median = (v) => { const s = [...v].sort((a, b) => a - b), m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
+const cross = line.map(([x, z], i) => {
+  const [xa, za] = line[(i - 1 + n2) % n2], [xb, zb] = line[(i + 1) % n2], tl = Math.hypot(xb - xa, zb - za) || 1;
+  const rx = -(zb - za) / tl, rz = (xb - xa) / tl; // to the right, as the games take it
+  const hw = Math.min(4, Math.max(1.5, carriageway(onStreet[i].tags) / 2 - 0.75));
+  const pts = [];
+  for (let l = -hw; l <= hw + 1e-6; l += 0.5) pts.push([l, ground.at(x + rx * l, z + rz * l)]);
+  const slopes = [];
+  for (let a = 0; a < pts.length; a++) for (let b = a + 2; b < pts.length; b++) slopes.push((pts[b][1] - pts[a][1]) / (pts[b][0] - pts[a][0]));
+  const slope = median(slopes);
+  return { y: median(pts.map(([l, h]) => h - slope * l)), slope };
+});
+const onBridge = onStreet.map((e) => !!e.tags?.bridge && e.tags.bridge !== 'no');
+{
+  const runsOf = (f) => { const out = []; for (let i = 0; i < n2; i++) if (f(i) && !f((i - 1 + n2) % n2)) { let j = i; while (f((j + 1) % n2) && j - i < n2) j++; out.push([i, j]); } return out; };
+  for (const [a, b] of runsOf((i) => onBridge[i])) {
+    const p = a - 3, q = b + 3, A = cross[(p + n2) % n2], B = cross[q % n2];
+    for (let i = p + 1; i < q; i++) { const f = (i - p) / (q - p); cross[(i + n2) % n2] = { y: A.y + (B.y - A.y) * f, slope: A.slope + (B.slope - A.slope) * f }; }
+  }
+}
+// Smoothed over about 10 m (a Gaussian blur's spread), and the layout's points are 8 m apart; real
+// streets tip sideways by up to a few percent, more on a hill's flank; a kart's road no more than 8%.
+const SMOOTH = 5;
+const ys = blur(blur(cross.map((c) => c.y), SMOOTH), SMOOTH).map((h) => h - ELEV0);
+const banks = blur(blur(cross.map((c) => Math.atan(c.slope)), SMOOTH), SMOOTH).map((b) => Math.max(-0.08, Math.min(0.08, b)));
+const smooth = ys.map((y) => y + ELEV0);
 
 // Does any part of the road come close to another part far along it?
 const clashes = [];
@@ -385,6 +414,7 @@ const length = n2 * 2;
 console.log(`\ncentre line ${length} m; corners tighter than 9 m: ${rounded.tight.length} ${JSON.stringify(rounded.tight)}`);
 console.log(`widths ${Math.min(...widths).toFixed(1)}–${Math.max(...widths).toFixed(1)} m, ${Math.round((100 * widths.filter((w) => w < W_MIN + 0.5).length) / n2)}% at the least`);
 console.log(`tightest radius ${(1 / Math.max(...curvature)).toFixed(1)} m; height ${Math.min(...smooth).toFixed(0)}–${Math.max(...smooth).toFixed(0)} m (zero at ${ELEV0}); steepest ${(maxGrade * 100).toFixed(1)}%; sharpest crest radius ${minCrest.toFixed(0)} m`);
+console.log(`tipping sideways: ${Math.round((100 * banks.filter((b) => Math.abs(b) > 0.02).length) / n2)}% over 2%, ${Math.round((100 * banks.filter((b) => Math.abs(b) >= 0.08).length) / n2)}% at 8%; bridges: ${onBridge.filter(Boolean).length * 2} m`);
 console.log(`clashes: ${clashes.length} ${JSON.stringify(clashes.slice(0, 8))}`);
 
 // What's beyond each kerb, at every point: a pavement (its width, positive), a central reservation
@@ -551,14 +581,18 @@ console.log(`start on ${onStreet[start].name} at ${line[start].map(Math.round)};
 
 const tagAt = new Map([[0, 'start'], ...checkpoints.map((k) => [k, 'cp']), ...items.map((k) => [k, 'items']), ...boosts.map((k) => [k, 'boost'])]);
 const r1 = (v) => Math.round(v * 10) / 10;
+// Heights to the centimetre: decimetres would put bumps of their own in a road made smooth.
+const r2 = (v) => Math.round(v * 100) / 100;
 const pointsOut = [];
-let lastW = null, lastSurface = null, lastLanes = null, lastKerbs = null;
+let lastW = null, lastSurface = null, lastLanes = null, lastKerbs = null, lastBank = null, lastBridge = false;
 const half5 = (v) => Math.round(v * 2) / 2;
 for (let k = 0; k < n2; k++) {
   if (k % 4 !== 0 && !tagAt.has(k)) continue;
   const i = at(k), w = Math.round(widths[i] * 2) / 2, t = onStreet[i].tags || {};
-  const o = { p: [r1(line[i][0]), r1(ys[i]), r1(line[i][1])] };
+  const o = { p: [r1(line[i][0]), r2(ys[i]), r1(line[i][1])] };
   if (w !== lastW) { o.w = w; lastW = w; }
+  const bank = r2(banks[i]);
+  if (bank !== lastBank) { o.bank = bank; lastBank = bank; }
   if (k === 0) o.walls = true;
   const surface = COBBLE.has(t.surface) ? 'cobble' : 'asphalt';
   if (surface !== lastSurface) { o.surface = surface; lastSurface = surface; }
@@ -566,6 +600,7 @@ for (let k = 0; k < n2; k++) {
   if (lanes !== lastLanes) { o.lanes = lanes; lastLanes = lanes; }
   const kb = [half5(kerbs[0][i]), half5(kerbs[1][i])];
   if (kb.join() !== lastKerbs) { o.kerbs = kb; lastKerbs = kb.join(); }
+  if (onBridge[i] !== lastBridge) { o.bridge = onBridge[i]; lastBridge = onBridge[i]; }
   if (tagAt.has(k)) o.tag = tagAt.get(k);
   pointsOut.push(o);
 }

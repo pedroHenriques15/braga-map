@@ -134,3 +134,31 @@ makes from it goes into the world's tiles, with DGT's credit. `docs/SOURCES.md` 
 
 The alternative, committing the data, or cuts of it, would make the package gigabytes for every
 game that installs it.
+
+## 008 · The ground is DGT's LiDAR, finest where the games are played
+
+*2026-10-13*
+
+The world's ground, the tracks' heights and the buildings' footing come from DGT's 2025 LiDAR
+terrain model (task 009, `tools/terrain.mjs`): at 50 cm over the Volta dos Amigos' box and at 2 m
+over the rest of the map. EU-DEM, which the map had before, smoothed away anything smaller than a
+block, and was 34 m low on the Picoto's top.
+
+- **How fine.** The world's tiles hold the ground every 2 m where the tracks run (within 60 m of
+  each) and over the shooter's area (decision 003), and every 10 m elsewhere: the ground of a 2 m tile is
+  about 35 KB gzipped, of a 10 m one 3 KB. A new track gets its 2 m tiles at the next `npm run world`.
+- **The track is the street's own surface,** smoothed over about 10 m, no more than karts need,
+  and it tips sideways as the street does, up to 8%. Bridges, whose decks the bare ground leaves
+  out, are crossed straight from end to end until task 012 gives them their levels.
+- **A building stands on the ground at its lowest corner,** and its height is from there, as
+  OpenStreetMap measures it.
+- **Beyond the map,** for the horizon, the Terrain Tiles (EU-DEM) stay: the LiDAR wasn't fetched
+  that far, and 5 km off the difference doesn't show.
+- **In the kart race,** the land meets the road as the ground does: no flattening beside it, the
+  pavements sloping to the ground at their back, a retaining wall or a skirt for the rest. It
+  costs triangles (task 004 has the numbers); the detail kept near the road is what to trade
+  first.
+
+The alternatives were the 2 m model everywhere (simpler, but the steps and walls along the
+streets go) and the 50 cm model in the tiles (four times the 2 m tiles' size, for detail the
+games' meshes can't show yet).

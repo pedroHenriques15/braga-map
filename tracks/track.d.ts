@@ -1,15 +1,20 @@
 // A kart track planned on the map (tools/track.mjs): its layout, and what's along it.
 import type { Box } from '../index.js';
 
-// A point of the centre line, every 8 m from the start line, in metres (x east, z south, y up).
-// Its options apply to the stretch from it to the next, and carry on until a later point changes
-// them, except `tag`. `w` is the width kerb to kerb. `lanes` is the lanes painted on it (0 for no
-// lines), negative when it's one way. `kerbs` is what's beyond the left and right edges: a
-// pavement (its width, positive), a central reservation (its width, negative) or nothing (0).
-// `tag` marks a place: the start line, a checkpoint, a row of item boxes or a boost pad.
+// A point of the centre line, every 8 m from the start line, in metres (x east, z south, y up): the
+// street's own surface in its middle, from the LiDAR. Its options apply to the stretch from it to
+// the next, and carry on until a later point changes them, except `tag`. `w` is the width kerb to
+// kerb. `bank` is how much the street tips sideways, in radians (+ lifts the right edge), as the
+// real one does, up to 0.08. `lanes` is the lanes painted on it (0 for no lines), negative when
+// it's one way. `kerbs` is what's beyond the left and right edges: a pavement (its width,
+// positive), a central reservation (its width, negative) or nothing (0). `bridge` is a stretch on
+// a bridge, crossed straight from end to end: the ground under it is lower. `tag` marks a place:
+// the start line, a checkpoint, a row of item boxes or a boost pad.
 export interface TrackPoint {
   p: [number, number, number];
   w?: number;
+  bank?: number;
+  bridge?: boolean;
   walls?: boolean;
   surface?: 'asphalt' | 'cobble';
   lanes?: number;

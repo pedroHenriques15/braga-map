@@ -73,3 +73,9 @@ Steps:
 - The textures' format and loading: task 007.
 
 ## Notes
+
+- From task 009 (2026-10-13, measured in the browser, not on a phone): the land and the verges
+  beside the road, in triangles, went from 173k to 352k on High, 173k to 317k on Medium and 43k
+  to 117k on Low; the start view from 885k to 1,065k on High. The city builds about 0.6 s slower.
+  The track's 48 tiles are 4.1 MB (1.2 MB gzipped), with the ground every 2 m on 18 of them. The
+  land's detail near the road (`band` and `tol` in `city.ts`) is the first thing to trade.

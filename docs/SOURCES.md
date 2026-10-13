@@ -9,12 +9,11 @@ in each game, where it credits OpenStreetMap.
 
 Wherever the map, or anything drawn from it, is shown (a game, its help, its README):
 
-- **Always:** "© OpenStreetMap contributors" (ODbL), and for the relief: "Terrain Tiles (AWS Open
-  Data). Europe terrain data produced using Copernicus data and information funded by the
-  European Union - EU-DEM layers." `map().credit` gives both.
-- **Once anything made from DGT's data is in the world or a game:** "Informação geográfica
-  cedida pela Direção-Geral do Território" (CC BY 4.0). Nothing is, yet: task 005 only fetches
-  it.
+- **Always:** "© OpenStreetMap contributors" (ODbL); for the ground, from DGT's LiDAR since task
+  009: "Informação geográfica cedida pela Direção-Geral do Território" (CC BY 4.0); and for the
+  horizon beyond the map: "Terrain Tiles (AWS Open Data). Europe terrain data produced using
+  Copernicus data and information funded by the European Union - EU-DEM layers." `map().credit`
+  gives all three.
 
 ## In use
 
@@ -31,10 +30,11 @@ Wherever the map, or anything drawn from it, is shown (a game, its help, its REA
 
 ### Terrain Tiles, made from EU-DEM
 
-- **What:** the relief. Terrarium PNG tiles at zoom 14 (about 7 m a pixel) over the map and zoom
-  11 (about 60 m) for the horizon. Over Braga all 24 tiles fetched are made from one EU-DEM file,
-  `eudem/eudem_dem_5deg_n40w010.tif` (each tile's `x-amz-meta-x-imagery-sources` header says so;
-  Joerd's documentation, which says SRTM at these zooms, is wrong here). So the real detail is
+- **What:** the horizon, the hills 15 km round the map, where the LiDAR wasn't fetched; until task
+  009, the relief on the map too. Terrarium PNG tiles at zoom 14 (about 7 m a pixel) over the map
+  and zoom 11 (about 60 m) for the horizon. Over Braga all 24 tiles fetched are made from one
+  EU-DEM file, `eudem/eudem_dem_5deg_n40w010.tif` (each tile's `x-amz-meta-x-imagery-sources`
+  header says so; Joerd's documentation, which says SRTM at these zooms, is wrong here). So the real detail is
   EU-DEM's: a model about 25–30 m a cell, made from satellite data, which smooths away anything
   smaller than a block.
 - **Access:** `https://s3.amazonaws.com/elevation-tiles-prod/terrarium/{z}/{x}/{y}.png`, AWS Open
@@ -43,13 +43,23 @@ Wherever the map, or anything drawn from it, is shown (a game, its help, its REA
   their sources' credits ([attribution](https://github.com/tilezen/joerd/blob/master/docs/attribution.md)).
 - **Credit:** "Europe terrain data produced using Copernicus data and information funded by the
   European Union - EU-DEM layers", with "Terrain Tiles (AWS Open Data)".
-- **May be used for:** everything. Task 009 replaces it with the LiDAR near the route.
+- **May be used for:** everything. Since task 009 the world uses it only beyond the map (the zoom 14
+  tiles are kept for `tools/relief.mjs`, which compares the two). Against the LiDAR it was 34 m
+  too low on the Picoto's top, 11 m on the Sameiro's, and 2 m too high along the route on
+  average.
 
-## Fetched, not used yet
+### DGT's LiDAR, 2024–2025
+
+The ground the world and the tracks stand on, since task 009: the terrain model at 50 cm over the
+Volta dos Amigos' box and at 2 m over the whole map (`tools/terrain.mjs`). Its details are under
+"Fetched" below, with DGT's other data.
+
+## Fetched
 
 Into `.cache/dgt/`, which git ignores ([decision 007](DECISIONS.md)), by `node tools/fetch.mjs
 lidar ortho cos`. They're read by
-`tools/dgt.mjs`; `test/sources.test.js` checks they're in the right place on the map.
+`tools/dgt.mjs`; `test/sources.test.js` checks they're in the right place on the map. The LiDAR's
+terrain is in use (above); the rest isn't yet.
 
 All of DGT's data is in EPSG:3763 (ETRS89 / Portugal TM06). `tools/dgt.mjs` takes ETRS89 as
 WGS84, as EPSG's own transformation between them (1149) does, and DGT's own server does the same:
@@ -63,9 +73,11 @@ millimetre (the test).
   16 and 21 July 2025, in the afternoon (13:00–19:30 UTC; three tiles checked). Heights are above
   the Cascais datum (Datum Altimétrico de Cascais). On DGT's 1 km tiles of EPSG:3763:
   - the classified point cloud (`LAZ`): LAS 1.4, point format 8, each point with its colour and
-    near-infrared, classed as ground (2), low, medium and high vegetation (3–5), building (6),
-    noise (7), water (9) and bridge (17). About 10 points/m² nominal; the tile at the Praça has
-    17.6 M points;
+    near-infrared, classed as unclassified (1), ground (2), low, medium and high vegetation
+    (3–5), building (6), noise (7), water (9) and 26: the decks of bridges, and some other
+    structures (the viewpoint's platform on the Picoto). The LAS standard's bridge class, 17, isn't
+    used (two tiles counted, and the route's six bridges). About 10 points/m² nominal; the tile
+    at the Praça has 17.6 M points;
   - the terrain model (`MDT-50cm`, the ground) and the surface model (`MDS-50cm`, the tops of
     roofs and trees), Float32 GeoTIFF at 50 cm, −999 where empty. They come at 2 m too.
   - DGT also publishes the cloud as COPC, a building map made from it (`MAPACONST-2024`,
@@ -89,13 +101,17 @@ millimetre (the test).
 - **May be used for:** everything, with the credit. Data made from it may go in the world's
   tiles and be published.
 - **Fetched:** the terrain and surface models at 50 cm for the 20 tiles under the track's box,
-  which holds the shooter's area (about 16 MB a tile, 0.64 GB in all). The point cloud for 9
+  which holds the shooter's area (about 16 MB a tile, 0.64 GB in all). The terrain model at 2 m
+  for the 48 tiles under the map and 200 m round it (about 1.1 MB a tile, 54 MB in all, task 009). The point cloud for 9
   tiles: the route and 200 m each side of it, the shooter's area, and the Praça's tile for the
   test (104–182 MB a tile, about 1.07 GB). Named here by their south-west corner in km
   (`-24_209`). `.cache/dgt/lidar.json` gives each one's DGT id (`LO-176510-07-2025`) and
   version.
-- **Not checked yet:** whether its heights (Cascais) and the relief's (EU-DEM's) are above the
-  same sea level (task 009).
+- **Its sea level:** the Cascais datum, the one DGT publishes its own heights on: the LiDAR is
+  within 0.15–0.85 m of DGT's geodetic marks on the Sameiro (whose heights may be the marks', not
+  the ground's) and 0.2 m of the one at Pedroso; within 0.3–1.1 m of the old maps' spot heights,
+  which are whole metres (task 009, `tools/relief.mjs`). Whether EU-DEM's heights are on the same
+  sea level can't be told: it's 2–35 m off in places, more than any difference of datum.
 
 ### DGT's orthophotos, 2025
 

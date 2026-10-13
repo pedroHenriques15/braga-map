@@ -1,14 +1,16 @@
-// Makes the world the games share: the whole map, from OpenStreetMap and the relief, cut into
-// 500 m tiles (sections.mjs). Nothing in it depends on a track or an arena: a game clears its own
-// road of buildings and trees when it loads.
+// Makes the world the games share: the whole map, from OpenStreetMap and DGT's LiDAR (the ground),
+// cut into 500 m tiles (sections.mjs). Nothing in it depends on a track or an arena: a game clears
+// its own road of buildings and trees when it loads. Only the detail of the ground does: it's finer
+// where the tracks run and the shooter is played (decision 003).
 //
 // node tools/world.mjs
 //
 // - world/base.js, which every game loads: the tiles and the sections, the relief over the whole
 //   map every 50 m and 15 km round for the horizon, what the far hills are covered with, the
 //   rivers, the landmarks and the sights.
-// - world/tiles/<id>.js, one per tile: the relief every 10 m, what the ground is (clipped to the
-//   tile), the streets and the railway, the buildings, and the trees.
+// - world/tiles/<id>.js, one per tile: the relief (every 2 m on the tiles within 60 m of a track
+//   in tracks/ and over the shooter's area, every 10 m on the rest), what the ground is (clipped to
+//   the tile), the streets and the railway, the buildings, and the trees.
 // - world/tiles.js, a loader for each tile, for index.js.
 //
 // All in metres from the Praça da República, x east and z south, heights above ELEV0, packed as
@@ -18,7 +20,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { CACHE, ELEV0, P, ROOT, readCache, relief } from './geo.mjs';
 import { AREA, AREA_OF, blur, bounds, carriageway, dm, footprints, Grid, half, hash, inside, LINE, minRect, openThin, overlaps, Packer, packGrid, packPts, ringArea, ringOf, seeded, segDist, simplify, W_MIN } from './osm.mjs';
-import { allTiles, EXT, SECTIONS, sectionOf, TILE, tileBox, tileId, tileOf } from './sections.mjs';
+import { allTiles, EXT, SECTIONS, sectionOf, SHOOTER, TILE, tileBox, tileId, tileOf } from './sections.mjs';
+import { terrain } from './terrain.mjs';
 
 const base = readCache('osm/base.json');
 const buildingsOsm = readCache('osm/buildings.json');
@@ -27,12 +30,20 @@ const pois = readCache('osm/pois.json').elements;
 const braga = JSON.parse(fs.readFileSync(path.join(ROOT, 'map/braga.json'), 'utf8'));
 // The private waypoints, if they're here: only for the streets they ask to have lined with houses.
 const places = fs.existsSync(path.join(CACHE, 'places.json')) ? readCache('places.json').places : [];
-const elev = relief(path.join(CACHE, 'dem'));
+const ground = await terrain();
 const inExt = (x, z, m = 0) => x >= EXT.x0 - m && x <= EXT.x1 + m && z >= EXT.z0 - m && z <= EXT.z1 + m;
 
 const tiles = new Map(allTiles().map(([i, j]) => [tileId(i, j), { id: tileId(i, j), box: tileBox(i, j), areas: [], lines: [], buildings: [], trees: [] }]));
 const tileAt = (x, z) => tiles.get(tileId(...tileOf(x, z)));
 const tilesOver = (b, m = 0) => [...tiles.values()].filter((t) => overlaps(t.box, b, m));
+
+// Where the ground is every 2 m: the tiles within 60 m of a track planned on the map (the last
+// `npm run tracks`, so plan a new track before this), and over the shooter's area.
+const FINE = new Set(tilesOver(SHOOTER).map((t) => t.id));
+for (const f of fs.readdirSync(path.join(ROOT, 'tracks')).filter((f) => f.endsWith('.js'))) {
+  const { points } = (await import(`../tracks/${f}`)).default;
+  for (const { p } of points) for (const t of tilesOver({ x0: p[0], x1: p[0], z0: p[2], z1: p[2] }, 60)) FINE.add(t.id);
+}
 
 // ---------------------------------------------------------------------------------------------
 // The streets, the railway, and what the ground is.
@@ -111,6 +122,9 @@ const KIND = { house: 0, flats: 1, shop: 2, church: 3, civic: 4 };
 const ROOF = { flat: 0, hipped: 1, gabled: 2 };
 const COLORS = 8; // facade colours, picked from each building's id
 const fps = footprints(buildingsOsm);
+// The ground a building stands on: at its lowest corner, in decimetres above ELEV0, so a row of
+// houses steps down a hill as the real ones do. Its height is from there.
+const footY = (ring) => dm(Math.min(...ring.map(([x, z]) => ground.at(x, z))) - ELEV0);
 let real = 0;
 {
   const church = new Set(['church', 'cathedral', 'chapel', 'basilica', 'religious', 'monastery', 'convent']);
@@ -141,7 +155,7 @@ let real = 0;
     if (low.has(t.building)) roof = ROOF.flat;
     const ring = simplify(pts, 0.3);
     if (ring.length < 3) continue;
-    tileAt(cx, cz).buildings.push(ring.length, kind, roof, Math.floor(rnd(e.id, 7) * COLORS), Math.round(h * 10), 0, ...packPts(ring));
+    tileAt(cx, cz).buildings.push(ring.length, kind, roof, Math.floor(rnd(e.id, 7) * COLORS), Math.round(h * 10), 0, footY(ring), ...packPts(ring));
     real++;
   }
 }
@@ -224,7 +238,7 @@ let infill = 0;
           const kind = main ? (rand() < 0.75 ? KIND.flats : KIND.house) : rand() < 0.85 ? KIND.house : KIND.flats;
           const h = kind === KIND.flats ? 3 * (3 + Math.floor(rand() * 4)) + 0.6 : 3.4 + 3 * Math.floor(1 + rand() * 1.5);
           const roof = kind === KIND.house ? (rand() < 0.65 ? ROOF.hipped : ROOF.gabled) : rand() < 0.5 ? ROOF.hipped : ROOF.flat;
-          tileAt(mid[0], mid[1]).buildings.push(4, kind, roof, Math.floor(rand() * COLORS), Math.round(h * 10), 1, ...packPts(quad));
+          tileAt(mid[0], mid[1]).buildings.push(4, kind, roof, Math.floor(rand() * COLORS), Math.round(h * 10), 1, footY(quad), ...packPts(quad));
           addB(quad);
           infill++;
           k += Math.max(2, Math.round((wide + (row || rand() < 0.7 ? 0.4 : 3 + rand() * 4)) / 2));
@@ -273,7 +287,7 @@ let nTrees = 0;
 // ---------------------------------------------------------------------------------------------
 // The sights a Bracarense steers by: Bom Jesus and the Sameiro on the hills to the east, the cross
 // on the Picoto, the stadium, the Altice Forum, Makro and the Tourigalo's bull. Footprints and
-// positions from the map, heights from the relief.
+// positions from the map, heights from the ground.
 
 const sights = [];
 {
@@ -293,7 +307,7 @@ const sights = [];
     return { d: Infinity, at: [x, z] };
   };
   const find = (list, type, id) => list.find((e) => e.type === type && e.id === id);
-  const ground = (x, z) => Math.round((elev(x, z) - ELEV0) * 10) / 10;
+  const yAt = (x, z) => Math.round((ground.at(x, z) - ELEV0) * 10) / 10;
   const r1 = (v) => Math.round(v * 10) / 10;
   const facing = (x, z, tx, tz) => r1(Math.atan2(tz - z, tx - x) * 100) / 100;
   // A building's front: the middle of its long wall nearest a main road, and which way it looks.
@@ -320,26 +334,26 @@ const sights = [];
     const r = minRect(ringOf(basilica));
     // It looks west, down the Escadório to the city.
     const foot = [3420, -352];
-    sights.push({ kind: 'bomjesus', x: r1(r.x), z: r1(r.z), y: ground(r.x, r.z), angle: r1(r.angle * 100) / 100, L: r1(r.L), W: r1(r.W), face: facing(r.x, r.z, ...foot), foot, footY: ground(...foot) });
+    sights.push({ kind: 'bomjesus', x: r1(r.x), z: r1(r.z), y: yAt(r.x, r.z), angle: r1(r.angle * 100) / 100, L: r1(r.L), W: r1(r.W), face: facing(r.x, r.z, ...foot), foot, footY: yAt(...foot) });
   }
   const sameiro = find(fps, 'way', 146227475);
   const statue = find(pois, 'node', 6562581627);
   if (sameiro && statue) {
     const r = minRect(ringOf(sameiro)), [sx, sz] = P(statue);
-    sights.push({ kind: 'sameiro', x: r1(r.x), z: r1(r.z), y: ground(r.x, r.z), angle: r1(r.angle * 100) / 100, L: r1(r.L), W: r1(r.W), face: facing(r.x, r.z, sx, sz), statue: [r1(sx), r1(sz)], statueY: ground(sx, sz) });
+    sights.push({ kind: 'sameiro', x: r1(r.x), z: r1(r.z), y: yAt(r.x, r.z), angle: r1(r.angle * 100) / 100, L: r1(r.L), W: r1(r.W), face: facing(r.x, r.z, sx, sz), statue: [r1(sx), r1(sz)], statueY: yAt(sx, sz) });
   }
   const cross = find(pois, 'node', 3917613795);
-  if (cross) { const [x, z] = P(cross); sights.push({ kind: 'cruzeiro', x: r1(x), z: r1(z), y: ground(x, z) }); }
+  if (cross) { const [x, z] = P(cross); sights.push({ kind: 'cruzeiro', x: r1(x), z: r1(z), y: yAt(x, z) }); }
   const bull = find(pois, 'node', 4872503160);
-  if (bull) { const [x, z] = P(bull); sights.push({ kind: 'tourigalo', x: r1(x), z: r1(z), y: ground(x, z), face: facing(x, z, ...road(x, z).at) }); }
+  if (bull) { const [x, z] = P(bull); sights.push({ kind: 'tourigalo', x: r1(x), z: r1(z), y: yAt(x, z), face: facing(x, z, ...road(x, z).at) }); }
   const makro = find(fps, 'way', 41677157);
-  if (makro) sights.push({ kind: 'makro', ...front(ringOf(makro)), y: ground(...P(makro.geometry[0])) });
+  if (makro) sights.push({ kind: 'makro', ...front(ringOf(makro)), y: yAt(...P(makro.geometry[0])) });
   const altice = fps.filter((e) => Math.floor(e.id / 16) === 19915703).map(ringOf).sort((a, b) => ringArea(b) - ringArea(a))[0];
-  if (altice) sights.push({ kind: 'altice', ...front(altice), y: ground(altice[0][0], altice[0][1]) });
+  if (altice) sights.push({ kind: 'altice', ...front(altice), y: yAt(altice[0][0], altice[0][1]) });
   const pitch = find(base.elements, 'way', 22660434);
   if (pitch) {
     const r = minRect(ringOf(pitch));
-    sights.push({ kind: 'stadium', x: r1(r.x), z: r1(r.z), y: ground(r.x, r.z), angle: r1(r.angle * 100) / 100, L: r1(r.L), W: r1(r.W) });
+    sights.push({ kind: 'stadium', x: r1(r.x), z: r1(r.z), y: yAt(r.x, r.z), angle: r1(r.angle * 100) / 100, L: r1(r.L), W: r1(r.W) });
   }
   console.log(`sights: ${sights.map((q) => q.kind).join(', ')}`);
 }
@@ -349,7 +363,7 @@ const sights = [];
 
 const out = new Packer();
 {
-  const grid = (b, step, h = (x, z) => elev(x, z)) => {
+  const grid = (b, step, h = (x, z) => ground.mean(x, z, step)) => {
     const nx = Math.round((b.x1 - b.x0) / step) + 1, nz = Math.round((b.z1 - b.z0) / step) + 1, v = [];
     for (let j = 0; j < nz; j++) for (let i = 0; i < nx; i++) v.push(dm(h(b.x0 + i * step, b.z0 + j * step) - ELEV0));
     return { v: packGrid(v, nx), meta: { x0: b.x0, z0: b.z0, step, nx, nz } };
@@ -357,9 +371,10 @@ const out = new Packer();
   // The whole map every 50 m, for the hills in the distance.
   const far = grid(EXT, 50);
   out.part('far', far.v, far.meta);
-  // The horizon: the hills 15 km round the map, every 250 m, from the coarser tiles.
+  // The horizon: the hills 15 km round the map, every 250 m: the LiDAR as far as it was fetched (the
+  // map and a little round it), the coarser Terrain Tiles (EU-DEM) beyond.
   const hz = relief(path.join(CACHE, 'dem'), 11), cx = Math.round((EXT.x0 + EXT.x1) / 500) * 250, cz = Math.round((EXT.z0 + EXT.z1) / 500) * 250;
-  const H = grid({ x0: cx - 15000, x1: cx + 15000, z0: cz - 15000, z1: cz + 15000 }, 250, (x, z) => Math.max(ELEV0 - 50, hz(x, z)));
+  const H = grid({ x0: cx - 15000, x1: cx + 15000, z0: cz - 15000, z1: cz + 15000 }, 250, (x, z) => Math.max(ELEV0 - 50, ground.covers(x, z) ? ground.mean(x, z, 250) : hz(x, z)));
   out.part('horizon', H.v, H.meta);
   // What the far hills are covered with, at each point of their grid: 0 fields and scrub, 1 woods,
   // 2 town.
@@ -382,16 +397,18 @@ const out = new Packer();
     }
   }
   out.part('cover', cover);
-  // The rivers: each one's course and water level, falling downstream.
+  // The rivers: each one's course and water level, falling downstream. The level is the lowest
+  // ground within 4 m of the course: the water, or the bed where the LiDAR saw through it.
   const R = [];
   for (const e of base.elements) {
     const t = e.tags || {};
     if (e.type !== 'way' || t.waterway !== 'river' || (t.tunnel && t.tunnel !== 'no')) continue;
     const pts = e.geometry.map(P).filter(([x, z]) => inExt(x, z, 100));
     if (pts.length < 2) continue;
-    const lv = blur(pts.map(([x, z]) => elev(x, z)), 4);
+    const low = (x, z) => { let m = Infinity; for (let a = -4; a <= 4; a++) for (let c = -4; c <= 4; c++) if (a * a + c * c <= 16) m = Math.min(m, ground.at(x + a, z + c)); return m; };
+    const lv = blur(pts.map(([x, z]) => low(x, z)), 2);
     for (let i = 1; i < lv.length; i++) lv[i] = Math.min(lv[i], lv[i - 1]); // water runs downhill
-    R.push(pts.length, ...pts.flatMap(([x, z], i) => [half(x), half(z), dm(lv[i] - ELEV0 - 2.2)]));
+    R.push(pts.length, ...pts.flatMap(([x, z], i) => [half(x), half(z), dm(lv[i] - ELEV0 - 0.3)]));
   }
   out.part('rivers', R, { halfWidth: 6 });
 }
@@ -402,14 +419,15 @@ const out = new Packer();
 const dir = path.join(ROOT, 'world');
 fs.rmSync(path.join(dir, 'tiles'), { recursive: true, force: true });
 fs.mkdirSync(path.join(dir, 'tiles'), { recursive: true });
-const HEAD = `// Made by tools/world.mjs from OpenStreetMap and the relief: run that again rather than editing it.
+const HEAD = `// Made by tools/world.mjs from OpenStreetMap and DGT's LiDAR: run that again rather than editing it.
 // A JSON header, then 16-bit numbers, in base64; index.js reads it. © OpenStreetMap contributors (ODbL).
+// The ground: informação geográfica cedida pela Direção-Geral do Território (CC BY 4.0).
 `;
 let bytes = 0;
 const sizes = [];
 for (const t of tiles.values()) {
-  const p = new Packer(), b = t.box, step = 10, n = TILE / step + 1, h = [];
-  for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) h.push(dm(elev(b.x0 + i * step, b.z0 + j * step) - ELEV0));
+  const p = new Packer(), b = t.box, step = FINE.has(t.id) ? 2 : 10, n = TILE / step + 1, h = [];
+  for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) h.push(dm(ground.mean(b.x0 + i * step, b.z0 + j * step, step) - ELEV0));
   p.part('terrain', packGrid(h, n), { x0: b.x0, z0: b.z0, step, nx: n, nz: n });
   p.part('areas', t.areas);
   p.part('lines', t.lines);
@@ -428,7 +446,7 @@ ${[...tiles.keys()].map((id) => `  '${id}': () => import('./tiles/${id}.js'),`).
 
 const landmarks = braga.landmarks.map((l) => ({ id: l.id, name: l.name, x: l.x, z: l.z, section: sectionOf(l.x, l.z) }));
 out.header.meta = {
-  credit: '© OpenStreetMap contributors (ODbL). Relief: Terrain Tiles (AWS Open Data). Europe terrain data produced using Copernicus data and information funded by the European Union - EU-DEM layers.',
+  credit: '© OpenStreetMap contributors (ODbL). Relief: LiDAR, informação geográfica cedida pela Direção-Geral do Território (CC BY 4.0); beyond the map, Terrain Tiles (AWS Open Data): Europe terrain data produced using Copernicus data and information funded by the European Union - EU-DEM layers.',
   osmTime: base.osm3s.timestamp_osm_base,
   elev0: ELEV0,
   ext: EXT,
@@ -444,3 +462,4 @@ fs.writeFileSync(path.join(dir, 'base.js'), `${HEAD}export default '${b64}';\n`)
 sizes.sort((a, b) => b[1] - a[1]);
 console.log(`base ${Math.round(b64.length / 1024)} KB; ${tiles.size} tiles, ${Math.round(bytes / 1024)} KB in all, the biggest ${sizes.slice(0, 4).map(([id, kb]) => `${id} ${kb} KB`).join(', ')}`);
 console.log(`sections: ${SECTIONS.map((s) => `${s.id} ${s.tiles.length}`).join(', ')}`);
+console.log(`the ground every 2 m on ${FINE.size} tiles: ${[...FINE].sort().join(' ')}`);

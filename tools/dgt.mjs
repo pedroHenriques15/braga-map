@@ -63,11 +63,26 @@ export function tileToMap(key) {
   };
 }
 
-// ---- The terrain (MDT) and surface (MDS) models: Float32 GeoTIFFs at 50 cm, -999 where empty ----
+// The same the other way, over a box on the map: EPSG:3763 from the map's metres, a curve through
+// the exact values at 3 × 3 points of the box. Within a millimetre over 500 m.
+export function mapToTM(b) {
+  const at = [];
+  for (let j = 0; j < 3; j++) for (let i = 0; i < 3; i++) at.push(toTM(b.x0 + (i * (b.x1 - b.x0)) / 2, b.z0 + (j * (b.z1 - b.z0)) / 2));
+  const L = (s) => [2 * (s - 0.5) * (s - 1), -4 * s * (s - 1), 2 * s * (s - 0.5)];
+  return (x, z) => {
+    const a = L((x - b.x0) / (b.x1 - b.x0)), c = L((z - b.z0) / (b.z1 - b.z0));
+    let e = 0, n = 0;
+    for (let j = 0; j < 3; j++) for (let i = 0; i < 3; i++) { const w = a[i] * c[j], p = at[j * 3 + i]; e += w * p[0]; n += w * p[1]; }
+    return [e, n];
+  };
+}
+
+// ---- The terrain (MDT) and surface (MDS) models: Float32 GeoTIFFs at 50 cm (and the terrain at
+// 2 m), -999 where empty ----
 
 const MODEL = { mdt: 'MDT-50cm', mds: 'MDS-50cm' };
 
-async function readModel(file) {
+export async function readModel(file) {
   const img = await (await fromFile(file)).getImage();
   const [e0, n1] = img.getOrigin(), [res] = img.getResolution();
   const w = img.getWidth(), h = img.getHeight(), nodata = Number(img.getGDALNoData() ?? -999);
@@ -121,8 +136,10 @@ export async function ortho(box) {
 
 // ---- The point cloud: LAZ (LAS 1.4, point format 8), a tile at a time ----
 
-// Classes in DGT's point cloud.
-export const CLASS = { ground: 2, lowVegetation: 3, mediumVegetation: 4, highVegetation: 5, building: 6, noise: 7, water: 9, bridge: 17 };
+// Classes in DGT's point cloud. A bridge's deck is 26, not the LAS standard's 17, which DGT doesn't
+// use here: seen on the route's two flyovers (task 009). Some other structures are 26 too, such as
+// the viewpoint's platform on the Picoto.
+export const CLASS = { unclassified: 1, ground: 2, lowVegetation: 3, mediumVegetation: 4, highVegetation: 5, building: 6, noise: 7, water: 9, bridge: 26 };
 
 let lazPerf = null;
 

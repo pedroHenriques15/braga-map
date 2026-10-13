@@ -64,3 +64,9 @@ Lobato.
 - The Rio Este's banks and weirs: task 016's ground, and "Later" in the roadmap.
 
 ## Notes
+
+- From task 009: the ground is the LiDAR's bare ground, which has what's under a bridge, not its
+  deck. `track.mjs` already crosses the route's six bridges (OSM's `bridge` on the loop's ways)
+  straight from end to end, within 0.25 m of the deck in the middle, and marks them `bridge` in
+  the track's points; party-kart gives those over a road a plain deck 1.3 m deep, and parapets. In
+  DGT's point cloud a deck is class 26, not 17 (`CLASS.bridge` in `tools/dgt.mjs`).

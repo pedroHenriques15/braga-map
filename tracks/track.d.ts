@@ -31,7 +31,8 @@ export interface Track {
   // The sections it runs through, from the start, and the box the games draw round it.
   sections: string[];
   box: Box;
-  // The easter eggs: beside the road on `side` (-1 left, 1 right) of the point nearest (x, z).
+  // The easter eggs, each on its house: (x, z) is the house's own spot, on `side` of the road
+  // (-1 left, 1 right, going round). Kinds: dog, dentist, supermarket, smoke, clock.
   eggs: { kind: string; x: number; z: number; side: number }[];
   // Each street as the road turns into it, and the landmarks it passes.
   streets: { name: string; x: number; z: number }[];

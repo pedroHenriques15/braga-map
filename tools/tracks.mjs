@@ -2,7 +2,7 @@
 // streets:
 // - `waypoints`: [{ id, x, z, egg?, rows? }] on the map, or 'private' for the ones kept in
 //   .cache/places.json (the friends' houses, never committed), as { places, order? }. `egg` is
-//   the easter egg a little past it, and `rows: true` lines its street with houses (world.mjs).
+//   the easter egg on that house, and `rows: true` lines its street with houses (world.mjs).
 // - `order` (or the private file's): the waypoints' ids in the order the loop takes them. Without
 //   it, every order is tried.
 // - `sections`: when given, the loop keeps to those sections' streets (sections.mjs).

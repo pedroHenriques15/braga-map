@@ -616,7 +616,6 @@ for (let i = 0; i < n2; i++) {
   if (sc < startScore) { startScore = sc; start = i; }
 }
 // Everything from here counts from the start line.
-const order = (i) => (i - start + n2) % n2;
 const at = (k) => (start + k) % n2; // k samples (2 m each) after the start
 const straightest = (k, span) => { let best = k, bs = Infinity; for (let d = -span; d <= span; d++) { const sc = maxCurve(at(k + d), 10, 10); if (sc < bs) { bs = sc; best = k + d; } } return best; };
 
@@ -632,13 +631,14 @@ for (let k = 0, run = 0; k < n2; k++) {
 }
 const boosts = straights.sort((a, b) => b.len - a.len).slice(0, 6).map((s) => s.from + 15).filter((k) => !busy(k) && !items.some((it) => Math.abs(it - k) < 25));
 
-// The easter eggs stand beside the road a little way past each house, never at its door.
-const eggs = places.filter((p) => p.egg).map((p, n) => {
+// The easter eggs stand on the houses themselves (decision 014): each at its waypoint's own dot,
+// on the side of the road the dot is on (1 is the right, going round, and -1 the left).
+const eggs = places.filter((p) => p.egg).map((p) => {
   let best = 0, bd = Infinity;
   for (let i = 0; i < n2; i++) { const d = Math.hypot(line[i][0] - p.x, line[i][1] - p.z); if (d < bd) { bd = d; best = i; } }
-  const k = (order(best) + 22 + n * 3) % n2; // 44-50 m further on
-  const [x, z] = line[at(k)];
-  return { kind: p.egg, x: Math.round(x), z: Math.round(z), side: n % 2 ? 1 : -1 };
+  const [ax, az] = line[(best - 1 + n2) % n2], [bx, bz] = line[(best + 1) % n2];
+  const side = (bx - ax) * (p.z - line[best][1]) - (bz - az) * (p.x - line[best][0]) >= 0 ? 1 : -1;
+  return { kind: p.egg, x: Math.round(p.x), z: Math.round(p.z), side };
 });
 // The streets a note on the map asked to have houses all down both sides: the waypoints marked
 // `rows` in places.json, and the joins out of them.

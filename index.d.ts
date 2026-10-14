@@ -39,7 +39,9 @@ export interface Landmark {
 export type Sight =
   | { kind: 'bomjesus'; x: number; z: number; y: number; angle: number; L: number; W: number; face: number; foot: [number, number]; footY: number }
   | { kind: 'sameiro'; x: number; z: number; y: number; angle: number; L: number; W: number; face: number; statue: [number, number]; statueY: number }
-  | { kind: 'cruzeiro' | 'tourigalo'; x: number; z: number; y: number; face?: number }
+  | { kind: 'cruzeiro'; x: number; z: number; y: number }
+  // The Tourigalo: `face` is the way its head points; `sign` is the front of the restaurant behind it.
+  | { kind: 'tourigalo'; x: number; z: number; y: number; face: number; sign?: { x: number; z: number; face: number; L: number } }
   | { kind: 'makro' | 'altice'; x: number; z: number; y: number; face: number; L: number }
   | { kind: 'stadium'; x: number; z: number; y: number; angle: number; L: number; W: number };
 

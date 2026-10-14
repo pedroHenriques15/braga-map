@@ -70,6 +70,7 @@ the track alone and over the whole map evenly.
   them.
 - **The friends' houses are never at their real door.** An easter egg stands near a waypoint,
   44–50 m past it (`tools/track.mjs`), and the waypoints stay in `.cache/places.json`.
+  *Replaced by decision 014 (2026-10-14): the eggs stand on the houses.*
 
 Anything else that looks different from the real place is a bug, and belongs in a task.
 
@@ -283,3 +284,29 @@ a little until the game stutters on a phone.
 
 The alternative, the task's plan, set the budget from the phone's frame rate with room to spare.
 It stays the way to raise it.
+
+## 014 · The friends are in the game: their jokes on their houses, and they drive
+
+*2026-10-14 · replaces decision 004's bullet on the friends' houses*
+
+The kart race was dressed as an American celebrity party (P. Kiddy's White Party, parody rappers
+and a president for drivers). The owner wanted Braga's own instead: the drivers are the five
+friends the Volta dos Amigos goes past, each in a car that's a joke about them, and each one's
+easter egg stands on their house, exactly on the dot on the shared map, where before it stood
+44–50 m past it so nobody's door was shown.
+
+- **The eggs are on the houses.** `tools/track.mjs` writes each egg at its waypoint's own spot, on
+  the side of the road it's on; the games stand the egg there (party-kart's `eggSpots`), or just
+  far enough from the kerb for what's in front of it. A friend with no joke yet can have one:
+  Vale's is a clock (task 030).
+- **The drivers are the friends, by first name.** Pedro, Joel, Joel F., Capelas and Vale; never a
+  surname. Their faces are the same cartoon face as everyone's, never a likeness.
+- **What stays private.** The waypoints themselves stay in `.cache/places.json` and the shared
+  map's database, and no commit, task or doc names a friend's street or door. The eggs'
+  coordinates in `tracks/amigos.js` are now the houses', and with the drivers' names a stranger
+  can tell whose house is where. The owner chose this knowing the repositories and the game are
+  public (2026-10-14), over keeping the eggs 44–50 m off and the drivers as nicknames.
+- **The rest of the party went too:** the items have Braga's names and looks with the same rules
+  (☕ café, 🍮 pudim, ⚽ bola do Braga, 🕊️ pombo-correio, 🚀 foguete, ✨ filigrana, 🔨 martelinho,
+  ☂️ guarda-chuva), and the start is a granite plinth with Braga's arms (task 028). "Party Kart"
+  keeps its name and address.

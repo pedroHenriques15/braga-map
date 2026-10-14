@@ -122,6 +122,9 @@ const KIND = { house: 0, flats: 1, shop: 2, church: 3, civic: 4 };
 const ROOF = { flat: 0, hipped: 1, gabled: 2 };
 const COLORS = 8; // facade colours, picked from each building's id
 const fps = footprints(buildingsOsm);
+// Buildings whose guess is far off, as photos show them, until task 010 measures them all: the
+// Tourigalo's restaurant is one storey with a flat roof, not a block of flats (Mapillary, 2019).
+const SEEN = { 142911732: { kind: KIND.shop, h: 5.2, roof: ROOF.flat } };
 // The ground a building stands on: at its lowest corner, in decimetres above ELEV0, so a row of
 // houses steps down a hill as the real ones do. Its height is from there.
 const footY = (ring) => dm(Math.min(...ring.map(([x, z]) => ground.at(x, z))) - ELEV0);
@@ -153,6 +156,7 @@ let real = 0;
     let roof = shape === 'flat' ? ROOF.flat : shape === 'gabled' ? ROOF.gabled : ['hipped', 'half-hipped', 'pyramidal'].includes(shape) ? ROOF.hipped : null;
     if (roof === null) roof = kind === KIND.house ? (rnd(e.id, 4) < 0.7 ? ROOF.hipped : ROOF.gabled) : kind === KIND.flats ? (rnd(e.id, 5) < 0.45 ? ROOF.hipped : ROOF.flat) : kind === KIND.church ? ROOF.gabled : kind === KIND.civic ? (rnd(e.id, 6) < 0.5 ? ROOF.hipped : ROOF.flat) : ROOF.flat;
     if (low.has(t.building)) roof = ROOF.flat;
+    if (SEEN[e.id]) ({ kind, h, roof } = SEEN[e.id]);
     const ring = simplify(pts, 0.3);
     if (ring.length < 3) continue;
     tileAt(cx, cz).buildings.push(ring.length, kind, roof, Math.floor(rnd(e.id, 7) * COLORS), Math.round(h * 10), 0, footY(ring), ...packPts(ring));
@@ -178,6 +182,10 @@ let infill = 0;
     for (let f = 0; f < n; f++) vgrid.add(ax + ((bx - ax) * f) / n, az + ((bz - az) * f) / n, [ax + ((bx - ax) * f) / n, az + ((bz - az) * f) / n]);
   }
   const GREEN = new Set(['farm', 'grass', 'scrub', 'forest', 'park', 'cemetery', 'sport', 'water']);
+  // Open ground the orthophoto shows that the map doesn't say is green, until task 011 checks every
+  // invented house against it: the Tourigalo's lawn, and the grass north of its restaurant.
+  const OPEN = [{ x0: 1575, x1: 1650, z0: 200, z1: 305 }];
+  const open = (pts) => OPEN.some((o) => pts.some(([x, z]) => x > o.x0 && x < o.x1 && z > o.z0 && z < o.z1));
   const agrid = new Grid(100);
   areas.forEach(([, r], i) => { const b = bounds(r); for (let a = Math.floor(b.x0 / 100); a <= Math.floor(b.x1 / 100); a++) for (let c = Math.floor(b.z0 / 100); c <= Math.floor(b.z1 / 100); c++) agrid.add(a * 100, c * 100, i); });
   const landAt = (x, z) => { let best = null, ba = Infinity; for (const i of agrid.near(x, z, 0)) { const [k, r] = areas[i]; if (inside(r, x, z)) { const a = ringArea(r); if (a < ba) { ba = a; best = AREA[k]; } } } return best; };
@@ -238,9 +246,13 @@ let infill = 0;
           const kind = main ? (rand() < 0.75 ? KIND.flats : KIND.house) : rand() < 0.85 ? KIND.house : KIND.flats;
           const h = kind === KIND.flats ? 3 * (3 + Math.floor(rand() * 4)) + 0.6 : 3.4 + 3 * Math.floor(1 + rand() * 1.5);
           const roof = kind === KIND.house ? (rand() < 0.65 ? ROOF.hipped : ROOF.gabled) : rand() < 0.5 ? ROOF.hipped : ROOF.flat;
-          tileAt(mid[0], mid[1]).buildings.push(4, kind, roof, Math.floor(rand() * COLORS), Math.round(h * 10), 1, footY(quad), ...packPts(quad));
+          const color = Math.floor(rand() * COLORS);
+          // On open ground it keeps its turn, so no other house moves, but nothing is built.
+          if (!open(quad.concat([mid]))) {
+            tileAt(mid[0], mid[1]).buildings.push(4, kind, roof, color, Math.round(h * 10), 1, footY(quad), ...packPts(quad));
+            infill++;
+          }
           addB(quad);
-          infill++;
           k += Math.max(2, Math.round((wide + (row || rand() < 0.7 ? 0.4 : 3 + rand() * 4)) / 2));
         } else k += 3;
       }
@@ -310,15 +322,16 @@ const sights = [];
   const yAt = (x, z) => Math.round((ground.at(x, z) - ELEV0) * 10) / 10;
   const r1 = (v) => Math.round(v * 10) / 10;
   const facing = (x, z, tx, tz) => r1(Math.atan2(tz - z, tx - x) * 100) / 100;
-  // A building's front: the middle of its long wall nearest a main road, and which way it looks.
-  const front = (pts) => {
+  // A building's front: the middle of its long wall nearest a main road (or nearest the point
+  // `toward`, where the map's roads would pick the wrong wall), and which way it looks.
+  const front = (pts, toward) => {
     let best = null;
     const cx = pts.reduce((a, q) => a + q[0], 0) / pts.length, cz = pts.reduce((a, q) => a + q[1], 0) / pts.length;
     const longest = Math.max(...pts.map((q, k) => Math.hypot(pts[(k + 1) % pts.length][0] - q[0], pts[(k + 1) % pts.length][1] - q[1])));
     for (let k = 0; k < pts.length; k++) {
       const [ax, az] = pts[k], [bx, bz] = pts[(k + 1) % pts.length], l = Math.hypot(bx - ax, bz - az);
       if (l < Math.min(30, longest * 0.6)) continue;
-      const mx = (ax + bx) / 2, mz = (az + bz) / 2, d = road(mx, mz).d;
+      const mx = (ax + bx) / 2, mz = (az + bz) / 2, d = toward ? Math.hypot(toward[0] - mx, toward[1] - mz) : road(mx, mz).d;
       if (!best || d < best.d) {
         let nx = (bz - az) / l, nz = -(bx - ax) / l;
         if (nx * (mx - cx) + nz * (mz - cz) < 0) { nx = -nx; nz = -nz; }
@@ -344,8 +357,12 @@ const sights = [];
   }
   const cross = find(pois, 'node', 3917613795);
   if (cross) { const [x, z] = P(cross); sights.push({ kind: 'cruzeiro', x: r1(x), z: r1(z), y: yAt(x, z) }); }
+  // The Tourigalo: a bull with a rooster's head, on the lawn by the Avenida Doutor António Alves
+  // Palha's roundabout, its head to the west as Mapillary's photos show it (2018-2019); and the
+  // restaurant behind it, whose sign is along the front it shows the avenue.
   const bull = find(pois, 'node', 4872503160);
-  if (bull) { const [x, z] = P(bull); sights.push({ kind: 'tourigalo', x: r1(x), z: r1(z), y: yAt(x, z), face: facing(x, z, ...road(x, z).at) }); }
+  const restaurant = find(fps, 'way', 142911732);
+  if (bull) { const [x, z] = P(bull); sights.push({ kind: 'tourigalo', x: r1(x), z: r1(z), y: yAt(x, z), face: r1(Math.PI * 100) / 100, ...(restaurant && { sign: front(ringOf(restaurant), [1625, 320]) }) }); }
   const makro = find(fps, 'way', 41677157);
   if (makro) sights.push({ kind: 'makro', ...front(ringOf(makro)), y: yAt(...P(makro.geometry[0])) });
   const altice = fps.filter((e) => Math.floor(e.id / 16) === 19915703).map(ringOf).sort((a, b) => ringArea(b) - ringArea(a))[0];

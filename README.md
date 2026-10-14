@@ -101,10 +101,12 @@ in `tracks/` run through. All three need the LiDAR.
   the shooter's area, each the mean of the LiDAR's round it; every 10 m elsewhere), what the
   ground is (each area cut to the tiles it's on), every street at its width, the railway, every
   building with its height and roof on the ground at its lowest corner, houses filled in where the
-  map has none on a built-up street, the trees (woods and parks filled in), the rivers with their
+  map has none on a built-up street (never on the open ground in `OPEN` that the orthophoto shows
+  and the map doesn't say is green), the trees (woods and parks filled in), the rivers with their
   water level (the lowest ground within 4 m of their course), and the sights (Bom Jesus, the
-  Sameiro, the cross on the Picoto, the stadium, the Altice Forum, Makro, the Tourigalo's bull),
-  picked out of the map by their OpenStreetMap ids.
+  Sameiro, the cross on the Picoto, the stadium, the Altice Forum, Makro, the Tourigalo with the
+  way its head points and its restaurant's front), picked out of the map by their OpenStreetMap
+  ids. `SEEN` corrects the guessed height of the buildings photos show to be far off.
 - `track.mjs` plans the tracks in `tracks.mjs`: below.
 - `refs/viewpoints.json` lists the viewpoints, the places where a game is set against the real
   Braga (task 001): 29 cameras along the Volta dos Amigos, on foot in Fujacal, and on Bom Jesus
@@ -156,7 +158,7 @@ in `tracks/` run through. All three need the LiDAR.
    alongside, and a gap wherever a side street joins.
 4. **Where things go.** The start on the track's `start` street, on the straightest stretch at
    least 250 m from every waypoint, 5 checkpoints evenly spaced, a row of item boxes every 820 m,
-   boost pads 30 m into the longest straights, and the easter eggs 44–50 m past their waypoints.
+   boost pads 30 m into the longest straights, and the easter eggs on their waypoints.
 5. **What's along it.** The street names as it turns into each, the landmarks within 220 m, and
    from the map the zebra crossings and traffic lights on its streets and the bus stops beside it;
    the sections it runs through, and the box round it a game draws (500 m round the track).
@@ -177,11 +179,13 @@ say what makes a track raceable: a loop of 7–10 km, an autopilot lap without r
 The Volta dos Amigos goes through waypoints that stay out of this repo, which is public:
 `.cache/places.json`, the houses from the shared map's database, as
 `{ "places": [{ "id", "egg", "x", "z", "rows"? }], "order"?: [ids] }`. `order` keeps the loop
-going round the houses in that order. `egg` is the easter egg by that house (`dog`, `dentist`,
-`supermarket`, `smoke` or null), and `rows: true` lines that street with houses on both sides
-(`world.mjs` reads that too). Don't copy them anywhere committed. When a house goes into a game,
-put it near the real one, never at the right door: the eggs stand 44–50 m past the houses, and
-nothing names whose street is whose.
+going round the houses in that order. `egg` is the easter egg on that house (`dog`, `dentist`,
+`supermarket`, `smoke`, `clock` or null), and `rows: true` lines that street with houses on both
+sides (`world.mjs` reads that too). Don't copy the file anywhere committed. Since decision 014 the
+eggs stand on the houses themselves: each egg in `tracks/<id>.js` is at its house's own spot, on
+the side of the road it's on (`test/eggs.test.js` checks it), and the games' drivers are the
+friends by first name. Never a surname, a street name or a door number in a commit, a task or a
+doc.
 
 ## What's on it
 

@@ -91,7 +91,7 @@ npm test         # the world and the tracks as the games read them, and DGT's da
 node tools/relief.mjs  # the ground checked: known places, bridges, and each track's profile
 node tools/heights.mjs # the buildings checked against the map's own heights and floors, and the outliers
 node tools/levels.mjs  # the streets that cross on two levels round the track, and the room between them
-node tools/refs.mjs    # each viewpoint's real photo, into .cache/refs/ (with Mapillary's free token)
+node tools/refs.mjs    # the viewpoints' and the reference photos, into .cache/refs/ (with Mapillary's free token)
 node tools/round.mjs <round> --label "…"  # a round of party-kart's shots, for the scorecard
 ```
 
@@ -159,7 +159,14 @@ from `roofs.mjs`'s measurements. All of them need the LiDAR.
   panorama to the viewpoint's own view, level; they're not committed. It needs Mapillary's free
   client token, in `.cache/credentials.json` as `{ "mapillary": { "token": "MLY|…" } }` or in
   `MAPILLARY_TOKEN`. `test/viewpoints.test.js` checks each viewpoint stands where its photo was
-  taken, at eye level, and at least 150 m from every waypoint and egg. party-kart's
+  taken, at eye level, and at least 150 m from every waypoint and egg. `refs/photos.json` lists
+  the reference photos (task 008): for each building in the shooter's area and the ones a local
+  knows along the route, the landmarks, bridges and roundabouts, the kinds of building, wall and
+  gate, and close-ups of pavements, kerbs, azulejos and street furniture, a real photo from
+  Mapillary or Wikimedia Commons with its credit, marked as a reference or good enough for a
+  texture. `refs.mjs` fetches them into `.cache/refs/photos/<id>.jpg`, a panorama cut to what it
+  shows; `test/photos.test.js` checks each one's credit, and that none was taken within 150 m of
+  a waypoint or an egg or looks towards one. party-kart's
   `node scripts/shots.mjs <label>` shoots its city from every viewpoint, at the photo's field of
   view and shape, into a round beside the photos and the round before (task 002, decision 011).
 - `round.mjs` prepares one of those rounds for the scorecard (`scorecard/index.html`): its High
@@ -276,7 +283,9 @@ information funded by the European Union - EU-DEM layers." `map().credit` gives 
 
 The viewpoints' photos (`refs/viewpoints.json`, fetched into `.cache/refs/`, not committed) are
 © Mapillary contributors, under CC BY-SA 4.0: wherever one is shown, show its author and link,
-which `photo` gives.
+which `photo` gives. So are most reference photos (`refs/photos.json`); the rest are from
+Wikimedia Commons, each under its own licence (CC BY, CC BY-SA, CC0 or public domain), whose
+author, licence and link `photo` gives too. A texture made from a CC BY-SA photo is CC BY-SA.
 
 Every source the map uses or may use, with its licence, its exact credit and what it may be used
 for, is in [docs/SOURCES.md](docs/SOURCES.md).

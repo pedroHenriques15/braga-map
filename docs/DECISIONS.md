@@ -366,3 +366,29 @@ and any game can draw it.
 The owner said so on 2026-10-14, when task 011's real buildings took the city past the budget
 (Low 0.583 M triangles of 0.55, and 1.56 MB of 1.5 to download) and the choice was to trim them,
 keep them all and measure a phone first, or stay inside it with simpler buildings far from the road.
+
+## 018 · The city's photos are found online; nobody takes new ones
+
+*2026-10-14 · replaces decision 006's "the owner's and the friends' photos, the first choice", and
+decision 009's "a photo the owner or a friend takes may replace one later"*
+
+The reference photos every later task works from, and the textures made from them, come from open
+photos already online: Mapillary first (its July 2024 panoramas taken on foot before its
+dashboard photos), Wikimedia Commons for the landmarks, the skyline and the close-ups, an open
+texture library where Braga has no photo, marked as generic. Nobody walks the route or Fujacal with
+a camera. What no online photo shows is listed as a gap, and is drawn from its type's kit or a
+procedural texture until a photo turns up online. The photos the owner or a friend take are still
+theirs to use, with their consent (decision 002); they're just not sought.
+
+- **The list is committed, the photos aren't:** `refs/photos.json` says what each photo shows,
+  whether it's good enough for a texture (straight on, sharp, evenly lit, nothing in front) or a
+  reference only, and its source, author, licence and link; `tools/refs.mjs` fetches them into
+  `.cache/refs/photos/`, cutting a panorama to what it shows.
+- **The friends' houses stay out of them,** as the viewpoints' do (decision 009): every photo
+  taken 150 m from every waypoint and egg, none looking towards one within 300 m, checked by
+  `test/photos.test.js`; nowhere says which photos that left out.
+
+The owner chose this on 2026-10-14 over the photo walk task 008 first was (the owner and the
+friends photographing the route and Fujacal with their phones): the scorecard's 29 viewpoints had
+all found their photos online, and a walk waited on everyone's time. Task 008 found 424 photos and
+listed the gaps: about half the buildings in the shooter's area have none.

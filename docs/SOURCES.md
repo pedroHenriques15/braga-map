@@ -171,10 +171,11 @@ millimetre (the test).
   the LiDAR's buildings (the median of the 250 m squares, shifted as the map's outlines are), and
   on 2026-10-14 none of the 7,251 came out closer, so none is used.
 
-## For the viewpoints
+## For the viewpoints and the reference photos
 
-The real photos the game is set against (task 001, `refs/viewpoints.json`). Only their list is
-committed; `node tools/refs.mjs` fetches the photos into `.cache/refs/`.
+The real photos the game is set against (task 001, `refs/viewpoints.json`), and the reference
+photos of each facade, landmark and close-up the city needs (task 008, `refs/photos.json`). Only
+their lists are committed; `node tools/refs.mjs` fetches the photos into `.cache/refs/`.
 
 ### Mapillary
 
@@ -186,7 +187,10 @@ committed; `node tools/refs.mjs` fetches the photos into `.cache/refs/`.
   July 2024 on the Avenida da Liberdade, São João da Ponte, the Devesa and through Fujacal, and
   others from a bicycle helmet in March 2026, blurred, tilted, and with headings that can't be
   trusted. Most of the route has photos; the Avenida Doutor António Alves Palha's are all of
-  the verge.
+  the verge. Looked at again for task 008 (2026-10-14): the July 2024 panoramas were taken by a
+  group walking, the camera on a helmet (it shows when a cut looks down), and passers-by are in
+  many of them; besides the dashboards of 2018–2019 there are newer photos from cars, a dashcam
+  through Fujacal in November 2023 and phones in February, March and August 2024.
 - **Access:** the Graph API (`https://graph.mapillary.com/images?bbox=…`, at most 2,000 photos a
   request) with a free client token from https://www.mapillary.com/dashboard/developers, kept out
   of git in `.cache/credentials.json` as `{ "mapillary": { "token": "MLY|…" } }`, or in
@@ -195,12 +199,35 @@ committed; `node tools/refs.mjs` fetches the photos into `.cache/refs/`.
 - **Licence:** the photos are CC BY-SA 4.0. The map features it detects in them (signs, lamps) are
   under Mapillary's own terms, which it can revoke, not an open licence.
 - **Credit:** "© Mapillary contributors, CC BY-SA 4.0", with each photo's author and link
-  (`photo` in `refs/viewpoints.json` has both).
+  (`photo` in `refs/viewpoints.json` and `refs/photos.json` has both).
 - **May be used for:** the photos as references, with the credit and link, and their cameras'
-  positions to place the viewpoints. The detected features never get copied into this
-  repository; they may guide someone mapping those things in OpenStreetMap, which then brings them
-  here.
-- **Used:** all 29 viewpoints' photos.
+  positions to place the viewpoints. As textures too, which the licence allows: a texture made
+  from one is CC BY-SA. The detected features never get copied into this repository; they may
+  guide someone mapping those things in OpenStreetMap, which then brings them here.
+- **Used:** all 29 viewpoints' photos, and 399 of the reference photos (task 008), 19 of them
+  marked good enough for a texture.
+
+### Wikimedia Commons
+
+- **What:** photos of the landmarks by the thousand (Bom Jesus 2,734; the Sé 1,775; the Sameiro
+  319; the Theatro Circo 273; the Estádio Municipal 223; the Parque da Ponte 214, counted for task
+  005), few of the streets, and close-ups of Braga's azulejos and manhole covers. Searched for
+  task 008 on 2026-10-14 by category (`Category:Braga` and what's under it) and by name.
+- **Access:** the MediaWiki API (`https://commons.wikimedia.org/w/api.php`), open, no account:
+  `prop=imageinfo` gives each file's author, licence and date (`extmetadata`) and a thumbnail at
+  any width, `prop=coordinates` the camera's position where the uploader gave one.
+- **Licence:** each photo's own: those used are CC BY 2.0, CC BY 4.0, CC BY-SA 3.0, CC BY-SA 4.0,
+  CC0 and public domain. Portugal's freedom of panorama covers buildings and sculptures made to
+  stand in public places, naming the architect where possible.
+- **Credit:** each photo's author, licence and link (`photo` in `refs/photos.json`).
+- **May be used for:** reference, always. Textures, with the credit; a CC BY-SA photo makes the
+  texture CC BY-SA.
+- **Used:** 25 of the reference photos (task 008): the landmarks (the chapel of São João da
+  Ponte, the Parque da Ponte, the Altice Forum, the Estádio 1.º de Maio, the Picoto's cross, the
+  Igreja de Lamaçães, Bom Jesus, the Sameiro), the skyline from Bom Jesus and from the Picoto,
+  azulejos, manhole covers, an old lamp, a granite bench, an old bus shelter, and Portugal's
+  drawing of the give-way sign (`Portugal road sign B1.svg`, public domain), the one generic
+  stand-in.
 
 ### Checked and not used
 
@@ -209,7 +236,8 @@ committed; `node tools/refs.mjs` fetches the photos into `.cache/refs/`.
   close-ups of monuments and tiles. Some are placed kilometres out (photos of Bom Jesus put in the
   city).
 - **Panoramax** (`https://api.panoramax.xyz/api/search`, open, CC BY-SA 4.0 on its OSM-France
-  instance): 3 photos in the route's box.
+  instance): 3 photos in the route's box, all at one spot in a small park, in July 2019 (checked
+  again on 2026-10-14).
 - **KartaView** (`https://api.openstreetcam.org/2.0/photo/`): every query near Braga timed out or
   answered "Restricted access" on 2026-10-13.
 
@@ -270,22 +298,11 @@ All CC0, on Freesound:
 
 ## Not fetched
 
-### Wikimedia Commons
-
-- **What:** photos of the landmarks, by the thousand: Bom Jesus 2,734; the Sé 1,775; the Sameiro
-  319; the Theatro Circo 273; the Estádio Municipal 223; the Parque da Ponte 214 (counted for task
-  005).
-- **Licence:** each photo has its own (CC BY, CC BY-SA, CC0, public domain). Portugal's freedom of
-  panorama covers buildings and sculptures made to stand in public places, naming the architect
-  where possible.
-- **Credit:** each photo's author, licence and link, wherever it's used as a texture.
-- **May be used for:** reference, always. Textures, with the credit; a CC BY-SA photo makes the
-  texture CC BY-SA.
-
 ### The owner's and the friends' photos
 
-Theirs, with their consent: references and textures, and the first choice for both (decisions
-002 and 006). Task 008.
+Theirs, with their consent, may still be used as references and textures (decision 002), but
+nobody is taking any: online photos come first, and what they lack is listed as a gap (decision
+018, task 008). None have been taken.
 
 ### Coming: DGT's topographic mapping (CartTop NdD2)
 

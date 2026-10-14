@@ -1,13 +1,16 @@
 // Fetches each viewpoint's real photo (refs/viewpoints.json) into .cache/refs/<id>.jpg, for setting
-// beside the game's shot from the same place. A Mapillary panorama is cut to what the viewpoint's
-// camera sees: 1280 × 720, its heading, pitch and field of view, the panorama's own tilt undone.
-// Other photos are kept as they are.
+// beside the game's shot from the same place, and each reference photo (refs/photos.json, task 008)
+// into .cache/refs/photos/<id>.jpg. A Mapillary panorama is cut to what's wanted of it, the
+// panorama's own tilt undone: for a viewpoint, what its camera sees, 1280 × 720; for a reference
+// photo, its heading, pitch and field of view, 4:3, at the panorama's own detail. Other photos are
+// kept as they are: 2048 px wide from Mapillary and 1600 from Commons, or their full size where the
+// photo is to become a texture (Commons' up to 4000 px).
 // Mapillary needs its free client token, kept out of git in .cache/credentials.json as
 // { "mapillary": { "token": "MLY|…" } }, or in MAPILLARY_TOKEN.
 //
 // node tools/refs.mjs              the photos not fetched yet
 // node tools/refs.mjs --force      all of them again
-// node tools/refs.mjs fujacal-1    only those named
+// node tools/refs.mjs fujacal-1    only those named (a viewpoint's id or a reference photo's)
 import fs from 'node:fs';
 import path from 'node:path';
 import jpeg from 'jpeg-js';
@@ -16,6 +19,7 @@ import { CACHE, ROOT } from './geo.mjs';
 const UA = 'braga-map/1.0 (https://github.com/pedroHenriques15/braga-map)';
 const OUT = path.join(CACHE, 'refs');
 const SRC = path.join(OUT, 'src');
+const PHOTOS = path.join(OUT, 'photos');
 const W = 1280, H = 720;
 
 // The compass heading (0 north, 90 east) and pitch the camera at (x, y, z) looks along to (tx, ty, tz).
@@ -81,22 +85,25 @@ async function get(url, headers = {}) {
   }
 }
 
-// The photo as its source has it, kept in .cache/refs/src/ so it's downloaded once.
-async function original(photo) {
-  const file = path.join(SRC, `${photo.source}-${String(photo.id).replace(/[^\w.-]+/g, '_')}.jpg`);
-  if (!fs.existsSync(file)) {
-    let url;
-    if (photo.source === 'mapillary') {
-      const r = await get(`https://graph.mapillary.com/${photo.id}?fields=thumb_original_url,thumb_2048_url`, { authorization: 'OAuth ' + token() });
-      const j = await r.json();
-      url = photo.pano ? j.thumb_original_url : j.thumb_2048_url;
-    } else if (photo.source === 'commons') {
-      const q = new URLSearchParams({ action: 'query', format: 'json', formatversion: '2', prop: 'imageinfo', iiprop: 'url', iiurlwidth: '1600', titles: 'File:' + photo.id });
-      const j = await (await get('https://commons.wikimedia.org/w/api.php?' + q)).json();
-      url = j.query.pages[0].imageinfo[0].thumburl;
-    } else throw new Error(`can't fetch a photo from ${photo.source}`);
-    fs.writeFileSync(file, Buffer.from(await (await get(url)).arrayBuffer()));
-  }
+// The photo as its source has it, kept in .cache/refs/src/ so it's downloaded once: a panorama
+// whole, the rest 2048 px wide from Mapillary and 1600 from Commons, or at full size (`full`).
+// Commons draws an SVG as a PNG.
+async function original(photo, full = false) {
+  const name = `${photo.source}-${String(photo.id).replace(/\.svg$/i, '').replace(/[^\w.-]+/g, '_')}${full && !photo.pano ? '-full' : ''}`;
+  const have = fs.readdirSync(SRC).find((f) => f.replace(/\.(jpe?g|png)$/i, '') === name);
+  if (have) return path.join(SRC, have);
+  let url;
+  if (photo.source === 'mapillary') {
+    const r = await get(`https://graph.mapillary.com/${photo.id}?fields=thumb_original_url,thumb_2048_url`, { authorization: 'OAuth ' + token() });
+    const j = await r.json();
+    url = photo.pano || full ? j.thumb_original_url : j.thumb_2048_url;
+  } else if (photo.source === 'commons') {
+    const q = new URLSearchParams({ action: 'query', format: 'json', formatversion: '2', prop: 'imageinfo', iiprop: 'url', iiurlwidth: full ? '4000' : '1600', titles: 'File:' + photo.id });
+    const j = await (await get('https://commons.wikimedia.org/w/api.php?' + q)).json();
+    url = j.query.pages[0].imageinfo[0].thumburl;
+  } else throw new Error(`can't fetch a photo from ${photo.source}`);
+  const file = path.join(SRC, name + (/\.png$/i.test(new URL(url).pathname) ? '.png' : '.jpg'));
+  fs.writeFileSync(file, Buffer.from(await (await get(url)).arrayBuffer()));
   return file;
 }
 
@@ -104,7 +111,9 @@ const args = process.argv.slice(2);
 const force = args.includes('--force');
 const only = args.filter((a) => !a.startsWith('--'));
 const views = JSON.parse(fs.readFileSync(path.join(ROOT, 'refs', 'viewpoints.json'), 'utf8')).viewpoints;
+const photos = JSON.parse(fs.readFileSync(path.join(ROOT, 'refs', 'photos.json'), 'utf8')).photos;
 fs.mkdirSync(SRC, { recursive: true });
+fs.mkdirSync(PHOTOS, { recursive: true });
 for (const v of views) {
   if (only.length && !only.includes(v.id)) continue;
   const file = path.join(OUT, v.id + '.jpg');
@@ -116,4 +125,24 @@ for (const v of views) {
     fs.writeFileSync(file, jpeg.encode(cut(pano, v.photo, heading, pitch, v.fov), 88).data);
   } else fs.copyFileSync(src, file);
   console.log(v.id, path.relative(ROOT, file));
+}
+for (const e of photos) {
+  if (only.length && !only.includes(e.id)) continue;
+  const done = fs.readdirSync(PHOTOS).find((f) => f.replace(/\.(jpe?g|png)$/i, '') === e.id);
+  if (done && !force && !only.length) continue;
+  const src = await original(e.photo, e.use === 'texture');
+  let file;
+  if (e.photo.pano) {
+    // fov is across: 4:3, as wide as the panorama has pixels for, at most 2048.
+    const pano = jpeg.decode(fs.readFileSync(src), { maxMemoryUsageInMB: 2048 });
+    const w = Math.min(2048, Math.round((e.fov / 360) * pano.width)), h = Math.round((w * 3) / 4);
+    const vfov = (2 * Math.atan(Math.tan(((e.fov / 2) * Math.PI) / 180) * 0.75) * 180) / Math.PI;
+    file = path.join(PHOTOS, e.id + '.jpg');
+    fs.writeFileSync(file, jpeg.encode(cut(pano, e.photo, e.heading, e.pitch, vfov, w, h), 90).data);
+  } else {
+    file = path.join(PHOTOS, e.id + path.extname(src));
+    fs.copyFileSync(src, file);
+  }
+  if (done && path.join(PHOTOS, done) !== file) fs.rmSync(path.join(PHOTOS, done));
+  console.log(e.id, path.relative(ROOT, file));
 }

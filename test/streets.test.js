@@ -8,7 +8,7 @@ import ClipperLib from 'clipper-lib';
 import { loadWorld } from '../index.js';
 import amigos from '../tracks/amigos.js';
 import { streetSurfaces } from '../tools/streets.mjs';
-import { OPEN } from '../tools/sections.mjs';
+import { OPEN_BOX } from '../tools/sections.mjs';
 
 const C = ClipperLib;
 const NZ = C.PolyFillType.pftNonZero;
@@ -99,9 +99,9 @@ test('a reservation between a road\'s two carriageways, the way each goes', () =
 
 // ---- In the open world's tiles ----
 
-const w = await loadWorld(OPEN);
+const w = await loadWorld(OPEN_BOX);
 const S = w.streets;
-const inOpen = ([x, z]) => x > OPEN.x0 + 5 && x < OPEN.x1 - 5 && z > OPEN.z0 + 5 && z < OPEN.z1 - 5;
+const inOpen = ([x, z]) => x > OPEN_BOX.x0 + 5 && x < OPEN_BOX.x1 - 5 && z > OPEN_BOX.z0 + 5 && z < OPEN_BOX.z1 - 5;
 
 test("every ring is closed and simple, and off the ground has its heights", () => {
   for (const p of [...S.carriageways, ...S.pavements]) {

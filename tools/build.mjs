@@ -8,7 +8,9 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { CACHE, KX, KZ, LAT0, LON0, P, readCache, ROOT } from './geo.mjs';
 import { storeys } from './osm.mjs';
-import { CORE, EXT, SECTIONS, TILE } from './sections.mjs';
+import { CORE, EXT, OPEN, SECTIONS, TILE } from './sections.mjs';
+import { streetLines } from './lines.mjs';
+import { gatesOf } from './open.mjs';
 import { terrain } from './terrain.mjs';
 
 const outFile = path.join(ROOT, 'map/braga.json');
@@ -287,6 +289,10 @@ for (let j = 0; j < nz; j++) for (let i = 0; i < nx; i++) {
 // fountain on the real one in the Praça da República.
 const game = JSON.parse(fs.readFileSync(path.join(ROOT, 'tools/first-track.json'), 'utf8'));
 
+// ---- The open world's area (task 032): its edge, and the gates where streets leave it ----
+const openGates = gatesOf(OPEN, streetLines(base, ground, (x, z, m) => inBox(EXT, x, z, m)).lines).map(({ x, z, heading, w, k, level }) => ({ x, z, heading, w, k, level }));
+const openArea = Math.abs(OPEN.reduce((a, [x, z], i) => { const [x2, z2] = OPEN[(i + 1) % OPEN.length]; return a + x * z2 - x2 * z; }, 0)) / 2;
+
 // ---- Stats ----
 const km = (o) => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, Math.round(v)]));
 
@@ -301,10 +307,12 @@ const data = {
   landmarks,
   height: { x0: EXT.x0, z0: EXT.z0, step: STEP, nx, nz, scale: 4, b64: Buffer.from(H.buffer).toString('base64') },
   game,
+  open: { pts: OPEN, gates: openGates, area: Math.round(openArea) },
   len: { core: km(lenCore), ext: km(lenExt) },
 };
 fs.writeFileSync(outFile, JSON.stringify(data));
 console.log('roads', roads.length, 'areas', areas.length, 'water', water.length, 'rail', rail.length, 'buildings', buildings.length, 'parish lines', parishLines.size, 'parishes', parishes.map((p) => p.name).join(' | '));
+console.log('the open world', Math.round(openArea / 1e4) / 100, 'km²,', openGates.length, 'gates');
 console.log('landmarks', landmarks.length, 'height', nx, 'x', nz, 'min', hmin.toFixed(0), 'max', hmax.toFixed(0));
 console.log('km core', JSON.stringify(km(lenCore)), 'ext', JSON.stringify(km(lenExt)));
 console.log('size', (fs.statSync(outFile).size / 1024).toFixed(0), 'KB');

@@ -34,31 +34,47 @@ npm install github:pedroHenriques15/braga-map#v1.3.0
 import { loadWorld, map } from 'braga-map';
 import amigos from 'braga-map/tracks/amigos.js';
 
-const world = await loadWorld(amigos.box); // or loadWorld({ sections: ['centro'] })
+const world = await loadWorld({ open: true }); // the open world's area and the city round it
+// or loadWorld(amigos.box), loadWorld({ sections: ['centro'] })
 world.height(x, z); // the ground: every 2 m or 10 m on the tiles loaded, every 50 m elsewhere
 world.buildings; // [{ kind, roof, ends, dir, pitch, y, h, ridge, floors, roofColor, … pts }], and areas, lines, trees…
 world.streets; // in the open world's area: { carriageways, pavements, kerbs, markings }, each piece at its level
+world.open.gates; // where each street leaves the area: [{ x, z, heading, w, k, level, y }]
+world.inOpen(x, z); // inside its edge?
 ```
 
 - `map()` is what every game needs whichever part of the map it's in: the sections and their
-  tiles, the relief over the whole map and the horizon round it, the rivers, the landmarks and the
-  sights. It's small, and it's always there.
-- `loadWorld(box)` or `loadWorld({ sections })` loads the tiles under it, each a module of its own
-  that the game's bundler splits off, so a player only downloads those. The types are in
-  `index.d.ts`, and a track's in `tracks/track.d.ts`.
+  tiles, the relief over the whole map and the horizon round it, the rivers, the landmarks, the
+  sights, and the open world's area with its gates. It's small, and it's always there.
+- `loadWorld(box)`, `loadWorld({ sections })` or `loadWorld({ open: true })` loads the tiles under
+  it, each a module of its own that the game's bundler splits off, so a player only downloads those.
+  The types are in `index.d.ts`, and a track's in `tracks/track.d.ts`.
 - The ground is the bare ground, from DGT's 2025 LiDAR: every 2 m on the tiles within 60 m of a
-  track and over the shooter's area, every 10 m on the others. A street is ground, so the ground
-  is the street's own surface; a bridge's deck isn't, so under a bridge it's what's below. A
-  building stands on the ground at its lowest corner (`y`), and its height is from there.
+  track, over the shooter's area and under the open world's, every 10 m on the others. A street is
+  ground, so the ground is the street's own surface; a bridge's deck isn't, so under a bridge it's
+  what's below. A building stands on the ground at its lowest corner (`y`), and its height is from
+  there.
 - Each street says its level (task 012): on the ground; on a bridge, with its deck's height at
   each point (`heights`); in a tunnel, under the ground, with its road's; or under something at the
   ground's own level (a building over it, or a deck the map draws as a tunnel under a bridge). A
   deck and a tunnel's road run straight between the ground where they end. Where the LiDAR took a
   deck for the ground, the bridge is ground too, and what passes under it a tunnel.
-- In the open world's area (decision 019, `OPEN` in `tools/sections.mjs`), every street is a
-  surface too (task 033, `world.streets`): its carriageway at its real width, joined to the others
-  where they meet, each corner rounded as a kerb turns it, a roundabout round its island; the kerbs
-  (dropped at the crossings); the pavements behind them, up to the buildings; the central
+- **The open world's area** (decision 019, task 032) is where a game lets the player drive
+  anywhere: the Volta dos Amigos' and about 150 m round it, and the Picoto's top. `map().open` has
+  its edge (`pts`, a ring) and its gates (`gates`): where each street crosses the edge, with the
+  way it leaves (`heading`, pointing out), its width kerb to kerb, its kind and level and its
+  road's height there, for a game to stand a row of road-works barriers across it ("Estrada
+  cortada"). The edge runs half way between the streets in and those out, round the buildings
+  between them, and crosses each street square, straight across its width, just past the mouth of
+  the junction it leaves from (off a roundabout, past where its exit's two ways splay apart). A
+  roundabout is never cut. `inOpen(x, z)` says whether a point is inside it. `loadWorld({ open:
+  true })` loads the tiles it touches (`open.tiles`) and those round it, within 500 m (`open.seen`),
+  so the city stays drawn past the edge. What stops a kart between the gates is the game's (the
+  buildings, or a wall it puts along the edge).
+- Round the open world's area (in the box round it, `OPEN_BOX` in `tools/sections.mjs`), every
+  street is a surface too (task 033, `world.streets`): its carriageway at its real width, joined to
+  the others where they meet, each corner rounded as a kerb turns it, a roundabout round its island;
+  the kerbs (dropped at the crossings); the pavements behind them, up to the buildings; the central
   reservations; and the lines painted on them, from what the map says (lanes, the line between the
   two ways, zebras, stop lines at traffic lights). Each piece is cut to its tile, at its street's
   level, with its heights off the ground. `index.d.ts` says what each part is.
@@ -94,6 +110,7 @@ node tools/fetch.mjs microsoft    # Microsoft's building footprints over the map
 node tools/roofs.mjs   # every building's height and roof, and those the map lacks: .cache/roofs.json (10 minutes the first time)
 npm run page     # the map page's map/braga.json
 npm run tracks   # every track: tracks/<id>.js, and map/tracks.json for the page
+npm run open     # the open world's edge, round the Volta dos Amigos: tools/open.json (seconds)
 npm run world    # the world: world/base.js, world/tiles.js and a module per tile (1.5 minutes)
 node tools/streets.mjs [x0 x1 z0 z1]  # the streets as surfaces in a box (Fujacal's), and a page over the orthophoto to check them
 npm test         # the world and the tracks as the games read them, and DGT's data where fetched
@@ -105,9 +122,10 @@ node tools/round.mjs <round> --label "…"  # a round of party-kart's shots, for
 ```
 
 They need Node 22.18 or later. Run them in that order: `track.mjs` and `world.mjs` read the
-landmarks from `map/braga.json`, `world.mjs` makes the ground finer on the tiles the tracks in
-`tracks/` run through, and `build.mjs` and `world.mjs` take the buildings' heights and roofs
-from `roofs.mjs`'s measurements. All of them need the LiDAR.
+landmarks from `map/braga.json`, `open.mjs` the Volta dos Amigos, `world.mjs` makes the ground finer
+on the tiles the tracks in `tracks/` run through and the open world's edge touches, the map page
+draws the edge (run `npm run page` again after `npm run open`), and `build.mjs` and `world.mjs` take
+the buildings' heights and roofs from `roofs.mjs`'s measurements. All of them need the LiDAR.
 
 - `fetch.mjs` gets OpenStreetMap through Overpass (streets and land, buildings, parishes,
   landmarks, trees, the crossings, traffic lights and bus stops, and the turn restrictions) and
@@ -126,10 +144,11 @@ from `roofs.mjs`'s measurements. All of them need the LiDAR.
   `.cache/credentials.json` as `{ "cdd": { "username", "password" } }`. `dgt.mjs` reads them all
   in the map's metres. [docs/SOURCES.md](docs/SOURCES.md) has what each is, and its licence and
   credit.
-- `sections.mjs` has the map's extent, the tiles, the sections and the shooter's area. `geo.mjs`
-  has the projection, `ELEV0` and the Terrain Tiles. `terrain.mjs` is the ground: the LiDAR's at
-  50 cm where it was fetched, at 2 m over the rest of the map, and the Terrain Tiles (EU-DEM)
-  beyond, for the horizon. `osm.mjs` is what `world.mjs` and `track.mjs` share: how wide a
+- `sections.mjs` has the map's extent, the tiles, the sections, the shooter's area, and the open
+  world's (`OPEN`, read from `open.json`), the box round it and the tiles under it and round it.
+  `geo.mjs` has the projection, `ELEV0` and the Terrain Tiles. `terrain.mjs` is the ground: the
+  LiDAR's at 50 cm where it was fetched, at 2 m over the rest of the map, and the Terrain Tiles
+  (EU-DEM) beyond, for the horizon. `osm.mjs` is what `world.mjs` and `track.mjs` share: how wide a
   street is, what an area is, the buildings' footprints, and packing.
 - `roofs.mjs` measures every building on the map from the LiDAR's point cloud (task 010): it
   boils each tile down once to 50 cm cells of the building points' tops (`.cache/dgt/roofs/`),
@@ -146,21 +165,33 @@ from `roofs.mjs`'s measurements. All of them need the LiDAR.
   `test/footprints.test.js` on made-up buildings and on the world's tiles. `heights.mjs` checks what it measured against the map's `height`, `building:levels`
   (a storey comes out at 2.9 m), `roof:shape` and `roof:colour`, and lists the buildings where
   they differ most: the map, more often than the LiDAR.
-- `world.mjs` makes the world: the ground (every 2 m on the tiles within 60 m of a track and over
-  the shooter's area, each the mean of the LiDAR's round it; every 10 m elsewhere), what the
-  ground is (each area cut to the tiles it's on), every street at its width and level, the
-  railway, every
-  building on the ground at its lowest corner, with its height and roof as `roofs.mjs` measured
-  them (in parts where they step or turn; guessed from the map where the LiDAR didn't see it),
-  those the map lacks as `roofs.mjs` found them, houses filled in where the map has none on a
-  built-up street and the LiDAR wasn't fetched, the trees (woods and parks filled in), the rivers with their
-  water level (the lowest ground within 4 m of their course), and the sights (Bom Jesus, the
-  Sameiro, the cross on the Picoto, the stadium, the Altice Forum, Makro, the Tourigalo with the
-  way its head points and its restaurant's front), picked out of the map by their OpenStreetMap
-  ids. `levels.mjs` checks the streets that cross on two levels (`test/levels.test.js`): under a
-  deck there's room for what passes, over a tunnel its roof; a bridge that meets a street at its
-  end, or that the LiDAR took for the ground, meets it at grade. `lines.mjs` is how it reads the
-  streets: each way's kind, width, level, and the heights of a bridge's deck or a tunnel's road.
+- `world.mjs` makes the world: the ground (every 2 m on the tiles within 60 m of a track, over the
+  shooter's area and on every tile the open world's area touches, each the mean of the LiDAR's round
+  it; every 10 m elsewhere), what the ground is (each area cut to the tiles it's on), every street
+  at its width and level, the railway, every building on the ground at its lowest corner, with its
+  height and roof as `roofs.mjs` measured them (in parts where they step or turn; guessed from the
+  map where the LiDAR didn't see it), those the map lacks as `roofs.mjs` found them, houses filled
+  in where the map has none on a built-up street and the LiDAR wasn't fetched, the trees (woods and
+  parks filled in), the rivers with their water level (the lowest ground within 4 m of their
+  course), and the sights (Bom Jesus, the Sameiro, the cross on the Picoto, the stadium, the Altice
+  Forum, Makro, the Tourigalo with the way its head points and its restaurant's front), picked out
+  of the map by their OpenStreetMap ids. `levels.mjs` checks the streets that cross on two levels
+  (`test/levels.test.js`): under a deck there's room for what passes, over a tunnel its roof; a
+  bridge that meets a street at its end, or that the LiDAR took for the ground, meets it at grade.
+  `lines.mjs` is how it reads the streets: each way's kind, width, level, and the heights of a
+  bridge's deck or a tunnel's road.
+- `open.mjs` works out the open world's edge (task 032) from the streets and the buildings, on a
+  grid of 1 m: near the loop is within 120 m of it and what that closes round (its inside, and a
+  pocket between two of its arms), and the Picoto's top; every street that comes near is in, from
+  junction to junction (as far as 120 m past near), and so is every street between two junctions
+  that are, a street too short to stand a barrier on, and the whole of a roundabout any of it is
+  in. A street leaving is in for a few metres past its junction, past where its kerbs turn the
+  corner. The area is what's nearer a street in than a street out (within 60 m of one out in the
+  open), and always 105 m round the loop; a building it would cut goes in or out whole, as most of
+  it is. Then its outline is drawn round, straightened, and made to cross each street square.
+  `gatesOf` finds the gates, for `world.mjs` (with each one's height) and `build.mjs`.
+  `test/open.test.js` checks the ring is simple, the loop at least 100 m inside it, a gate where
+  every street crosses it and nowhere else, each square, and the ground every 2 m under it.
 - `streets.mjs` makes every street in the open world's area a surface (task 033), for
   `world.mjs`, with Clipper (`clipper-lib`, a dev dependency): each street's band at its width
   (`carriageway` in `osm.mjs`), cut square across where it meets another and round at a dead end;
@@ -276,16 +307,21 @@ doc.
   or dirt tracks) come to 287 km. The main ones (fast roads, primary, secondary, tertiary and
   pedestrian streets) come to 102 km, 65% fewer. Keeping only the fast roads, primary and
   secondary cuts 78%, but loses the Avenida Central and the old town.
-- **The ground** from DGT's 2025 LiDAR: every 20 m on the page, every 2 m in the world on the 18
-  tiles the Volta dos Amigos runs through and over Fujacal, every 10 m on the rest; from 56 m in
-  the north-west corner to 573 m on the Sameiro. Before, from EU-DEM, the Picoto's top was 34 m
-  too low.
+- **The ground** from DGT's 2025 LiDAR: every 20 m on the page, every 2 m in the world on the 23
+  tiles the open world's area touches (the Volta dos Amigos and Fujacal among them), every 10 m on
+  the rest; from 56 m in the north-west corner to 573 m on the Sameiro. Before, from EU-DEM, the
+  Picoto's top was 34 m too low.
 - **The world**: 140 tiles, 13,000 buildings from the map (12,400 of them measured by the LiDAR,
-  in 18,700 parts) and 11,500 houses filled in, 20,000 trees. 6.0 MB in all (2 MB gzipped); a
-  game loads the tiles it needs (the Volta dos Amigos, 48: 4.1 MB, 1.2 MB gzipped).
-- **The open world's streets** (task 033), over 2.6 × 2.0 km round the Volta dos Amigos, 30
-  tiles: 2,823 stretches of street, 1,458 junctions, 178 islands, 106 central reservations, 147 km
-  of kerb. They add 0.33 MB gzipped to the tiles.
+  in 18,700 parts) and 11,500 houses filled in, 20,000 trees. 7.6 MB in all (2.6 MB gzipped); a
+  game loads the tiles it needs (the open world's area and round it, 49: 5.8 MB, 1.8 MB gzipped;
+  the Volta dos Amigos' box, 48: 5.7 MB, 1.7 MB gzipped).
+- **The open world's area** (task 032): 3.1 km² round the Volta dos Amigos and the Picoto's top,
+  its edge 14.2 km round, with 121 gates (117 on the ground, 1 on a bridge, 3 under something), on
+  23 tiles. Their ground every 2 m added 0.16 MB gzipped (5 tiles more than the track's 18).
+- **The open world's streets** (task 033), over the 2.8 × 2.0 km box round its area, 30 tiles:
+  3,066 stretches of street, 1,585 junctions, 198 islands, 119 central reservations, 158 km of
+  kerb. They added 0.33 MB gzipped to the tiles over a 2.6 × 2.0 km box, and 0.03 MB more as the
+  box grew with the area's edge.
 - **The Volta dos Amigos**, Party Kart's track: 9.3 km round, through five friends'
   neighbourhoods, the way the traffic goes.
 - **The first track** ("Pista antiga"), Party Kart's cartoon Braga Grand Prix, drawn at its real

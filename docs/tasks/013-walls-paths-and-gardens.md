@@ -78,3 +78,6 @@ Steps:
   a plain granite wall from the pavement up to the ground (`edges` in `city.ts`, `wallBetween` in
   `road.ts`), so the cuttings along the route already have a wall, of the wrong kind in places.
   This task's walls replace them where they're found.
+- From task 032: the open world's edge (`tools/open.mjs`) gives a gate wherever a street crosses
+  it, and the footpaths and steps this task brings should get theirs too: give them a kind in
+  `LINE` (`osm.mjs`) and run `npm run open`, `npm run world` and `npm run page` again.

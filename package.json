@@ -25,6 +25,7 @@
     "map": "node tools/serve.mjs",
     "fetch": "node tools/fetch.mjs",
     "page": "node tools/build.mjs",
+    "open": "node tools/open.mjs",
     "world": "node tools/world.mjs",
     "tracks": "node tools/track.mjs"
   },

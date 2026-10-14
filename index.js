@@ -120,9 +120,20 @@ const DASH = [3, 4];
 
 let base = null;
 
+// Whether (x, z) is inside the ring `pts` (even-odd).
+function inRing(pts, x, z) {
+  let c = false;
+  for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) {
+    const [xi, zi] = pts[i];
+    const [xj, zj] = pts[j];
+    if (zi > z !== zj > z && x < ((xj - xi) * (z - zi)) / (zj - zi) + xi) c = !c;
+  }
+  return c;
+}
+
 // What every game needs, whichever part of the map it's in: the extent, the tiles and the
 // sections, the relief everywhere and the horizon round it, the rivers, the landmarks and the
-// sights.
+// sights, and the open world's area with the gates where the streets leave it.
 export function map() {
   if (base) return base;
   const { head, nums } = unpack(BASE);
@@ -134,6 +145,14 @@ export function map() {
     for (let k = 0; k < n; k++) pts.push([nums[i + k * 3] / 2, nums[i + k * 3 + 1] / 2, nums[i + k * 3 + 2] / 10]);
     rivers.push({ pts });
     i += n * 3;
+  }
+  const open = m.open;
+  const ob = { x0: Infinity, x1: -Infinity, z0: Infinity, z1: -Infinity };
+  for (const [x, z] of open.pts) {
+    ob.x0 = Math.min(ob.x0, x);
+    ob.x1 = Math.max(ob.x1, x);
+    ob.z0 = Math.min(ob.z0, z);
+    ob.z1 = Math.max(ob.z1, z);
   }
   const sectionOfTile = new Map();
   for (const s of m.sections) for (const id of s.tiles) sectionOfTile.set(id, s.id);
@@ -154,15 +173,18 @@ export function map() {
     horizon: grid(nums, head.horizon),
     rivers,
     riverHalfWidth: head.rivers.halfWidth,
+    open,
+    inOpen: (x, z) => x >= ob.x0 && x <= ob.x1 && z >= ob.z0 && z <= ob.z1 && inRing(open.pts, x, z),
     tileAt: (x, z) => `x${Math.floor(x / m.tile)}z${Math.floor(z / m.tile)}`,
     sectionAt: (x, z) => sectionOfTile.get(`x${Math.floor(x / m.tile)}z${Math.floor(z / m.tile)}`) ?? null,
   };
   return base;
 }
 
-// The tiles under a box, or making up some sections.
+// The tiles under a box, or making up some sections, or under the open world's area and round it.
 export function tilesFor(area) {
   const m = map();
+  if (area.open) return [...m.open.tiles, ...m.open.seen];
   if ('sections' in area) return m.sections.filter((s) => area.sections.includes(s.id)).flatMap((s) => s.tiles);
   const ids = [];
   for (let j = Math.floor(area.z0 / m.tile); j * m.tile < area.z1; j++) {
@@ -174,8 +196,9 @@ export function tilesFor(area) {
   return ids;
 }
 
-// The world in a box ({ x0, x1, z0, z1 }) or some sections ({ sections: [ids] }): everything map()
-// has, and what's on every tile under it, read and put together.
+// The world in a box ({ x0, x1, z0, z1 }), some sections ({ sections: [ids] }) or the open world's
+// area ({ open: true }: the tiles under it, and those round it for the city seen past its edge):
+// everything map() has, and what's on every tile under it, read and put together.
 export async function loadWorld(area) {
   const m = map();
   const ids = tilesFor(area);

@@ -1,17 +1,19 @@
 // Makes the world the games share: the whole map, from OpenStreetMap and DGT's LiDAR (the ground),
 // cut into 500 m tiles (sections.mjs). Nothing in it depends on a track or an arena: a game clears
 // its own road of buildings and trees when it loads. Only the detail of the ground does: it's finer
-// where the tracks run and the shooter is played (decision 003).
+// where the tracks run, where the shooter is played (decision 003), and over the open world's area,
+// where a game lets the player drive anywhere (task 032).
 //
 // node tools/world.mjs
 //
 // - world/base.js, which every game loads: the tiles and the sections, the relief over the whole
 //   map every 50 m and 15 km round for the horizon, what the far hills are covered with, the
-//   rivers, the landmarks and the sights.
+//   rivers, the landmarks and the sights, and the open world's area: its edge, and the gates where
+//   the streets leave it.
 // - world/tiles/<id>.js, one per tile: the relief (every 2 m on the tiles within 60 m of a track
-//   in tracks/ and over the shooter's area, every 10 m on the rest), what the ground is (clipped to
-//   the tile), the streets and the railway, the buildings, and the trees; and in the open world's
-//   area, every street as surfaces (streets.mjs).
+//   in tracks/, over the shooter's area and under the open world's, every 10 m on the rest), what
+//   the ground is (clipped to the tile), the streets and the railway, the buildings, and the trees;
+//   and round the open world's area, every street as surfaces (streets.mjs).
 // - world/tiles.js, a loader for each tile, for index.js.
 //
 // All in metres from the Praça da República, x east and z south, heights above ELEV0, packed as
@@ -22,7 +24,8 @@ import path from 'node:path';
 import { CACHE, ELEV0, P, ROOT, readCache, relief } from './geo.mjs';
 import { tileKey, toTM } from './dgt.mjs';
 import { AREA, AREA_OF, blur, bounds, dm, footprints, Grid, half, hash, inside, minRect, openThin, overlaps, Packer, packGrid, packPts, rectAxis, STOREY, STOREY_BASE as BASE, ringArea, ringOf, seeded, segDist, simplify, W_MIN } from './osm.mjs';
-import { allTiles, EXT, OPEN, SECTIONS, sectionOf, SHOOTER, TILE, tileBox, tileId, tileOf } from './sections.mjs';
+import { allTiles, EXT, OPEN, OPEN_BOX, OPEN_SEEN, OPEN_TILES, SECTIONS, sectionOf, SHOOTER, TILE, tileBox, tileId, tileOf } from './sections.mjs';
+import { gatesOf } from './open.mjs';
 import { terrain } from './terrain.mjs';
 import { isLine, isSquare, LEVEL, streetLines } from './lines.mjs';
 import { packStreets, streetSurfaces } from './streets.mjs';
@@ -42,8 +45,9 @@ const tileAt = (x, z) => tiles.get(tileId(...tileOf(x, z)));
 const tilesOver = (b, m = 0) => [...tiles.values()].filter((t) => overlaps(t.box, b, m));
 
 // Where the ground is every 2 m: the tiles within 60 m of a track planned on the map (the last
-// `npm run tracks`, so plan a new track before this), and over the shooter's area.
-const FINE = new Set(tilesOver(SHOOTER).map((t) => t.id));
+// `npm run tracks`, so plan a new track before this), over the shooter's area, and every tile the open
+// world's area touches, since a kart can be anywhere in it.
+const FINE = new Set([...tilesOver(SHOOTER).map((t) => t.id), ...OPEN_TILES]);
 for (const f of fs.readdirSync(path.join(ROOT, 'tracks')).filter((f) => f.endsWith('.js'))) {
   const { points } = (await import(`../tracks/${f}`)).default;
   for (const { p } of points) for (const t of tilesOver({ x0: p[0], x1: p[0], z0: p[2], z1: p[2] }, 60)) FINE.add(t.id);
@@ -119,6 +123,13 @@ for (const s of lines) {
     flush();
   }
 }
+// Where the streets leave the open world's area (open.mjs): each one's crossing, with the height of
+// its road there above ELEV0, on the ground, a bridge's deck or a tunnel's road.
+const gates = gatesOf(OPEN, lines, (l, i, t) => {
+  const p = l.pts[i], q = l.pts[i + 1], x = p[0] + (q[0] - p[0]) * t, z = p[1] + (q[1] - p[1]) * t;
+  if (l.level !== LEVEL.bridge && l.level !== LEVEL.tunnel) return ground.at(x, z) - ELEV0;
+  return (heights.get(p) ?? ground.at(...p)) * (1 - t) + (heights.get(q) ?? ground.at(...q)) * t - ELEV0;
+}).map(({ x, z, heading, w, k, level, y }) => ({ x, z, heading, w, k, level, y }));
 console.log(`ground: ${areas.length} areas, ${lines.length} streets and railways (${lines.filter((l) => l.level === LEVEL.bridge).length} on bridges, ${lines.filter((l) => l.level === LEVEL.tunnel).length} in tunnels, ${lines.filter((l) => l.level === LEVEL.under).length} under something, ${open} of them tunnels the map has under a bridge)`);
 
 // ---------------------------------------------------------------------------------------------
@@ -469,8 +480,8 @@ let nTrees = 0;
 {
   const nodes = readCache('osm/street.json').elements.filter((e) => e.type === 'node');
   const rings = (kind) => areas.filter(([k]) => k === AREA.indexOf(kind)).map(([, r]) => r);
-  const over = tilesOver(OPEN).map((t) => ({ id: t.id, box: { x0: Math.max(t.box.x0, OPEN.x0), x1: Math.min(t.box.x1, OPEN.x1), z0: Math.max(t.box.z0, OPEN.z0), z1: Math.min(t.box.z1, OPEN.z1) } }));
-  const { cuts, stats } = streetSurfaces({ lines, heights, elev0: ELEV0, nodes, buildings: outlines, squares: rings('plaza'), water: rings('water'), box: OPEN, cuts: over });
+  const B = OPEN_BOX, over = tilesOver(B).map((t) => ({ id: t.id, box: { x0: Math.max(t.box.x0, B.x0), x1: Math.min(t.box.x1, B.x1), z0: Math.max(t.box.z0, B.z0), z1: Math.min(t.box.z1, B.z1) } }));
+  const { cuts, stats } = streetSurfaces({ lines, heights, elev0: ELEV0, nodes, buildings: outlines, squares: rings('plaza'), water: rings('water'), box: B, cuts: over });
   for (const { id } of over) tiles.get(id).streets = packStreets(cuts.get(id), tiles.get(id).box.x0, tiles.get(id).box.z0);
   console.log(`streets: ${stats.edges} stretches in the open world's ${over.length} tiles, ${stats.junctions} junctions, ${stats.islands} islands, ${stats.reservations} reservations, ${Math.round(stats.km.kerb)} km of kerb, in ${Math.round(stats.seconds)} s`);
 }
@@ -656,6 +667,7 @@ out.header.meta = {
   storey: [STOREY, BASE],
   landmarks,
   sights,
+  open: { pts: OPEN, gates, tiles: OPEN_TILES, seen: OPEN_SEEN },
 };
 const b64 = out.encode();
 fs.writeFileSync(path.join(dir, 'base.js'), `${HEAD}export default '${b64}';\n`);
@@ -663,3 +675,4 @@ sizes.sort((a, b) => b[1] - a[1]);
 console.log(`base ${Math.round(b64.length / 1024)} KB; ${tiles.size} tiles, ${Math.round(bytes / 1024)} KB in all, the biggest ${sizes.slice(0, 4).map(([id, kb]) => `${id} ${kb} KB`).join(', ')}`);
 console.log(`sections: ${SECTIONS.map((s) => `${s.id} ${s.tiles.length}`).join(', ')}`);
 console.log(`the ground every 2 m on ${FINE.size} tiles: ${[...FINE].sort().join(' ')}`);
+console.log(`the open world: ${OPEN_TILES.length} tiles under it and ${OPEN_SEEN.length} round it, ${gates.length} gates (${Object.entries(Object.groupBy(gates, (g) => g.level)).map(([l, g]) => `${g.length} ${l}`).join(', ')})`);

@@ -167,6 +167,34 @@ export interface Tree {
   filled: boolean;
 }
 
+// Where a street leaves the open world's area: a game stands road-works barriers across it there
+// ("Estrada cortada"). heading: the way the street leaves, (cos, sin) pointing out of the area (x
+// east, z south); the edge crosses it square, straight across its width. w: its width kerb to kerb.
+// k: its kind, as a Line's. level and y: on the ground, on a bridge's deck, in a tunnel's road or
+// under something, as a Line's, and its road's height there above elev0.
+export interface Gate {
+  x: number;
+  z: number;
+  heading: number;
+  w: number;
+  k: number;
+  level: 'ground' | 'bridge' | 'tunnel' | 'under';
+  y: number;
+}
+
+// The open world's area (decision 019, task 032): the Volta dos Amigos' and about 150 m round it, and
+// the Picoto's top, where a game lets the player drive anywhere. pts: its edge, a ring of [x, z]
+// points (closed: the last joins the first), half way between the streets in it and those out of it,
+// round the buildings between them. gates: where every street crosses it (not the railway). tiles:
+// the tiles it touches, the ground every 2 m on all of them; seen: those round it, within 500 m, for
+// the city seen past its edge.
+export interface Open {
+  pts: [number, number][];
+  gates: Gate[];
+  tiles: string[];
+  seen: string[];
+}
+
 // A river's course, each point with its water level.
 export interface River {
   pts: [number, number, number][];
@@ -195,6 +223,9 @@ export interface BragaMap {
   cover: Uint8Array;
   rivers: River[];
   riverHalfWidth: number;
+  open: Open;
+  // Whether (x, z) is inside the open world's area.
+  inOpen(x: number, z: number): boolean;
   tileAt(x: number, z: number): string;
   sectionAt(x: number, z: number): string | null;
 }
@@ -203,9 +234,9 @@ export interface World extends BragaMap {
   // The tiles loaded, and the box they make together.
   tiles: string[];
   box: Box;
-  // The ground, from DGT's LiDAR: every 2 m on the tiles loaded within 60 m of a track and over the
-  // shooter's area, every 10 m on the other tiles loaded, every 50 m elsewhere. Bridges' decks aren't
-  // in it: it's the ground under them.
+  // The ground, from DGT's LiDAR: every 2 m on the tiles loaded within 60 m of a track, over the
+  // shooter's area and under the open world's, every 10 m on the other tiles loaded, every 50 m
+  // elsewhere. Bridges' decks aren't in it: it's the ground under them.
   height(x: number, z: number): number;
   // In the order they're painted on the ground.
   areas: Area[];
@@ -217,6 +248,8 @@ export interface World extends BragaMap {
 }
 
 export function map(): BragaMap;
-export function tilesFor(area: Box | { sections: string[] }): string[];
-export function loadWorld(area: Box | { sections: string[] }): Promise<World>;
+// A box, some sections, or the open world's area and the tiles round it.
+export type Region = Box | { sections: string[] } | { open: true };
+export function tilesFor(area: Region): string[];
+export function loadWorld(area: Region): Promise<World>;
 export function heightOn(g: Grid, x: number, z: number): number;

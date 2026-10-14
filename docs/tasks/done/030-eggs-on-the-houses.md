@@ -1,5 +1,5 @@
 ---
-status: doing
+status: done
 priority: high
 kind: code
 repo: both
@@ -107,4 +107,10 @@ Steps:
   deployed to https://pedrohenriques15.github.io/party-kart/. The peer id prefix is `pk31`, so
   players on the old build must reload to race. On v1.3.0: party-kart's `npm test` 19 of 19,
   `tsc` clean.
-- **Left:** `/task finish 030`: the round `2026-10-14-friends` (shot) posted to the scorecard.
+- **The round** `2026-10-14-friends` ("Os amigos"), shot again on the released build (party-kart
+  `6309e63`, braga-map 1.3.0, 29 viewpoints at High and Low), every shot looked at, and posted to
+  the scorecard: version 2 of "Braga real", the round open for marks. Its worst viewpoint costs
+  174 draw calls, 1.06 M triangles and 94 MB of textures on High, 157, 0.52 M and 45 MB on Low:
+  inside the budget, Low's textures now at its limit.
+- **Finished** on 2026-10-14. Decision 014 replaces decision 004's bullet. The viewpoints keep 150 m
+  from every house and egg, so the scorecard shows none of the eggs.

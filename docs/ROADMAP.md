@@ -11,9 +11,9 @@ holds ideas with no task yet. Settled decisions go to [DECISIONS.md](DECISIONS.m
 |---|---|
 | The data | OpenStreetMap (streets, buildings, land, trees, crossings, lights, bus stops, landmarks), for 6.5 × 4.6 km (`tools/fetch.mjs`). The ground from DGT's 2025 LiDAR since task 009 (decision 008): every 2 m in the world near the route and in Fujacal, every 10 m elsewhere; EU-DEM only for the horizon. Also fetched into `.cache/dgt/` and read by `tools/dgt.mjs`, not used yet: the LiDAR's surface model and point cloud, the 2025 orthophoto (25 cm) and the COS2025 land use ([SOURCES.md](SOURCES.md)). About 30% of buildings have a height, floors or roof shape in OSM; the rest are guessed. 11,500 of the world's 24,523 buildings are invented, to fill built-up frontage |
 | The library | braga-map is a package for games: the world in 500 m tiles grouped in six sections (`index.js`, `world/`), and the tracks planned on it (`tracks/`). party-kart loads it, pinned to a tag (`v1.3.0` since tasks 028–030) |
-| The kart race's city | Real-width streets (the track never under 9 m), granite kerbs, calçada, lane lines, zebra crossings, traffic lights and bus stops from OSM, buildings at their place with guessed heights and hashed colours, trees, the Rio Este and its bridges, the hills 15 km round, Bom Jesus and the Sameiro (twice their size), the Picoto's cross, the Estádio 1.º de Maio, the Tourigalo, Makro and the Altice Forum's signs. The ground as it is (task 009): the streets tip sideways, the pavements meet the ground, retaining walls where it's higher, buildings stepped on their slopes. The race the way the traffic goes (task 027, decision 010): one-way streets the right way, no banned turns, 9.3 km. The first four-point plan (skyline, street level, real widths, landmarks) was done on 2026-10-13: "Braga as it is", braga-map `017bdd4` and party-kart `1d7a921` |
-| **In flight** | Braga's own pavement pattern (the calçada drawn is Lisbon's), and a pale patch near São João da Ponte, in a party-kart session. Tasks 028–030 (the friends drive, their eggs on their houses, the Tourigalo as it is, decision 014) are released (braga-map `v1.3.0`, party-kart `6309e63`, live) and wait for their round on the scorecard |
-| Realism, measured | 29 viewpoints, each set where a real photo was taken (task 001, `refs/viewpoints.json`, decision 009): along the Volta dos Amigos, on foot in Fujacal, and of Bom Jesus and the Sameiro. Shot in the game at High and Low by party-kart's `scripts/shots.mjs` (task 002, decision 011), the same every time, beside their photos: the baseline round is `2026-10-13-baseline`. Rated on the scorecard "Braga real" (task 003, decision 012, https://claude.ai/artifact/MsA5VZHSqxfD3e4BDYrYPs), by the owner alone for now: the baseline averages 2.6 of 5. The budget (task 004, decision 013): today's city, rounded up, in party-kart's `docs/architecture.md`; `?stats` measures a phone |
+| The kart race's city | Real-width streets (the track never under 9 m), granite kerbs, calçada, lane lines, zebra crossings, traffic lights and bus stops from OSM, buildings at their place with guessed heights and hashed colours, trees, the Rio Este and its bridges, the hills 15 km round, Bom Jesus and the Sameiro (twice their size), the Picoto's cross, the Estádio 1.º de Maio, the Tourigalo as it is (task 029: the black bull with a rooster's head, on its lawn), Makro and the Altice Forum's signs. The ground as it is (task 009): the streets tip sideways, the pavements meet the ground, retaining walls where it's higher, buildings stepped on their slopes. The race the way the traffic goes (task 027, decision 010): one-way streets the right way, no banned turns, 9.3 km. The first four-point plan (skyline, street level, real widths, landmarks) was done on 2026-10-13: "Braga as it is", braga-map `017bdd4` and party-kart `1d7a921`. The friends drive it, each in a car that's a joke about them, and each one's easter egg stands on their house (tasks 028 and 030, decision 014) |
+| **In flight** | Braga's own pavement pattern (the calçada drawn is Lisbon's), and a pale patch near São João da Ponte, in a party-kart session. |
+| Realism, measured | 29 viewpoints, each set where a real photo was taken (task 001, `refs/viewpoints.json`, decision 009): along the Volta dos Amigos, on foot in Fujacal, and of Bom Jesus and the Sameiro. Shot in the game at High and Low by party-kart's `scripts/shots.mjs` (task 002, decision 011), the same every time, beside their photos: the baseline round is `2026-10-13-baseline`, and the second, `2026-10-14-friends` ("Os amigos", tasks 028–030), is the one open for marks. Rated on the scorecard "Braga real" (task 003, decision 012, https://claude.ai/artifact/MsA5VZHSqxfD3e4BDYrYPs), by the owner alone for now: the baseline averages 2.6 of 5. The budget (task 004, decision 013): today's city, rounded up, in party-kart's `docs/architecture.md`; `?stats` measures a phone |
 
 ## Phase 1 · See it: references, the scorecard and the budget
 
@@ -49,8 +49,6 @@ a phone can draw. Everything after this is checked against it.
 
 - **020** Street furniture where it stands: lamps, signs, bins, benches, shelters, parked cars.
 - **021** The landmarks along the route, built from their photos, São João da Ponte first.
-- **029** The Tourigalo as it is: a black bull with a rooster's head, on its lawn. *Ahead of the
-  phase, at the owner's asking.*
 - **022** Braga's light: the real sun, the sky and the haze, and its weather.
 
 ## Alongside · The sound
@@ -62,14 +60,6 @@ clipping and the silence round you. It needs none of the phases above.
   and synthesized sounds that don't grate.
 - **024** The karts: a real kart's recorded engine for every kart, its tyres and the wind.
 - **025** Braga round the track: traffic, parks, the river and the bells, from the map's data.
-
-## Alongside · The friends' Braga
-
-The game round the city is the friends' own: they drive it, and their jokes stand at their
-houses. Nothing in Phases 1–4 waits for it.
-
-- **028** The friends' cast: the five friends drive, and the celebrity party is gone.
-- **030** The eggs on the houses, and Vale's clock.
 
 ## How the work can run in parallel
 

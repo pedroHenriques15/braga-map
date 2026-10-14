@@ -25,7 +25,7 @@ Everything is in metres from the Praça da República, x east, z south and y up,
 ## Using it from a game
 
 ```sh
-npm install github:pedroHenriques15/braga-map#v1.2.0
+npm install github:pedroHenriques15/braga-map#v1.3.0
 ```
 
 ```js
@@ -55,7 +55,7 @@ world.buildings; // [{ kind, roof, color, y, h, filled, pts }], and areas, lines
   and there's nothing to build.
 
 To change the map for the games: change the scripts, run them again, `npm test`, commit, and tag a
-new version (`git tag v1.2.0 && git push origin main --tags`). Then in each game, change the tag
+new version (`git tag v1.3.0 && git push origin main --tags`). Then in each game, change the tag
 in its `package.json` and run `npm install`. A game keeps the version it names until then, so a
 change to the map never breaks a game behind its back.
 

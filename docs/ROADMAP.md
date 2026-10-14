@@ -9,7 +9,7 @@ holds ideas with no task yet. Settled decisions go to [DECISIONS.md](DECISIONS.m
 
 | Area | State, 2026-10-14 |
 |---|---|
-| The data | OpenStreetMap (streets, buildings, land, trees, crossings, lights, bus stops, landmarks), for 6.5 × 4.6 km (`tools/fetch.mjs`). The ground from DGT's 2025 LiDAR since task 009 (decision 008): every 2 m in the world near the route, in Fujacal and over the open world's area, every 10 m elsewhere; EU-DEM only for the horizon. Also fetched into `.cache/dgt/` and read by `tools/dgt.mjs`, not used yet: the LiDAR's surface model and point cloud, the 2025 orthophoto (25 cm) and the COS2025 land use ([SOURCES.md](SOURCES.md)). About 30% of buildings have a height, floors or roof shape in OSM; the rest are guessed. Since task 011 none is invented: the 7,251 buildings OSM lacks are the LiDAR's, outlined and measured from it (`tools/roofs.mjs`, `tools/footprints.mjs`), where 11,492 houses were invented to fill built-up frontage |
+| The data | OpenStreetMap (streets, footways and paths, buildings, land, trees, crossings, lights, bus stops, landmarks), for 6.5 × 4.6 km (`tools/fetch.mjs`), taken as it is (decision 022). The world draws every street it has (task 006's audit, `tools/audit.mjs`): round the Volta dos Amigos all 202 km, but 8 squares mapped in parts (task 041), and none of the 171 km of footways, steps and paths yet (task 013); along the route and in Fujacal it lacks no street in use. The ground from DGT's 2025 LiDAR since task 009 (decision 008): every 2 m in the world near the route, in Fujacal and over the open world's area, every 10 m elsewhere; EU-DEM only for the horizon. Also fetched into `.cache/dgt/` and read by `tools/dgt.mjs`, not used yet: the LiDAR's surface model and point cloud, the 2025 orthophoto (25 cm) and the COS2025 land use ([SOURCES.md](SOURCES.md)). About 30% of buildings have a height, floors or roof shape in OSM; the rest are guessed. Since task 011 none is invented: the 7,251 buildings OSM lacks are the LiDAR's, outlined and measured from it (`tools/roofs.mjs`, `tools/footprints.mjs`), where 11,492 houses were invented to fill built-up frontage |
 | The library | braga-map is a package for games: the world in 500 m tiles grouped in six sections (`index.js`, `world/`), and the tracks planned on it (`tracks/`). party-kart loads it, pinned to a tag (`v1.7.0` since task 034) |
 | The kart race's city | Real-width streets (the track never under 9 m), granite kerbs, calçada, lane lines, zebra crossings, traffic lights and bus stops from OSM, buildings at their place with guessed heights and hashed colours, trees, the Rio Este and its bridges, the hills 15 km round, Bom Jesus and the Sameiro (twice their size), the Picoto's cross, the Estádio 1.º de Maio, the Tourigalo as it is (task 029: the black bull with a rooster's head, on its lawn), Makro and the Altice Forum's signs. The ground as it is (task 009): the streets tip sideways, the pavements meet the ground, retaining walls where it's higher, buildings stepped on their slopes. The race the way the traffic goes (task 027, decision 010): one-way streets the right way, no banned turns, 9.3 km. The first four-point plan (skyline, street level, real widths, landmarks) was done on 2026-10-13: "Braga as it is", braga-map `017bdd4` and party-kart `1d7a921`. The friends drive it, each in a car that's a joke about them, and each one's easter egg stands on their house (tasks 028 and 030, decision 014) |
 | The sound | Synthesized, through one mix since task 023: buses for the engines, the effects, the jingles and the ambience, into a limiter; the countdown, checkpoints, laps and finish one family of jingles; others' items, hits and the eggs heard from where they are. Judged by ear on two recorded takes, party-kart's `scripts/listen.mjs`, the baseline `2026-10-14-baseline`. Every kart's engine a race car's V8 through six gears, the nearest three others' heard from where they are with their Doppler shift, and your tyres and the wind (024, the owner's choice of engine after hearing a recording and a two-stroke, decision 016). Braga round the track (025): traffic, the town's hum, birds in the parks and insects in the woods, by what's within 150 m, the Rio Este, the bells, the buses and the stadium's crowd, from eight CC0 recordings, 10 dB under the engines |
@@ -38,7 +38,6 @@ whole area, and ships as one release when 037 is done, so the live game never lo
 Before changing the city, know what the real one looks like, how close the game is, and how much
 a phone can draw. Everything after this is checked against it.
 
-- **006** An audit of every street: what the map has, what the game draws, what's missing.
 - **007** Photo textures: their format, their loading and their credits. They live in
   braga-map, with the world.
 
@@ -54,6 +53,8 @@ a phone can draw. Everything after this is checked against it.
   courtyards, no interiors; braga-map stays data only.
 - **026** The track on the real carriageway: its centre line where the street's middle is, from
   the LiDAR and the orthophoto.
+- **041** The squares OpenStreetMap maps in parts, the Praça da República among them, drawn as
+  squares (found by 006's audit).
 
 ## Phase 3 · Surfaces and colours
 
@@ -81,8 +82,9 @@ Phase 1 comes first, but not all of it waits on itself:
 - **The open world first:** 032, 033 and 034 are done; 035 next, with 040 beside it (its data);
   036 once the streets are drawn; 037 last. 038 when the area grows. 039 any time, in today's race; 037 carries its ramp
   into the open world. 014, 018 and 026 now work on 033's surfaces, for every street in the area.
-- **Side by side:** 006 (audit), 007 (the textures' pipeline) and 015 (the shooter's
-  area). 008 (the reference photos) is done. Every question in the tasks was answered on 2026-10-14.
+- **Side by side:** 007 (the textures' pipeline) and 015 (the shooter's area). 006 (the street
+  audit) and 008 (the reference photos) are done; 041 (the squares the audit found missing) can
+  start. Every question in the tasks was answered on 2026-10-14.
 - **Phase 2's data tasks** can start now: 005 fetched their data, and 009 put the ground under
   them (decision 008), so 010 and 011 build on it. Each one is checked on the scorecard when it
   lands.

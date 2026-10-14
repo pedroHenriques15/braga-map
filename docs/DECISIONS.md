@@ -206,6 +206,8 @@ not use (`tools/track.mjs`, task 027). The planner fails a loop that breaks one,
   the traffic (8.38 km). party-kart's tests take a loop of 7–10 km and a second lap of 170–290 s.
 - **The map is the authority.** Where OSM is wrong about a street's direction, it's fixed in OSM
   (task 006), not worked round here.
+  *Replaced by decision 022 (2026-10-14): nobody edits OSM; a wrong street that matters comes to
+  the owner.*
 - **Not a departure.** Decision 004's list stays as it was; the `(joined)` links out of dead ends,
   which a note on the map asked for, are the one way the loop leaves the streets.
 
@@ -488,3 +490,24 @@ race moves into the world (task 037), the track's, with the same handling on bot
   0.66 m off the ground it meets is eased to it over 10 m (task 040), and a street stands on the
   land without the river's bed cut under it.
 
+## 022 · OpenStreetMap as it is: what it lacks is listed, not patched
+
+*2026-10-14 · task 006 · replaces decision 010's "it's fixed in OSM"*
+
+Nobody in the group will edit OpenStreetMap: an account would only be for contributing to it, and
+nobody will (the owner, 2026-10-14). So the map's streets are OpenStreetMap's, as they are.
+
+- **What it lacks, or has wrong, is listed,** not patched here: no street is added, moved or turned
+  round in the world for it. `tools/audit.mjs` lists, round the Volta dos Amigos, every street the
+  map has and whether the world draws it, and task 006's Notes what the 2025 orthophoto shows and
+  the map lacks: on 2026-10-14, no street in use along the route or in Fujacal, only private
+  drives, yards and dirt paths.
+- **A wrong or missing street that matters to the race or the shooter** (its direction, a street on
+  the route) comes to the owner: the only fix would be a local override, which no decision allows
+  yet.
+- **The world draws every street the map has,** of every class. A map page that shows fewer (the
+  65% cut of draft 1) leaves them out of that page only, and a street the world misses is a bug in
+  the scripts (task 041, the squares mapped in parts).
+
+The alternative, fixing OpenStreetMap at the source, would reach every map made from it and
+survive each fetch, but needs someone in the group to do it.

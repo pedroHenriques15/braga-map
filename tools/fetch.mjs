@@ -5,8 +5,8 @@
 // and the COS2025 land use (`cos`).
 //
 // node tools/fetch.mjs            everything but DGT's
-// node tools/fetch.mjs trees      only what's named (base, buildings, admin, pois, trees, street,
-//                                 restrictions, dem, horizon, lidar, ortho, cos)
+// node tools/fetch.mjs trees      only what's named (base, paths, buildings, admin, pois, trees,
+//                                 street, restrictions, dem, horizon, lidar, ortho, cos)
 import fs from 'node:fs';
 import path from 'node:path';
 import https from 'node:https';
@@ -34,6 +34,15 @@ const QUERIES = {
   way["natural"~"^(wood|scrub|grassland|heath)$"]; relation["natural"~"^(wood|scrub)$"];
   way["leisure"~"^(park|garden|pitch|stadium|sports_centre|golf_course|track)$"]; relation["leisure"~"^(park|garden|stadium)$"];
   way["amenity"~"^(hospital|university|school|college)$"];
+);
+out geom;`,
+  // What's walked or cycled, which no game draws yet (task 013), and the ways `base` leaves out (a
+  // street being built, one of no known class, a bus lane of its own): for the street audit
+  // (tools/audit.mjs). Squares mapped as a multipolygon too.
+  paths: `[out:json][timeout:180][bbox:${BOX}];
+(
+  way["highway"~"^(footway|path|steps|cycleway|bridleway|construction|road|busway)$"];
+  relation["highway"="pedestrian"];
 );
 out geom;`,
   // Buildings, the big ones mapped in parts (a multipolygon, like the Altice Forum) too.

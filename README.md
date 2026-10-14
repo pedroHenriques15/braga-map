@@ -112,6 +112,7 @@ npm run page     # the map page's map/braga.json
 npm run tracks   # every track: tracks/<id>.js, and map/tracks.json for the page
 npm run open     # the open world's edge, round the Volta dos Amigos: tools/open.json (seconds)
 npm run world    # the world: world/base.js, world/tiles.js and a module per tile (1.5 minutes)
+node tools/audit.mjs   # every street and path round the Volta dos Amigos, and whether the world draws it: .cache/audit.json (1 minute)
 node tools/streets.mjs [x0 x1 z0 z1]  # the streets as surfaces in a box (Fujacal's), and a page over the orthophoto to check them
 npm test         # the world and the tracks as the games read them, and DGT's data where fetched
 node tools/relief.mjs  # the ground checked: known places, bridges, and each track's profile
@@ -124,14 +125,17 @@ node tools/round.mjs <round> --label "…"  # a round of party-kart's shots, for
 They need Node 22.18 or later. Run them in that order: `track.mjs` and `world.mjs` read the
 landmarks from `map/braga.json`, `open.mjs` the Volta dos Amigos, `world.mjs` makes the ground finer
 on the tiles the tracks in `tracks/` run through and the open world's edge touches, the map page
-draws the edge (run `npm run page` again after `npm run open`), and `build.mjs` and `world.mjs` take
-the buildings' heights and roofs from `roofs.mjs`'s measurements. All of them need the LiDAR.
+draws the edge (run `npm run page` again after `npm run open`) and the street audit (again after
+`audit.mjs`, which reads the world's tiles), and `build.mjs` and `world.mjs` take the buildings'
+heights and roofs from `roofs.mjs`'s measurements. All of them need the LiDAR.
 
-- `fetch.mjs` gets OpenStreetMap through Overpass (streets and land, buildings, parishes,
-  landmarks, trees, the crossings, traffic lights and bus stops, and the turn restrictions) and
-  elevation tiles, plus coarser ones 16 km round for the horizon. The public Overpass server is
-  often busy: it waits and tries again. `node tools/fetch.mjs trees` fetches only what's named
-  (`base`, `buildings`, `admin`, `pois`, `trees`, `street`, `restrictions`, `dem`, `horizon`). A
+- `fetch.mjs` gets OpenStreetMap through Overpass (streets and land; the footways, steps, paths
+  and cycleways, and the squares mapped in parts, which only the street audit reads so far;
+  buildings, parishes, landmarks, trees, the crossings, traffic lights and bus stops, and the turn
+  restrictions) and elevation tiles, plus coarser ones 16 km round for the horizon. The public
+  Overpass server is often busy: it waits and tries again. `node tools/fetch.mjs trees` fetches
+  only what's named (`base`, `paths`, `buildings`, `admin`, `pois`, `trees`, `street`,
+  `restrictions`, `dem`, `horizon`). A
   new fetch brings the map's changes since, so the tracks may come out different: run the games'
   tests after. `node tools/fetch.mjs microsoft` gets Microsoft's building footprints (found by
   machine learning in aerial imagery) over the map, into `.cache/microsoft.json`, only when
@@ -213,6 +217,14 @@ the buildings' heights and roofs from `roofs.mjs`'s measurements. All of them ne
   junction, a roundabout, a reservation) and in the world's tiles: every ring simple, nothing lying
   on anything else at its level, every street inside the open world's edge with its carriageway at
   its width.
+- `audit.mjs` is the street audit (task 006): over the Volta dos Amigos' box, the open world's area
+  and the shooter's, every street, square, railway, footway, step, path and cycleway the map has,
+  by class, its length and how much of it the world's tiles draw (a line of its own kind within a
+  metre; for a square, its outline), and the reverse, any line in the tiles along no street of its
+  kind. It prints a table, lists what isn't drawn whole, and writes `.cache/audit.json`, which
+  `build.mjs` puts on the map page as the layer "Auditoria". `node tools/audit.mjs photos` also
+  sets the 2025 orthophoto under the map's ways in 250 m squares, over the shooter's area and
+  along the route, into `.cache/audit/`: to find by eye a street the photo shows and the map lacks.
 - `track.mjs` plans the tracks in `tracks.mjs`: below.
 - `refs/viewpoints.json` lists the viewpoints, the places where a game is set against the real
   Braga (task 001): 29 cameras along the Volta dos Amigos, on foot in Fujacal, and on Bom Jesus
@@ -307,7 +319,12 @@ doc.
 - **Streets** at three levels, counted in the area asked for. All the streets (not service roads
   or dirt tracks) come to 287 km. The main ones (fast roads, primary, secondary, tertiary and
   pedestrian streets) come to 102 km, 65% fewer. Keeping only the fast roads, primary and
-  secondary cuts 78%, but loses the Avenida Central and the old town.
+  secondary cuts 78%, but loses the Avenida Central and the old town. That cut is only the page's:
+  the world has every street.
+- **The street audit** (task 006, the layer "Auditoria"): round the Volta dos Amigos, the world
+  draws all 202 km of street the map has, service roads and dirt tracks too, but 360 m of streets
+  being built or of no known class; 43 of its 51 squares (all 11 in the open world: the other 8
+  are mapped in parts); and none of the 171 km of footways, steps, paths and cycleways yet.
 - **The ground** from DGT's 2025 LiDAR: every 20 m on the page, every 2 m in the world on the 23
   tiles the open world's area touches (the Volta dos Amigos and Fujacal among them), every 10 m on
   the rest; from 56 m in the north-west corner to 573 m on the Sameiro. Before, from EU-DEM, the

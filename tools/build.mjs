@@ -293,6 +293,21 @@ const game = JSON.parse(fs.readFileSync(path.join(ROOT, 'tools/first-track.json'
 const openGates = gatesOf(OPEN, streetLines(base, ground, (x, z, m) => inBox(EXT, x, z, m)).lines).map(({ x, z, heading, w, k, level }) => ({ x, z, heading, w, k, level }));
 const openArea = Math.abs(OPEN.reduce((a, [x, z], i) => { const [x2, z2] = OPEN[(i + 1) % OPEN.length]; return a + x * z2 - x2 * z; }, 0)) / 2;
 
+// ---- The street audit (task 006), where tools/audit.mjs has run ----
+// Every way OpenStreetMap has in the Volta dos Amigos' box, streets and paths: its class (c), name,
+// how much of it the world's tiles draw (d, 0 to 1) and its lines; and, by area and class, the
+// metres of each and of what's drawn.
+let audit = null;
+if (fs.existsSync(path.join(CACHE, 'audit.json'))) {
+  const a = readCache('audit.json'), m = (v) => Math.round(v);
+  audit = {
+    made: a.made, osm: a.osm, box: a.box,
+    table: Object.fromEntries(Object.entries(a.table).map(([area, rows]) => [area, Object.fromEntries(Object.entries(rows).map(([c, r]) => [c, { ...r, len: m(r.len), drawn: m(r.drawn) }]))])),
+    ways: a.ways.map((w) => ({ c: w.c, n: nameOf(w.name), d: w.drawn, p: w.lines.map((l) => pack(dp(l, 1))) })),
+    strays: a.strays.map((s) => ({ k: s.kind, p: pack(dp(s.pts, 1)) })),
+  };
+}
+
 // ---- Stats ----
 const km = (o) => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, Math.round(v)]));
 
@@ -308,6 +323,7 @@ const data = {
   height: { x0: EXT.x0, z0: EXT.z0, step: STEP, nx, nz, scale: 4, b64: Buffer.from(H.buffer).toString('base64') },
   game,
   open: { pts: OPEN, gates: openGates, area: Math.round(openArea) },
+  ...(audit && { audit }),
   len: { core: km(lenCore), ext: km(lenExt) },
 };
 fs.writeFileSync(outFile, JSON.stringify(data));

@@ -37,6 +37,7 @@ import amigos from 'braga-map/tracks/amigos.js';
 const world = await loadWorld(amigos.box); // or loadWorld({ sections: ['centro'] })
 world.height(x, z); // the ground: every 2 m or 10 m on the tiles loaded, every 50 m elsewhere
 world.buildings; // [{ kind, roof, ends, dir, pitch, y, h, ridge, floors, roofColor, … pts }], and areas, lines, trees…
+world.streets; // in the open world's area: { carriageways, pavements, kerbs, markings }, each piece at its level
 ```
 
 - `map()` is what every game needs whichever part of the map it's in: the sections and their
@@ -54,6 +55,13 @@ world.buildings; // [{ kind, roof, ends, dir, pitch, y, h, ridge, floors, roofCo
   ground's own level (a building over it, or a deck the map draws as a tunnel under a bridge). A
   deck and a tunnel's road run straight between the ground where they end. Where the LiDAR took a
   deck for the ground, the bridge is ground too, and what passes under it a tunnel.
+- In the open world's area (decision 019, `OPEN` in `tools/sections.mjs`), every street is a
+  surface too (task 033, `world.streets`): its carriageway at its real width, joined to the others
+  where they meet, each corner rounded as a kerb turns it, a roundabout round its island; the kerbs
+  (dropped at the crossings); the pavements behind them, up to the buildings; the central
+  reservations; and the lines painted on them, from what the map says (lanes, the line between the
+  two ways, zebras, stop lines at traffic lights). Each piece is cut to its tile, at its street's
+  level, with its heights off the ground. `index.d.ts` says what each part is.
 - The buildings are as DGT's LiDAR measured them (`measured`), 95% of those on the map: the
   height of the eaves (`h`) and of the ridge, the roof's shape, the way it runs (`dir`), which
   ends are hipped, its pitch, its storeys, and its colour as the 2025 orthophoto sees it (from
@@ -86,7 +94,8 @@ node tools/fetch.mjs microsoft    # Microsoft's building footprints over the map
 node tools/roofs.mjs   # every building's height and roof, and those the map lacks: .cache/roofs.json (10 minutes the first time)
 npm run page     # the map page's map/braga.json
 npm run tracks   # every track: tracks/<id>.js, and map/tracks.json for the page
-npm run world    # the world: world/base.js, world/tiles.js and a module per tile
+npm run world    # the world: world/base.js, world/tiles.js and a module per tile (1.5 minutes)
+node tools/streets.mjs [x0 x1 z0 z1]  # the streets as surfaces in a box (Fujacal's), and a page over the orthophoto to check them
 npm test         # the world and the tracks as the games read them, and DGT's data where fetched
 node tools/relief.mjs  # the ground checked: known places, bridges, and each track's profile
 node tools/heights.mjs # the buildings checked against the map's own heights and floors, and the outliers
@@ -150,7 +159,28 @@ from `roofs.mjs`'s measurements. All of them need the LiDAR.
   way its head points and its restaurant's front), picked out of the map by their OpenStreetMap
   ids. `levels.mjs` checks the streets that cross on two levels (`test/levels.test.js`): under a
   deck there's room for what passes, over a tunnel its roof; a bridge that meets a street at its
-  end, or that the LiDAR took for the ground, meets it at grade.
+  end, or that the LiDAR took for the ground, meets it at grade. `lines.mjs` is how it reads the
+  streets: each way's kind, width, level, and the heights of a bridge's deck or a tunnel's road.
+- `streets.mjs` makes every street in the open world's area a surface (task 033), for
+  `world.mjs`, with Clipper (`clipper-lib`, a dev dependency): each street's band at its width
+  (`carriageway` in `osm.mjs`), cut square across where it meets another and round at a dead end;
+  those on the ground joined into one, each bridge and each tunnel its own; each corner where
+  streets meet, or a street turns, rounded at a kerb's radius (3–10 m, by the smaller street) by
+  closing the carriageways round it, which leaves a roundabout's island, or another they enclose,
+  open; the surface (asphalt, setts, paving, dirt) the bigger street's where two meet. Then what's
+  beside them: islands (holes with nothing built on them, under 600 m², or a roundabout's); central
+  reservations (between two one-way carriageways running opposite ways up to 14 m apart, for 30 m
+  or more); and the pavements, 3.2 m out from the kerb or to the buildings and the water, and none
+  along a side the map says has none, or out in the open (no building within 25 m), or by a fast
+  road, a service road, a track or a pedestrian street. The kerbs wherever a pavement, reservation
+  or island is behind the carriageway, 15 cm high, dropped at the crossings; the lines from
+  `lanesOf` (each lane at least 2.5 m), stopping at the junctions and short of the zebras; a zebra
+  at every crossing the map has, 4 m deep, but the unmarked ones. Everything to the nearest 10 cm.
+  On its own, `node tools/streets.mjs [x0 x1 z0 z1]` makes a box's streets (Fujacal's by default)
+  into `.cache/streets/` with `index.html`, a page that sets them over the 2025 orthophoto, each
+  kind on a layer, to check them by eye. `test/streets.test.js` checks it on made-up streets (a T
+  junction, a roundabout, a reservation) and in the world's tiles: every ring simple, nothing lying
+  on anything else at its level, every street with its carriageway at its width.
 - `track.mjs` plans the tracks in `tracks.mjs`: below.
 - `refs/viewpoints.json` lists the viewpoints, the places where a game is set against the real
   Braga (task 001): 29 cameras along the Volta dos Amigos, on foot in Fujacal, and on Bom Jesus
@@ -253,6 +283,9 @@ doc.
 - **The world**: 140 tiles, 13,000 buildings from the map (12,400 of them measured by the LiDAR,
   in 18,700 parts) and 11,500 houses filled in, 20,000 trees. 6.0 MB in all (2 MB gzipped); a
   game loads the tiles it needs (the Volta dos Amigos, 48: 4.1 MB, 1.2 MB gzipped).
+- **The open world's streets** (task 033), over 2.6 × 2.0 km round the Volta dos Amigos, 30
+  tiles: 2,823 stretches of street, 1,458 junctions, 178 islands, 106 central reservations, 147 km
+  of kerb. They add 0.33 MB gzipped to the tiles.
 - **The Volta dos Amigos**, Party Kart's track: 9.3 km round, through five friends'
   neighbourhoods, the way the traffic goes.
 - **The first track** ("Pista antiga"), Party Kart's cartoon Braga Grand Prix, drawn at its real

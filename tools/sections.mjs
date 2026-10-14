@@ -8,6 +8,10 @@ export const CORE = { x0: -1500, x1: 2830, z0: -2300, z1: 2010 };
 // Where the first shooter is played: the streets of Fujacal and Conselheiro Lobato (decision 003;
 // task 015 settles their edge). It gets the detail the tracks get.
 export const SHOOTER = { x0: -350, x1: 350, z0: 600, z1: 1050 };
+// The open world's area (decision 019): the Volta dos Amigos' and about 150 m round it, where a game
+// lets the player drive anywhere. Every street in it is a surface (streets.mjs, task 033). A box
+// until task 032 draws its edge.
+export const OPEN = { x0: -780, x1: 1850, z0: -100, z1: 1900 };
 
 // Tiles are TILE metres square, on a grid from the Praça da República: tile (i, j) runs from
 // x = i·TILE to (i + 1)·TILE and z = j·TILE to (j + 1)·TILE. They cover EXT.

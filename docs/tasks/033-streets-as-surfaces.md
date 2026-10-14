@@ -1,5 +1,5 @@
 ---
-status: todo
+status: doing
 priority: high
 kind: code
 repo: braga-map
@@ -94,8 +94,10 @@ them), shown on the map page for the owner, before the whole area:
 - [ ] The owner has looked at Fujacal's surfaces on the map page before the whole area was done.
 - [ ] Every street in the open world's area (task 032) is in the tiles as carriageways, junctions,
   kerbs, pavements and markings at its level, and `loadWorld` gives them as `world.streets`.
-- [ ] The README says what the streets are and where each part comes from.
-- [ ] `npm test` passes, with `test/streets.test.js`; the tiles' growth is in Notes.
+- [x] The README says what the streets are and where each part comes from. (`README.md`: the
+  usage, `tools/lines.mjs` and `tools/streets.mjs`, the numbers.)
+- [x] `npm test` passes, with `test/streets.test.js`; the tiles' growth is in Notes. (44 of 44,
+  2026-10-14; the tiles 2.27 → 2.60 MB gzipped.)
 
 ## Out of scope
 
@@ -115,3 +117,44 @@ them), shown on the map page for the owner, before the whole area:
   pedestrian; 0.8 km on bridges, 1.1 km in tunnels, 0.5 km under something. 1,360 points where
   two or more stretches meet, which counts the junctions and also where a tile cuts a street: about
   a thousand junctions. 9,096 buildings and 3,746 trees stand in it.
+
+### Started 2026-10-14
+
+- **Done:** `tools/streets.mjs` makes the surfaces, `tools/lines.mjs` is how both it and
+  `world.mjs` read the streets (moved out of `world.mjs`, which still makes the same tiles to the
+  byte), and `world.mjs` puts them in each open-world tile as a `streets` part; `index.js` gives
+  them as `world.streets`, typed in `index.d.ts`; the README says how. `clipper-lib` (Clipper 6,
+  Boost licence, no dependencies) is a dev dependency, for the tools only: nothing new ships to the
+  games. `clipper2-js` was tried first and dropped: it pulls in Angular. `npm test` 44 of 44, with
+  `test/streets.test.js`.
+- **The area** is `OPEN` in `tools/sections.mjs`, a box (x −780…1850, z −100…1900, 30 tiles) until
+  task 032 draws its edge.
+- **What came out,** over the area: 2,823 stretches of street, 1,458 junctions, 178 islands, 106
+  central reservations, 147 km of kerb (6 km of it dropped at crossings), 474 lane lines, 359
+  centre lines, 554 zebras and 22 stop lines. Carriageways 560,000 m² of asphalt, 163,000 of setts,
+  6,000 of paving and 3,000 of dirt; pavements 368,000 m². Measured across, the carriageways are the
+  map's widths (median 1.015 of it; 10% of places under 1.000, 10% over 1.048: the corners and
+  junctions). It takes 25 s in `world.mjs`, whose run went from 35 s to about 1.5 minutes with the
+  tiles written.
+- **What it costs:** the 30 tiles grow by 0.33 MB gzipped (the whole world from 2.27 to 2.60 MB).
+- **Checked by eye** on the preview page over the orthophoto (below): Fujacal's streets, the
+  Avenida da Liberdade's junction with its underpass, the roundabout at São João da Ponte, the
+  Avenida João XXI and the Robert Smith interchange, its bridge and cloverleaf.
+- **The owner's look is on a page of its own,** not the map page: `node tools/streets.mjs` writes
+  `.cache/streets/index.html` (Fujacal; `.cache/streets-area/` holds the whole area), which sets the
+  surfaces over DGT's 2025 orthophoto, each kind on a layer, where they can be judged against the
+  real streets. The map page draws the map at 20 m, too coarse for a kerb.
+- **Found:** 833 buildings in the area have a corner on a carriageway (10,500 m² of them, against
+  730,000 m² of carriageway): where the map's width, or its guess for the street, is wider than
+  the street, or its line is off its middle, and some are real (a petrol station's canopy over its
+  forecourt). Measuring the real widths and moving the lines is task 026's, which now covers every
+  street in the area; a game clears its road of what stands on it until then.
+- **Found:** `track.mjs` thins the track's line to within 3 m of the streets', and the loop's link
+  out of a dead end (decision 010) isn't a street, so has no carriageway: both in task 037's Notes.
+- **A gotcha:** clipper-lib, the JavaScript port of Clipper 6, sometimes unions a tangle of points
+  within a centimetre of each other wrongly: a whole block in the middle of the roundabout at the
+  Praça Paulo Vidal came out asphalt. Every area handed to it first loses its points within 1.4 cm
+  of the next (`clean` in `streets.mjs`), which cured it; but not on the 10 cm grid the tiles keep,
+  where that tolerance would be 14 cm and shave the kerbs. The tests check every tile for it.
+- **Not done:** the map page has no layer for the surfaces; footways, cycleways and steps aren't
+  fetched (task 013); markings are what the map says, not the orthophoto's (task 018).

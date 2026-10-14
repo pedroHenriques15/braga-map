@@ -113,6 +113,10 @@ const DIRS = [0, Math.PI, Math.PI / 2, -Math.PI / 2];
 const SOURCES = ['osm', 'lidar', 'microsoft', 'invented'];
 // A street's level (tools/world.mjs's LEVEL).
 const LEVELS = ['ground', 'bridge', 'tunnel', 'under'];
+// What each piece of a street's surfaces is (tools/streets.mjs's STREET): the carriageways' surfaces,
+// what's beside them, the kerbs and the markings.
+const STREET = ['asphalt', 'setts', 'paving', 'dirt', 'pavement', 'reservation', 'island', 'kerb', 'lane', 'centre', 'zebra', 'stop'];
+const DASH = [3, 4];
 
 let base = null;
 
@@ -181,6 +185,7 @@ export async function loadWorld(area) {
   const lines = [];
   const buildings = [];
   const trees = [];
+  const streets = { carriageways: [], pavements: [], kerbs: [], markings: [] };
   const box = { x0: Infinity, x1: -Infinity, z0: Infinity, z1: -Infinity };
   parts.forEach(({ head, nums }, t) => {
     const g = grid(nums, head.terrain);
@@ -255,6 +260,50 @@ export async function loadWorld(area) {
     }
     const T = head.trees;
     for (let i = T.at; i < T.at + T.n; i += 3) trees.push({ x: nums[i] / 2, z: nums[i + 1] / 2, pine: (nums[i + 2] & 1) === 1, filled: (nums[i + 2] & 2) === 2 });
+    // The streets as surfaces, in the open world's tiles: each piece [what, ...] (tools/streets.mjs's
+    // packStreets), points in decimetres, the first of each ring or line from the tile's corner and
+    // each after it the step from the one before, and off the ground each point's height after them.
+    const St = head.streets;
+    if (!St) return;
+    const dm = (i, n) => {
+      const pts = [];
+      let x = 0;
+      let z = 0;
+      for (let k = 0; k < n; k++) {
+        x += nums[i + k * 2];
+        z += nums[i + k * 2 + 1];
+        pts.push([(g.x0 * 10 + x) / 10, (g.z0 * 10 + z) / 10]);
+      }
+      return pts;
+    };
+    for (let i = St.at; i < St.at + St.n; ) {
+      const kind = STREET[nums[i] & 15];
+      const level = LEVELS[nums[i] >> 4];
+      const off = level !== 'ground';
+      if ((nums[i] & 15) <= 6) {
+        const rings = [];
+        let j = i + 2;
+        for (let r = 0; r < nums[i + 1]; r++) {
+          const n = nums[j];
+          rings.push(dm(j + 1, n));
+          j += 1 + n * 2;
+        }
+        const piece = (nums[i] & 15) <= 3 ? { surface: kind, level, rings } : { kind, level, rings };
+        if (off) piece.ys = rings.map((r) => r.map(() => nums[j++] / 10));
+        ((nums[i] & 15) <= 3 ? streets.carriageways : streets.pavements).push(piece);
+        i = j;
+      } else {
+        const n = nums[i + 3];
+        const pts = dm(i + 4, n);
+        const piece = kind === 'kerb' ? { h: nums[i + 1] / 100, level, pts } : { kind, w: nums[i + 1] / 100, dash: nums[i + 2] ? DASH : null, level, pts };
+        i += 4 + n * 2;
+        if (off) {
+          piece.ys = Array.from(nums.subarray(i, i + n), (v) => v / 10);
+          i += n;
+        }
+        (kind === 'kerb' ? streets.kerbs : streets.markings).push(piece);
+      }
+    }
   });
   // Big areas first and squares last, as the map orders them; the small streets, then the big.
   areas.sort((a, b) => a.rank - b.rank);
@@ -271,5 +320,6 @@ export async function loadWorld(area) {
     lines,
     buildings,
     trees,
+    streets,
   };
 }

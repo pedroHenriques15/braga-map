@@ -89,3 +89,17 @@ Steps:
 
 - Decision 019 replaced decision 004's 9 m: the race runs at the streets' real widths. It takes
   everyone in the room, put on the grid at once.
+- **Found in task 033 (2026-10-14):** `track.mjs` thins the loop's line with a 3 m tolerance
+  (`simplify(raw, 3)`, line 419) before rounding its corners, so on a narrow street the track's
+  centre runs up to 3 m off the street's: on the Rua do Fujacal after the start, 2–3.4 m north of
+  it, over the kerb of its 5.9 m carriageway. At 9 m it didn't show; at real widths it puts the
+  karts on the pavement. Step 1 has to take the line from the streets' surfaces (each street's
+  carriageway, task 033), not thin it.
+- **Also found in task 033:** the loop's link out of a dead end (decision 010, the one way it
+  leaves the streets) has no carriageway in the open world: about 60 m round (−570, 1342), where
+  the track's points are 6 m and more from any street. The race needs a surface there, or a way
+  round it on the streets.
+- **Task 039 (drafted 2026-10-14) answers that:** the made-up link goes, and the race jumps into
+  the dead end's street by a ramp. The ramp stands only during a race (the owner's answer): step
+  2 puts it out with the barriers and takes it away with them, and its flight has no road, kerbs
+  or walls. If 039 isn't done when this starts, do it first.

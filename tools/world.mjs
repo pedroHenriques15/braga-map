@@ -10,7 +10,8 @@
 //   rivers, the landmarks and the sights.
 // - world/tiles/<id>.js, one per tile: the relief (every 2 m on the tiles within 60 m of a track
 //   in tracks/ and over the shooter's area, every 10 m on the rest), what the ground is (clipped to
-//   the tile), the streets and the railway, the buildings, and the trees.
+//   the tile), the streets and the railway, the buildings, and the trees; and in the open world's
+//   area, every street as surfaces (streets.mjs).
 // - world/tiles.js, a loader for each tile, for index.js.
 //
 // All in metres from the Praça da República, x east and z south, heights above ELEV0, packed as
@@ -20,9 +21,11 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { CACHE, ELEV0, P, ROOT, readCache, relief } from './geo.mjs';
 import { tileKey, toTM } from './dgt.mjs';
-import { AREA, AREA_OF, blur, bounds, carriageway, dm, footprints, Grid, half, hash, inside, LINE, minRect, openThin, overlaps, Packer, packGrid, packPts, rectAxis, STOREY, STOREY_BASE as BASE, ringArea, ringOf, seeded, segDist, simplify, W_MIN } from './osm.mjs';
-import { allTiles, EXT, SECTIONS, sectionOf, SHOOTER, TILE, tileBox, tileId, tileOf } from './sections.mjs';
+import { AREA, AREA_OF, blur, bounds, dm, footprints, Grid, half, hash, inside, minRect, openThin, overlaps, Packer, packGrid, packPts, rectAxis, STOREY, STOREY_BASE as BASE, ringArea, ringOf, seeded, segDist, simplify, W_MIN } from './osm.mjs';
+import { allTiles, EXT, OPEN, SECTIONS, sectionOf, SHOOTER, TILE, tileBox, tileId, tileOf } from './sections.mjs';
 import { terrain } from './terrain.mjs';
+import { isLine, isSquare, LEVEL, streetLines } from './lines.mjs';
+import { packStreets, streetSurfaces } from './streets.mjs';
 
 const base = readCache('osm/base.json');
 const buildingsOsm = readCache('osm/buildings.json');
@@ -34,7 +37,7 @@ const places = fs.existsSync(path.join(CACHE, 'places.json')) ? readCache('place
 const ground = await terrain();
 const inExt = (x, z, m = 0) => x >= EXT.x0 - m && x <= EXT.x1 + m && z >= EXT.z0 - m && z <= EXT.z1 + m;
 
-const tiles = new Map(allTiles().map(([i, j]) => [tileId(i, j), { id: tileId(i, j), box: tileBox(i, j), areas: [], lines: [], buildings: [], trees: [] }]));
+const tiles = new Map(allTiles().map(([i, j]) => [tileId(i, j), { id: tileId(i, j), box: tileBox(i, j), areas: [], lines: [], buildings: [], trees: [], streets: [] }]));
 const tileAt = (x, z) => tiles.get(tileId(...tileOf(x, z)));
 const tilesOver = (b, m = 0) => [...tiles.values()].filter((t) => overlaps(t.box, b, m));
 
@@ -49,22 +52,14 @@ for (const f of fs.readdirSync(path.join(ROOT, 'tracks')).filter((f) => f.endsWi
 // ---------------------------------------------------------------------------------------------
 // The streets, the railway, and what the ground is.
 
-// Each street's level: on the ground; on a bridge; in a tunnel, under the ground's surface; or
-// under something at the ground's own level, open either side: a building over it (a passage, or
-// `covered`), or a bridge's deck (where the map draws the stretch under a bridge as a tunnel).
-const LEVEL = { ground: 0, bridge: 1, tunnel: 2, under: 3 };
-const on = (v) => v != null && v !== 'no';
-const levelOf = (t) => (on(t.bridge) ? LEVEL.bridge : t.tunnel === 'building_passage' || (on(t.covered) && !on(t.tunnel)) ? LEVEL.under : on(t.tunnel) ? LEVEL.tunnel : LEVEL.ground);
-const lines = []; // { id, k, w, pts, nodes, t, level }: every street and railway
+// Every street and railway (lines.mjs), and the heights of those on a bridge's deck or in a tunnel.
+const { lines, heights, open } = streetLines(base, ground, inExt);
 const areas = []; // [kind, ring]
 for (const e of base.elements) {
   const t = e.tags || {};
-  if (e.type === 'way' && (LINE[t.highway] != null || t.railway)) {
+  if (isLine(e)) {
     const pts = e.geometry.map(P);
-    if (!pts.some(([x, z]) => inExt(x, z, 50))) continue;
-    const closed = pts.length > 3 && pts[0][0] === pts[pts.length - 1][0] && pts[0][1] === pts[pts.length - 1][1];
-    if (t.highway === 'pedestrian' && (t.area === 'yes' || closed)) { areas.push([AREA.indexOf('plaza'), simplify(pts.slice(0, -1), 0.5)]); continue; }
-    lines.push({ id: e.id, k: t.railway ? 9 : LINE[t.highway], w: t.railway ? 4 : carriageway(t), pts, nodes: e.nodes, t, level: levelOf(t) });
+    if (pts.some(([x, z]) => inExt(x, z, 50)) && isSquare(e, pts)) areas.push([AREA.indexOf('plaza'), simplify(pts.slice(0, -1), 0.5)]);
     continue;
   }
   const c = AREA_OF(t);
@@ -104,53 +99,6 @@ for (const e of base.elements) {
   });
 }
 
-// The heights of what's off the ground: a bridge's deck, and a tunnel's road. Each runs straight
-// between the ground where it ends: the LiDAR's ground is the bare earth, which has what's under a
-// deck and over a tunnel, not the deck or the tunnel's road. A bridge or a tunnel the map draws as
-// several ways is taken whole: its ends are where it meets nothing more of its kind, and each point
-// between is as high as its two nearest ends make it, by how far it is from each along the way. A
-// tunnel's end is at its mouth, where the ground is the cutting's floor: the lower of the ground
-// there and 4 m out from it. Then a tunnel whose ground stays within 2.5 m of its road is open to
-// the sky, under a bridge's deck only: `under`.
-const heights = new Map(); // a line's point (the array itself) → its height above the sea
-for (const level of [LEVEL.bridge, LEVEL.tunnel]) {
-  const ways = lines.filter((l) => l.level === level && l.nodes?.length === l.pts.length);
-  const near = new Map(), at = new Map(), all = new Map(); // node → [[node, metres]], its point, its points in every way
-  for (const l of ways) l.nodes.forEach((n, i) => {
-    at.set(n, l.pts[i]);
-    all.set(n, [...(all.get(n) ?? []), l.pts[i]]);
-    if (!near.has(n)) near.set(n, []);
-    if (i) { const d = Math.hypot(l.pts[i][0] - l.pts[i - 1][0], l.pts[i][1] - l.pts[i - 1][1]); near.get(n).push([l.nodes[i - 1], d]); near.get(l.nodes[i - 1]).push([n, d]); }
-  });
-  // The ends: nodes with one neighbour of their kind, and the ground there.
-  const ends = [...near].filter(([, nb]) => new Set(nb.map(([m]) => m)).size === 1).map(([n, nb]) => {
-    const [x, z] = at.get(n), [px, pz] = at.get(nb[0][0]), d = Math.hypot(x - px, z - pz) || 1;
-    const out = level === LEVEL.tunnel ? ground.at(x + ((x - px) / d) * 4, z + ((z - pz) / d) * 4) : Infinity;
-    return { n, y: Math.min(ground.at(x, z), out) };
-  });
-  // The two nearest ends of each node, along the ways (Dijkstra from all the ends at once).
-  const best = new Map(); // node → [{ e, d }] up to two, of different ends
-  const queue = ends.map((e, k) => ({ n: e.n, e: k, d: 0 }));
-  while (queue.length) {
-    let q = 0;
-    for (let k = 1; k < queue.length; k++) if (queue[k].d < queue[q].d) q = k;
-    const { n, e, d } = queue.splice(q, 1)[0], got = best.get(n) ?? [];
-    if (got.length >= 2 || got.some((g) => g.e === e)) continue;
-    got.push({ e, d });
-    best.set(n, got);
-    for (const [m, l] of near.get(n)) queue.push({ n: m, e, d: d + l });
-  }
-  for (const [n, got] of best) {
-    const [a, b] = got, y = !b ? ends[a.e].y : (ends[a.e].y * b.d + ends[b.e].y * a.d) / (a.d + b.d || 1);
-    for (const p of all.get(n)) heights.set(p, y);
-  }
-  for (const l of ways) for (const p of l.pts) if (!heights.has(p)) heights.set(p, ground.at(...p));
-}
-let open = 0;
-for (const l of lines) {
-  if (l.level !== LEVEL.tunnel) continue;
-  if (l.pts.every((p) => !heights.has(p) || ground.at(...p) - heights.get(p) < 2.5)) { l.level = LEVEL.under; open++; }
-}
 // The streets on the ground and over it, for the buildings, the trees and the sights.
 const streets = lines.filter((l) => l.level !== LEVEL.tunnel);
 
@@ -261,7 +209,9 @@ const dirCode = (ring, dir) => {
 // each one's ground and first point the step from the one before's, and a four-cornered one's last
 // corner less where the other three would put it, as a parallelogram (packBuildings): which packs
 // smaller.
+const outlines = []; // every building's (or part's) outline, for the streets' pavements
 const putBuilding = (ring, cx, cz, b) => {
+  outlines.push(ring);
   const what = b.kind | (b.color << 3) | (b.roof << 6) | (b.ends << 8) | (b.mat << 10) | (b.measured ? 1 << 12 : 0) | (SOURCE[b.source] << 13);
   const roof = Math.min(63, Math.round(b.pitch)) | (dirCode(ring, b.dir) << 6) | (paletteOf(b.rgb) << 8);
   tileAt(cx, cz).buildings.push([ring.length, what, roof, dm(b.h), b.y, Math.max(0, dm(b.ridge - b.h)), ...packPts(ring)]);
@@ -512,6 +462,20 @@ let nTrees = 0;
 }
 
 // ---------------------------------------------------------------------------------------------
+// Every street in the open world's area as surfaces (streets.mjs, task 033): the carriageways at
+// their real widths, joined at the junctions, the kerbs, the pavements as wide as the buildings
+// leave room for, and the lines painted on them, at their levels; cut to the tiles.
+
+{
+  const nodes = readCache('osm/street.json').elements.filter((e) => e.type === 'node');
+  const rings = (kind) => areas.filter(([k]) => k === AREA.indexOf(kind)).map(([, r]) => r);
+  const over = tilesOver(OPEN).map((t) => ({ id: t.id, box: { x0: Math.max(t.box.x0, OPEN.x0), x1: Math.min(t.box.x1, OPEN.x1), z0: Math.max(t.box.z0, OPEN.z0), z1: Math.min(t.box.z1, OPEN.z1) } }));
+  const { cuts, stats } = streetSurfaces({ lines, heights, elev0: ELEV0, nodes, buildings: outlines, squares: rings('plaza'), water: rings('water'), box: OPEN, cuts: over });
+  for (const { id } of over) tiles.get(id).streets = packStreets(cuts.get(id), tiles.get(id).box.x0, tiles.get(id).box.z0);
+  console.log(`streets: ${stats.edges} stretches in the open world's ${over.length} tiles, ${stats.junctions} junctions, ${stats.islands} islands, ${stats.reservations} reservations, ${Math.round(stats.km.kerb)} km of kerb, in ${Math.round(stats.seconds)} s`);
+}
+
+// ---------------------------------------------------------------------------------------------
 // The sights a Bracarense steers by: Bom Jesus and the Sameiro on the hills to the east, the cross
 // on the Picoto, the stadium, the Altice Forum, Makro and the Tourigalo's bull. Footprints and
 // positions from the map, heights from the ground.
@@ -666,6 +630,7 @@ for (const t of tiles.values()) {
   p.part('lines', t.lines);
   p.part('buildings', packBuildings(t.buildings));
   p.part('trees', t.trees);
+  if (t.streets.length) p.part('streets', t.streets);
   const b64 = p.encode();
   fs.writeFileSync(path.join(dir, 'tiles', t.id + '.js'), `${HEAD}export default '${b64}';\n`);
   bytes += b64.length;

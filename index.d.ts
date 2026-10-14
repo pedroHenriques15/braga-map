@@ -105,6 +105,60 @@ export interface Building {
   pts: [number, number][];
 }
 
+// Every street as surfaces, in the open world's area (task 033, tools/streets.mjs), each piece cut to
+// the tile it's on. level: on the ground, whose heights are the ground's (`height(x, z)`); on a
+// bridge's deck or in a tunnel's road, with ys, the height of each point (each ring's) above elev0.
+export type StreetLevel = 'ground' | 'bridge' | 'tunnel';
+
+// Where cars drive: each street's carriageway at its real width (the map's `width`, or its lanes, or
+// what its kind of street usually is), joined to the others where they meet, each corner rounded as
+// a kerb turns it. rings: its outline, then its holes.
+export interface Carriageway {
+  surface: 'asphalt' | 'setts' | 'paving' | 'dirt';
+  level: StreetLevel;
+  rings: [number, number][][];
+  ys?: number[][];
+}
+
+// What's beside the carriageways: a pavement, from the kerb to the buildings, 3.2 m at most (none
+// where the map says so, or out in the open, or by a fast road, a service road, a track or a
+// pedestrian street); a central reservation between a road's two carriageways; or an island they go
+// round (a roundabout's, or a small one with nothing built on it).
+export interface Pavement {
+  kind: 'pavement' | 'reservation' | 'island';
+  level: StreetLevel;
+  rings: [number, number][][];
+  ys?: number[][];
+}
+
+// A kerb along a carriageway's edge, wherever a pavement, a reservation or an island is behind it: h
+// high, in metres (0 where it's dropped at a crossing).
+export interface Kerb {
+  h: number;
+  level: StreetLevel;
+  pts: [number, number][];
+  ys?: number[];
+}
+
+// A line painted on a carriageway, w wide: between its lanes (lane), between its two ways (centre),
+// a zebra (its line runs across the road at the crossing, and w is how deep it is) or a stop line at
+// traffic lights. dash: [on, off] in metres, or null for a solid line.
+export interface Marking {
+  kind: 'lane' | 'centre' | 'zebra' | 'stop';
+  w: number;
+  dash: [number, number] | null;
+  level: StreetLevel;
+  pts: [number, number][];
+  ys?: number[];
+}
+
+export interface Streets {
+  carriageways: Carriageway[];
+  pavements: Pavement[];
+  kerbs: Kerb[];
+  markings: Marking[];
+}
+
 // filled: planted in a wood or a park, where the map has no trees of its own.
 export interface Tree {
   x: number;
@@ -158,6 +212,8 @@ export interface World extends BragaMap {
   lines: Line[];
   buildings: Building[];
   trees: Tree[];
+  // Every street as surfaces, on the open world's tiles loaded (empty on the others).
+  streets: Streets;
 }
 
 export function map(): BragaMap;

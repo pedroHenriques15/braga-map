@@ -111,6 +111,8 @@ function rectAxis(pts) {
 const DIRS = [0, Math.PI, Math.PI / 2, -Math.PI / 2];
 // Where a building's footprint is from (tools/world.mjs's SOURCE).
 const SOURCES = ['osm', 'lidar', 'microsoft', 'invented'];
+// A street's level (tools/world.mjs's LEVEL).
+const LEVELS = ['ground', 'bridge', 'tunnel', 'under'];
 
 let base = null;
 
@@ -193,11 +195,19 @@ export async function loadWorld(area) {
       areas.push({ rank: nums[i] * 32768 + nums[i + 1], kind: m.areaKinds[nums[i + 2]], pts: points(nums, i + 4, n) });
       i += 4 + n * 2;
     }
+    // Each line: [what, width, n, ...points, ...heights]: what is its kind and 16 times its level;
+    // a bridge's or a tunnel's has each point's height after them (tools/world.mjs).
     const L = head.lines;
     for (let i = L.at; i < L.at + L.n; ) {
+      const level = nums[i] >> 4;
       const n = nums[i + 2];
-      lines.push({ kind: nums[i], w: nums[i + 1] / 10, pts: points(nums, i + 3, n) });
+      const line = { kind: nums[i] & 15, level: LEVELS[level], w: nums[i + 1] / 10, pts: points(nums, i + 3, n) };
       i += 3 + n * 2;
+      if (level === 1 || level === 2) {
+        line.heights = Array.from(nums.subarray(i, i + n), (v) => v / 10);
+        i += n;
+      }
+      lines.push(line);
     }
     // Each building: [n, what, roof, h, y, rise, ...points] (tools/world.mjs's putBuilding), its
     // ground and first point the step from the one before's, and with four corners, its last less

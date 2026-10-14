@@ -49,6 +49,11 @@ world.buildings; // [{ kind, roof, ends, dir, pitch, y, h, ridge, floors, roofCo
   track and over the shooter's area, every 10 m on the others. A street is ground, so the ground
   is the street's own surface; a bridge's deck isn't, so under a bridge it's what's below. A
   building stands on the ground at its lowest corner (`y`), and its height is from there.
+- Each street says its level (task 012): on the ground; on a bridge, with its deck's height at
+  each point (`heights`); in a tunnel, under the ground, with its road's; or under something at the
+  ground's own level (a building over it, or a deck the map draws as a tunnel under a bridge). A
+  deck and a tunnel's road run straight between the ground where they end. Where the LiDAR took a
+  deck for the ground, the bridge is ground too, and what passes under it a tunnel.
 - The buildings are as DGT's LiDAR measured them (`measured`), 95% of those on the map: the
   height of the eaves (`h`) and of the ridge, the roof's shape, the way it runs (`dir`), which
   ends are hipped, its pitch, its storeys, and its colour as the 2025 orthophoto sees it (from
@@ -85,6 +90,7 @@ npm run world    # the world: world/base.js, world/tiles.js and a module per til
 npm test         # the world and the tracks as the games read them, and DGT's data where fetched
 node tools/relief.mjs  # the ground checked: known places, bridges, and each track's profile
 node tools/heights.mjs # the buildings checked against the map's own heights and floors, and the outliers
+node tools/levels.mjs  # the streets that cross on two levels round the track, and the room between them
 node tools/refs.mjs    # each viewpoint's real photo, into .cache/refs/ (with Mapillary's free token)
 node tools/round.mjs <round> --label "…"  # a round of party-kart's shots, for the scorecard
 ```
@@ -133,7 +139,8 @@ from `roofs.mjs`'s measurements. All of them need the LiDAR.
   they differ most: the map, more often than the LiDAR.
 - `world.mjs` makes the world: the ground (every 2 m on the tiles within 60 m of a track and over
   the shooter's area, each the mean of the LiDAR's round it; every 10 m elsewhere), what the
-  ground is (each area cut to the tiles it's on), every street at its width, the railway, every
+  ground is (each area cut to the tiles it's on), every street at its width and level, the
+  railway, every
   building on the ground at its lowest corner, with its height and roof as `roofs.mjs` measured
   them (in parts where they step or turn; guessed from the map where the LiDAR didn't see it),
   those the map lacks as `roofs.mjs` found them, houses filled in where the map has none on a
@@ -141,7 +148,9 @@ from `roofs.mjs`'s measurements. All of them need the LiDAR.
   water level (the lowest ground within 4 m of their course), and the sights (Bom Jesus, the
   Sameiro, the cross on the Picoto, the stadium, the Altice Forum, Makro, the Tourigalo with the
   way its head points and its restaurant's front), picked out of the map by their OpenStreetMap
-  ids.
+  ids. `levels.mjs` checks the streets that cross on two levels (`test/levels.test.js`): under a
+  deck there's room for what passes, over a tunnel its roof; a bridge that meets a street at its
+  end, or that the LiDAR took for the ground, meets it at grade.
 - `track.mjs` plans the tracks in `tracks.mjs`: below.
 - `refs/viewpoints.json` lists the viewpoints, the places where a game is set against the real
   Braga (task 001): 29 cameras along the Volta dos Amigos, on foot in Fujacal, and on Bom Jesus

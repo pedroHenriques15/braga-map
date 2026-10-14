@@ -55,10 +55,16 @@ export interface Area {
 // A street or the railway. kind: 0 the fast roads, 1 their links, 2 primary, 3 secondary,
 // 4 tertiary, 5 residential, 6 pedestrian, 7 service, 8 track, 9 railway. w: its width, kerb to
 // kerb, as the map has it (the games take a street at least 9 m wide).
+// level: on the ground (the ground's height is its own); on a bridge, its deck at `heights`; in a
+// tunnel, under the ground's surface, its road at `heights`; or under something at the ground's
+// own level, open either side (a building over it, or a bridge's deck). heights: a bridge's or a
+// tunnel's, at each point, above elev0: straight between the ground where it ends.
 export interface Line {
   kind: number;
+  level: 'ground' | 'bridge' | 'tunnel' | 'under';
   w: number;
   pts: [number, number][];
+  heights?: number[];
 }
 
 // A building, or a part of one where its roof steps by a storey or more or turns a corner, each part

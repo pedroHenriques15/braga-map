@@ -49,7 +49,13 @@ for (const f of fs.readdirSync(path.join(ROOT, 'tracks')).filter((f) => f.endsWi
 // ---------------------------------------------------------------------------------------------
 // The streets, the railway, and what the ground is.
 
-const streets = []; // { id, k, w, pts, t }
+// Each street's level: on the ground; on a bridge; in a tunnel, under the ground's surface; or
+// under something at the ground's own level, open either side: a building over it (a passage, or
+// `covered`), or a bridge's deck (where the map draws the stretch under a bridge as a tunnel).
+const LEVEL = { ground: 0, bridge: 1, tunnel: 2, under: 3 };
+const on = (v) => v != null && v !== 'no';
+const levelOf = (t) => (on(t.bridge) ? LEVEL.bridge : t.tunnel === 'building_passage' || (on(t.covered) && !on(t.tunnel)) ? LEVEL.under : on(t.tunnel) ? LEVEL.tunnel : LEVEL.ground);
+const lines = []; // { id, k, w, pts, nodes, t, level }: every street and railway
 const areas = []; // [kind, ring]
 for (const e of base.elements) {
   const t = e.tags || {};
@@ -58,8 +64,7 @@ for (const e of base.elements) {
     if (!pts.some(([x, z]) => inExt(x, z, 50))) continue;
     const closed = pts.length > 3 && pts[0][0] === pts[pts.length - 1][0] && pts[0][1] === pts[pts.length - 1][1];
     if (t.highway === 'pedestrian' && (t.area === 'yes' || closed)) { areas.push([AREA.indexOf('plaza'), simplify(pts.slice(0, -1), 0.5)]); continue; }
-    if (t.tunnel && t.tunnel !== 'no') continue;
-    streets.push({ id: e.id, k: t.railway ? 9 : LINE[t.highway], w: t.railway ? 4 : carriageway(t), pts, t });
+    lines.push({ id: e.id, k: t.railway ? 9 : LINE[t.highway], w: t.railway ? 4 : carriageway(t), pts, nodes: e.nodes, t, level: levelOf(t) });
     continue;
   }
   const c = AREA_OF(t);
@@ -99,13 +104,65 @@ for (const e of base.elements) {
   });
 }
 
-// Every street at its width, and the railway: the stretches of each that cross a tile.
-for (const s of streets) {
-  const pts = openThin(s.pts, 0.8);
+// The heights of what's off the ground: a bridge's deck, and a tunnel's road. Each runs straight
+// between the ground where it ends: the LiDAR's ground is the bare earth, which has what's under a
+// deck and over a tunnel, not the deck or the tunnel's road. A bridge or a tunnel the map draws as
+// several ways is taken whole: its ends are where it meets nothing more of its kind, and each point
+// between is as high as its two nearest ends make it, by how far it is from each along the way. A
+// tunnel's end is at its mouth, where the ground is the cutting's floor: the lower of the ground
+// there and 4 m out from it. Then a tunnel whose ground stays within 2.5 m of its road is open to
+// the sky, under a bridge's deck only: `under`.
+const heights = new Map(); // a line's point (the array itself) → its height above the sea
+for (const level of [LEVEL.bridge, LEVEL.tunnel]) {
+  const ways = lines.filter((l) => l.level === level && l.nodes?.length === l.pts.length);
+  const near = new Map(), at = new Map(), all = new Map(); // node → [[node, metres]], its point, its points in every way
+  for (const l of ways) l.nodes.forEach((n, i) => {
+    at.set(n, l.pts[i]);
+    all.set(n, [...(all.get(n) ?? []), l.pts[i]]);
+    if (!near.has(n)) near.set(n, []);
+    if (i) { const d = Math.hypot(l.pts[i][0] - l.pts[i - 1][0], l.pts[i][1] - l.pts[i - 1][1]); near.get(n).push([l.nodes[i - 1], d]); near.get(l.nodes[i - 1]).push([n, d]); }
+  });
+  // The ends: nodes with one neighbour of their kind, and the ground there.
+  const ends = [...near].filter(([, nb]) => new Set(nb.map(([m]) => m)).size === 1).map(([n, nb]) => {
+    const [x, z] = at.get(n), [px, pz] = at.get(nb[0][0]), d = Math.hypot(x - px, z - pz) || 1;
+    const out = level === LEVEL.tunnel ? ground.at(x + ((x - px) / d) * 4, z + ((z - pz) / d) * 4) : Infinity;
+    return { n, y: Math.min(ground.at(x, z), out) };
+  });
+  // The two nearest ends of each node, along the ways (Dijkstra from all the ends at once).
+  const best = new Map(); // node → [{ e, d }] up to two, of different ends
+  const queue = ends.map((e, k) => ({ n: e.n, e: k, d: 0 }));
+  while (queue.length) {
+    let q = 0;
+    for (let k = 1; k < queue.length; k++) if (queue[k].d < queue[q].d) q = k;
+    const { n, e, d } = queue.splice(q, 1)[0], got = best.get(n) ?? [];
+    if (got.length >= 2 || got.some((g) => g.e === e)) continue;
+    got.push({ e, d });
+    best.set(n, got);
+    for (const [m, l] of near.get(n)) queue.push({ n: m, e, d: d + l });
+  }
+  for (const [n, got] of best) {
+    const [a, b] = got, y = !b ? ends[a.e].y : (ends[a.e].y * b.d + ends[b.e].y * a.d) / (a.d + b.d || 1);
+    for (const p of all.get(n)) heights.set(p, y);
+  }
+  for (const l of ways) for (const p of l.pts) if (!heights.has(p)) heights.set(p, ground.at(...p));
+}
+let open = 0;
+for (const l of lines) {
+  if (l.level !== LEVEL.tunnel) continue;
+  if (l.pts.every((p) => !heights.has(p) || ground.at(...p) - heights.get(p) < 2.5)) { l.level = LEVEL.under; open++; }
+}
+// The streets on the ground and over it, for the buildings, the trees and the sights.
+const streets = lines.filter((l) => l.level !== LEVEL.tunnel);
+
+// Every street at its width, and the railway: the stretches of each that cross a tile, each [what,
+// width, n, ...points, ...heights]: what is its kind and its level (16 times it), and a bridge or a
+// tunnel has the height of each point after them, in decimetres above ELEV0.
+for (const s of lines) {
+  const pts = openThin(s.pts, 0.8), up = s.level === LEVEL.bridge || s.level === LEVEL.tunnel;
   for (const t of tilesOver(bounds(pts), s.w)) {
     const b = t.box, m = s.w / 2 + 2;
     let run = [];
-    const flush = () => { if (run.length > 1) t.lines.push(s.k, Math.round(s.w * 10), run.length, ...packPts(run)); run = []; };
+    const flush = () => { if (run.length > 1) t.lines.push(s.k + 16 * s.level, Math.round(s.w * 10), run.length, ...packPts(run), ...(up ? run.map((p) => dm((heights.get(p) ?? ground.at(...p)) - ELEV0)) : [])); run = []; };
     for (let i = 1; i < pts.length; i++) {
       const a = pts[i - 1], c = pts[i];
       if (overlaps(bounds([a, c]), b, m)) { if (!run.length) run.push(a); run.push(c); }
@@ -114,7 +171,7 @@ for (const s of streets) {
     flush();
   }
 }
-console.log(`ground: ${areas.length} areas, ${streets.length} streets and railways`);
+console.log(`ground: ${areas.length} areas, ${lines.length} streets and railways (${lines.filter((l) => l.level === LEVEL.bridge).length} on bridges, ${lines.filter((l) => l.level === LEVEL.tunnel).length} in tunnels, ${lines.filter((l) => l.level === LEVEL.under).length} under something, ${open} of them tunnels the map has under a bridge)`);
 
 // ---------------------------------------------------------------------------------------------
 // The buildings: all of the map's, those it lacks that the LiDAR saw (task 011), and houses filled

@@ -538,3 +538,30 @@ each point of a 2 m grid), not the LiDAR's own. So that's what a bridge meets:
 The alternative, a deck's end at the LiDAR's height at its node, is closer to the real abutment
 where the grid blurs it, but leaves a step of up to 0.66 m at the join, which each game would have
 to ease.
+
+## 024 · A game draws the streets on the ground its karts drive on, and no land under them
+
+*2026-10-15 · task 035*
+
+In the open world (decision 019) every street in the area is drawn from the map's surfaces
+(`world.streets`), and a kart drives on them (decision 021): what's drawn has to be where the kart
+stands. party-kart does it this way, and a game drawing the map's streets should too:
+
+- **The surfaces lie on the ground the karts drive on:** a carriageway on the land without the
+  river's bed cut into it, a pavement a kerb over it, a deck's or a tunnel's road at its height.
+  Each piece is its own triangles, an edge halved where the ground under it bends more than a
+  tolerance (25 cm on party-kart's High), each edge decided by itself so pieces meet without cracks;
+  the drawn carriageways are within 3.4 cm of the karts' ground at the median and 19 cm at the
+  90th percentile.
+- **The land isn't drawn under a street,** whatever its height: party-kart clears its painted
+  ground there and the land's material skips what's clear. Where a street's outline meets the
+  land, a skirt down to it or a retaining wall up to it closes the gap.
+- **Plates and bus stops for every street come from the tiles** (task 042, the owner's answer):
+  until then, the route's.
+
+The alternatives cost too much: laying the streets on the land's own triangles, or making the land
+fine under them, needs 2 m detail under 80% of the streets, since the LiDAR's 2 m ground is rough at
+their edges (it sees the kerbs): about 3.8 M triangles for the area. Following that ground to within
+5 cm everywhere took 3 M. Even so the city costs more than the budget's guide at its busiest views
+(decision 017): 1.57 M triangles on High where it was 1.14, and twice the time to build, which task
+038 (streaming) is for.

@@ -115,3 +115,10 @@ Steps:
   the world's ground has no boost pads yet (`WorldGround.under` says none): give the race's ground
   its pads with its walls. Make the race's ground with `ground.race(track, walls)`.
 
+- **From task 035 (2026-10-15): what the race adds stands where the track is.** `raceMarks`
+  (`src/render/road.ts`) lays the start line, the gates, the boost pads and the barriers at the
+  start on the streets as drawn, but at the track's 9 m edges and along its line, up to 3 m off the
+  street's middle: at `estadio` a checkpoint's pillar stands in the carriageway, and at
+  `fujacal-start` and `fujacal-west` the barriers stand on the pavement and the land. They move with
+  the line in step 1. The viewpoints whose camera stood on the 9 m road (those two,
+  `conselheiro-lobato`, `liberdade`) now stand on a pavement or the land: shoot them again then.

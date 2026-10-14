@@ -88,3 +88,12 @@ Steps:
 - Ship it with task 037, so the live game never loses its race.
 - party-kart's `CLAUDE.md` still says the prefix is `partykart-pk30-`; `src/session.ts` has
   `partykart-pk31-`. Fix the doc with this change.
+- **From task 035 (2026-10-15): the streets are drawn.** `buildCity` builds the world's ground
+  (`worldGround`, src/world/ground.ts) for drawing the streets as the karts find them, and returns it
+  as `drive`: drive on that one rather than building it again (0.25 s). The drawn carriageways are
+  3.4 cm off the ground a kart stands on at the median and 19 cm at the 90th percentile
+  (`test/streets.test.ts`): a kart sinks or floats that much here and there. Judge it driving; the
+  fixes are a finer grain where it shows (`GRAIN` in `streets.ts`, triangles), or the karts standing
+  on the drawn surfaces (one triangulation for both). Building the city takes 3.8–5.3 s on the
+  desktop's High, twice what it did: a phone opening straight into the world waits 10–20 s, so the
+  first screen needs something to show meanwhile.

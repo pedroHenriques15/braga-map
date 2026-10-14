@@ -148,3 +148,6 @@ Steps:
 - **Not verified:** anything by ear; Safari and Firefox (Playwright's WebKit on Windows has no Web
   Audio, and its Firefox isn't installed), where the listener falls back to `setPosition` and
   `setOrientation`; what the sound costs a phone.
+- **Released** on 2026-10-14: party-kart `31dcce9`, deployed to
+  https://pedrohenriques15.github.io/party-kart/ (its script `index-D1LorEUd.js`). No message changed,
+  so old and new builds still race together; players get the sound when they reload.

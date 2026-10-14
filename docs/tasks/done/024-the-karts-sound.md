@@ -190,3 +190,6 @@ Steps:
   braking for a corner, sixth at speed. Its level raised 3.4 dB to match the engines before (−29.9
   dBFS RMS at first).
 - **Not verified:** anything by ear, yet; a phone; Safari and Firefox.
+- **Released** on 2026-10-14: party-kart `31dcce9`, deployed to
+  https://pedrohenriques15.github.io/party-kart/ (its script `index-D1LorEUd.js`). No message changed,
+  so old and new builds still race together; players get the sound when they reload.

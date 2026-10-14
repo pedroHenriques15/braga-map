@@ -119,3 +119,6 @@ Steps:
     990, `picoto` from 5480), and reports each bed's loudest level in a take.
   - Docs: party-kart's `CLAUDE.md`, `README.md`, `docs/architecture.md` ("Sound", "Hardly any
     assets", `ambience.ts` in the table); braga-map's `docs/SOURCES.md`.
+- **Released** on 2026-10-14: party-kart `31dcce9`, deployed to
+  https://pedrohenriques15.github.io/party-kart/ (its script `index-D1LorEUd.js`). No message changed,
+  so old and new builds still race together; players get the sound when they reload.

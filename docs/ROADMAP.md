@@ -32,6 +32,8 @@ whole area, and ships as one release when 037 is done, so the live game never lo
 - **036** Free roam: the game opens in Braga, and friends join you there.
 - **037** The race as a game mode in the open world, on the streets at their real widths.
 - **038** The city streamed tile by tile, when the area grows.
+- **039** Into the dead end by a ramp: the made-up `(joined)` road goes, and the race jumps
+  from a real street onto another, only during a race.
 
 ## Phase 1 · See it: references, the scorecard and the budget
 
@@ -80,7 +82,8 @@ Phase 1 comes first, but not all of it waits on itself:
 
 - **The open world first:** 032 and 033 side by side (033 on Fujacal doesn't wait for 032's
   edge); 034 and 035 once 033 has Fujacal; 036 once they drive and draw; 037 last. 038 when the
-  area grows. 014, 018 and 026 now work on 033's surfaces, for every street in the area.
+  area grows. 039 any time, in today's race; 037 carries its ramp into the open world. 014,
+  018 and 026 now work on 033's surfaces, for every street in the area.
 - **Side by side:** 006 (audit), 007 (the textures' pipeline) and 015 (the shooter's
   area). 008 (the reference photos) is done. Every question in the tasks was answered on 2026-10-14.
 - **Phase 2's data tasks** can start now: 005 fetched their data, and 009 put the ground under

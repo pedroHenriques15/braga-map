@@ -38,7 +38,8 @@ force-pushes `dist/` to `gh-pages`). braga-map ships the world as JS modules of 
    sites must stay under 1 GB too. Measure what's planned against that.
 2. **The format:** KTX2 with Basis Universal (`KTX2Loader` in three.js) stays compressed on the
    GPU, which matters most for phones; WebP is simpler but takes full memory once decoded.
-   Test both on the phone from task 004 with one tile's ground and ten facades, and pick.
+   Test both on the slowest friend's phone, with `?stats` (task 004's steps), with one tile's
+   ground and ten facades, and pick.
 3. **The tools:** `tools/textures.mjs` in braga-map, which takes a source image (an orthophoto
    tile, a facade photo, a close-up), crops and rectifies it (a facade photo straightened to
    its real width and height), takes out what shouldn't be baked in (cars and shadows on the

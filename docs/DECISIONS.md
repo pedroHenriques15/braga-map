@@ -257,3 +257,29 @@ from 1 ("não é Braga") to 5 ("juro que é real") and a comment, per person and
   covers it, naming the viewpoint, or to a new one.
 
 The alternative the task first had, anyone with the link rating, can't save a mark on this plan.
+
+## 013 · The city's budget is today's city
+
+*2026-10-14*
+
+Everything a change adds to the city keeps inside a budget (task 004): the most draw calls,
+triangles, textures' memory and download the city may take on each graphics level, written in
+party-kart's `docs/architecture.md`, "The city's budget". Without it, every realism task would add
+a little until the game stutters on a phone.
+
+- **The floor** is an older Android, the slowest phone a friend races on.
+- **Today's city, rounded up.** The owner dropped measuring the phone. The friends already race on
+  today's city, so that's what is known to run: at any viewpoint, 200 draw calls, 1.1 M triangles
+  and 95 MB of textures on High; 200, 0.9 M and 60 MB on Medium; 180, 0.55 M and 45 MB on Low; and
+  1.5 MB downloaded. The karts come on top.
+- **More takes a trade or a phone.** A change that needs more takes it from somewhere else in the
+  city (the ground's detail near the road first, task 009), or measures the phone and raises the
+  budget to what it holds with room to spare. Most tasks of Phases 2–4 add to the city, so the
+  first that can't trade is when the phone gets measured.
+- **Measured** with `node scripts/shots.mjs <label> --medium` at the viewpoints and
+  `node scripts/download.mjs` on the PC, and with `?stats` on a phone: an on-screen counter, so a
+  friend can run it alone, with no cable or developer tools. Task 004's Notes have the phone's
+  steps.
+
+The alternative, the task's plan, set the budget from the phone's frame rate with room to spare.
+It stays the way to raise it.

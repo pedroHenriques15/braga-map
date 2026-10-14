@@ -1,5 +1,5 @@
 ---
-status: doing
+status: done
 priority: high
 kind: code
 repo: party-kart
@@ -76,13 +76,22 @@ Steps:
 
 ## Done when
 
-- [ ] The baseline is measured at every viewpoint and tier, and kept with task 002's baseline
+- [x] The baseline is measured at every viewpoint and tier, and kept with task 002's baseline
   round.
-- [ ] `?stats` shows the counter in party-kart, and nothing changes without the flag; the
+  > `shots/2026-10-13-budget/` in party-kart, beside `2026-10-13-baseline`: the 29 viewpoints on
+  > High, Medium and Low, each one's draw calls, triangles, textures' memory, build and frame time
+  > in its `stats.json`. Its High and Low shots are byte for byte the baseline's.
+- [x] `?stats` shows the counter in party-kart, and nothing changes without the flag; the
   flag is described with the others, in party-kart's `docs/making-changes.md` and `CLAUDE.md`.
-- [ ] The budget is written in party-kart's `docs/architecture.md`.
-- [ ] The phone's numbers, its model and the tier it held are recorded in Notes, from the
-  counter's screenshots.
+  > party-kart `05cb2f3`, live since 2026-10-14. Checked on the dev server, the shipped build and
+  > the live site at a phone's size: the counter on the menu and in races, no page errors, and no
+  > counter without the flag.
+- [x] The budget is written in party-kart's `docs/architecture.md`.
+  > "The city's budget": what the city costs today on each level, and the most it may take.
+- [x] ~~The phone's numbers, its model and the tier it held are recorded in Notes, from the
+  counter's screenshots.~~
+  > Dropped by the owner (2026-10-14). The budget is today's city, which the friends already race
+  > on their phones; a change that needs more measures the phone first, with the steps in Notes.
 
 ## Out of scope
 
@@ -106,8 +115,8 @@ Steps:
   vary between runs. Baseline (`shots/2026-10-13-baseline/stats.json`): High 48–190 calls,
   0.76–1.07 M triangles, built in 1.3–1.4 s; Low 33–173 calls, 0.42–0.53 M triangles, 0.7–0.8 s.
   High's 2× pixel ratio on a sharp screen isn't in these numbers.
-- Steps 1 and 3 (2026-10-14, in the browser on the owner's PC; the phone, step 2, is still to
-  run). `node scripts/shots.mjs budget --medium` (`shots/2026-10-13-budget/`, beside the baseline,
+- Steps 1 and 3 (2026-10-14, in the browser on the owner's PC; the phone, step 2, was dropped).
+  `node scripts/shots.mjs budget --medium` (`shots/2026-10-13-budget/`, beside the baseline,
   whose draw calls and triangles it matches exactly) now shoots Medium too and records the
   textures' memory; `node scripts/download.mjs` builds the game as shipped and adds up what it
   fetches. The city alone, at the 29 viewpoints: High 48–190 draw calls, 0.76–1.07 M triangles,
@@ -164,9 +173,12 @@ Steps:
      save triangles, not draw calls: the buildings are 7 meshes in all.
   5. **The download** is 1.47 MB: a couple of seconds on 4G. Loading only the tiles near
      the kart isn't needed for that.
-  The task for the first that's needed is drafted when the phone's numbers are in: the first if
-  the frame rate falls with 8 karts but not with 1, the second if Low on the phone is no faster
-  than Medium.
+  Without the phone none of these is shown to be needed, so no task is drafted for them. The
+  first change that needs more than the budget measures the phone, and its numbers say which to
+  do: the first if the frame rate falls with 8 karts but not with 1, the second if Low on the
+  phone is no faster than Medium.
+- **The phone was dropped** by the owner on 2026-10-14, once `?stats` was live: the budget stays
+  today's city, rounded up. The steps above are kept for when a change needs more.
 - Found along the way: the street plates are one texture 4032 pixels high (112 for each of the
   36 streets). The 37th takes it past 4096, the most some phones take, and three.js then shrinks
   it. Worth knowing before the map adds streets.

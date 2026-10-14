@@ -28,8 +28,6 @@ a phone can draw. Everything after this is checked against it.
 
 ## Phase 2 · The shape: the ground, the streets and the buildings where they really are
 
-- **009** The relief from LiDAR: the ground at 2 m or better near the route and in Fujacal, and
-  the road meeting it as it really does.
 - **010** Every building's real height and roof, measured from LiDAR.
 - **011** Real footprints instead of invented houses.
 - **012** Bridges, flyovers and tunnels at their real levels.
@@ -69,8 +67,9 @@ Phase 1 comes first, but not all of it waits on itself:
 
 - **Now, side by side:** 006 (audit), 008 (the photo walk, the owner's), and the answers to 007
   and 015.
-- **Phase 2's data tasks** can start now that 005 has fetched their data: 009 first, then 010
-  and 011 on it. Each one is checked on the scorecard when it lands.
+- **Phase 2's data tasks** can start now: 005 fetched their data, and 009 put the ground under
+  them (decision 008), so 010 and 011 build on it. Each one is checked on the scorecard when it
+  lands.
 - **The shooter's area** goes first in every task of Phases 2–4, once 015 settles its edges.
 - **The sound** runs beside all of it: 023 can start now, then 024 and 025 on it.
 

@@ -1,5 +1,5 @@
 ---
-status: doing
+status: done
 priority: high
 kind: code
 repo: both
@@ -67,16 +67,25 @@ Steps:
   > On the 2 m tiles: the Praça 190.60 m in the tile and the LiDAR; the Picoto's top 298.63 m in
   > the tile, 298.89 m in the LiDAR. The Sameiro's top is on a 10 m tile, 0.69 m low. The six
   > bridges' decks are within 0.25 m. `node tools/relief.mjs`, and `test/relief.test.js`.
+  > Again on 2026-10-14, on task 027's route: the same three heights, and the six bridges' decks
+  > within 0.26 m.
 - [x] party-kart's `npm test` and `npm run check` pass, and the lap's summary line is recorded
   before and after.
   > 19 of 19 and `tsc` clean. Before: `laps 235.4, 233.2 s; respawns 0; longest air 0.00 s; top
   > 217 km/h; wall hits 0`. After: `laps 235.3, 233.2 s; respawns 0; longest air 0.00 s; top
-  > 217 km/h; wall hits 0`.
-- [ ] The viewpoints on slopes (the Picoto, the Via da Falperra) score higher than at the
-  baseline.
-  > No scorecard to score them on yet (tasks 001–003). Six places shot before and after, the
-  > Picoto and the Via da Falperra among them, for the owner to judge:
-  > https://claude.ai/artifact/5uirH2Y8A32ACJsDoEwnJ3 (private). Tick this when the owner has.
+  > 217 km/h; wall hits 0`. Again on 2026-10-14 (party-kart `f9bb165`, braga-map v1.2.0, task
+  > 027's longer route): 19 of 19, `tsc` clean, `laps 265.6, 263.5 s; respawns 0; longest air
+  > 0.00 s; top 217 km/h; wall hits 0`; braga-map's `npm test` 16 of 16.
+- [x] The owner judges the places on slopes closer to Braga after than before, on 009's own
+  before-and-after page: https://claude.ai/artifact/5uirH2Y8A32ACJsDoEwnJ3 (the Picoto, the Via da
+  Falperra, the Avenida Doutor Viriato Amaral Nunes, the Rua do Monte da Forca, the Travessa do
+  Couteiro, the Avenida Robert Smith's flyover).
+  > Reworded on 2026-10-14 (the owner's choice): the box asked for a higher score than the
+  > scorecard's baseline, but the baseline was shot on braga-map v1.2.0, which already has this
+  > task's ground, so the scorecard has no round from before it. The owner's baseline marks are
+  > this task's "after": `robert-smith-picoto` 4, `falperra` 3, `sameiro` 4, `monte-da-forca` 4,
+  > `couteiro` 3, `viriato-amaral-nunes` 1. The owner judged the page on 2026-10-14: the after
+  > is closer to Braga at all six.
 
 ## Out of scope
 
@@ -148,3 +157,27 @@ Steps:
   track changed: its heights, its banks), so players on the old build must reload to race.
 - **Left for the owner:** the last box above, judged on the before-and-after page; then the task
   moves to `done/` and 009 comes off the roadmap.
+
+### Picked up 2026-10-14
+
+- The scorecard (task 003) now exists, but it can't judge this task: its baseline round
+  (`2026-10-13-baseline`, party-kart `ac47bf0`, braga-map v1.2.0) already has the LiDAR ground. A
+  round from before 009 would mean bringing back EU-DEM and the 4 m flattening that are no longer
+  in either repo, at viewpoints whose heights are set on the new ground. The owner chose to judge
+  the task on its own before-and-after page instead, and the last box now says so.
+- The before-and-after page is shared with anyone who has the link now, not private as it was
+  when it was published.
+- When the owner has judged: `/task finish 009`. Its round is the baseline itself (shot after
+  this task), so there's no new round to shoot or post. The budget it changed was measured in
+  task 004.
+
+### Finished 2026-10-14
+
+- **The round:** none new. The scorecard's baseline (`2026-10-13-baseline`) was shot after this
+  task, and nothing it shows has changed since: party-kart's only change to `src/` since `ac47bf0`
+  is `?stats`, which is off in a shot, and braga-map's since v1.2.0 is `tools/round.mjs`. So
+  the baseline is this task's "after".
+- **The budget:** task 004 measured today's city, ground and all, and set the budget from it
+  (decision 013).
+- **The docs:** the README, `SOURCES.md`, decision 008 and the roadmap's "What's there" were
+  written at the release. Now 009 is off the roadmap's Phase 2.

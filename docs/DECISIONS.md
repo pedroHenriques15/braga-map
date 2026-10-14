@@ -68,6 +68,7 @@ the track alone and over the whole map evenly.
 - **The track is never narrower than 9 m** (`W_MIN` in `tools/osm.mjs`), so eight karts and a
   row of item boxes fit. The world's own streets keep their real widths; only the race widens
   them.
+  *Replaced by decision 019 (2026-10-14): the race runs on the streets at their real widths.*
 - **The friends' houses are never at their real door.** An easter egg stands near a waypoint,
   44–50 m past it (`tools/track.mjs`), and the waypoints stay in `.cache/places.json`.
   *Replaced by decision 014 (2026-10-14): the eggs stand on the houses.*
@@ -392,3 +393,45 @@ The owner chose this on 2026-10-14 over the photo walk task 008 first was (the o
 friends photographing the route and Fujacal with their phones): the scorecard's 29 viewpoints had
 all found their photos online, and a walk waited on everyone's time. Task 008 found 424 photos and
 listed the gaps: about half the buildings in the shooter's area have none.
+
+## 019 · An open world: Braga to drive anywhere in, and the race a game mode in it
+
+*2026-10-14 · replaces decision 004's bullet on the track's 9 m*
+
+The owner wants to drive round Braga with the karts wherever they like, inside a small area for
+now: every street as detailed as the track is today, the bridges and tunnels working, everything;
+and the race as the first game mode started from it. Party Kart becomes an open world, and the
+race goes from being the whole game to being one thing to do in it.
+
+- **The area** is the Volta dos Amigos' and a little round it (task 032), so the race the friends
+  know runs in it from the first day. The owner chose this over a smaller area (Centro and
+  Fujacal) with a new, shorter race in it. It grows later, a section at a time.
+- **One road for everyone.** Every street in the area is a surface the map gives (task 033): its
+  carriageway at its real width, its junctions, kerbs, pavements, crossings and markings, at its
+  level (task 012). The games draw it (task 035) and drive on it (task 034). The race runs on the
+  same streets at their real widths: the 9 m it took (decision 004) goes, and a narrow street is
+  as narrow for the race as it is. The owner chose "as real as possible" over keeping the route's
+  streets 9 m wide in the open world too.
+- **The pavements can be driven on,** over the kerb, outside a race. In a race the route's kerbs are
+  its walls, as today, and barriers close the side streets it passes (task 037).
+- **At the area's edge** every street leaving it is closed with barriers, and the city beyond is
+  drawn but can't be driven into (task 032). The owner chose this over an invisible wall and over
+  turning the player back.
+- **The game opens in the world:** you're driving at once, alone, and the menus sit over it.
+  Friends who follow the invite link appear in your world (task 036). A race takes everyone in
+  the room, put on the grid at once, with bots filling the empty places as today; after the
+  results everyone is back in the world where they were (task 037). The owner chose this over
+  keeping the menus and the lobby first, over driving to the start line, and over a race only
+  some join.
+- **The stack stays:** TypeScript, three.js, Vite and PeerJS, served from GitHub Pages, with no
+  server. The arcade handling stays, its ground and walls taken from the world instead of the
+  track; no physics engine. braga-map stays data (task 015's answer): the streets as surfaces are
+  data any game can draw. Unity, Unreal and Godot were weighed: turning OpenStreetMap and the
+  LiDAR into a city is code to write in any of them, their web builds are heavy or weak on phones
+  (Unreal has none), and a switch would throw away the game and its tests. When the city outgrows
+  GitHub Pages, its tiles go to Cloudflare R2 or the owner's homelab (decision 017).
+- **The city is built whole** for the small area, as the track's is today; streaming it tile by
+  tile (task 038) comes when the area grows or a phone needs it.
+
+The alternative, the kart race as it was with more streets painted round it, can't be driven off
+the route: everything but the track is paint on the ground.

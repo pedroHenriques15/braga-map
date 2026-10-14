@@ -72,3 +72,7 @@ Steps:
 - Found while doing task 009 (2026-10-13): the LiDAR's cross-section at the Avenida João XXI
   (586, 230) is level from 1.5 m left of the line to 12 m right of it, and 5.5 m lower from there
   to 11 m left.
+- **Decision 019 (2026-10-14):** the race runs on the streets' surfaces at their real widths
+  (tasks 033 and 037), so this task now moves every street in the open world's area onto its real
+  carriageway, and measures its width, not the track's line alone; the track follows the streets.
+  `W_MIN` no longer holds (step 4). "Out of scope"'s last bullet no longer holds.

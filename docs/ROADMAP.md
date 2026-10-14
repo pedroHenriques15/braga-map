@@ -13,8 +13,25 @@ holds ideas with no task yet. Settled decisions go to [DECISIONS.md](DECISIONS.m
 | The library | braga-map is a package for games: the world in 500 m tiles grouped in six sections (`index.js`, `world/`), and the tracks planned on it (`tracks/`). party-kart loads it, pinned to a tag (`v1.6.0` since task 012) |
 | The kart race's city | Real-width streets (the track never under 9 m), granite kerbs, calçada, lane lines, zebra crossings, traffic lights and bus stops from OSM, buildings at their place with guessed heights and hashed colours, trees, the Rio Este and its bridges, the hills 15 km round, Bom Jesus and the Sameiro (twice their size), the Picoto's cross, the Estádio 1.º de Maio, the Tourigalo as it is (task 029: the black bull with a rooster's head, on its lawn), Makro and the Altice Forum's signs. The ground as it is (task 009): the streets tip sideways, the pavements meet the ground, retaining walls where it's higher, buildings stepped on their slopes. The race the way the traffic goes (task 027, decision 010): one-way streets the right way, no banned turns, 9.3 km. The first four-point plan (skyline, street level, real widths, landmarks) was done on 2026-10-13: "Braga as it is", braga-map `017bdd4` and party-kart `1d7a921`. The friends drive it, each in a car that's a joke about them, and each one's easter egg stands on their house (tasks 028 and 030, decision 014) |
 | The sound | Synthesized, through one mix since task 023: buses for the engines, the effects, the jingles and the ambience, into a limiter; the countdown, checkpoints, laps and finish one family of jingles; others' items, hits and the eggs heard from where they are. Judged by ear on two recorded takes, party-kart's `scripts/listen.mjs`, the baseline `2026-10-14-baseline`. Every kart's engine a race car's V8 through six gears, the nearest three others' heard from where they are with their Doppler shift, and your tyres and the wind (024, the owner's choice of engine after hearing a recording and a two-stroke, decision 016). Braga round the track (025): traffic, the town's hum, birds in the parks and insects in the woods, by what's within 150 m, the Rio Este, the bells, the buses and the stadium's crowd, from eight CC0 recordings, 10 dB under the engines |
+| The open world | Decided on 2026-10-14 (decision 019): Party Kart opens driving in Braga, anywhere in the Volta dos Amigos' area, every street at its real width with its junctions, kerbs, pavements, bridges and tunnels; the race is a game mode in it, at the streets' real widths. Tasks 032–038, none started |
 | **In flight** | Braga's own pavement pattern (the calçada drawn is Lisbon's), and a pale patch near São João da Ponte, in a party-kart session. |
 | Realism, measured | 29 viewpoints, each set where a real photo was taken (task 001, `refs/viewpoints.json`, decision 009): along the Volta dos Amigos, on foot in Fujacal, and of Bom Jesus and the Sameiro. Shot in the game at High and Low by party-kart's `scripts/shots.mjs` (task 002, decision 011), the same every time, beside their photos: the baseline round is `2026-10-13-baseline`, and the second, `2026-10-14-friends` ("Os amigos", tasks 028–030), is the one open for marks. Rated on the scorecard "Braga real" (task 003, decision 012, https://claude.ai/artifact/MsA5VZHSqxfD3e4BDYrYPs), by the owner alone for now: the baseline averages 2.6 of 5. The budget (task 004, decision 013): today's city, rounded up, in party-kart's `docs/architecture.md`; `?stats` measures a phone. A guide, not a limit (decision 017): realism first, and the games move to a stack that scales, or the owner's homelab, when they outgrow it. The reference photos (task 008, `refs/photos.json`, decision 018): 424 found online, from Mapillary and Commons, for the facades in the shooter's area and those a local knows along the route, the landmarks, bridges, roundabouts, kinds of building and wall, and close-ups; 26 good enough for a texture; the gaps listed in the task, about half the shooter's area's buildings among them |
+
+## Now · The open world
+
+Party Kart becomes an open world over the Volta dos Amigos' area, and the race a game mode in it
+(decision 019, 2026-10-14). It goes first: the tasks after it build on the streets it makes. It's
+done end to end on Fujacal first (its streets as surfaces, drawn and driven on), then over the
+whole area, and ships as one release when 037 is done, so the live game never loses its race.
+
+- **032** The open world's area: its edge, closed with barriers, and the ground every 2 m over it.
+- **033** Every street as a surface: carriageways at their real widths, junctions, kerbs,
+  pavements and markings, at their levels.
+- **034** The car on the world's ground: the land, the streets at their levels, and what it hits.
+- **035** The streets drawn: every street in the area as the track is drawn today.
+- **036** Free roam: the game opens in Braga, and friends join you there.
+- **037** The race as a game mode in the open world, on the streets at their real widths.
+- **038** The city streamed tile by tile, when the area grows.
 
 ## Phase 1 · See it: references, the scorecard and the budget
 
@@ -61,7 +78,10 @@ race car's engine for every kart, and Braga round the track. More of Braga's sou
 
 Phase 1 comes first, but not all of it waits on itself:
 
-- **Now, side by side:** 006 (audit), 007 (the textures' pipeline) and 015 (the shooter's
+- **The open world first:** 032 and 033 side by side (033 on Fujacal doesn't wait for 032's
+  edge); 034 and 035 once 033 has Fujacal; 036 once they drive and draw; 037 last. 038 when the
+  area grows. 014, 018 and 026 now work on 033's surfaces, for every street in the area.
+- **Side by side:** 006 (audit), 007 (the textures' pipeline) and 015 (the shooter's
   area). 008 (the reference photos) is done. Every question in the tasks was answered on 2026-10-14.
 - **Phase 2's data tasks** can start now: 005 fetched their data, and 009 put the ground under
   them (decision 008), so 010 and 011 build on it. Each one is checked on the scorecard when it
@@ -81,7 +101,8 @@ Phase 1 comes first, but not all of it waits on itself:
 - **The seasons:** the plane trees bare in winter, the jacarandas in flower in June.
 - **More of Braga's sound** (beyond task 025): the cafés' terraces, once the map fetches cafés,
   and the old town's, the Sé's bells up close.
-- **The rest of the map** at the route's level of detail, as more tracks and games use it.
+- **The rest of the map** at the route's level of detail, as more tracks and games use it, and
+  the open world grown over it a section at a time (decision 019).
 - **Inside the buildings,** if the shooter needs it: shops and cafés on the ground floor first.
 - **The Rio Este** with its real banks, walls and weirs, and the streams the map fetches but
   doesn't draw.

@@ -49,3 +49,8 @@ under it.
 - Line markings elsewhere: task 018.
 
 ## Notes
+
+- **Decision 019 (2026-10-14):** task 033 makes every roundabout's ring a carriageway with its
+  island kerbed on the inside, for every roundabout in the open world's area. Step 1 here becomes
+  checking those islands against the photos (the apron, the real radius); what stands in them,
+  the markings and the race's corners stay this task's.

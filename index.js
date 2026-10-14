@@ -1,8 +1,8 @@
 // The map of Braga, for games: the world in 500 m tiles grouped into named sections, and the tracks
 // planned on it (tracks/). Everything is in metres from the Praça da República, x east, z south and
-// y up, with heights above ELEV0. Made by the scripts in tools/ from OpenStreetMap and DGT's LiDAR.
-// © OpenStreetMap contributors (ODbL); the ground: informação geográfica cedida pela Direção-Geral do
-// Território (CC BY 4.0).
+// y up, with heights above ELEV0. Made by the scripts in tools/ from OpenStreetMap and DGT's LiDAR
+// and orthophoto. © OpenStreetMap contributors (ODbL); the ground, and the buildings' heights and
+// roofs: informação geográfica cedida pela Direção-Geral do Território (CC BY 4.0).
 import BASE from './world/base.js';
 import { TILES } from './world/tiles.js';
 
@@ -18,12 +18,12 @@ function unpack(b64) {
   return { head, nums: new Int16Array(bytes.buffer, off, (bytes.length - off) >> 1) };
 }
 
-// Points stepped in half metres, n of them from nums[i]: the first as it is, each after it the
-// step from the one before.
-function points(nums, i, n) {
+// Points stepped in half metres, n of them from nums[i]: the first from (x0, z0) (in half metres),
+// each after it the step from the one before.
+function points(nums, i, n, x0 = 0, z0 = 0) {
   const out = [];
-  let x = 0;
-  let z = 0;
+  let x = x0;
+  let z = z0;
   for (let k = 0; k < n; k++) {
     x += nums[i + k * 2];
     z += nums[i + k * 2 + 1];
@@ -32,11 +32,28 @@ function points(nums, i, n) {
   return out;
 }
 
-// A grid of heights in metres, from decimetres packed row by row, each the step from the one
-// before it in its row, and each row's first the step from the row above's.
+// A grid of heights in metres, from decimetres packed row by row, each less a guess from those
+// before it (tools/osm.mjs's packGrid): between the left and the one above, and a quarter of how the
+// row above climbs past it; in the last column the left or the above where the one above left says
+// there's an edge between them, else a plane through all three; the first row from the left, the
+// first column from above.
 function grid(nums, g) {
-  const dm = new Int32Array(g.nx * g.nz);
-  for (let k = 0; k < dm.length; k++) dm[k] = nums[g.at + k] + (k % g.nx ? dm[k - 1] : k ? dm[k - g.nx] : 0);
+  const nx = g.nx;
+  const dm = new Int32Array(nx * g.nz);
+  for (let k = 0; k < dm.length; k++) {
+    const i = k % nx;
+    let guess = 0;
+    if (!i) guess = k ? dm[k - nx] : 0;
+    else if (k < nx) guess = dm[k - 1];
+    else {
+      const l = dm[k - 1];
+      const u = dm[k - nx];
+      const ul = dm[k - nx - 1];
+      if (i < nx - 1) guess = Math.round((2 * l + 2 * u + dm[k - nx + 1] - ul) / 4);
+      else guess = ul >= Math.max(l, u) ? Math.min(l, u) : ul <= Math.min(l, u) ? Math.max(l, u) : l + u - ul;
+    }
+    dm[k] = nums[g.at + k] + guess;
+  }
   const h = new Float32Array(dm.length);
   for (let k = 0; k < h.length; k++) h[k] = dm[k] / 10;
   return { x0: g.x0, z0: g.z0, step: g.step, nx: g.nx, nz: g.nz, h };
@@ -53,6 +70,45 @@ export function heightOn(g, x, z) {
   const h = (a, b) => g.h[b * g.nx + a];
   return (h(i, j) * (1 - u) + h(i + 1, j) * u) * (1 - v) + (h(i, j + 1) * (1 - u) + h(i + 1, j + 1) * u) * v;
 }
+
+// The axis of a footprint's smallest rectangle lined up with one of its edges: the long side's
+// angle, from 0 to π. The same as tools/osm.mjs's rectAxis, in exact arithmetic but for the last
+// step, so it agrees with the map's from the same points: a building's roof runs along it or across.
+function rectAxis(pts) {
+  let best = null;
+  for (let k = 0; k < pts.length; k++) {
+    const [ax, az] = pts[k];
+    const [bx, bz] = pts[(k + 1) % pts.length];
+    const l = Math.sqrt((bx - ax) * (bx - ax) + (bz - az) * (bz - az));
+    if (l < 0.5) continue;
+    const ux = (bx - ax) / l;
+    const uz = (bz - az) / l;
+    let a0 = Infinity;
+    let a1 = -Infinity;
+    let b0 = Infinity;
+    let b1 = -Infinity;
+    for (const [x, z] of pts) {
+      const a = x * ux + z * uz;
+      const b = -x * uz + z * ux;
+      if (a < a0) a0 = a;
+      if (a > a1) a1 = a;
+      if (b < b0) b0 = b;
+      if (b > b1) b1 = b;
+    }
+    const area = (a1 - a0) * (b1 - b0);
+    if (!best || area < best.area) best = { area, ux: a1 - a0 >= b1 - b0 ? ux : -uz, uz: a1 - a0 >= b1 - b0 ? uz : ux };
+  }
+  if (!best) return 0;
+  let { ux, uz } = best;
+  if (uz < 0 || (uz === 0 && ux < 0)) {
+    ux = -ux;
+    uz = -uz;
+  }
+  return Math.atan2(uz, ux);
+}
+// The four ways a roof runs from its footprint's axis: along it, back along it, across to its left
+// and to its right.
+const DIRS = [0, Math.PI, Math.PI / 2, -Math.PI / 2];
 
 let base = null;
 
@@ -83,6 +139,8 @@ export function map() {
     landmarks: m.landmarks,
     sights: m.sights,
     areaKinds: m.areas,
+    roofColors: m.roofColors,
+    storey: m.storey,
     far: grid(nums, head.far),
     cover: Uint8Array.from(nums.subarray(head.cover.at, head.cover.at + head.cover.n)),
     horizon: grid(nums, head.horizon),
@@ -139,11 +197,48 @@ export async function loadWorld(area) {
       lines.push({ kind: nums[i], w: nums[i + 1] / 10, pts: points(nums, i + 3, n) });
       i += 3 + n * 2;
     }
+    // Each building: [n, what, roof, h, y, rise, ...points] (tools/world.mjs's putBuilding), its
+    // ground and first point the step from the one before's, and with four corners, its last less
+    // where the other three would put it.
     const B = head.buildings;
+    let y = 0;
+    let x0 = 0;
+    let z0 = 0;
     for (let i = B.at; i < B.at + B.n; ) {
       const n = nums[i];
-      buildings.push({ kind: nums[i + 1], roof: nums[i + 2], color: nums[i + 3], h: nums[i + 4] / 10, filled: nums[i + 5] === 1, y: nums[i + 6] / 10, pts: points(nums, i + 7, n) });
-      i += 7 + n * 2;
+      const what = nums[i + 1];
+      const roof = nums[i + 2];
+      const h = nums[i + 3] / 10;
+      y += nums[i + 4];
+      x0 += nums[i + 6];
+      z0 += nums[i + 7];
+      const pts = points(nums, i + 8, n - 1, x0, z0);
+      pts.unshift([x0 / 2, z0 / 2]);
+      if (n === 4) {
+        // As a parallelogram: the last corner is the third's step back along the first side, and
+        // what's left of that.
+        pts[3][0] -= pts[1][0] - pts[0][0];
+        pts[3][1] -= pts[1][1] - pts[0][1];
+      }
+      const colour = roof >> 8;
+      buildings.push({
+        kind: what & 7,
+        color: (what >> 3) & 7,
+        roof: (what >> 6) & 3,
+        ends: (what >> 8) & 3,
+        material: (what >> 10) & 3,
+        filled: (what & (1 << 12)) !== 0,
+        measured: (what & (1 << 13)) !== 0,
+        y: y / 10,
+        h,
+        ridge: h + nums[i + 5] / 10,
+        dir: rectAxis(pts) + DIRS[(roof >> 6) & 3],
+        pitch: roof & 63,
+        roofColor: colour === 127 ? null : m.roofColors[colour],
+        floors: Math.max(1, Math.round((h - m.storey[1]) / m.storey[0])),
+        pts,
+      });
+      i += 6 + n * 2;
     }
     const T = head.trees;
     for (let i = T.at; i < T.at + T.n; i += 3) trees.push({ x: nums[i] / 2, z: nums[i + 1] / 2, pine: (nums[i + 2] & 1) === 1, filled: (nums[i + 2] & 2) === 2 });

@@ -1,5 +1,5 @@
 ---
-status: todo
+status: doing
 priority: high
 kind: code
 repo: both
@@ -75,3 +75,100 @@ Steps:
   construction over 10 m²), in the same CDD; not fetched yet (`docs/SOURCES.md`). At the Praça,
   OpenStreetMap lines up with DGT's orthophoto within about 0.5 m (seen at one fountain only):
   measure it more widely before putting OSM's footprints on the LiDAR's heights.
+
+### Started 2026-10-14
+
+- **Checked first:** DGT's national topographic map (CartTop, with each building's height) still
+  isn't on its open data page, and `MAPACONST-2024` is outlines only (one gpkg for the country), so
+  the heights come from the point cloud, as planned.
+- **Done, in braga-map (uncommitted):** `fetch.mjs` gets the point cloud and the orthophoto over the
+  whole map now (42 tiles: 5.6 GB of LAZ, 22 more photos). `tools/roofs.mjs` boils each LAZ tile
+  down once to 50 cm cells of the building points' tops (`.cache/dgt/roofs/`, about 15 s a tile),
+  then measures each of the map's footprints: where its roof steps by 2 m or more along at least
+  3 m, its parts (cut by straight lines in the building's frame, into any number of pieces, none
+  under 20 m², flat neighbours at the same height merged back); for each part the eaves and ridge,
+  the shape (flat, gabled, hipped at either end or both, skillion), the way it runs and the pitch;
+  a pitched roof over an L or a T cut into rectangles at its inner corners; the colour from the
+  orthophoto. Into `.cache/roofs.json`, which `world.mjs` reads (it stops without it).
+  `tools/heights.mjs` is the check. `test/roofs.test.js` (made-up roofs: gabled, hipped, half a
+  semi-detached pair, a tower on a block, an L, a skillion) and `test/heights.test.js` (the tiles
+  carry each roof as measured; the floors agree; the outlines' offset). README, and the credit
+  (`map().credit` names the heights and roofs too). `npm test`: 26 of 26.
+- **Done, in party-kart (uncommitted, `package.json` on `file:../braga-map`):** `src/render/roofs.ts`
+  (a roof is the lowest of a few planes; its faces, and the walls' tops under it, so gables come by
+  themselves; `test/roofs.test.ts`), and `city.ts`'s buildings: each roof as measured, over its
+  rectangle with its eaves overhanging where the footprint nearly fills it, else cut to the
+  footprint; the walls' windows in rows of the real storeys; sheets drawn as grey tiles (no new
+  texture); flat roofs tinted their colour. `npm test` 23 of 23, `npm run check` clean, the lap
+  unchanged (`laps 265.6, 263.5 s; respawns 0; longest air 0.00 s; top 217 km/h; wall hits 0`).
+- **The tiles' format changed** (a new minor version of braga-map at least): a building is
+  `[n, what, roof, h, y, rise, ...points]`, its kind, colour, roof, hipped ends, material and flags
+  packed in one number, its pitch, direction and roof colour in another. The direction is one of
+  four ways from the footprint's own axis, which `index.js` works out with the same exact
+  arithmetic as `osm.mjs` (`rectAxis`); `roofs.mjs` measures in that same frame, so a roof runs
+  along the walls as drawn. A roof's colour is one of 127 (k-means over the measured ones,
+  `map().roofColors`); `floors` comes from `h` and `map().storey`.
+- **What it measured:** 12,397 of the map's 13,019 buildings (95%), in 18,734 parts (2,940 split);
+  622 not seen (cover under 35%: built after July 2025, under a tree, underground, or a shed the
+  LiDAR doesn't class as building), which stay guessed. Main roofs: flat 4,802, gabled 4,629,
+  hipped 2,423, skillion 543. Guessed roofs now take the measured median pitch, 20°.
+- **OpenStreetMap against the LiDAR, measured widely:** the outlines that best fit the LiDAR's
+  buildings are shifted 0.6 m (the median over 311 squares of 250 m), under 1.3 m in 9 of 10,
+  2.2 m at most; shifted, they cover the LiDAR's buildings 93% instead of 92%. `roofs.mjs` reads
+  the LiDAR where each square's shift says; the outlines stay where they are (task 011). Some
+  outlines overlap (a building mapped inside another, a part mapped as a building): each is
+  measured over what it covers, and the world draws both. That's task 011's too.
+- **The point cloud's own colours aren't the roofs':** much paler and greyer than the photo's (a
+  fitted colour matrix explains 53% of the red, 76% of the blue, on 307 low roofs). So the colour
+  is the orthophoto's, as the task said, from the middle of each roof, away from its edge by a
+  fifth of its height (the photo leans tall roofs off their footprints), its lighter half (the
+  shade left out). OSM's `roof:colour` is used only where the LiDAR didn't see the roof: the photo
+  is the 2025 roof. The photo's terracotta is pale, about (160, 130, 125), seen through 5 km of
+  haze; party-kart deepens it (`seenUpClose`: warm colours three times their colour, cool ones
+  half, all 15% darker), a guess for the scorecard to judge.
+- **The check** (`node tools/heights.mjs`): OSM's `building:levels` (3,630 measured) give a storey
+  of 2.91 m plus 1.15 m, and the LiDAR's eaves give the map's count within one storey for 80%
+  (`world.mjs` uses 2.9 m and 1.2 m). `roof:shape` agrees for 614 of 764, `roof:colour`
+  (terracotta or grey) for 310 of 372, and `height` (24 tagged and seen) is 1.5 m under the
+  LiDAR's top, the median. The Tourigalo's restaurant measures flat, its eaves 4.6 m up (the photos
+  had said one storey, 5.2 m): `SEEN` is gone.
+- **The outliers** (nobody will fix them in OSM; the world keeps the LiDAR's). Floors two or more
+  off, the worst: ways 824284420 (the map 13, the LiDAR 3.8 storeys), 825454092 (10, 1.8),
+  825455690 (2, 9.6), 319277632, -33, -37, -38 and -39 (8 each, under one: planned and not built in
+  July 2025, or pieces of a multipolygon), 210197964 (1, 8.4), 474192918, 894977455, -456, -457 and
+  -462 (1, about 8: penthouses, or blocks tagged a storey), 570699260 (7, 0.4), 473336084,
+  825473237, 1141072177, 483134486 and -488 (1, about 7), 570791233 (2, 7.7), 319277602, -603 and
+  -616 (8, about 2.3), 597012661 (1, 6.5); 192 in all. `height` off by more than 3 m: ways
+  1461304288 (8 m, the LiDAR 13.9), 828265603 (30, 25.1), 1559947667 (9, 13.7), 570672761 (4,
+  8.4), 1324078577 (21, 25.1), 504812463 to -465 (6, about 2), 1026230558 (21, 24.4).
+- **The budget** (task 004), all 29 viewpoints, against party-kart as committed (`8946d3d`,
+  braga-map 1.3.0), shot the same day: triangles at most, High 1.075 → 1.061 M, Medium 0.892 →
+  0.877 M, Low 0.537 → 0.549 M (budget 1.1, 0.9, 0.55); draw calls at most 178, 178, 162 (200, 200,
+  180); textures 94, 61, 45 MB, unchanged (95, 60, 45). Rounds `shots/2026-10-14-task010/` and
+  `-task010-alameda/` (one shot timed out), and `-base-medium/`. To fit, the city draws less for
+  the same picture: a wall hidden by the building behind it isn't drawn, flats' ground floors are
+  in their walls' material (no second quad), a gable is one polygon, a roof cut to its footprint is
+  cut to convex pieces of it, and buildings more than 150 m from the road cast no shadow (the
+  sun's shadows are only drawn 70 m round the camera). Low has 1k triangles to spare.
+- **Medium's textures were over before this task:** 61 MB on `8946d3d` against a budget of 60
+  (since tasks 028–030). Drafted as task 031.
+- **The download:** the track's 48 tiles grow 7 KB gzipped (1,193,837 → 1,200,980 bytes as
+  `world.mjs` writes them). The buildings take 77 KB more, paid for by packing the ground better
+  (each height less a guess between its neighbours, lossless: 708 → 637 KB) and each
+  four-cornered outline's last corner as what's left of a parallelogram. `node
+  scripts/download.mjs`: 1.42 MB on `8946d3d`, 1.43 MB now (the tiles 1.12 → 1.13, the game 0.29 →
+  0.30, mostly another session's sound). As the live site sends it, about 1.49 MB of the 1.5.
+- **A party-kart gotcha:** `npm install --install-links ../braga-map` doesn't replace the installed
+  copy while braga-map's version is unchanged: delete `node_modules/braga-map` first. (Shots taken
+  before that ran on a world a few lossless packings older, with the same buildings.)
+- **Not modelled:** mansard roofs (they come out hipped or flat), a big shed's several ridges (one
+  roof, its eaves no lower than the lowest the LiDAR saw), dormers and chimneys (a step under
+  20 m² is the roof's). Buildings over 150 m from the road cast no shadows, where no camera could
+  see them.
+- **Left for `/task finish`:** the round on the scorecard. The skyline seen from the Picoto has no
+  viewpoint (`refs/viewpoints.json` looks at the Sameiro from the Picoto road, not at the city):
+  one from a photo at the Picoto's lookout, as task 001 sets them, or a before-and-after pair for
+  the owner. braga-map's release, and party-kart's `package.json` back on its tag. `SOURCES.md`
+  (the point cloud and the orthophoto over the whole map, and what they're used for),
+  `ROADMAP.md` and a `DECISIONS.md` entry (the buildings are the LiDAR's; the tiles' format):
+  another session has uncommitted changes in all three today, so they weren't touched.

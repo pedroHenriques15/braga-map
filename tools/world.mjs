@@ -14,12 +14,12 @@
 // - world/tiles.js, a loader for each tile, for index.js.
 //
 // All in metres from the Praça da República, x east and z south, heights above ELEV0, packed as
-// 16-bit numbers: points in half metres, heights in decimetres (on a grid, each the step from the
-// one before).
+// 16-bit numbers: points in half metres, heights in decimetres (on a grid, each less a guess from
+// its neighbours: osm.mjs's packGrid).
 import fs from 'node:fs';
 import path from 'node:path';
 import { CACHE, ELEV0, P, ROOT, readCache, relief } from './geo.mjs';
-import { AREA, AREA_OF, blur, bounds, carriageway, dm, footprints, Grid, half, hash, inside, LINE, minRect, openThin, overlaps, Packer, packGrid, packPts, ringArea, ringOf, seeded, segDist, simplify, W_MIN } from './osm.mjs';
+import { AREA, AREA_OF, blur, bounds, carriageway, dm, footprints, Grid, half, hash, inside, LINE, minRect, openThin, overlaps, Packer, packGrid, packPts, rectAxis, ringArea, ringOf, seeded, segDist, simplify, W_MIN } from './osm.mjs';
 import { allTiles, EXT, SECTIONS, sectionOf, SHOOTER, TILE, tileBox, tileId, tileOf } from './sections.mjs';
 import { terrain } from './terrain.mjs';
 
@@ -116,19 +116,113 @@ for (const s of streets) {
 console.log(`ground: ${areas.length} areas, ${streets.length} streets and railways`);
 
 // ---------------------------------------------------------------------------------------------
-// The buildings: all of them, and houses filled in where the map has none.
+// The buildings: all of them, and houses filled in where the map has none. Each one's height, roof
+// and roof colour as DGT's LiDAR and orthophoto measured them (tools/roofs.mjs), in parts where its
+// roof steps or turns a corner; guessed from what the map says where the LiDAR didn't see it (the
+// point cloud wasn't fetched there, it was built after July 2025, or it's under a tree) and for the
+// houses filled in.
 
 const KIND = { house: 0, flats: 1, shop: 2, church: 3, civic: 4 };
-const ROOF = { flat: 0, hipped: 1, gabled: 2 };
+const ROOF = { flat: 0, hipped: 1, gabled: 2, skillion: 3 };
+const MAT = { tiles: 0, sheet: 1, flat: 2 };
 const COLORS = 8; // facade colours, picked from each building's id
 const fps = footprints(buildingsOsm);
-// Buildings whose guess is far off, as photos show them, until task 010 measures them all: the
-// Tourigalo's restaurant is one storey with a flat roof, not a block of flats (Mapillary, 2019).
-const SEEN = { 142911732: { kind: KIND.shop, h: 5.2, roof: ROOF.flat } };
+if (!fs.existsSync(path.join(CACHE, 'roofs.json'))) throw new Error('No measured roofs in .cache/roofs.json: node tools/roofs.mjs');
+const roofs = readCache('roofs.json').buildings;
+// The pitch of a guessed roof: the measured roofs' own, the middle of them.
+const PITCH = (() => {
+  const all = Object.values(roofs).flatMap((m) => m.parts.filter((p) => p.pitch != null && p.roof !== 'skillion').map((p) => p.pitch)).sort((a, b) => a - b);
+  return all.length ? Math.round(all[all.length >> 1]) : 27;
+})();
+// How tall a storey is, and what a building has besides its storeys (the ground floor's extra, the
+// slab on top): fitted to the floors OpenStreetMap gives against the heights the LiDAR measured
+// (tools/heights.mjs). For a guess from the floors, and for a game counting the storeys up to the
+// eaves (index.js).
+const STOREY = 2.9, BASE = 1.2;
 // The ground a building stands on: at its lowest corner, in decimetres above ELEV0, so a row of
 // houses steps down a hill as the real ones do. Its height is from there.
 const footY = (ring) => dm(Math.min(...ring.map(([x, z]) => ground.at(x, z))) - ELEV0);
-let real = 0;
+// The roofs' colours, as 127 that stand for them all (k-means over the measured ones), so each
+// building's is one of them, in 7 bits.
+const PALETTE = (() => {
+  const all = Object.values(roofs).flatMap((m) => m.parts.filter((p) => p.colour).map((p) => p.colour));
+  const rand = seeded(1010), K = Math.min(127, all.length);
+  const d2 = (a, b) => (a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2 + (a[2] - b[2]) ** 2;
+  // k-means++'s start: each next centre far from those before.
+  const c = [all[Math.floor(rand() * all.length)]], near = all.map((p) => d2(p, c[0]));
+  while (c.length < K) {
+    let r = rand() * near.reduce((s, v) => s + v, 0), k = 0;
+    while (k < all.length - 1 && (r -= near[k]) > 0) k++;
+    c.push(all[k]);
+    all.forEach((p, i) => { near[i] = Math.min(near[i], d2(p, all[k])); });
+  }
+  for (let it = 0; it < 25; it++) {
+    const sum = c.map(() => [0, 0, 0, 0]);
+    for (const p of all) { let b = 0; for (let k = 1; k < K; k++) if (d2(p, c[k]) < d2(p, c[b])) b = k; sum[b][0] += p[0]; sum[b][1] += p[1]; sum[b][2] += p[2]; sum[b][3]++; }
+    sum.forEach((s, k) => { if (s[3]) c[k] = [s[0] / s[3], s[1] / s[3], s[2] / s[3]]; });
+  }
+  return c.map((p) => p.map(Math.round));
+})();
+const paletteOf = (c) => {
+  if (!c) return 127;
+  let b = 0;
+  for (let k = 1; k < PALETTE.length; k++) if ((c[0] - PALETTE[k][0]) ** 2 + (c[1] - PALETTE[k][1]) ** 2 + (c[2] - PALETTE[k][2]) ** 2 < (c[0] - PALETTE[b][0]) ** 2 + (c[1] - PALETTE[b][1]) ** 2 + (c[2] - PALETTE[b][2]) ** 2) b = k;
+  return b;
+};
+// OpenStreetMap's roof:colour, where the LiDAR didn't see the roof: "#rrggbb", "#rgb" or a name.
+const NAMED = { gray: [128, 128, 128], grey: [128, 128, 128], silver: [192, 192, 192], white: [240, 240, 240], black: [40, 40, 40], red: [170, 70, 50], brown: [120, 80, 60], lightsalmon: [255, 160, 122] };
+const parseColour = (v) => {
+  if (!v) return null;
+  const s = v.trim().toLowerCase(), hex = s.replace(/^#/, '');
+  if (/^[0-9a-f]{6}$/.test(hex)) return [0, 2, 4].map((k) => parseInt(hex.slice(k, k + 2), 16));
+  if (/^[0-9a-f]{3}$/.test(hex)) return [0, 1, 2].map((k) => parseInt(hex[k] + hex[k], 16));
+  return NAMED[s] ?? null;
+};
+// What a pitched roof is covered with, from its colour: terracotta tiles (reddish, and not grey),
+// or sheets (metal, fibre cement, slate: greys). A flat roof is its own.
+const matOf = (roof, c, osm) => {
+  if (roof === ROOF.flat) return MAT.flat;
+  if (!c) return osm === 'metal' ? MAT.sheet : MAT.tiles;
+  const [r, g, b] = c, mx = Math.max(r, g, b), mn = Math.min(r, g, b);
+  return r === mx && mx - mn > 0.15 * mx && r - b > 20 ? MAT.tiles : MAT.sheet;
+};
+// The way a roof runs (or a skillion faces), as which of four ways from its footprint's axis (as
+// rectAxis has it from the points a game gets): along it, back along it, across it to its left
+// (+90°), to its right.
+const dirCode = (ring, dir) => {
+  const axis = rectAxis(ring.map(([x, z]) => [half(x) / 2, half(z) / 2]));
+  const off = (k) => { const d = dir - axis - [0, Math.PI, Math.PI / 2, -Math.PI / 2][k]; return Math.abs(Math.atan2(Math.sin(d), Math.cos(d))); };
+  return [0, 1, 2, 3].reduce((b, k) => (off(k) < off(b) ? k : b), 0);
+};
+// [n, what, roof, h, y, rise, ...points], each a 16-bit number. what: its kind (3 bits), facade
+// colour (3), roof (2), which ends of its ridge are hipped (2), what the roof's covered with (2),
+// filled in (1), measured (1). roof: its pitch in degrees (6 bits), the way it runs (2) and its
+// colour in PALETTE (7, 127 for none). h, the eaves, from y, the ground, and rise, the ridge over the
+// eaves, in decimetres. In a tile they're in rows 20 m deep, west to east, each one's ground and
+// first point the step from the one before's, and a four-cornered one's last corner less where the
+// other three would put it, as a parallelogram (packBuildings): which packs smaller.
+const putBuilding = (ring, cx, cz, b) => {
+  const what = b.kind | (b.color << 3) | (b.roof << 6) | (b.ends << 8) | (b.mat << 10) | (b.filled ? 1 << 12 : 0) | (b.measured ? 1 << 13 : 0);
+  const roof = Math.min(63, Math.round(b.pitch)) | (dirCode(ring, b.dir) << 6) | (paletteOf(b.rgb) << 8);
+  tileAt(cx, cz).buildings.push([ring.length, what, roof, dm(b.h), b.y, Math.max(0, dm(b.ridge - b.h)), ...packPts(ring)]);
+};
+const packBuildings = (list) => {
+  let x = 0, z = 0, y = 0;
+  return [...list].sort((a, b) => Math.floor(a[7] / 40) - Math.floor(b[7] / 40) || a[6] - b[6]).flatMap((r) => {
+    const out = [...r];
+    out[4] -= y, out[6] -= x, out[7] -= z;
+    if (r[0] === 4) out[12] += r[8], out[13] += r[9];
+    [y, x, z] = [r[4], r[6], r[7]];
+    return out;
+  });
+};
+// A guessed pitched roof over a footprint: hipped or gabled along its long side, at the measured
+// roofs' pitch.
+const guessRoof = (ring, roof) => {
+  const r = minRect(ring), rise = roof === ROOF.flat ? 0 : r.W * Math.tan(PITCH / 57.2958);
+  return { dir: r.angle, pitch: roof === ROOF.flat ? 0 : PITCH, rise, ends: roof === ROOF.hipped ? 3 : 0 };
+};
+let real = 0, measured = 0, parts = 0;
 {
   const church = new Set(['church', 'cathedral', 'chapel', 'basilica', 'religious', 'monastery', 'convent']);
   const flats = new Set(['apartments', 'residential', 'dormitory', 'hotel']);
@@ -136,6 +230,19 @@ let real = 0;
   const civic = new Set(['school', 'university', 'college', 'kindergarten', 'hospital', 'public', 'civic', 'government', 'museum', 'fire_station']);
   const low = new Set(['roof', 'carport', 'garage', 'garages', 'shed', 'kiosk']);
   const rnd = hash;
+  // Its kind, from its tag and its size; from its height too, where that was measured (`eaves`,
+  // above its ground): a house of more than three storeys is flats, flats under two a house.
+  const kindOf = (t, a, eaves) => {
+    if (church.has(t.building)) return KIND.church;
+    if (civic.has(t.building)) return KIND.civic;
+    if (house.has(t.building)) return eaves > 10 ? KIND.flats : KIND.house;
+    if (flats.has(t.building)) return eaves != null && eaves < 6.5 && a < 250 ? KIND.house : KIND.flats;
+    if (t.building !== 'yes') return KIND.shop;
+    if (eaves == null) return a < 220 ? KIND.house : a < 1400 ? KIND.flats : KIND.shop;
+    if (a >= 1400) return eaves >= 15 ? KIND.flats : KIND.shop;
+    return eaves >= 9.5 ? KIND.flats : a < 400 ? KIND.house : eaves >= 6 ? KIND.flats : KIND.shop;
+  };
+  const ROOFS = { flat: ROOF.flat, hipped: ROOF.hipped, gabled: ROOF.gabled, skillion: ROOF.skillion };
   for (const e of fps) {
     let pts = ringOf(e);
     if (pts.length > 1 && pts[0][0] === pts[pts.length - 1][0] && pts[0][1] === pts[pts.length - 1][1]) pts = pts.slice(0, -1);
@@ -144,22 +251,48 @@ let real = 0;
     if (!inExt(cx, cz)) continue;
     const t = e.tags, a = ringArea(pts);
     if (a < 12) continue;
-    let kind = church.has(t.building) ? KIND.church : flats.has(t.building) ? KIND.flats : house.has(t.building) ? KIND.house : civic.has(t.building) ? KIND.civic : t.building === 'yes' ? (a < 220 ? KIND.house : a < 1400 ? KIND.flats : KIND.shop) : KIND.shop;
-    const levels = Number(t['building:levels']);
+    const color = Math.floor(rnd(e.id, 7) * COLORS), levels = Number(t['building:levels']);
+    const m = roofs[e.id];
+    // Measured: each part on its own ground, its eaves and ridge from there.
+    if (m && m.cover >= 0.35 && m.parts.some((p) => p.roof)) {
+      const seen = m.parts.filter((p) => p.roof), top = Math.max(...seen.map((p) => p.eaves));
+      for (const p of m.parts) {
+        const ring = simplify(p.pts ?? pts, 0.3);
+        if (ring.length < 3) continue;
+        const y = footY(ring), base = ELEV0 + y / 10;
+        const px = ring.reduce((s, q) => s + q[0], 0) / ring.length, pz = ring.reduce((s, q) => s + q[1], 0) / ring.length;
+        let b;
+        if (p.roof) {
+          const h = Math.max(2.4, p.eaves - base), roof = ROOFS[p.roof];
+          b = { kind: kindOf(t, a, top - base), roof, h, ridge: Math.max(h, p.ridge - base), dir: p.dir ?? minRect(ring).angle, pitch: p.pitch ?? 0, ends: p.ends ?? 0, rgb: p.colour, measured: true };
+          b.mat = matOf(roof, p.colour, t['roof:material']);
+        } else {
+          // A piece of it the LiDAR saw nothing over: low, and flat (a passage, a yard roofed over).
+          b = { kind: KIND.shop, roof: ROOF.flat, h: 3, ridge: 3, dir: minRect(ring).angle, pitch: 0, ends: 0, rgb: null, mat: MAT.flat, measured: false };
+        }
+        putBuilding(ring, px, pz, { ...b, color, y, filled: false });
+        parts++;
+      }
+      measured++;
+      real++;
+      continue;
+    }
+    // Guessed, from its tags.
+    let kind = kindOf(t, a, null);
     let h;
     if (Number(t.height)) h = Number(t.height);
-    else if (levels) h = levels * 3 + 0.6;
+    else if (levels) h = levels * STOREY + BASE;
     else if (low.has(t.building)) h = 3;
     else h = kind === KIND.house ? 3.4 + 3 * Math.floor(1 + rnd(e.id, 1) * 1.6) : kind === KIND.flats ? 3 * (4 + Math.floor(rnd(e.id, 2) * 4)) + 0.6 : kind === KIND.church ? 12 : kind === KIND.civic ? (a > 4000 ? 14 : 7.5 + Math.floor(rnd(e.id, 3) * 2) * 3) : 7;
     if (kind === KIND.house && h > 10) kind = KIND.flats;
     const shape = t['roof:shape'];
-    let roof = shape === 'flat' ? ROOF.flat : shape === 'gabled' ? ROOF.gabled : ['hipped', 'half-hipped', 'pyramidal'].includes(shape) ? ROOF.hipped : null;
+    let roof = shape === 'flat' ? ROOF.flat : shape === 'gabled' ? ROOF.gabled : shape === 'skillion' ? ROOF.skillion : ['hipped', 'half-hipped', 'pyramidal'].includes(shape) ? ROOF.hipped : null;
     if (roof === null) roof = kind === KIND.house ? (rnd(e.id, 4) < 0.7 ? ROOF.hipped : ROOF.gabled) : kind === KIND.flats ? (rnd(e.id, 5) < 0.45 ? ROOF.hipped : ROOF.flat) : kind === KIND.church ? ROOF.gabled : kind === KIND.civic ? (rnd(e.id, 6) < 0.5 ? ROOF.hipped : ROOF.flat) : ROOF.flat;
     if (low.has(t.building)) roof = ROOF.flat;
-    if (SEEN[e.id]) ({ kind, h, roof } = SEEN[e.id]);
     const ring = simplify(pts, 0.3);
     if (ring.length < 3) continue;
-    tileAt(cx, cz).buildings.push(ring.length, kind, roof, Math.floor(rnd(e.id, 7) * COLORS), Math.round(h * 10), 0, footY(ring), ...packPts(ring));
+    const g = guessRoof(ring, roof), rgb = parseColour(t['roof:colour']);
+    putBuilding(ring, cx, cz, { kind, roof, color, h, ridge: h + g.rise, dir: g.dir, pitch: g.pitch, ends: g.ends, rgb, mat: matOf(roof, rgb, t['roof:material']), y: footY(ring), filled: false, measured: false });
     real++;
   }
 }
@@ -249,7 +382,8 @@ let infill = 0;
           const color = Math.floor(rand() * COLORS);
           // On open ground it keeps its turn, so no other house moves, but nothing is built.
           if (!open(quad.concat([mid]))) {
-            tileAt(mid[0], mid[1]).buildings.push(4, kind, roof, color, Math.round(h * 10), 1, footY(quad), ...packPts(quad));
+            const g = guessRoof(quad, roof);
+            putBuilding(quad, mid[0], mid[1], { kind, roof, color, h, ridge: h + g.rise, dir: g.dir, pitch: g.pitch, ends: g.ends, rgb: null, mat: matOf(roof, null), y: footY(quad), filled: true, measured: false });
             infill++;
           }
           addB(quad);
@@ -258,7 +392,7 @@ let infill = 0;
       }
     }
   }
-  console.log(`buildings: ${real} from the map, ${infill} filled in (${rowNames.size} streets in rows); frontage skipped for ${JSON.stringify(why)}`);
+  console.log(`buildings: ${real} from the map (${measured} measured by the LiDAR, in ${parts} parts; guessed roofs at ${PITCH}°), ${infill} filled in (${rowNames.size} streets in rows); frontage skipped for ${JSON.stringify(why)}`);
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -438,7 +572,8 @@ fs.rmSync(path.join(dir, 'tiles'), { recursive: true, force: true });
 fs.mkdirSync(path.join(dir, 'tiles'), { recursive: true });
 const HEAD = `// Made by tools/world.mjs from OpenStreetMap and DGT's LiDAR: run that again rather than editing it.
 // A JSON header, then 16-bit numbers, in base64; index.js reads it. © OpenStreetMap contributors (ODbL).
-// The ground: informação geográfica cedida pela Direção-Geral do Território (CC BY 4.0).
+// The ground, and the buildings' heights and roofs: informação geográfica cedida pela Direção-Geral do
+// Território (CC BY 4.0).
 `;
 let bytes = 0;
 const sizes = [];
@@ -448,7 +583,7 @@ for (const t of tiles.values()) {
   p.part('terrain', packGrid(h, n), { x0: b.x0, z0: b.z0, step, nx: n, nz: n });
   p.part('areas', t.areas);
   p.part('lines', t.lines);
-  p.part('buildings', t.buildings);
+  p.part('buildings', packBuildings(t.buildings));
   p.part('trees', t.trees);
   const b64 = p.encode();
   fs.writeFileSync(path.join(dir, 'tiles', t.id + '.js'), `${HEAD}export default '${b64}';\n`);
@@ -463,7 +598,7 @@ ${[...tiles.keys()].map((id) => `  '${id}': () => import('./tiles/${id}.js'),`).
 
 const landmarks = braga.landmarks.map((l) => ({ id: l.id, name: l.name, x: l.x, z: l.z, section: sectionOf(l.x, l.z) }));
 out.header.meta = {
-  credit: '© OpenStreetMap contributors (ODbL). Relief: LiDAR, informação geográfica cedida pela Direção-Geral do Território (CC BY 4.0); beyond the map, Terrain Tiles (AWS Open Data): Europe terrain data produced using Copernicus data and information funded by the European Union - EU-DEM layers.',
+  credit: '© OpenStreetMap contributors (ODbL). Relief, and the heights and roofs of the buildings: LiDAR and orthophoto, informação geográfica cedida pela Direção-Geral do Território (CC BY 4.0); beyond the map, Terrain Tiles (AWS Open Data): Europe terrain data produced using Copernicus data and information funded by the European Union - EU-DEM layers.',
   osmTime: base.osm3s.timestamp_osm_base,
   elev0: ELEV0,
   ext: EXT,
@@ -471,6 +606,8 @@ out.header.meta = {
   tiles: [...tiles.keys()],
   sections: SECTIONS,
   areas: AREA,
+  roofColors: PALETTE,
+  storey: [STOREY, BASE],
   landmarks,
   sights,
 };

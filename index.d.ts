@@ -61,16 +61,37 @@ export interface Line {
   pts: [number, number][];
 }
 
-// kind: 0 house, 1 flats, 2 shop, 3 church, 4 civic. roof: 0 flat, 1 hipped, 2 gabled. color: one
-// of 8 facade colours. y: the ground it stands on, at its lowest corner. h: its height in metres,
-// from there. filled: a house the map didn't have, put on an empty frontage of a built-up street.
+// A building, or a part of one where its roof steps by a storey or more or turns a corner, each part
+// with its own outline, height and roof. Measured from DGT's 2025 LiDAR (`measured`), or guessed
+// from what the map says where the LiDAR didn't see it, and for the houses filled in.
+//
+// kind: 0 house, 1 flats, 2 shop, 3 church, 4 civic, from its tag and its height. color: one of 8
+// facade colours. y: the ground it stands on, at its lowest corner. h: the height of its eaves (the
+// top of its walls) in metres from there, and ridge: of its roof's top. floors: its storeys up to
+// the eaves, so windows line up with them.
+// roof: 0 flat, 1 hipped, 2 gabled, 3 skillion (one slope). dir: the way its ridge runs, in radians
+// (x east, z south: (cos dir, sin dir)), from its first end to its second; for a skillion, the way
+// it slopes down; for a flat roof, its long side. ends: which ends of the ridge are hipped (1 the
+// first, 2 the second: 3 for a hipped roof, 1 or 2 for half of a semi-detached pair, 0 gabled).
+// pitch: in degrees. roofColor: [r, g, b] from the 2025 orthophoto (the nearest of the map's 127
+// roofColors), or the map's roof:colour, or null (a game's own). material: 0 tiles, 1 sheets (metal,
+// fibre cement, slate), 2 flat.
+// filled: a house the map didn't have, put on an empty frontage of a built-up street.
 export interface Building {
   kind: number;
   roof: number;
+  ends: number;
   color: number;
   y: number;
   h: number;
+  ridge: number;
+  dir: number;
+  pitch: number;
+  roofColor: [number, number, number] | null;
+  material: number;
+  floors: number;
   filled: boolean;
+  measured: boolean;
   pts: [number, number][];
 }
 
@@ -97,6 +118,11 @@ export interface BragaMap {
   landmarks: Landmark[];
   sights: Sight[];
   areaKinds: AreaKind[];
+  // The roofs' colours, 127 standing for all those measured: a building's roofColor is one of them.
+  roofColors: [number, number, number][];
+  // How tall a storey is, and what a building has besides its storeys (the ground floor's extra,
+  // the slab on top), in metres: a building's floors are (h - storey[1]) / storey[0], rounded.
+  storey: [number, number];
   // The relief over the whole map every 50 m, and 15 km round it every 250 m. The ground, from DGT's
   // LiDAR on the map and the Terrain Tiles (EU-DEM) beyond it.
   far: Grid;

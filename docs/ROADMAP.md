@@ -25,6 +25,7 @@ a phone can draw. Everything after this is checked against it.
   braga-map, with the world.
 - **008** The reference photos: every facade, landmark and close-up the city needs, found
   online (Mapillary, Commons). Nobody takes new photos; what's missing is listed.
+- **031** Medium's textures back inside the budget: 61 MB of 60 since tasks 028–030.
 
 ## Phase 2 · The shape: the ground, the streets and the buildings where they really are
 

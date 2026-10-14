@@ -143,10 +143,11 @@ export const CLASS = { unclassified: 1, ground: 2, lowVegetation: 3, mediumVeget
 
 let lazPerf = null;
 
-// Calls fn(pt) for every point of a tile, the same object each time: x and z on the map, y the
-// height above the sea, cls its class, r, g, b and nir its colour (16-bit), ret and returns which
-// return of the pulse it is and of how many. Stops early if fn returns false.
-export async function points(key, fn) {
+// Calls fn(pt) for every point of a tile, the same object each time: x and z on the map (or, with
+// `raw`, only e and n in EPSG:3763, which is faster), y the height above the sea, cls its class,
+// r, g, b and nir its colour (16-bit), ret and returns which return of the pulse it is and of how
+// many. Stops early if fn returns false.
+export async function points(key, fn, raw = false) {
   const file = path.join(DGT, 'LAZ', key + '.laz');
   const buf = fs.readFileSync(file);
   const h = new DataView(buf.buffer, buf.byteOffset, buf.byteLength);
@@ -162,13 +163,13 @@ export async function points(key, fn) {
   try {
     laz.open(filePtr, buf.length);
     const len = laz.getPointLength(), n = laz.getCount(), ptr = L._malloc(len);
-    const pt = { x: 0, y: 0, z: 0, cls: 0, r: 0, g: 0, b: 0, nir: 0, ret: 0, returns: 0 };
+    const pt = { x: 0, y: 0, z: 0, e: 0, n: 0, cls: 0, r: 0, g: 0, b: 0, nir: 0, ret: 0, returns: 0 };
     try {
       for (let k = 0; k < n; k++) {
         laz.getPoint(ptr);
         const v = new DataView(L.HEAPU8.buffer, ptr, len);
-        const e = v.getInt32(0, true) * sx + ox, nn = v.getInt32(4, true) * sy + oy;
-        [pt.x, pt.z] = toMap(e, nn);
+        pt.e = v.getInt32(0, true) * sx + ox, pt.n = v.getInt32(4, true) * sy + oy;
+        if (!raw) [pt.x, pt.z] = toMap(pt.e, pt.n);
         pt.y = v.getInt32(8, true) * sz + oz;
         const rb = v.getUint8(14);
         pt.ret = rb & 15; pt.returns = rb >> 4;

@@ -1,7 +1,7 @@
 // Downloads what the map of Braga is made of: OpenStreetMap data through the Overpass API, and
 // elevation tiles (Terrain Tiles, on AWS Open Data). It keeps them in .cache/ for the other scripts.
 // DGT's open data (docs/SOURCES.md) comes only when it's named, into .cache/dgt/: the 2025 LiDAR
-// (`lidar`, about 1.8 GB, with the CDD's free account), the 2025 orthophoto (`ortho`, about 60 MB)
+// (`lidar`, about 5.6 GB, with the CDD's free account), the 2025 orthophoto (`ortho`, about 110 MB)
 // and the COS2025 land use (`cos`).
 //
 // node tools/fetch.mjs            everything but DGT's
@@ -146,8 +146,8 @@ if (m) console.log(`horizon: ${m} tiles`);
 
 const dgtParts = ['lidar', 'ortho', 'cos'].filter((p) => only.includes(p));
 if (dgtParts.length) {
-  const { DGT, ORTHO_PX, fromTM, tileBox, tileKey, tilesAlong, tilesOver, toTM } = await import('./dgt.mjs');
-  const { EXT, SHOOTER } = await import('./sections.mjs');
+  const { DGT, ORTHO_PX, fromTM, tileBox, tileKey, tilesOver, toTM } = await import('./dgt.mjs');
+  const { EXT } = await import('./sections.mjs');
   const amigos = (await import('../tracks/amigos.js')).default;
   fs.mkdirSync(DGT, { recursive: true });
 
@@ -156,9 +156,10 @@ if (dgtParts.length) {
   const boxTiles = tilesOver(amigos.box);
   // The whole map, and 200 m round it, for the terrain at 2 m.
   const mapTiles = tilesOver({ x0: EXT.x0 - 200, x1: EXT.x1 + 200, z0: EXT.z0 - 200, z1: EXT.z1 + 200 });
-  // The point cloud is heavier (about 120 MB a tile): only along the route, 200 m each side, over
-  // the shooter's area, and where the map's (0, 0) is, for the check in test/sources.test.js.
-  const lazTiles = [...new Set([...tilesAlong(amigos.points.map(({ p }) => [p[0], p[2]]), 200), ...tilesOver(SHOOTER), tileKey(...toTM(0, 0))])].sort();
+  // The point cloud is heavier (about 120 MB a tile): over the whole map, for every building's
+  // height and roof (tools/roofs.mjs); its tiles hold the route, the shooter's area and the map's
+  // (0, 0), for the check in test/sources.test.js.
+  const lazTiles = tilesOver(EXT);
 
   // The orthophoto, 25 cm, from DGT's WMS: a JPEG per tile, on the LiDAR's own tiles. (The
   // cloud-optimised GeoTIFFs it's made from need the CDD's account; the WMS doesn't.)
@@ -176,7 +177,7 @@ if (dgtParts.length) {
     const dir = path.join(DGT, 'ortho');
     fs.mkdirSync(dir, { recursive: true });
     let got = 0, bytes = 0;
-    for (const key of boxTiles) {
+    for (const key of lazTiles) {
       const file = path.join(dir, key + '.jpg');
       if (fs.existsSync(file)) continue;
       const b = tileBox(key);
@@ -190,7 +191,7 @@ if (dgtParts.length) {
     const C = 80, px = 320, dLat = C / KZ / 2, dLon = C / KX / 2;
     fs.writeFileSync(path.join(dir, 'check-4326.jpg'), await getJPEG(`${WMS}&crs=EPSG:4326&bbox=${LAT0 - dLat},${LON0 - dLon},${LAT0 + dLat},${LON0 + dLon}&width=${px}&height=${px}`, 'the check'));
     fs.writeFileSync(path.join(dir, 'check-4326.json'), JSON.stringify({ lat0: LAT0, lon0: LON0, size: C, px }));
-    console.log(`ortho: ${got} tiles, ${(bytes / 1e6).toFixed(0)} MB (${boxTiles.length} in the box)`);
+    console.log(`ortho: ${got} tiles, ${(bytes / 1e6).toFixed(0)} MB (${lazTiles.length} over the map)`);
   }
 
   // The land use, COS2025, from DGT's OGC API: every polygon over the map's box, as GeoJSON.

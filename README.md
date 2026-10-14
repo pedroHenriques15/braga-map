@@ -34,7 +34,7 @@ import amigos from 'braga-map/tracks/amigos.js';
 
 const world = await loadWorld(amigos.box); // or loadWorld({ sections: ['centro'] })
 world.height(x, z); // the ground: every 2 m or 10 m on the tiles loaded, every 50 m elsewhere
-world.buildings; // [{ kind, roof, color, y, h, filled, pts }], and areas, lines, trees, rivers, sights…
+world.buildings; // [{ kind, roof, ends, dir, pitch, y, h, ridge, floors, roofColor, … pts }], and areas, lines, trees…
 ```
 
 - `map()` is what every game needs whichever part of the map it's in: the sections and their
@@ -47,6 +47,12 @@ world.buildings; // [{ kind, roof, color, y, h, filled, pts }], and areas, lines
   track and over the shooter's area, every 10 m on the others. A street is ground, so the ground
   is the street's own surface; a bridge's deck isn't, so under a bridge it's what's below. A
   building stands on the ground at its lowest corner (`y`), and its height is from there.
+- The buildings are as DGT's LiDAR measured them (`measured`), 95% of those on the map: the
+  height of the eaves (`h`) and of the ridge, the roof's shape, the way it runs (`dir`), which
+  ends are hipped, its pitch, its storeys, and its colour as the 2025 orthophoto sees it (from
+  5 km up, so paler than from the street). Where a roof steps by a storey or turns a corner, each
+  part is a building of its own. The rest are guessed from what the map says, and the houses
+  filled in are invented (`filled`). `index.d.ts` says what each field means.
 - The world knows nothing of your road. A game clears its own road and arena of buildings and
   trees when it loads (Party Kart's `src/render/city.ts` does it for a track). The map takes every
   street at least 9 m wide, and the houses it fills in on empty frontages stand clear of that and
@@ -63,19 +69,22 @@ change to the map never breaks a game behind its back.
 
 ```sh
 npm run fetch    # the data, into .cache/ (about 20 MB, ignored by git): a few minutes
-node tools/fetch.mjs lidar  # the ground, from DGT's LiDAR (about 1.8 GB, with a free account)
+node tools/fetch.mjs lidar ortho  # DGT's LiDAR and orthophoto (about 5.7 GB, with a free account)
 npm run page     # the map page's map/braga.json
 npm run tracks   # every track: tracks/<id>.js, and map/tracks.json for the page
+node tools/roofs.mjs   # every building's height and roof, measured: .cache/roofs.json (10 minutes the first time)
 npm run world    # the world: world/base.js, world/tiles.js and a module per tile
 npm test         # the world and the tracks as the games read them, and DGT's data where fetched
 node tools/relief.mjs  # the ground checked: known places, bridges, and each track's profile
+node tools/heights.mjs # the buildings checked against the map's own heights and floors, and the outliers
 node tools/refs.mjs    # each viewpoint's real photo, into .cache/refs/ (with Mapillary's free token)
 node tools/round.mjs <round> --label "…"  # a round of party-kart's shots, for the scorecard
 ```
 
 They need Node 22.18 or later. Run them in that order: `track.mjs` and `world.mjs` read the
-landmarks from `map/braga.json`, and `world.mjs` makes the ground finer on the tiles the tracks
-in `tracks/` run through. All three need the LiDAR.
+landmarks from `map/braga.json`, `world.mjs` makes the ground finer on the tiles the tracks in
+`tracks/` run through, and it builds the buildings from `roofs.mjs`'s measurements. All of them
+need the LiDAR.
 
 - `fetch.mjs` gets OpenStreetMap through Overpass (streets and land, buildings, parishes,
   landmarks, trees, the crossings, traffic lights and bus stops, and the turn restrictions) and
@@ -84,11 +93,11 @@ in `tracks/` run through. All three need the LiDAR.
   (`base`, `buildings`, `admin`, `pois`, `trees`, `street`, `restrictions`, `dem`, `horizon`). A
   new fetch brings the map's changes since, so the tracks may come out different: run the games'
   tests after.
-- DGT's open data comes only when it's named, into `.cache/dgt/`, for the Volta dos Amigos' box
-  and the shooter's area: `node tools/fetch.mjs ortho cos` (the 2025 orthophoto at 25 cm and
-  the COS2025 land use, about 70 MB, no account) and `node tools/fetch.mjs lidar` (the 2025
-  LiDAR: the ground and surface at 50 cm, the ground at 2 m over the whole map, and the point
-  cloud along the route, about 1.8 GB). The LiDAR needs a free account at DGT's CDD, in
+- DGT's open data comes only when it's named, into `.cache/dgt/`: `node tools/fetch.mjs ortho cos`
+  (the 2025 orthophoto at 25 cm over the whole map, and the COS2025 land use, about 130 MB, no
+  account) and `node tools/fetch.mjs lidar` (the 2025 LiDAR: the ground and surface at 50 cm for
+  the Volta dos Amigos' box, the ground at 2 m over the whole map and 200 m round it, and the point
+  cloud over the whole map, about 5.6 GB). The LiDAR needs a free account at DGT's CDD, in
   `.cache/credentials.json` as `{ "cdd": { "username", "password" } }`. `dgt.mjs` reads them all
   in the map's metres. [docs/SOURCES.md](docs/SOURCES.md) has what each is, and its licence and
   credit.
@@ -97,16 +106,27 @@ in `tracks/` run through. All three need the LiDAR.
   50 cm where it was fetched, at 2 m over the rest of the map, and the Terrain Tiles (EU-DEM)
   beyond, for the horizon. `osm.mjs` is what `world.mjs` and `track.mjs` share: how wide a
   street is, what an area is, the buildings' footprints, and packing.
+- `roofs.mjs` measures every building on the map from the LiDAR's point cloud (task 010): it
+  boils each tile down once to 50 cm cells of the building points' tops (`.cache/dgt/roofs/`),
+  finds how far the map's outlines sit from them (a shift for each 250 m), then takes each
+  footprint: where its roof steps by a storey or more, its parts; for each, the eaves and the
+  ridge, the roof's shape (flat, gabled, hipped at either end or both, or one slope), which way it
+  runs and its pitch; a pitched roof over an L or a T, cut into rectangles; and its colour, from
+  the orthophoto's middle of it. `test/roofs.test.js` checks it on roofs made up as the LiDAR
+  sees them. `heights.mjs` checks what it measured against the map's `height`, `building:levels`
+  (a storey comes out at 2.9 m), `roof:shape` and `roof:colour`, and lists the buildings where
+  they differ most: the map, more often than the LiDAR.
 - `world.mjs` makes the world: the ground (every 2 m on the tiles within 60 m of a track and over
   the shooter's area, each the mean of the LiDAR's round it; every 10 m elsewhere), what the
   ground is (each area cut to the tiles it's on), every street at its width, the railway, every
-  building with its height and roof on the ground at its lowest corner, houses filled in where the
+  building on the ground at its lowest corner, with its height and roof as `roofs.mjs` measured
+  them (in parts where they step or turn; guessed from the map where the LiDAR didn't see it), houses filled in where the
   map has none on a built-up street (never on the open ground in `OPEN` that the orthophoto shows
   and the map doesn't say is green), the trees (woods and parks filled in), the rivers with their
   water level (the lowest ground within 4 m of their course), and the sights (Bom Jesus, the
   Sameiro, the cross on the Picoto, the stadium, the Altice Forum, Makro, the Tourigalo with the
   way its head points and its restaurant's front), picked out of the map by their OpenStreetMap
-  ids. `SEEN` corrects the guessed height of the buildings photos show to be far off.
+  ids.
 - `track.mjs` plans the tracks in `tracks.mjs`: below.
 - `refs/viewpoints.json` lists the viewpoints, the places where a game is set against the real
   Braga (task 001): 29 cameras along the Volta dos Amigos, on foot in Fujacal, and on Bom Jesus
@@ -199,9 +219,9 @@ doc.
   tiles the Volta dos Amigos runs through and over Fujacal, every 10 m on the rest; from 56 m in
   the north-west corner to 573 m on the Sameiro. Before, from EU-DEM, the Picoto's top was 34 m
   too low.
-- **The world**: 140 tiles, 13,000 buildings from the map and 11,500 houses filled in, 20,000
-  trees. 5.8 MB in all (2 MB gzipped); a game loads the tiles it needs (the Volta dos Amigos, 48:
-  4.1 MB, 1.2 MB gzipped).
+- **The world**: 140 tiles, 13,000 buildings from the map (12,400 of them measured by the LiDAR,
+  in 18,700 parts) and 11,500 houses filled in, 20,000 trees. 6.0 MB in all (2 MB gzipped); a
+  game loads the tiles it needs (the Volta dos Amigos, 48: 4.1 MB, 1.2 MB gzipped).
 - **The Volta dos Amigos**, Party Kart's track: 9.3 km round, through five friends'
   neighbourhoods, the way the traffic goes.
 - **The first track** ("Pista antiga"), Party Kart's cartoon Braga Grand Prix, drawn at its real
@@ -224,8 +244,8 @@ houses added on the shared map, and a fifth added after.
 
 The data in `world/`, `tracks/` and `map/` is © OpenStreetMap contributors, under the Open
 Database Licence (ODbL). Keep that credit wherever the map or anything drawn from it is shown (in
-a game, its help and its README). The ground is from DGT's 2025 LiDAR (CC BY 4.0), and owes this
-credit wherever the ODbL's goes: "Informação geográfica cedida pela Direção-Geral do Território".
+a game, its help and its README). The ground, and every building's height, roof and roof colour,
+are from DGT's 2025 LiDAR and orthophoto (CC BY 4.0), and owe this credit wherever the ODbL's goes: "Informação geográfica cedida pela Direção-Geral do Território".
 The horizon beyond the map is from Terrain Tiles on AWS Open Data, which over Braga are made from
 EU-DEM, and owe this credit too: "Europe terrain data produced using Copernicus data and
 information funded by the European Union - EU-DEM layers." `map().credit` gives all three.

@@ -162,6 +162,27 @@ export function minRect(pts) {
   return best;
 }
 
+// The axis of a footprint's smallest rectangle lined up with one of its edges: the long side's
+// angle, from 0 to π. In exact arithmetic but for the last step (no hypot, a strict comparison), so
+// index.js, which has the same function, gets the same axis from the same points in any browser: a
+// building's roof runs along it or across it.
+export function rectAxis(pts) {
+  let best = null;
+  for (let k = 0; k < pts.length; k++) {
+    const [ax, az] = pts[k], [bx, bz] = pts[(k + 1) % pts.length], l = Math.sqrt((bx - ax) * (bx - ax) + (bz - az) * (bz - az));
+    if (l < 0.5) continue;
+    const ux = (bx - ax) / l, uz = (bz - az) / l;
+    let a0 = Infinity, a1 = -Infinity, b0 = Infinity, b1 = -Infinity;
+    for (const [x, z] of pts) { const a = x * ux + z * uz, b = -x * uz + z * ux; if (a < a0) a0 = a; if (a > a1) a1 = a; if (b < b0) b0 = b; if (b > b1) b1 = b; }
+    const area = (a1 - a0) * (b1 - b0);
+    if (!best || area < best.area) best = { area, ux: a1 - a0 >= b1 - b0 ? ux : -uz, uz: a1 - a0 >= b1 - b0 ? uz : ux };
+  }
+  if (!best) return 0;
+  let { ux, uz } = best;
+  if (uz < 0 || (uz === 0 && ux < 0)) { ux = -ux; uz = -uz; }
+  return Math.atan2(uz, ux);
+}
+
 // A spatial index of things by the cells of a grid `cell` metres square.
 export class Grid {
   constructor(cell) { this.cell = cell; this.m = new Map(); }
@@ -183,9 +204,20 @@ export const seeded = (seed) => () => (seed = (seed * 16807) % 2147483647) / 214
 
 export const half = (v) => Math.round(v * 2); // half metres
 export const dm = (v) => Math.round(v * 10); // decimetres
-// Heights on a grid, row by row, as decimetres: each the step from the one before it in its row,
-// and each row's first the step from the row above's. Small numbers pack smaller.
-export const packGrid = (h, nx) => h.map((v, i) => (i % nx ? v - h[i - 1] : i ? v - h[i - nx] : v));
+// Heights on a grid, row by row, as decimetres: each less a guess from those before it. Between
+// the left and the one above, and a quarter of how the row above climbs past it; in the last
+// column, LOCO-I's guess (the left or the above where the one above left says there's an edge
+// between them, else a plane through all three); the first row from the left, the first column from
+// above. Small numbers pack smaller. index.js's grid() undoes it.
+export const guessGrid = (h, k, nx) => {
+  const i = k % nx;
+  if (!i) return k ? h[k - nx] : 0;
+  if (k < nx) return h[k - 1];
+  const l = h[k - 1], u = h[k - nx], ul = h[k - nx - 1];
+  if (i < nx - 1) return Math.round((2 * l + 2 * u + h[k - nx + 1] - ul) / 4);
+  return ul >= Math.max(l, u) ? Math.min(l, u) : ul <= Math.min(l, u) ? Math.max(l, u) : l + u - ul;
+};
+export const packGrid = (h, nx) => h.map((v, k) => v - guessGrid(h, k, nx));
 // Points as half metres, the first as it is and each after as the step from the one before.
 export const packPts = (pts) => { const o = []; let px = 0, pz = 0; pts.forEach(([x, z], i) => { const hx = half(x), hz = half(z); o.push(i ? hx - px : hx, i ? hz - pz : hz); px = hx; pz = hz; }); return o; };
 

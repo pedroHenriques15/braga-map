@@ -6,6 +6,12 @@ import { P } from './geo.mjs';
 
 // No street in the games is narrower than this, kerb to kerb, so eight karts still fit.
 export const W_MIN = 9;
+// How tall a storey is, and what a building has besides its storeys (the ground floor's extra, the
+// slab on top): fitted to the floors OpenStreetMap gives against the heights the LiDAR measured
+// (tools/heights.mjs). For guessing a height from the floors, and counting the storeys up to the
+// eaves (world.mjs, which passes them to the games; the map page).
+export const STOREY = 2.9, STOREY_BASE = 1.2;
+export const storeys = (eaves) => Math.max(1, Math.round((eaves - STOREY_BASE) / STOREY));
 const LANE_W = { motorway: 3.6, trunk: 3.5, primary: 3.4, secondary: 3.3, tertiary: 3.2 }; // others 3
 const BARE = { motorway: 11, trunk: 10, primary: 10, secondary: 9, tertiary: 8, residential: 6.5, unclassified: 6, living_street: 5, pedestrian: 6, service: 4, track: 3 };
 export const isOneway = (t) => t.oneway === 'yes' || t.oneway === '-1' || t.junction === 'roundabout';

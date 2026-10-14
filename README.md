@@ -11,10 +11,12 @@ it. Party Kart races on it, and the games after it (a shooter, say) use the same
   they cover all of it.
 - **The tracks** (`tracks/`) are the kart tracks planned on the map's streets. Party Kart races
   the Volta dos Amigos, through Centro, Picoto and Lamaçães.
-- **The map page** (`map/`) draws it all, for planning: `npm run map` and open
-  http://localhost:5180/map/. The shared copy, where the zones and landmarks were voted on and
-  approved and where the friends' houses were added, is the artifact at
-  https://claude.ai/artifact/UdwdhZYkR76J5xyPcRUHUb.
+- **The map page** (`map/`) draws it all, for planning, every building coloured by the height
+  the LiDAR measured (task 010): `npm run map` and open http://localhost:5180/map/. The shared
+  copy, where the zones and landmarks were voted on and approved and where the friends' houses
+  were added, is the artifact at https://claude.ai/artifact/UdwdhZYkR76J5xyPcRUHUb. It's published
+  from `map/index.html` without its `<!doctype>`, `<html>`, `<head>` and `<body>` (the artifact
+  adds its own), with `map/braga.json` and `map/tracks.json` beside it.
 - **The scorecard** (`scorecard/`), "Braga real", sets each viewpoint's real photo over the game's
   shot from the same place, round after round, for the people the owner invites to rate how much
   it looks like Braga (task 003): the artifact at https://claude.ai/artifact/MsA5VZHSqxfD3e4BDYrYPs.
@@ -70,9 +72,9 @@ change to the map never breaks a game behind its back.
 ```sh
 npm run fetch    # the data, into .cache/ (about 20 MB, ignored by git): a few minutes
 node tools/fetch.mjs lidar ortho  # DGT's LiDAR and orthophoto (about 5.7 GB, with a free account)
+node tools/roofs.mjs   # every building's height and roof, measured: .cache/roofs.json (10 minutes the first time)
 npm run page     # the map page's map/braga.json
 npm run tracks   # every track: tracks/<id>.js, and map/tracks.json for the page
-node tools/roofs.mjs   # every building's height and roof, measured: .cache/roofs.json (10 minutes the first time)
 npm run world    # the world: world/base.js, world/tiles.js and a module per tile
 npm test         # the world and the tracks as the games read them, and DGT's data where fetched
 node tools/relief.mjs  # the ground checked: known places, bridges, and each track's profile
@@ -83,8 +85,8 @@ node tools/round.mjs <round> --label "…"  # a round of party-kart's shots, for
 
 They need Node 22.18 or later. Run them in that order: `track.mjs` and `world.mjs` read the
 landmarks from `map/braga.json`, `world.mjs` makes the ground finer on the tiles the tracks in
-`tracks/` run through, and it builds the buildings from `roofs.mjs`'s measurements. All of them
-need the LiDAR.
+`tracks/` run through, and `build.mjs` and `world.mjs` take the buildings' heights and roofs
+from `roofs.mjs`'s measurements. All of them need the LiDAR.
 
 - `fetch.mjs` gets OpenStreetMap through Overpass (streets and land, buildings, parishes,
   landmarks, trees, the crossings, traffic lights and bus stops, and the turn restrictions) and

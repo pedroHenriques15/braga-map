@@ -165,6 +165,14 @@ Steps:
   roof, its eaves no lower than the lowest the LiDAR saw), dormers and chimneys (a step under
   20 m² is the roof's). Buildings over 150 m from the road cast no shadows, where no camera could
   see them.
+- **Released** on 2026-10-14, at the owner's word: braga-map `5725bc5`, tagged `v1.4.0`;
+  party-kart `7a0f70a` on it, deployed from a clean checkout of that commit (another session's
+  uncommitted sound work stayed out), live at https://pedrohenriques15.github.io/party-kart/. The
+  peer id prefix is unchanged: the track and the messages are the same. The owner sees no
+  difference in the shots: from the street, roofs barely show, and the heights along the route
+  were mostly right already. The map page (https://claude.ai/artifact/UdwdhZYkR76J5xyPcRUHUb,
+  version 6) now shows every building coloured by its measured height, and its storeys, eaves,
+  ridge and roof under the pointer.
 - **Left for `/task finish`:** the round on the scorecard. The skyline seen from the Picoto has no
   viewpoint (`refs/viewpoints.json` looks at the Sameiro from the Picoto road, not at the city):
   one from a photo at the Picoto's lookout, as task 001 sets them, or a before-and-after pair for

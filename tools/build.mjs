@@ -1,11 +1,13 @@
 // Turns what fetch.mjs downloaded (OpenStreetMap data and DGT's LiDAR) into map/braga.json for
-// the map page. Everything ends up in metres from the Praça da República, x east and z south, the
-// frame the games use.
+// the map page, with each building's height and roof as tools/roofs.mjs measured them, where it
+// has. Everything ends up in metres from the Praça da República, x east and z south, the frame the
+// games use.
 //
 // node tools/build.mjs
 import fs from 'node:fs';
 import path from 'node:path';
 import { CACHE, KX, KZ, LAT0, LON0, P, readCache, ROOT } from './geo.mjs';
+import { storeys } from './osm.mjs';
 import { CORE, EXT, SECTIONS, TILE } from './sections.mjs';
 import { terrain } from './terrain.mjs';
 
@@ -152,6 +154,13 @@ areas.forEach((x) => delete x.a);
 roads.sort((p, q) => q.k - p.k);
 
 // ---- Buildings ----
+// Each with its kind (k: 0 house, 1 big, 2 church), its outline, and what the LiDAR measured of it
+// (m), or of each of its parts where its roof steps or turns a corner (parts: [{ p, m }]):
+// [eaves, ridge] in decimetres above the ground under it, its storeys, its roof (0 flat, 1 hipped,
+// 2 gabled, 3 one slope) and its colour from the orthophoto as 0xrrggbb (-1 for none).
+const ROOF_SHAPES = ['flat', 'hipped', 'gabled', 'skillion'];
+const roofs = fs.existsSync(path.join(CACHE, 'roofs.json')) ? readCache('roofs.json').buildings : {};
+const measured = (q) => [Math.round((q.eaves - q.ground) * 10), Math.round((q.ridge - q.ground) * 10), storeys(q.eaves - q.ground), ROOF_SHAPES.indexOf(q.roof), q.colour ? (q.colour[0] << 16) | (q.colour[1] << 8) | q.colour[2] : -1];
 const buildings = [];
 const CHURCH = new Set(['church', 'cathedral', 'chapel', 'basilica', 'religious', 'monastery', 'convent']);
 const BIG = new Set(['industrial', 'warehouse', 'commercial', 'retail', 'apartments', 'office', 'hospital', 'university', 'school', 'college', 'public', 'civic', 'train_station', 'stadium', 'sports_hall', 'hotel', 'parking', 'supermarket']);
@@ -165,7 +174,12 @@ for (const e of bld.elements) {
   const k = CHURCH.has(b) ? 2 : BIG.has(b) || a > 450 ? 1 : 0;
   const s = dp(pts, 0.6);
   if (s.length < 4) continue;
-  buildings.push({ k, p: pack(s) });
+  const one = { k, p: pack(s) }, r = roofs[e.id];
+  if (r && r.cover >= 0.35 && r.parts.some((q) => q.roof)) {
+    if (r.parts.length === 1) one.m = measured(r.parts[0]);
+    else one.parts = r.parts.map((q) => ({ p: pack(dp([...q.pts, q.pts[0]], 0.3)), m: q.roof ? measured(q) : null }));
+  }
+  buildings.push(one);
 }
 
 // ---- Parishes ----
@@ -268,7 +282,7 @@ const game = JSON.parse(fs.readFileSync(path.join(ROOT, 'tools/first-track.json'
 const km = (o) => Object.fromEntries(Object.entries(o).map(([k, v]) => [k, Math.round(v)]));
 
 const data = {
-  credit: '© OpenStreetMap contributors (ODbL). Relevo: LiDAR 2025, informação geográfica cedida pela Direção-Geral do Território (CC BY 4.0).',
+  credit: '© OpenStreetMap contributors (ODbL). Relevo, alturas e telhados: LiDAR e ortofotos 2025, informação geográfica cedida pela Direção-Geral do Território (CC BY 4.0).',
   osmTime: base.osm3s.timestamp_osm_base,
   origin: { lat: LAT0, lon: LON0, kx: KX, kz: KZ },
   ext: EXT, core: CORE,

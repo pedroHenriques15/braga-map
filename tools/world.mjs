@@ -19,7 +19,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { CACHE, ELEV0, P, ROOT, readCache, relief } from './geo.mjs';
-import { AREA, AREA_OF, blur, bounds, carriageway, dm, footprints, Grid, half, hash, inside, LINE, minRect, openThin, overlaps, Packer, packGrid, packPts, rectAxis, ringArea, ringOf, seeded, segDist, simplify, W_MIN } from './osm.mjs';
+import { AREA, AREA_OF, blur, bounds, carriageway, dm, footprints, Grid, half, hash, inside, LINE, minRect, openThin, overlaps, Packer, packGrid, packPts, rectAxis, STOREY, STOREY_BASE as BASE, ringArea, ringOf, seeded, segDist, simplify, W_MIN } from './osm.mjs';
 import { allTiles, EXT, SECTIONS, sectionOf, SHOOTER, TILE, tileBox, tileId, tileOf } from './sections.mjs';
 import { terrain } from './terrain.mjs';
 
@@ -134,11 +134,6 @@ const PITCH = (() => {
   const all = Object.values(roofs).flatMap((m) => m.parts.filter((p) => p.pitch != null && p.roof !== 'skillion').map((p) => p.pitch)).sort((a, b) => a - b);
   return all.length ? Math.round(all[all.length >> 1]) : 27;
 })();
-// How tall a storey is, and what a building has besides its storeys (the ground floor's extra, the
-// slab on top): fitted to the floors OpenStreetMap gives against the heights the LiDAR measured
-// (tools/heights.mjs). For a guess from the floors, and for a game counting the storeys up to the
-// eaves (index.js).
-const STOREY = 2.9, BASE = 1.2;
 // The ground a building stands on: at its lowest corner, in decimetres above ELEV0, so a row of
 // houses steps down a hill as the real ones do. Its height is from there.
 const footY = (ring) => dm(Math.min(...ring.map(([x, z]) => ground.at(x, z))) - ELEV0);

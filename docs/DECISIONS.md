@@ -310,3 +310,19 @@ easter egg stands on their house, exactly on the dot on the shared map, where be
   (☕ café, 🍮 pudim, ⚽ bola do Braga, 🕊️ pombo-correio, 🚀 foguete, ✨ filigrana, 🔨 martelinho,
   ☂️ guarda-chuva), and the start is a granite plinth with Braga's arms (task 028). "Party Kart"
   keeps its name and address.
+
+## 015 · The Tourigalo is five times its size, and exaggerated
+
+*2026-10-14 · adds to decision 004's departures*
+
+The owner wanted the Tourigalo bigger than life and over the top: in party-kart it stands about
+25 m to the top of its comb, five times the real statue (`TOURIGALO_SCALE` in
+`src/render/sights.ts`), with every feature exaggerated, the testicles most of all, swinging
+under it. It keeps its real place, heading and colours, and the restaurant behind it stays its
+real size. No building or tree stands within 13 m of it.
+
+Like Bom Jesus and the Sameiro at twice their size (decision 004), it's a choice for the game,
+not a mistake for a task to fix. A shooter may draw it at its real size. From the race it shows
+for about 150 m, ahead and to the left on the way to the roundabout; the corner block hides it
+before that.
+

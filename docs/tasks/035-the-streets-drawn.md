@@ -99,3 +99,26 @@ Steps, first on Fujacal's tiles, then the whole area:
 
 - Ship it with task 037, not before: until then the race still drives the track's 9 m road, and
   on a narrower street a kart would drive over the drawn pavement.
+- **From task 034 (2026-10-14): what the cars drive on, which the drawing has to match.** The
+  ground is party-kart's `src/world/ground.ts` and its land `src/world/land.ts` (both sim, so the
+  renderer can import them):
+  - **Buildings are trimmed at the kerb** where they stand on a carriageway (the owner's answer in
+    034; 993 in the area): solid only off the carriageway, a passage through one open. Draw them cut
+    back the same, from `trimmed` in `ground.ts` (the outline less the carriageways, as segments),
+    rather than whole or cleared.
+  - **The land** is `makeLand(world, box).land`, but streets stand on `.firm`: the land without the
+    river's bed cut into it, so a street beside the Rio Este, or crossing it at the ground's level
+    (São João da Ponte), keeps its height. city.ts's land cut the bed under them.
+  - **Decks' and tunnels' ends** are eased to the land over 10 m where they meet it (the map's are
+    up to 0.66 m off it: task 040 fixes the data), and a ground pavement lying over a deck's or a
+    tunnel's road at its end gives way to the road. Draw them the same until 040.
+  - **The tunnels' mouths' concrete** stops cars only up to 3 m over the road: today's `levels.ts`
+    raises it 0.4 m over the land over the tunnel, which stands in the 31 de Janeiro over the João
+    XXI's mouth. Keep it under a street over a tunnel.
+  - **Every tree in the area is solid** but those on a carriageway (41); city.ts draws every 2nd on
+    Medium and every 3rd on Low. Draw every solid one, or the ground has to drop the same.
+  - **The area's edge** is a wall at every level, and each gate a barrier across its street, kerb
+    to kerb and a metre past, 1.2 m high (`worldGround`): draw the barriers there.
+  - **No wall or railing** stands where a street's edge drops into a cutting (the João XXI's at
+    (561, 242), the Liberdade's): a kart falls in. braga-map has no walls or fences yet (task 013).
+

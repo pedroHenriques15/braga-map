@@ -1,5 +1,5 @@
 ---
-status: doing
+status: done
 priority: high
 kind: code
 repo: braga-map
@@ -91,9 +91,14 @@ them), shown on the map page for the owner, before the whole area:
 
 ## Done when
 
-- [ ] The owner has looked at Fujacal's surfaces on the map page before the whole area was done.
+- [x] The owner has looked at Fujacal's surfaces on the map page before the whole area was done.
+  (On the preview page over the orthophoto, which stands in for the map page (Notes): "Looks
+  nice", 2026-10-14.)
 - [ ] Every street in the open world's area (task 032) is in the tiles as carriageways, junctions,
   kerbs, pavements and markings at its level, and `loadWorld` gives them as `world.streets`.
+  (Over `OPEN`, the box task 032 describes until it draws the edge; `test/streets.test.js` checks
+  every street in it has its carriageway at its width, at its level. Task 032 carries the streets
+  to its edge.)
 - [x] The README says what the streets are and where each part comes from. (`README.md`: the
   usage, `tools/lines.mjs` and `tools/streets.mjs`, the numbers.)
 - [x] `npm test` passes, with `test/streets.test.js`; the tiles' growth is in Notes. (44 of 44,
@@ -158,3 +163,12 @@ them), shown on the map page for the owner, before the whole area:
   where that tolerance would be 14 cm and shave the kerbs. The tests check every tile for it.
 - **Not done:** the map page has no layer for the surfaces; footways, cycleways and steps aren't
   fetched (task 013); markings are what the map says, not the orthophoto's (task 018).
+
+### Finished 2026-10-14
+
+- **The owner looked** at the preview: "Looks nice".
+- **No viewpoint changes, so none was shot again:** party-kart is pinned to `v1.6.0` and draws
+  nothing from `world.streets` until task 035, which shoots them and posts the round. Likewise the
+  budget: the tiles' 0.33 MB is measured above, and what drawing them costs is task 035's.
+- **The area's edge:** `OPEN` is still the box. Task 032 makes it a polygon and keeps the streets
+  made over it, with the tests' `inOpen` inside it.

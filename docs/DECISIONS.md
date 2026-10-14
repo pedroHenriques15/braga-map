@@ -463,3 +463,28 @@ area grows, by the same rules:
 The owner looked at the edge on the map page and kept it as it came out. A hand-drawn edge would
 have been tidier in places, but couldn't follow the map when it changes, and nothing would say
 where it crosses each street.
+
+## 021 · A kart drives on the world as the map has it, and a building in a street is cut at the kerb
+
+*2026-10-14 · task 034*
+
+In the open world (decision 019) a kart's ground and walls come from the map, not from the race's
+track: party-kart's `stepCar` takes a ground, the world's (`src/world/ground.ts`) or, until the
+race moves into the world (task 037), the track's, with the same handling on both.
+
+- **What the map says is what's solid.** The land as the game draws it, every street at its level
+  (`world.streets`), the buildings, the trees and the area's edge with its barriers. A kerb is a
+  step a kart hops up; a deck's edge has a parapet and a tunnel's sides are walls wherever no street
+  or land at its level is beside them; land that rises more than a step, or steeper than 35° off
+  the carriageway, stops it. Nothing stands where the map has nothing: a street's edge that drops
+  into a cutting has no railing until the map has walls and fences (task 013).
+- **A building that stands on a carriageway is cut back to the kerb** until the streets are
+  measured (task 026): solid only off the carriageway, a passage through one left open, and drawn
+  the same way (task 035). 993 do round the area, by up to 14 m, half of them OSM's outlines and half
+  the LiDAR's. The owner chose this over clearing those a metre or more in, as the race clears its
+  road (about 490 would go, leaving gaps in the rows of houses), and over keeping them whole (a
+  LiDAR sliver across a street would block it).
+- **Where the map is off, the ground eases it** and braga-map fixes the data: a deck's end up to
+  0.66 m off the ground it meets is eased to it over 10 m (task 040), and a street stands on the
+  land without the river's bed cut under it.
+

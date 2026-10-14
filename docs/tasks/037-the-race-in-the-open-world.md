@@ -103,3 +103,15 @@ Steps:
   the dead end's street by a ramp. The ramp stands only during a race (the owner's answer): step
   2 puts it out with the barriers and takes it away with them, and its flight has no road, kerbs
   or walls. If 039 isn't done when this starts, do it first.
+- **From task 034 (2026-10-14): the clean lap on the world's ground is this task's** (the owner's
+  answer in 034). `test/drive.test.ts`'s "the autopilot drives the route on the world's ground"
+  skips the two places the route's line leaves the streets (samples 621–719 at the Liberdade
+  underpass, where the line runs 11 m off the street over the cutting and the autopilot drops into
+  it and ends up in the tunnel; 7681–7902, the dead end's link and the hairpin before it) and
+  drives the rest, 8.94 of 9.26 km, in 268.1 s with no respawns. Remove the skips when step 1 puts
+  the line on the streets and 039's ramp is in. Also seen: at the João XXI's cutting, (561, 242),
+  the autopilot cuts the bend's inside and falls 4.8 m into the cutting (there's no wall at a
+  street's edge where it drops); the race's kerb walls (step 2) keep it on the road. The race on
+  the world's ground has no boost pads yet (`WorldGround.under` says none): give the race's ground
+  its pads with its walls. Make the race's ground with `ground.race(track, walls)`.
+

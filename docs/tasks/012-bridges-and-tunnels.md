@@ -145,8 +145,13 @@ Lobato.
   at most, High 1.117 → 1.136 M, Medium 0.933 → 0.948 M, Low 0.583 → 0.594 M (the decks and mouths
   about 1,500, the rest the land's small cells round them); draw calls 178 → 184 on High and
   Medium, 162 → 165 on Low (three materials, and their shadows); textures unchanged.
-- **Left:** braga-map released (1.6.0: the tiles' lines changed), the copy's `src/render/levels.ts`
-  and `city.ts` carried into party-kart and pinned to it, its `docs/architecture.md`; then
-  `/task finish`, with the round of viewpoints the owner wants once the other tasks are done.
+- **Released** on 2026-10-14, at the owner's word: braga-map `3dce893`, tagged `v1.6.0` and pushed;
+  party-kart `f1bd3c6` on it, with `levels.ts`, `city.ts`, its README and `docs/architecture.md`
+  (`npm test` 24 of 24, the lap unchanged, `npm run check` clean; the download 1.56 MB gzipped,
+  as before), pushed and deployed from a clean checkout of it, live at
+  https://pedrohenriques15.github.io/party-kart/ (`index-CZbCOVdD.js`). The round is filed in
+  party-kart's `shots/2026-10-14-task012/`.
+- **Left for `/task finish`:** the round of viewpoints, posted on the scorecard, once the other
+  tasks are done (the owner, 2026-10-14).
 - **Found along the way:** at `liberdade` the camera stands inside a lamp post (as in every round
   since the baseline): the lamps are placed every 34 m whatever stands there.

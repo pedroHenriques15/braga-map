@@ -141,8 +141,6 @@ street), seeded RNG 4242. A filled building is flagged `filled` in the tiles.
   outlines aren't boxes. Trimming hard (outlines at 0.8 m, no building under 40 m², no part under
   4 m wide) leaves 11,586 corners, still over. The owner keeps them all: the budget is a guide, not
   a limit (decision 017, the question above).
-- **Left for `/task finish`:** the round posted on the scorecard and rated (the shots are in the
-  copy of party-kart, so they're shot again in party-kart itself once it's pinned); braga-map
-  released as 1.5.0 (the tiles' format changed) and party-kart pinned to it; party-kart's
-  `docs/architecture.md`, "The city's budget": what the city costs now, and decision 017 in place
-  of "a change may not take the city past it"; `ROADMAP.md`.
+- **Left for `/task finish`:** the round of viewpoints, shot in party-kart itself and posted on the
+  scorecard to be rated. The owner wants the viewpoints shot again once the other tasks are done
+  (2026-10-14), so this waits for them.

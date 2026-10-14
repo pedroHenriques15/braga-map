@@ -34,10 +34,10 @@ Today (`tools/world.mjs:121-146`, `../party-kart/src/render/textures.ts:420-502`
 
 Steps:
 
-1. **Braga's building types,** from the photos (task 008) and a walk through Mapillary along
-   the route: list the 8–12 kinds that make up most of the route and the shooter's area (the
-   granite house, the house with a tiled front, the 1980s block of 6–8 floors with balconies,
-   the corner block with shops, the 2000s block, the warehouse, the church...). For each:
+1. **Braga's building types,** from the online photos (task 008) along the route: list the
+   8–12 kinds that make up most of the route and the shooter's area (the granite house, the
+   house with a tiled front, the 1980s block of 6–8 floors with balconies, the corner block
+   with shops, the 2000s block, the warehouse, the church...). For each:
    floor height, window size and spacing, balconies, shutters, ground floor, materials and
    their colours. Write them in `docs/BUILDING-TYPES.md`, with a photo reference for each.
 2. **Each building's attributes,** stored as overrides the world reads, `refs/buildings.json`:
@@ -47,18 +47,20 @@ Steps:
      the photos and Mapillary, by a session looking at each one;
    - elsewhere, from OSM's tags, then the type guessed from the footprint and height (task 010).
 3. **Draw them** in party-kart, a kit per type in its real proportions, coloured from the
-   overrides. Where decision 002 allows and the photo is good (straight on, even light, no
-   cars in front), a photo texture of that facade: always in the shooter's area, on the
-   route where the building is close and distinctive.
+   overrides. A photo texture of the facade itself (the owner's answer) on every building in
+   the shooter's area, and on the route on those within 30 m of the road that a local would
+   know by sight, where task 008 found a photo good enough (straight on, sharp, even light,
+   nothing in front). The rest, and those with no such photo, from the type kit.
 4. **Shop signs:** OSM's `shop`/`amenity` names on the ground floor's fascia, as plain text on
    the sign's real colour; no brand logos.
 
 ## Questions
 
-- [ ] Photo textures on how many facades? Recommendation: every facade in the shooter's area,
+- [x] Photo textures on how many facades? Recommendation: every facade in the shooter's area,
   and on the route only the ones within 30 m of the road that a local would know by sight;
   the rest from the type kit, coloured from data.
-  > 
+  > As recommended (2026-10-14): every facade in the shooter's area, and on the route the ones
+  > within 30 m of the road that a local would know by sight.
 
 ## Read first
 

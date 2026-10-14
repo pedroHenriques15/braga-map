@@ -32,18 +32,19 @@ street), seeded RNG 4242. A filled building is flagged `filled` in the tiles.
    lorry, drop it.
 3. **Replace the infill:** with real footprints where the LiDAR covers, the invented houses go.
    Outside the LiDAR's cover, keep the infill as it is. The `rows` streets (a waypoint's
-   street lined with houses on both sides) take their real buildings too.
+   street lined with houses on both sides) take their real buildings too, and keep no invented
+   house: only what's really there (the owner's answer, below).
 4. **Mark the source** of each footprint in the tiles: OSM, LiDAR, Microsoft, or invented.
-5. **Give back to OSM?** The new footprints could be added to OpenStreetMap, but a bulk import
-   needs the Portuguese community's approval (OSM's import guidelines). Keep them here, and
-   list the ones on the route for anyone who wants to map them by hand.
+5. **Keep them here.** They aren't given back to OpenStreetMap: a bulk import needs the
+   Portuguese community's approval (OSM's import guidelines), and nobody in the group will map
+   them by hand (task 006's answer).
 
 ## Questions
 
-- [ ] The waypoints' `rows` streets: keep the extra houses there for the race (a waypoint's
+- [x] The waypoints' `rows` streets: keep the extra houses there for the race (a waypoint's
   street lined with houses), or show only what's really there? Recommendation: only what's
   really there, now that the real buildings are known.
-  > 
+  > Only what's really there (2026-10-14).
 
 ## Read first
 

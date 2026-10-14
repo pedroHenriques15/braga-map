@@ -21,10 +21,10 @@ Before changing the city, know what the real one looks like, how close the game 
 a phone can draw. Everything after this is checked against it.
 
 - **006** An audit of every street: what the map has, what the game draws, what's missing.
-- **007** Photo textures: where they live, their format, their loading and their credits.
-  *Blocked on where the images live.*
-- **008** The photo walk: the owner and the friends photograph the route and Fujacal.
-  *The owner's.*
+- **007** Photo textures: their format, their loading and their credits. They live in
+  braga-map, with the world.
+- **008** The reference photos: every facade, landmark and close-up the city needs, found
+  online (Mapillary, Commons). Nobody takes new photos; what's missing is listed.
 
 ## Phase 2 · The shape: the ground, the streets and the buildings where they really are
 
@@ -33,8 +33,9 @@ a phone can draw. Everything after this is checked against it.
 - **012** Bridges, flyovers and tunnels at their real levels.
 - **013** Walls, fences, gates, front gardens, footpaths and steps.
 - **014** Roundabouts as they are: their islands and what stands in them.
-- **015** The shooter's area: its edges, its section, and what walking distance needs.
-  *Blocked on the owner's answers.*
+- **015** The shooter's area: its edges, its section, and what walking distance needs. The
+  five streets plus a block each side, to the Avenida da Liberdade; streets, squares and open
+  courtyards, no interiors; braga-map stays data only.
 - **026** The track on the real carriageway: its centre line where the street's middle is, from
   the LiDAR and the orthophoto.
 
@@ -65,8 +66,8 @@ clipping and the silence round you. It needs none of the phases above.
 
 Phase 1 comes first, but not all of it waits on itself:
 
-- **Now, side by side:** 006 (audit), 008 (the photo walk, the owner's), and the answers to 007
-  and 015.
+- **Now, side by side:** 006 (audit), 007 (the textures' pipeline), 008 (the reference
+  photos) and 015 (the shooter's area). Every question in the tasks was answered on 2026-10-14.
 - **Phase 2's data tasks** can start now: 005 fetched their data, and 009 put the ground under
   them (decision 008), so 010 and 011 build on it. Each one is checked on the scorecard when it
   lands.

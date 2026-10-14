@@ -42,7 +42,8 @@ Steps:
    `roof:colour` where it's tagged.
 4. **Check it** against OSM's `height` (63 tagged) and `building:levels` (5,011): the floors
    implied by the LiDAR's height, the outliers listed. Large differences are often a wrong OSM
-   tag. Fix those in OSM, where the owner or a friend has an account (task 006).
+   tag; the world keeps the LiDAR's. Nobody will fix them in OSM (task 006's answer), so the
+   list stays in Notes.
 5. **Draw it** in party-kart: the roof's real shape, direction and pitch, its colour, eaves
    at the measured height. The kind (house, flats) follows the measured height, not a guess.
 6. **Floors** for the facades (task 017): the height divided by the type's floor height, so

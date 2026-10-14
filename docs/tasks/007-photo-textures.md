@@ -1,5 +1,5 @@
 ---
-status: blocked
+status: todo
 priority: high
 kind: code
 repo: both
@@ -26,13 +26,11 @@ files" and "nothing to maintain". It's built by Vite and served from GitHub Page
 force-pushes `dist/` to `gh-pages`). braga-map ships the world as JS modules of packed numbers
 (`world/`, about 2.9 MB of tiles), loaded per 500 m tile by `loadWorld`.
 
-1. **Where the images live.** Options:
-   - **A.** In braga-map, next to the world: `world/textures/<tile>/…`, published with the
-     package, so every game on the map gets them. The textures belong to the place, not the
-     game. (Recommended.)
-   - **B.** In party-kart's `public/`, served by GitHub Pages with the game.
-   - **C.** Outside git (a release asset or a bucket), fetched at load. Lighter repositories,
-     but a moving part to maintain.
+1. **Where the images live:** in braga-map, next to the world, `world/textures/<tile>/…`,
+   published with the package, so every game on the map gets them. The textures belong to the
+   place, not the game (the owner's answer, below). The tiles are JS modules that a game's
+   bundler takes in through `loadWorld`; images aren't, so find how party-kart's Vite build
+   serves a dependency's image files (step 4).
 
    GitHub limits a file to 100 MB and recommends repositories stay under 1 GB; GitHub Pages
    sites must stay under 1 GB too. Measure what's planned against that.
@@ -55,9 +53,10 @@ force-pushes `dist/` to `gh-pages`). braga-map ships the world as JS modules of 
 
 ## Questions
 
-- [ ] Where do the images live: A (braga-map, with the world), B (party-kart) or C (outside
+- [x] Where do the images live: A (braga-map, with the world), B (party-kart) or C (outside
   git)? Recommendation: A.
-  > 
+  > A, in braga-map with the world (2026-10-14). The other options were B, party-kart's
+  > `public/`, and C, outside git (a release asset or a bucket).
 
 ## Read first
 
@@ -79,4 +78,9 @@ force-pushes `dist/` to `gh-pages`). braga-map ships the world as JS modules of 
 
 ## Notes
 
-Blocked on where the images live.
+- Unblocked on 2026-10-14: the images live in braga-map.
+- The photos are online ones (task 008, the owner's answer of 2026-10-14): take the ten facades
+  from Mapillary's panoramas taken on foot in July 2024 (sharp and level, `docs/SOURCES.md`), and
+  record whether they're sharp enough to texture a facade. None of them may be a friend's house
+  (decision 004). They're CC BY-SA 4.0, so a texture
+  made from one is CC BY-SA too, with its author and link in the index.

@@ -1,5 +1,5 @@
 ---
-status: blocked
+status: todo
 priority: high
 kind: research
 repo: braga-map
@@ -27,8 +27,10 @@ Today the area is about x −350…350, z 600…1050 on the map (700 × 450 m), 
 secondary) and the Travessa Conselheiro Lobato (351 m, part pedestrian, with a tunnel). The
 Escola Básica do Fujacal is inside it. The Volta dos Amigos starts on the Rua do Fujacal.
 
-1. **Settle the edges** with the owner, on the map page: a polygon, not a box, following
-   streets or plot lines, so a player meets a natural edge (a wall, a busy road) and not a cut.
+1. **Draw the edges** on the map page, for the owner to check: the five streets above plus one
+   block on each side, bounded by the Avenida da Liberdade to the east, so the player sees the
+   avenue but doesn't leave (the owner's answer). A polygon, not a box, following streets or
+   plot lines, so a player meets a natural edge (a wall, a busy road) and not a cut.
 2. **Add it to the library** as a section of its own, `fujacal`, in `tools/sections.mjs`, so
    a game loads it with `loadWorld({ sections: ['fujacal'] })`, along with the tiles round it
    for what's seen beyond.
@@ -39,28 +41,33 @@ Escola Básica do Fujacal is inside it. The Volta dos Amigos starts on the Rua d
    - ground: kerb heights, pavements, steps, ramps, drains, at centimetres;
    - walls, gates, railings, hedges (task 013);
    - street furniture, trees and parked cars where they are;
-   - what's solid: every building closed, no gaps a player can fall through, and which
-     doors and gates open (if any);
+   - where the player goes: the streets, the squares and the open courtyards, and no
+     interiors (the owner's answer); every building closed, no gaps a player can fall through,
+     and which gates into the courtyards open;
    - what the player sees beyond the area: the tiles round it, the skyline.
-4. **Plan the survey:** which viewpoints on foot (task 001) and which photos (task 008) cover
-   each street, and what's missing.
-5. **Privacy:** nothing in the area may single out a friend's house: no name, no marker, no
+4. **Plan the survey:** which viewpoints on foot (task 001) and which online photos (task 008)
+   cover each street, and what's missing.
+5. **Data only:** braga-map gives the shooter the same data it gives party-kart, and no
+   ready-made meshes: the shooter's engine isn't chosen yet (the owner's answer). If it turns
+   out to be three.js, sharing party-kart's renderer is a task then.
+6. **Privacy:** nothing in the area may single out a friend's house: no name, no marker, no
    texture from a photo of it (decision 004).
 
 ## Questions
 
-- [ ] Where are the edges? Recommendation: the streets listed, plus one block on each side,
+- [x] Where are the edges? Recommendation: the streets listed, plus one block on each side,
   bounded by the Avenida da Liberdade to the east, so the player sees the avenue but doesn't
   leave.
-  > 
-- [ ] What does the shooter need to enter: only the streets and squares, or also courtyards,
+  > As recommended (2026-10-14): the streets plus one block on each side, the Avenida da
+  > Liberdade the edge to the east.
+- [x] What does the shooter need to enter: only the streets and squares, or also courtyards,
   the school's grounds, building entrances? Recommendation: streets, squares and open
   courtyards first; no interiors.
-  > 
-- [ ] Is the shooter on its own engine, or three.js like party-kart? It decides whether
+  > As recommended (2026-10-14): streets, squares and open courtyards; no interiors.
+- [x] Is the shooter on its own engine, or three.js like party-kart? It decides whether
   braga-map should also offer ready-made meshes, or stay data only. Recommendation: stay
   data only for now, and share the renderer's code later if both games use three.js.
-  > 
+  > Undecided (2026-10-14): braga-map stays data only for now.
 
 ## Read first
 
@@ -81,4 +88,5 @@ Escola Básica do Fujacal is inside it. The Volta dos Amigos starts on the Rua d
 
 ## Notes
 
-Blocked on the three questions.
+- Unblocked on 2026-10-14, the three questions answered. When it's finished, record the area's
+  edges and "braga-map stays data only" in `docs/DECISIONS.md`.

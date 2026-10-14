@@ -40,18 +40,18 @@ Steps:
    match no OSM street. Print a table by class and write the list to `.cache/audit.json`.
 3. **Compare with the orthophoto** (task 005's source), by eye, in the shooter's area and
    along the route: streets, lanes and squares the photo shows but OSM lacks. List each one
-   with its position in Notes. Missing streets get fixed **in OpenStreetMap itself**, by the
-   owner or a friend with an OSM account (the map's licence lets anyone improve it), then
-   fetched again; never only patched here.
+   with its position in Notes. The list is the outcome: nobody in the group will edit
+   OpenStreetMap (the owner's answer), and nothing is patched here either.
 4. **Show it** on the map page: a layer "Audit" with the streets coloured by whether the game
    draws them.
 
 ## Questions
 
-- [ ] Does anyone have, or want, an OpenStreetMap account to fix missing streets at the source?
+- [x] Does anyone have, or want, an OpenStreetMap account to fix missing streets at the source?
   Recommendation: yes. Fixes there also reach every map that uses OSM, and they survive each
   fetch.
-  > 
+  > No (2026-10-14): the account would only be for contributing to OSM, and nobody will. List
+  > what's missing, and leave it at that.
 
 ## Read first
 
@@ -70,5 +70,12 @@ Steps:
 
 - Drawing pavements, footpaths and steps in the game: task 013.
 - Changing the map page's 65% cut: it was decided in draft 1.
+- Editing OpenStreetMap, and patching the world here for a street OSM lacks.
 
 ## Notes
+
+- With nobody editing OSM (2026-10-14), decision 010's "where OSM is wrong about a street's
+  direction, it's fixed in OSM (task 006)" has nobody to do it. If the audit finds a missing or
+  wrong street that matters to the race or the shooter, bring it to the owner then: fixing it
+  would mean a local override, which no decision allows yet. Record the outcome in
+  `docs/DECISIONS.md` when this task is finished.

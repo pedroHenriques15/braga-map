@@ -29,10 +29,12 @@ pavements stroked on top, and grain. In the data, ground areas keep their holes 
    shade, bare soil, gravel, water, and roof (masked by the buildings). The near-infrared's
    NDVI separates plants; the LiDAR's heights separate a roof or a tree from the ground under
    it. Store the classes in the tiles, compressed.
-2. **Choose how to draw it,** on one tile, against its viewpoints:
+2. **Choose how to draw it** from a test tile: draw one tile with the route's viewpoints in
+   it both A and B (C too if they're close), shoot its viewpoints and post them as a round on
+   the scorecard; the owner picks (the owner's answer). A is expected to win.
    - **A.** The classes, each drawn with its own texture (a photo of that surface, from task
-     008's close-ups), tinted by the orthophoto's local colour. No cars or shadows baked in;
-     sharp up close. (Recommended.)
+     008's close-ups, found online), tinted by the orthophoto's local colour. No cars or
+     shadows baked in; sharp up close.
    - **B.** The orthophoto itself, draped, with cars and shadows in it. Real at a distance,
      blurry and wrong up close.
    - **C.** A mix: A near the road, B beyond 100 m.
@@ -43,9 +45,9 @@ pavements stroked on top, and grain. In the data, ground areas keep their holes 
 
 ## Questions
 
-- [ ] A, B or C? Recommendation: decide from a test tile on the scorecard; A is the likely
+- [x] A, B or C? Recommendation: decide from a test tile on the scorecard; A is the likely
   winner at kart height and on foot.
-  > 
+  > As recommended (2026-10-14): decide from a test tile on the scorecard, A expected.
 
 ## Read first
 

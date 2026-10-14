@@ -63,7 +63,7 @@ Steps:
 
 ## Out of scope
 
-- Fixing OSM's ways themselves: task 006 (an OSM account, its question).
+- Fixing OSM's ways themselves: nobody in the group will edit OSM (task 006's answer).
 - The levels where streets cross over and under: task 012.
 - The world's other streets, drawn on the ground from OSM: only the track moves here.
 

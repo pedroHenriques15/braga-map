@@ -19,7 +19,7 @@ test('every building the LiDAR saw is measured in the tiles, and the tiles say w
   // A part each, but for a few whose outline simplifies away.
   assert.ok(c.tiles.measured >= c.parts * 0.98 && c.tiles.measured <= c.parts, `${c.tiles.measured} measured in the tiles, ${c.parts} parts measured`);
   assert.ok(c.tiles.guessed < c.buildings * 0.08, `${c.tiles.guessed} guessed`);
-  console.log(`${c.seen} of ${c.buildings} measured (${c.parts} parts), ${c.unseen} not seen; in the tiles ${c.tiles.measured} measured, ${c.tiles.guessed} guessed, ${c.tiles.filled} filled in`);
+  console.log(`${c.seen} of ${c.buildings} measured (${c.parts} parts), ${c.unseen} not seen; in the tiles ${c.tiles.measured} measured, ${c.tiles.guessed} guessed, ${c.tiles.found} found by the LiDAR, ${c.tiles.filled} filled in`);
 });
 
 test('the tiles carry each roof as it was measured', { skip }, async () => {

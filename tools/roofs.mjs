@@ -25,9 +25,10 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import zlib from 'node:zlib';
 import jpeg from 'jpeg-js';
-import { CACHE, readCache } from './geo.mjs';
-import { CLASS, DGT, mapToTM, points, tilesOver } from './dgt.mjs';
-import { bounds, footprints, inside, minRect, rectAxis, ringArea, ringOf, simplify } from './osm.mjs';
+import { CACHE, P, readCache } from './geo.mjs';
+import { CLASS, DGT, fromTM, mapToTM, points, tileToMap, tilesOver } from './dgt.mjs';
+import { buildings, fillCells, fit, square } from './footprints.mjs';
+import { bounds, footprints, Grid, inside, minRect, rectAxis, ringArea, ringOf, simplify } from './osm.mjs';
 import { EXT } from './sections.mjs';
 import { terrain } from './terrain.mjs';
 
@@ -398,7 +399,7 @@ function lru(size, load) {
     return v;
   };
 }
-const rasterOf = lru(6, (key) => {
+const rasterOf = lru(12, (key) => {
   const file = path.join(RDIR, key + '.bin');
   if (!fs.existsSync(file)) return null;
   const b = zlib.gunzipSync(fs.readFileSync(file)), buf = b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength);
@@ -489,10 +490,103 @@ function shifts(rings) {
 }
 
 // ---------------------------------------------------------------------------------------------
+// The buildings OpenStreetMap lacks (task 011): where the LiDAR saw building and none of the map's
+// outlines is (each laid where its square's shift says), what's left once anything narrower than
+// 2.5 m is cleared (a wall, a sliver along an outline a little off), in groups of 20 m² or more.
+// Each one's outline is squared to its walls (tools/footprints.mjs), or is Microsoft's where that
+// lies closer over the LiDAR's cells. Then put back where the map's outlines round it are, so it
+// sits with them as they're drawn, and measured as they are.
+//
+// Not a building, and dropped: what stands under 2 m (cars, hedges the LiDAR took for a roof); a
+// lorry or a bus (under 3.2 m wide, 4.6 m tall and 19 m long); and what the orthophoto shows green
+// over most of it (a tree over a low roof).
+
+const MARGIN = 200; // cells read round each tile, so a building on its edge is whole: 100 m
+function missing(list, field, ground, box, ms, msField) {
+  const out = [], dropped = [], why = { low: 0, vehicle: 0, green: 0 };
+  let squared = 0, microsoft = 0;
+  const W = N + 2 * MARGIN;
+  for (const key of tilesOver(box)) {
+    if (!rasterOf(key)) continue;
+    const [ke, kn] = key.split('_').map(Number), E0 = ke * 1000 - MARGIN * CELL, N1 = kn * 1000 + 1000 + MARGIN * CELL;
+    const toMap = tileToMap(key), cellXZ = (x, y) => toMap(E0 + x * CELL, N1 - y * CELL);
+    const toCell = (x, z) => { const [e, n] = toTM(x, z); return [(e - E0) / CELL, (N1 - n) / CELL]; };
+    // Where the LiDAR saw building, over the tile and round it.
+    const top = new Float32Array(W * W).fill(NaN);
+    for (let dj = -1; dj <= 1; dj++) for (let di = -1; di <= 1; di++) {
+      const r = rasterOf(`${ke + di}_${kn + dj}`);
+      if (!r) continue;
+      for (let j = 0; j < N; j++) {
+        const y = j - dj * N + MARGIN;
+        if (y < 0 || y >= W) continue;
+        const x0 = Math.max(0, di * N + MARGIN), x1 = Math.min(W, di * N + MARGIN + N);
+        if (x1 > x0) top.set(r.top.subarray(j * N + x0 - di * N - MARGIN, j * N + x1 - di * N - MARGIN), y * W + x0);
+      }
+    }
+    // Less the map's outlines, laid over the LiDAR's buildings.
+    const corners = [[0, 0], [W, 0], [0, W], [W, W]].map(([x, y]) => cellXZ(x, y)), mbox = bounds(corners);
+    const mask = Uint8Array.from(top, (t) => (t === t ? 1 : 0));
+    for (const it of list) {
+      if (it.b.x1 < mbox.x0 || it.b.x0 > mbox.x1 || it.b.z1 < mbox.z0 || it.b.z0 > mbox.z1) continue;
+      const sh = field.at(it.cx, it.cz) ?? { dx: 0, dz: 0 };
+      fillCells(it.pts.map(([x, z]) => toCell(x + sh.dx, z + sh.dz)), 0, W - 1, 0, W - 1, (x, y) => { mask[y * W + x] = 0; });
+    }
+    // Microsoft's outlines near, laid over the LiDAR's buildings by their own shift.
+    const near = new Grid(40 / CELL);
+    for (const m of ms) {
+      if (m.b.x1 < mbox.x0 || m.b.x0 > mbox.x1 || m.b.z1 < mbox.z0 || m.b.z0 > mbox.z1) continue;
+      const sh = msField.at(m.cx, m.cz) ?? { dx: 0, dz: 0 }, ring = m.pts.map(([x, z]) => toCell(x + sh.dx, z + sh.dz));
+      const c = ring.reduce((s, p) => [s[0] + p[0] / ring.length, s[1] + p[1] / ring.length], [0, 0]);
+      near.add(c[0], c[1], ring);
+    }
+    for (const b of buildings(mask, W, W, 2, 80)) {
+      // Only those whose middle is on this tile: those round it are their own tiles'.
+      const mx = b.all.x0 + (b.all.x1 - b.all.x0) / 2, my = b.all.y0 + (b.all.y1 - b.all.y0) / 2;
+      if (mx < MARGIN || mx >= MARGIN + N || my < MARGIN || my >= MARGIN + N) continue;
+      const [cx, cz] = cellXZ(mx, my);
+      if (cx < box.x0 || cx > box.x1 || cz < box.z0 || cz > box.z1) continue;
+      // Its height over the ground, and how green the photo is over it, from up to 300 of its cells.
+      const cells = [];
+      for (let k = 0; k < b.label.length; k++) if (b.label[k] === b.id) cells.push(k);
+      const every = Math.max(1, Math.floor(cells.length / 300)), rise = [];
+      let green = 0, seen = 0;
+      for (let q = 0; q < cells.length; q += every) {
+        const k = cells[q], x = (k % b.w) + b.x0, y = Math.floor(k / b.w) + b.y0, [px, pz] = cellXZ(x + 0.5, y + 0.5);
+        rise.push(top[y * W + x] - ground.at(px, pz));
+        const c = colourAt(px, pz);
+        if (c) { seen++; if (2 * c[1] - c[0] - c[2] > 20) green++; }
+      }
+      const tall = quantile(rise, 0.5), ring = b.ring.map(([x, y]) => [x * CELL, y * CELL]), r = minRect(ring);
+      const not = tall < 2 ? 'low' : r.W < 1.6 && r.L < 9.5 && tall < 4.6 ? 'vehicle' : seen && green > 0.6 * seen ? 'green' : null;
+      if (not) { why[not]++; dropped.push([Math.round(cx), Math.round(cz), not]); continue; }
+      // Its outline: squared, or as the cells step where it can't be; or Microsoft's, if closer.
+      // (Walls straightened over a metre, then a metre and a half, where they won't over 60 cm.)
+      const sq = square(ring) ?? square(ring, 1) ?? square(ring, 1.5);
+      let best = (sq ?? simplify(ring, 0.8)).map(([x, y]) => [x / CELL, y / CELL]), fits = fit(best, b), src = 'lidar';
+      if (sq) squared++;
+      for (const m of near.near(mx, my, 1)) {
+        const f = fit(m, b);
+        if (f > fits) { best = m; fits = f; src = 'microsoft'; }
+      }
+      if (src === 'microsoft') microsoft++;
+      // On the map, where the outlines round it are.
+      const onMap = best.map(([x, y]) => fromTM(E0 + x * CELL, N1 - y * CELL));
+      const sh = field.at(cx, cz) ?? { dx: 0, dz: 0 };
+      out.push({ src, fit: Math.round(fits * 100) / 100, tall: Math.round(tall * 10) / 10, pts: onMap.map(([x, z]) => [Math.round((x - sh.dx) * 100) / 100, Math.round((z - sh.dz) * 100) / 100]) });
+    }
+  }
+  return { found: out, dropped, why, squared, microsoft };
+}
+
+// ---------------------------------------------------------------------------------------------
 // The script.
 
 if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.meta.url)) {
-  const only = process.argv[2] ? JSON.parse(process.argv[2]) : null; // a box, for trying it out
+  // `--lacking` finds and measures only the buildings the map lacks again, keeping the map's own as
+  // .cache/roofs.json has them; a box ({ x0, x1, z0, z1 }), for trying it out, measures only what's
+  // in it.
+  const lacking = process.argv.includes('--lacking'), arg = process.argv.slice(2).find((a) => a !== '--lacking');
+  const only = arg ? JSON.parse(arg) : null;
   for (const key of tilesOver(only ?? EXT)) if (fs.existsSync(path.join(DGT, 'LAZ', key + '.laz'))) await makeRaster(key);
   const ground = await terrain();
   const t0 = Date.now();
@@ -511,9 +605,9 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   console.log(`roofs: outlines against the LiDAR in ${moved.length} squares of ${field.B} m: shifted ${quantile(moved.map((f) => Math.hypot(f.dx, f.dz)), 0.5).toFixed(1)} m (median), ${quantile(moved.map((f) => Math.hypot(f.dx, f.dz)), 0.9).toFixed(1)} m (9 in 10 under); on the LiDAR's buildings ${(quantile(moved.map((f) => f.before), 0.5) * 100).toFixed(0)}% of the outlines as they are, ${(quantile(moved.map((f) => f.after), 0.5) * 100).toFixed(0)}% shifted`);
   // A tile at a time, so each tile's rasters and photo are read once.
   list.sort((a, b) => (a.tile < b.tile ? -1 : a.tile > b.tile ? 1 : a.cx - b.cx));
-  const out = { shifts: Object.fromEntries([...field.all].map(([k, f]) => [k, [f.dx, f.dz]])), buildings: {} };
+  const out = { shifts: Object.fromEntries([...field.all].map(([k, f]) => [k, [f.dx, f.dz]])), buildings: lacking ? readCache('roofs.json').buildings : {} };
   let n = 0, unseen = 0;
-  for (const it of list) {
+  for (const it of lacking ? [] : list) {
     if (it.cx < box.x0 || it.cx > box.x1 || it.cz < box.z0 || it.cz > box.z1) continue;
     const sh = field.at(it.cx, it.cz) ?? { dx: 0, dz: 0 };
     const at = { top: (x, z) => topAt(x + sh.dx, z + sh.dz), ground: (x, z) => ground.at(x + sh.dx, z + sh.dz), colour: (x, z) => colourAt(x + sh.dx, z + sh.dz) };
@@ -522,6 +616,32 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     if (!m.seen) { unseen++; continue; }
     out.buildings[it.id] = m;
   }
-  fs.writeFileSync(path.join(CACHE, 'roofs.json'), JSON.stringify(out));
   console.log(`roofs: ${n} buildings measured, ${unseen} outside the point cloud, in ${((Date.now() - t0) / 1000).toFixed(0)} s`);
+
+  // The buildings the map lacks, and Microsoft's outlines (if fetched) with their own shift.
+  const t1 = Date.now();
+  const msFile = path.join(CACHE, 'microsoft.json');
+  const ms = (fs.existsSync(msFile) ? readCache('microsoft.json').rings : []).map((g) => {
+    const pts = g.slice(0, -1).map(([lon, lat]) => P({ lat, lon })), b = bounds(pts);
+    return { pts, b, cx: (b.x0 + b.x1) / 2, cz: (b.z0 + b.z1) / 2 };
+  }).filter((m) => m.pts.length >= 3);
+  const msField = shifts(ms);
+  const lost = missing(list, field, ground, box, ms, msField);
+  // Where the point cloud was boiled down: there the LiDAR saw every building, so world.mjs invents
+  // none.
+  out.seen = tilesOver(EXT).filter((key) => fs.existsSync(path.join(RDIR, key + '.bin')));
+  out.found = [];
+  out.dropped = lost.dropped;
+  let parts = 0;
+  for (const f of lost.found) {
+    const b = bounds(f.pts), cx = (b.x0 + b.x1) / 2, cz = (b.z0 + b.z1) / 2;
+    const sh = field.at(cx, cz) ?? { dx: 0, dz: 0 };
+    const m = measure(f.pts, { top: (x, z) => topAt(x + sh.dx, z + sh.dz), ground: (x, z) => ground.at(x + sh.dx, z + sh.dz), colour: (x, z) => colourAt(x + sh.dx, z + sh.dz) });
+    if (!m.seen) continue;
+    out.found.push({ ...f, ...m });
+    parts += m.parts.length;
+  }
+  const area = Math.round(out.found.reduce((s, f) => s + ringArea(f.pts), 0) / 1000);
+  console.log(`roofs: ${out.found.length} buildings the map lacks (${area}k m², ${parts} parts), ${lost.squared} squared and ${lost.microsoft} Microsoft's outlines (shifted ${quantile([...msField.all.values()].map((f) => Math.hypot(f.dx, f.dz)), 0.5).toFixed(1)} m, the median); not buildings: ${JSON.stringify(lost.why)}; in ${((Date.now() - t1) / 1000).toFixed(0)} s`);
+  fs.writeFileSync(path.join(CACHE, 'roofs.json'), JSON.stringify(out));
 }

@@ -1,5 +1,5 @@
 ---
-status: todo
+status: doing
 priority: high
 kind: code
 repo: braga-map
@@ -45,6 +45,14 @@ street), seeded RNG 4242. A filled building is flagged `filled` in the tiles.
   street lined with houses), or show only what's really there? Recommendation: only what's
   really there, now that the real buildings are known.
   > Only what's really there (2026-10-14).
+- [x] The real buildings take party-kart past the budget (task 004, decision 013): Low 0.583 M
+  triangles of 0.55, Medium 0.933 of 0.9, High 1.117 of 1.1, and 1.56 MB to download of 1.5, and
+  even trimmed hard they stay over. Trim (straighter outlines, no strips under 4 m wide or sheds
+  under 40 m²) and raise the budget by what's left; keep them all and raise it; or stay inside it,
+  with a party-kart task to draw far buildings simpler? Recommendation: trim, then raise.
+  > Keep them all, and raise the budget (2026-10-14): to about Low 0.59 M, Medium 0.94 M, High
+  > 1.12 M triangles and 1.6 MB, once a phone is checked with `?stats`, as decision 013 says a
+  > raise is made.
 
 ## Read first
 
@@ -77,3 +85,64 @@ street), seeded RNG 4242. A filled building is flagged `filled` in the tiles.
 - From the scorecard's baseline (task 003, 2026-10-13): the owner's comment at `lobato-east`,
   rated 3, is "Edifícios e lugares de estacionamento": the buildings, and the parking along the
   street (task 020).
+
+### Started 2026-10-14
+
+- **Started with 010 not closed:** its work is released (braga-map `v1.4.0`, `tools/roofs.mjs` and
+  its rasters); only its scorecard round and docs are left, which this doesn't need.
+- **Done, in braga-map (uncommitted):** `tools/footprints.mjs`, the geometry: what's under 2.5 m
+  across cleared (an opening by a 5-cell square), groups of 20 m² or more, each traced round its
+  own cells as they were before the clearing (so a turned building keeps its corners), and squared:
+  its staircase straightened (Douglas-Peucker), the walls within 15° of its main way or across it
+  made exactly so, walls in line made one, steps between parallel walls kept, a short wall at an
+  angle between two that meet dropped, and each corner where two walls meet; tried at 0.6, 1 and
+  1.5 m, else the staircase simplified at 0.8 m. `tools/roofs.mjs` runs it on every tile of the
+  point cloud (with 100 m of its neighbours), on the LiDAR's building cells less the map's outlines
+  (each laid where its square's shift says), then measures each footprint as the map's are, into
+  `.cache/roofs.json`'s `found`, with `seen` (the tiles the LiDAR covers) and `dropped`.
+  `node tools/roofs.mjs --lacking` does only this step (5 minutes). `tools/world.mjs` draws them
+  (a part each, each part of its own kind and facade colour), and invents no house where the LiDAR
+  covers (the old infill stays for where it doesn't); the Tourigalo's `OPEN` box is gone. The tiles
+  say each footprint's source (`what`: measured at bit 12, the source at bits 13–14), `index.js`
+  gives `source` (`filled` is `source === 'invented'`). `node tools/fetch.mjs microsoft`.
+  `test/footprints.test.js` (made-up buildings: a turned house, an L, a block, a wall and a shed;
+  and the world's tiles). The map page shows them ("Encontrados"). README, `docs/SOURCES.md`.
+  `npm test`: 31 of 31.
+- **What it found:** 7,251 buildings the map lacks, 1.72 km² of roof, 15,532 parts; 6,249 outlines
+  squared, 1,002 left as the cells step. Not buildings: 304 under 2 m tall, 20 green in the photo,
+  8 the size of a lorry. Whole blocks of the old town have no building on the map (south of the
+  Avenida Central, by the Praça: one building there in `buildings.json`), so the game had nothing
+  there; they're the LiDAR's now, a block as one building in parts where its roofs step. Many are
+  strips along a building the map has, 2.5–5 m wide: the rest of it, where the map's outline is too
+  narrow (seen in Fujacal: a row of flats whose outlines miss their east 5 m, 17 m tall). They're
+  kept: the street side ends where the building does.
+- **Invented, before and after:** 11,492 of the tiles' 30,854 buildings and parts before; none
+  after, in 34,856 (19,362 the map's, 15,494 the LiDAR's). The LiDAR covers the whole map (42 of
+  42 tiles), so nothing is invented anywhere.
+- **Microsoft's outlines:** fetched (12,219 in the box) and compared with each building found: they
+  sit 1.7 m off the LiDAR's buildings (the median shift), and none lay closer over its cells than
+  the outline squared from them, so none is used and no credit is owed. Kept in the code, as the
+  task asks.
+- **The stadium's stands:** the LiDAR has them as building and the map doesn't, but party-kart draws
+  the Estádio 1.º de Maio as a sight, terraces and stand: found buildings inside its grounds
+  (`leisure=stadium`) are left to it (2). Its small covered stand's roof is ground in the LiDAR
+  (built into the slope), so nothing is lost there. Bom Jesus's and the Sameiro's are over 2 km
+  from the route, where party-kart draws no building.
+- **Viewpoints seen so far** (a round shot in a copy of party-kart `31dcce9`, outside its checkout,
+  with this braga-map in its `node_modules`: `shots/2026-10-14-task011` there, not posted):
+  `alameda-fujacal` no longer stands inside an invented house, the alameda open as in the photo;
+  `lobato-east` has no house in the street. Not yet posted as a round on the scorecard.
+- **party-kart on it:** `npm test` 24 of 24, `npm run check` clean (in the copy).
+- **Over the budget (task 004):** every viewpoint holds more triangles: High 1.061 → 1.117 M
+  (budget 1.1), Medium 0.877 → 0.933 M (0.9), Low 0.549 → 0.583 M (0.55); draw calls (178, 178,
+  162) and textures unchanged. The download: 1.56 MB gzipped (`scripts/download.mjs`; the tiles
+  1.13 → 1.25 MB), over 1.5. Within 300 m of the route the found buildings are 2,297 parts with
+  20,038 corners where the invented houses were 1,671 with 6,684: the real city is denser and its
+  outlines aren't boxes. Trimming hard (outlines at 0.8 m, no building under 40 m², no part under
+  4 m wide) leaves 11,586 corners, still over. The owner keeps them all and raises the budget
+  (the question above).
+- **Left for `/task finish`:** a phone measured with `?stats&autodrive` on the new city (task
+  004's steps; the city has to reach the phone first: a release, or the dev server on the network),
+  and the budget raised in party-kart's `docs/architecture.md` to what it holds, with a
+  `DECISIONS.md` entry; the round posted on the scorecard and rated; braga-map released as 1.5.0
+  (the tiles' format changed) and party-kart pinned to it; `ROADMAP.md`.

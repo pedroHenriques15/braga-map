@@ -149,6 +149,28 @@ millimetre (the test).
 - **Fetched:** the 855 polygons that touch the map's box, whole, as GeoJSON
   (`.cache/dgt/cos2025.json`, 18 MB).
 
+### Microsoft's building footprints
+
+- **What:** building outlines found by machine learning in aerial imagery, with no heights here:
+  12,219 inside the map's box (task 005 counted 17,725 in central Braga, in another box). The
+  release dated 2026-02-03, uploaded 2026-02-23.
+- **Access:** https://github.com/microsoft/GlobalMLBuildingFootprints: `dataset-links.csv` at
+  `https://minedbuildings.z5.web.core.windows.net/global-buildings/dataset-links.csv`, then
+  gzipped line-delimited GeoJSON by country and level-9 quadkey. Braga is on Portugal's 031332231
+  (24 MB) and 031332320 (15 MB). Open, no account.
+- **Licence:** CDLA-Permissive-2.0 ("This data is licensed by Microsoft under the CDLA Permissive
+  2.0").
+- **Credit:** the licence asks that its text, or a link to it, go with the data when it's
+  shared: "Building footprints © Microsoft, CDLA-Permissive-2.0 (https://cdla.dev/permissive-2-0/)".
+  Owed only once an outline of theirs is in the world's tiles: none is yet.
+- **May be used for:** everything.
+- **Fetched:** by `node tools/fetch.mjs microsoft`, the outlines inside the map's box, as rings of
+  longitude and latitude, into `.cache/microsoft.json` (2 MB).
+- **Used for:** task 011, each building the map lacks: `tools/roofs.mjs` keeps Microsoft's outline
+  where it lies closer over the LiDAR's cells than the one squared from them. They sit 1.7 m from
+  the LiDAR's buildings (the median of the 250 m squares, shifted as the map's outlines are), and
+  on 2026-10-14 none of the 7,251 came out closer, so none is used.
+
 ## For the viewpoints
 
 The real photos the game is set against (task 001, `refs/viewpoints.json`). Only their list is
@@ -247,18 +269,6 @@ All CC0, on Freesound:
   None holds a race engine steady over its revs, which loops need.
 
 ## Not fetched
-
-### Microsoft's building footprints
-
-- **What:** building outlines found by machine learning in imagery; 17,725 in central Braga, with
-  no heights there (counted for task 005, not checked again). Updated 2026-08-13.
-- **Access:** https://github.com/microsoft/GlobalMLBuildingFootprints: `dataset-links.csv`, then
-  gzipped line-delimited GeoJSON by country and level-9 quadkey.
-- **Licence:** CDLA-Permissive-2.0 ("This data is licensed by Microsoft under the CDLA Permissive
-  2.0").
-- **Credit:** the licence asks that its text, or a link to it, go with the data when it's
-  shared: "Building footprints © Microsoft, CDLA-Permissive-2.0 (https://cdla.dev/permissive-2-0/)".
-- **May be used for:** everything. For task 011.
 
 ### Wikimedia Commons
 

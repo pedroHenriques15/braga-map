@@ -19,6 +19,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { CACHE, ELEV0, P, ROOT, readCache, relief } from './geo.mjs';
+import { tileKey, toTM } from './dgt.mjs';
 import { AREA, AREA_OF, blur, bounds, carriageway, dm, footprints, Grid, half, hash, inside, LINE, minRect, openThin, overlaps, Packer, packGrid, packPts, rectAxis, STOREY, STOREY_BASE as BASE, ringArea, ringOf, seeded, segDist, simplify, W_MIN } from './osm.mjs';
 import { allTiles, EXT, SECTIONS, sectionOf, SHOOTER, TILE, tileBox, tileId, tileOf } from './sections.mjs';
 import { terrain } from './terrain.mjs';
@@ -116,19 +117,25 @@ for (const s of streets) {
 console.log(`ground: ${areas.length} areas, ${streets.length} streets and railways`);
 
 // ---------------------------------------------------------------------------------------------
-// The buildings: all of them, and houses filled in where the map has none. Each one's height, roof
-// and roof colour as DGT's LiDAR and orthophoto measured them (tools/roofs.mjs), in parts where its
-// roof steps or turns a corner; guessed from what the map says where the LiDAR didn't see it (the
-// point cloud wasn't fetched there, it was built after July 2025, or it's under a tree) and for the
-// houses filled in.
+// The buildings: all of the map's, those it lacks that the LiDAR saw (task 011), and houses filled
+// in where the map has none and the point cloud wasn't fetched. Each one's height, roof and roof
+// colour as DGT's LiDAR and orthophoto measured them (tools/roofs.mjs), in parts where its roof
+// steps or turns a corner; guessed from what the map says where the LiDAR didn't see it (it was
+// built after July 2025, or it's under a tree) and for the houses filled in.
 
 const KIND = { house: 0, flats: 1, shop: 2, church: 3, civic: 4 };
 const ROOF = { flat: 0, hipped: 1, gabled: 2, skillion: 3 };
 const MAT = { tiles: 0, sheet: 1, flat: 2 };
+// Where each footprint is from: OpenStreetMap, the LiDAR's buildings, Microsoft's outlines (where
+// they lie closer over the LiDAR's), or invented.
+const SOURCE = { osm: 0, lidar: 1, microsoft: 2, invented: 3 };
 const COLORS = 8; // facade colours, picked from each building's id
 const fps = footprints(buildingsOsm);
 if (!fs.existsSync(path.join(CACHE, 'roofs.json'))) throw new Error('No measured roofs in .cache/roofs.json: node tools/roofs.mjs');
-const roofs = readCache('roofs.json').buildings;
+const { buildings: roofs, found = [], seen: lidarTiles = [] } = readCache('roofs.json');
+// Where the point cloud was boiled down, so the LiDAR saw every building there is.
+const lidarSeen = new Set(lidarTiles);
+const lidarAt = (x, z) => lidarSeen.has(tileKey(...toTM(x, z)));
 // The pitch of a guessed roof: the measured roofs' own, the middle of them.
 const PITCH = (() => {
   const all = Object.values(roofs).flatMap((m) => m.parts.filter((p) => p.pitch != null && p.roof !== 'skillion').map((p) => p.pitch)).sort((a, b) => a - b);
@@ -191,13 +198,14 @@ const dirCode = (ring, dir) => {
 };
 // [n, what, roof, h, y, rise, ...points], each a 16-bit number. what: its kind (3 bits), facade
 // colour (3), roof (2), which ends of its ridge are hipped (2), what the roof's covered with (2),
-// filled in (1), measured (1). roof: its pitch in degrees (6 bits), the way it runs (2) and its
-// colour in PALETTE (7, 127 for none). h, the eaves, from y, the ground, and rise, the ridge over the
-// eaves, in decimetres. In a tile they're in rows 20 m deep, west to east, each one's ground and
-// first point the step from the one before's, and a four-cornered one's last corner less where the
-// other three would put it, as a parallelogram (packBuildings): which packs smaller.
+// measured (1), where its footprint is from (2, SOURCE). roof: its pitch in degrees (6 bits), the way
+// it runs (2) and its colour in PALETTE (7, 127 for none). h, the eaves, from y, the ground, and
+// rise, the ridge over the eaves, in decimetres. In a tile they're in rows 20 m deep, west to east,
+// each one's ground and first point the step from the one before's, and a four-cornered one's last
+// corner less where the other three would put it, as a parallelogram (packBuildings): which packs
+// smaller.
 const putBuilding = (ring, cx, cz, b) => {
-  const what = b.kind | (b.color << 3) | (b.roof << 6) | (b.ends << 8) | (b.mat << 10) | (b.filled ? 1 << 12 : 0) | (b.measured ? 1 << 13 : 0);
+  const what = b.kind | (b.color << 3) | (b.roof << 6) | (b.ends << 8) | (b.mat << 10) | (b.measured ? 1 << 12 : 0) | (SOURCE[b.source] << 13);
   const roof = Math.min(63, Math.round(b.pitch)) | (dirCode(ring, b.dir) << 6) | (paletteOf(b.rgb) << 8);
   tileAt(cx, cz).buildings.push([ring.length, what, roof, dm(b.h), b.y, Math.max(0, dm(b.ridge - b.h)), ...packPts(ring)]);
 };
@@ -217,7 +225,7 @@ const guessRoof = (ring, roof) => {
   const r = minRect(ring), rise = roof === ROOF.flat ? 0 : r.W * Math.tan(PITCH / 57.2958);
   return { dir: r.angle, pitch: roof === ROOF.flat ? 0 : PITCH, rise, ends: roof === ROOF.hipped ? 3 : 0 };
 };
-let real = 0, measured = 0, parts = 0;
+let real = 0, lidar = 0, stands = 0, measured = 0, parts = 0;
 {
   const church = new Set(['church', 'cathedral', 'chapel', 'basilica', 'religious', 'monastery', 'convent']);
   const flats = new Set(['apartments', 'residential', 'dormitory', 'hotel']);
@@ -238,6 +246,33 @@ let real = 0, measured = 0, parts = 0;
     return eaves >= 9.5 ? KIND.flats : a < 400 ? KIND.house : eaves >= 6 ? KIND.flats : KIND.shop;
   };
   const ROOFS = { flat: ROOF.flat, hipped: ROOF.hipped, gabled: ROOF.gabled, skillion: ROOF.skillion };
+  // A building as the LiDAR measured it: each part on its own ground, its eaves and ridge from there.
+  // Its facade colour is `color`, or with `color` a function, each part's own from where it is.
+  const putMeasured = (pts, t, m, color, source) => {
+    const a = ringArea(pts), seen = m.parts.filter((p) => p.roof), top = Math.max(...seen.map((p) => p.eaves));
+    for (const p of m.parts) {
+      const ring = simplify(p.pts ?? pts, 0.3);
+      if (ring.length < 3) continue;
+      const y = footY(ring), base = ELEV0 + y / 10;
+      const px = ring.reduce((s, q) => s + q[0], 0) / ring.length, pz = ring.reduce((s, q) => s + q[1], 0) / ring.length;
+      let b;
+      if (p.roof) {
+        const h = Math.max(2.4, p.eaves - base), roof = ROOFS[p.roof];
+        // A part of a building the map lacks is a building of its own, as far as anyone can tell: of
+        // its own kind, from its own size and height.
+        const kind = source === 'osm' ? kindOf(t, a, top - base) : kindOf(t, ringArea(ring), h);
+        b = { kind, roof, h, ridge: Math.max(h, p.ridge - base), dir: p.dir ?? minRect(ring).angle, pitch: p.pitch ?? 0, ends: p.ends ?? 0, rgb: p.colour, measured: true };
+        b.mat = matOf(roof, p.colour, t['roof:material']);
+      } else {
+        // A piece of it the LiDAR saw nothing over: low, and flat (a passage, a yard roofed over).
+        b = { kind: KIND.shop, roof: ROOF.flat, h: 3, ridge: 3, dir: minRect(ring).angle, pitch: 0, ends: 0, rgb: null, mat: MAT.flat, measured: false };
+      }
+      putBuilding(ring, px, pz, { ...b, color: typeof color === 'function' ? color(px, pz) : color, y, source });
+      parts++;
+    }
+    measured++;
+  };
+  const isMeasured = (m) => m && m.cover >= 0.35 && m.parts.some((p) => p.roof);
   for (const e of fps) {
     let pts = ringOf(e);
     if (pts.length > 1 && pts[0][0] === pts[pts.length - 1][0] && pts[0][1] === pts[pts.length - 1][1]) pts = pts.slice(0, -1);
@@ -248,27 +283,8 @@ let real = 0, measured = 0, parts = 0;
     if (a < 12) continue;
     const color = Math.floor(rnd(e.id, 7) * COLORS), levels = Number(t['building:levels']);
     const m = roofs[e.id];
-    // Measured: each part on its own ground, its eaves and ridge from there.
-    if (m && m.cover >= 0.35 && m.parts.some((p) => p.roof)) {
-      const seen = m.parts.filter((p) => p.roof), top = Math.max(...seen.map((p) => p.eaves));
-      for (const p of m.parts) {
-        const ring = simplify(p.pts ?? pts, 0.3);
-        if (ring.length < 3) continue;
-        const y = footY(ring), base = ELEV0 + y / 10;
-        const px = ring.reduce((s, q) => s + q[0], 0) / ring.length, pz = ring.reduce((s, q) => s + q[1], 0) / ring.length;
-        let b;
-        if (p.roof) {
-          const h = Math.max(2.4, p.eaves - base), roof = ROOFS[p.roof];
-          b = { kind: kindOf(t, a, top - base), roof, h, ridge: Math.max(h, p.ridge - base), dir: p.dir ?? minRect(ring).angle, pitch: p.pitch ?? 0, ends: p.ends ?? 0, rgb: p.colour, measured: true };
-          b.mat = matOf(roof, p.colour, t['roof:material']);
-        } else {
-          // A piece of it the LiDAR saw nothing over: low, and flat (a passage, a yard roofed over).
-          b = { kind: KIND.shop, roof: ROOF.flat, h: 3, ridge: 3, dir: minRect(ring).angle, pitch: 0, ends: 0, rgb: null, mat: MAT.flat, measured: false };
-        }
-        putBuilding(ring, px, pz, { ...b, color, y, filled: false });
-        parts++;
-      }
-      measured++;
+    if (isMeasured(m)) {
+      putMeasured(pts, t, m, color, 'osm');
       real++;
       continue;
     }
@@ -287,21 +303,37 @@ let real = 0, measured = 0, parts = 0;
     const ring = simplify(pts, 0.3);
     if (ring.length < 3) continue;
     const g = guessRoof(ring, roof), rgb = parseColour(t['roof:colour']);
-    putBuilding(ring, cx, cz, { kind, roof, color, h, ridge: h + g.rise, dir: g.dir, pitch: g.pitch, ends: g.ends, rgb, mat: matOf(roof, rgb, t['roof:material']), y: footY(ring), filled: false, measured: false });
+    putBuilding(ring, cx, cz, { kind, roof, color, h, ridge: h + g.rise, dir: g.dir, pitch: g.pitch, ends: g.ends, rgb, mat: matOf(roof, rgb, t['roof:material']), y: footY(ring), measured: false, source: 'osm' });
     real++;
+  }
+  // The buildings the map lacks, as the LiDAR saw them: a block of them as one, in parts where the
+  // roofs step, each part with its kind from its size and height alone and its facade colour from
+  // where it is. Not in the stadium's grounds: its stands are the stadium's, which the games draw
+  // (the sight).
+  const pitch = base.elements.find((e) => e.type === 'way' && e.id === 22660434);
+  const grounds = pitch ? base.elements.filter((e) => e.type === 'way' && e.tags?.leisure === 'stadium').map((e) => e.geometry.map(P)).filter((r) => inside(r, ...P(pitch.geometry[0]))) : [];
+  const colorAt = (x, z) => Math.floor(rnd(Math.round(x * 2) * 20011 + Math.round(z * 2), 7) * COLORS);
+  for (const f of found) {
+    const cx = f.pts.reduce((s, p) => s + p[0], 0) / f.pts.length, cz = f.pts.reduce((s, p) => s + p[1], 0) / f.pts.length;
+    if (!inExt(cx, cz) || !isMeasured(f)) continue;
+    if (grounds.some((r) => inside(r, cx, cz))) { stands++; continue; }
+    putMeasured(f.pts, { building: 'yes' }, f, colorAt, f.src);
+    lidar++;
   }
 }
 
-// OpenStreetMap is missing many of the buildings: where the land is built-up and a street's
-// frontage is empty, line it with houses, and flats on the main roads. Never in a park, a wood, a
-// field or a pitch, on a street, or over a building. Each street is taken at least W_MIN wide, as
-// the games draw it, with a pavement as wide as the buildings leave room for. The streets a note
-// on the map asked for (the waypoints marked `rows`) get them all down both sides.
+// Where the point cloud wasn't fetched, the LiDAR can't say which buildings OpenStreetMap is
+// missing: there, where the land is built-up and a street's frontage is empty, line it with houses,
+// and flats on the main roads. Never in a park, a wood, a field or a pitch, on a street, or over a
+// building. Each street is taken at least W_MIN wide, as the games draw it, with a pavement as wide
+// as the buildings leave room for. The streets a note on the map asked for (the waypoints marked
+// `rows`) get them all down both sides. Where the LiDAR saw, nothing is invented: only what's there.
 let infill = 0;
 {
   const allB = [], bgrid = new Grid(40);
   const addB = (r) => { allB.push(r); for (const [x, z] of r) bgrid.add(x, z, allB.length - 1); };
   for (const e of fps) { const r = ringOf(e); if (r.some(([x, z]) => inExt(x, z, 50))) addB(r); }
+  for (const f of found) addB(f.pts);
   const nearB = (x, z, reach) => [...new Set(bgrid.near(x, z, reach))];
   // The buildings' walls, a point every 2 m, for how much room there is for a pavement.
   const vgrid = new Grid(20);
@@ -310,10 +342,6 @@ let infill = 0;
     for (let f = 0; f < n; f++) vgrid.add(ax + ((bx - ax) * f) / n, az + ((bz - az) * f) / n, [ax + ((bx - ax) * f) / n, az + ((bz - az) * f) / n]);
   }
   const GREEN = new Set(['farm', 'grass', 'scrub', 'forest', 'park', 'cemetery', 'sport', 'water']);
-  // Open ground the orthophoto shows that the map doesn't say is green, until task 011 checks every
-  // invented house against it: the Tourigalo's lawn, and the grass north of its restaurant.
-  const OPEN = [{ x0: 1575, x1: 1650, z0: 200, z1: 305 }];
-  const open = (pts) => OPEN.some((o) => pts.some(([x, z]) => x > o.x0 && x < o.x1 && z > o.z0 && z < o.z1));
   const agrid = new Grid(100);
   areas.forEach(([, r], i) => { const b = bounds(r); for (let a = Math.floor(b.x0 / 100); a <= Math.floor(b.x1 / 100); a++) for (let c = Math.floor(b.z0 / 100); c <= Math.floor(b.z1 / 100); c++) agrid.add(a * 100, c * 100, i); });
   const landAt = (x, z) => { let best = null, ba = Infinity; for (const i of agrid.near(x, z, 0)) { const [k, r] = areas[i]; if (inside(r, x, z)) { const a = ringArea(r); if (a < ba) { ba = a; best = AREA[k]; } } } return best; };
@@ -335,7 +363,7 @@ let infill = 0;
     return best;
   }));
   const rand = seeded(4242);
-  const why = { green: 0, empty: 0, street: 0, building: 0 };
+  const why = { lidar: 0, green: 0, empty: 0, street: 0, building: 0 };
   for (const s of streets) {
     if (s.k < 2 || s.k > 5 || String(s.t.highway).endsWith('_link')) continue;
     if (!s.pts.some(([x, z]) => inExt(x, z))) continue;
@@ -375,10 +403,11 @@ let infill = 0;
           const h = kind === KIND.flats ? 3 * (3 + Math.floor(rand() * 4)) + 0.6 : 3.4 + 3 * Math.floor(1 + rand() * 1.5);
           const roof = kind === KIND.house ? (rand() < 0.65 ? ROOF.hipped : ROOF.gabled) : rand() < 0.5 ? ROOF.hipped : ROOF.flat;
           const color = Math.floor(rand() * COLORS);
-          // On open ground it keeps its turn, so no other house moves, but nothing is built.
-          if (!open(quad.concat([mid]))) {
+          // Where the LiDAR saw, it keeps its turn, so no house beyond moves, but nothing is built.
+          if (quad.concat([mid]).some(([qx, qz]) => lidarAt(qx, qz))) why.lidar++;
+          else {
             const g = guessRoof(quad, roof);
-            putBuilding(quad, mid[0], mid[1], { kind, roof, color, h, ridge: h + g.rise, dir: g.dir, pitch: g.pitch, ends: g.ends, rgb: null, mat: matOf(roof, null), y: footY(quad), filled: true, measured: false });
+            putBuilding(quad, mid[0], mid[1], { kind, roof, color, h, ridge: h + g.rise, dir: g.dir, pitch: g.pitch, ends: g.ends, rgb: null, mat: matOf(roof, null), y: footY(quad), measured: false, source: 'invented' });
             infill++;
           }
           addB(quad);
@@ -387,7 +416,7 @@ let infill = 0;
       }
     }
   }
-  console.log(`buildings: ${real} from the map (${measured} measured by the LiDAR, in ${parts} parts; guessed roofs at ${PITCH}°), ${infill} filled in (${rowNames.size} streets in rows); frontage skipped for ${JSON.stringify(why)}`);
+  console.log(`buildings: ${real} from the map and ${lidar} it lacks from the LiDAR (${stands} left to the stadium; ${measured} measured, in ${parts} parts; guessed roofs at ${PITCH}°), ${infill} filled in (${rowNames.size} streets in rows); frontage skipped for ${JSON.stringify(why)}`);
 }
 
 // ---------------------------------------------------------------------------------------------

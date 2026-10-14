@@ -53,12 +53,17 @@ world.buildings; // [{ kind, roof, ends, dir, pitch, y, h, ridge, floors, roofCo
   height of the eaves (`h`) and of the ridge, the roof's shape, the way it runs (`dir`), which
   ends are hipped, its pitch, its storeys, and its colour as the 2025 orthophoto sees it (from
   5 km up, so paler than from the street). Where a roof steps by a storey or turns a corner, each
-  part is a building of its own. The rest are guessed from what the map says, and the houses
-  filled in are invented (`filled`). `index.d.ts` says what each field means.
+  part is a building of its own. The rest are guessed from what the map says. The buildings the
+  map lacks are the LiDAR's too (task 011): where it saw building and the map has none, each one's
+  outline squared to its walls, and measured as the others are. Each says where its footprint is
+  from (`source`: OpenStreetMap, the LiDAR, Microsoft's, or invented). Nothing is invented where
+  the LiDAR was fetched, which is the whole map; elsewhere houses are filled in on empty frontages
+  (`filled`). `index.d.ts` says what each field means.
 - The world knows nothing of your road. A game clears its own road and arena of buildings and
   trees when it loads (Party Kart's `src/render/city.ts` does it for a track). The map takes every
-  street at least 9 m wide, and the houses it fills in on empty frontages stand clear of that and
-  the pavement.
+  street at least 9 m wide, and the houses it fills in on empty frontages (where the LiDAR wasn't
+  fetched) stand clear of that and the pavement. The real buildings stand where they are, so on a
+  street narrower than that, some meet the road as a game draws it.
 - The package is plain JavaScript and data, so Node runs it as it is (its tests, a game's tests)
   and there's nothing to build.
 
@@ -72,7 +77,8 @@ change to the map never breaks a game behind its back.
 ```sh
 npm run fetch    # the data, into .cache/ (about 20 MB, ignored by git): a few minutes
 node tools/fetch.mjs lidar ortho  # DGT's LiDAR and orthophoto (about 5.7 GB, with a free account)
-node tools/roofs.mjs   # every building's height and roof, measured: .cache/roofs.json (10 minutes the first time)
+node tools/fetch.mjs microsoft    # Microsoft's building footprints over the map (40 MB to download, 2 MB kept)
+node tools/roofs.mjs   # every building's height and roof, and those the map lacks: .cache/roofs.json (10 minutes the first time)
 npm run page     # the map page's map/braga.json
 npm run tracks   # every track: tracks/<id>.js, and map/tracks.json for the page
 npm run world    # the world: world/base.js, world/tiles.js and a module per tile
@@ -94,7 +100,9 @@ from `roofs.mjs`'s measurements. All of them need the LiDAR.
   often busy: it waits and tries again. `node tools/fetch.mjs trees` fetches only what's named
   (`base`, `buildings`, `admin`, `pois`, `trees`, `street`, `restrictions`, `dem`, `horizon`). A
   new fetch brings the map's changes since, so the tracks may come out different: run the games'
-  tests after.
+  tests after. `node tools/fetch.mjs microsoft` gets Microsoft's building footprints (found by
+  machine learning in aerial imagery) over the map, into `.cache/microsoft.json`, only when
+  named.
 - DGT's open data comes only when it's named, into `.cache/dgt/`: `node tools/fetch.mjs ortho cos`
   (the 2025 orthophoto at 25 cm over the whole map, and the COS2025 land use, about 130 MB, no
   account) and `node tools/fetch.mjs lidar` (the 2025 LiDAR: the ground and surface at 50 cm for
@@ -114,17 +122,22 @@ from `roofs.mjs`'s measurements. All of them need the LiDAR.
   footprint: where its roof steps by a storey or more, its parts; for each, the eaves and the
   ridge, the roof's shape (flat, gabled, hipped at either end or both, or one slope), which way it
   runs and its pitch; a pitched roof over an L or a T, cut into rectangles; and its colour, from
-  the orthophoto's middle of it. `test/roofs.test.js` checks it on roofs made up as the LiDAR
-  sees them. `heights.mjs` checks what it measured against the map's `height`, `building:levels`
+  the orthophoto's middle of it. Then the buildings the map lacks (task 011): where the LiDAR saw
+  building and no outline of the map's lies, what's left once anything under 2.5 m across is
+  cleared, in pieces of 20 m² or more and 2 m tall, not a lorry and not green in the photo; each
+  one's outline squared to its walls (`footprints.mjs`), or Microsoft's where it lies closer over
+  the LiDAR's cells; put back where the map's outlines round it sit; and measured as the map's
+  are. `test/roofs.test.js` checks it on roofs made up as the LiDAR sees them, and
+  `test/footprints.test.js` on made-up buildings and on the world's tiles. `heights.mjs` checks what it measured against the map's `height`, `building:levels`
   (a storey comes out at 2.9 m), `roof:shape` and `roof:colour`, and lists the buildings where
   they differ most: the map, more often than the LiDAR.
 - `world.mjs` makes the world: the ground (every 2 m on the tiles within 60 m of a track and over
   the shooter's area, each the mean of the LiDAR's round it; every 10 m elsewhere), what the
   ground is (each area cut to the tiles it's on), every street at its width, the railway, every
   building on the ground at its lowest corner, with its height and roof as `roofs.mjs` measured
-  them (in parts where they step or turn; guessed from the map where the LiDAR didn't see it), houses filled in where the
-  map has none on a built-up street (never on the open ground in `OPEN` that the orthophoto shows
-  and the map doesn't say is green), the trees (woods and parks filled in), the rivers with their
+  them (in parts where they step or turn; guessed from the map where the LiDAR didn't see it),
+  those the map lacks as `roofs.mjs` found them, houses filled in where the map has none on a
+  built-up street and the LiDAR wasn't fetched, the trees (woods and parks filled in), the rivers with their
   water level (the lowest ground within 4 m of their course), and the sights (Bom Jesus, the
   Sameiro, the cross on the Picoto, the stadium, the Altice Forum, Makro, the Tourigalo with the
   way its head points and its restaurant's front), picked out of the map by their OpenStreetMap

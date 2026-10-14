@@ -109,6 +109,8 @@ function rectAxis(pts) {
 // The four ways a roof runs from its footprint's axis: along it, back along it, across to its left
 // and to its right.
 const DIRS = [0, Math.PI, Math.PI / 2, -Math.PI / 2];
+// Where a building's footprint is from (tools/world.mjs's SOURCE).
+const SOURCES = ['osm', 'lidar', 'microsoft', 'invented'];
 
 let base = null;
 
@@ -227,8 +229,9 @@ export async function loadWorld(area) {
         roof: (what >> 6) & 3,
         ends: (what >> 8) & 3,
         material: (what >> 10) & 3,
-        filled: (what & (1 << 12)) !== 0,
-        measured: (what & (1 << 13)) !== 0,
+        measured: (what & (1 << 12)) !== 0,
+        source: SOURCES[(what >> 13) & 3],
+        filled: ((what >> 13) & 3) === 3,
         y: y / 10,
         h,
         ridge: h + nums[i + 5] / 10,

@@ -76,7 +76,10 @@ export interface Line {
 // pitch: in degrees. roofColor: [r, g, b] from the 2025 orthophoto (the nearest of the map's 127
 // roofColors), or the map's roof:colour, or null (a game's own). material: 0 tiles, 1 sheets (metal,
 // fibre cement, slate), 2 flat.
-// filled: a house the map didn't have, put on an empty frontage of a built-up street.
+// source: where its footprint is from: OpenStreetMap; the LiDAR, a building the map lacks, its
+// outline squared from where the LiDAR saw building; Microsoft's outline of such a building, where
+// it lies closer over the LiDAR's; or invented, a house put on an empty frontage of a built-up
+// street where the LiDAR wasn't fetched (filled).
 export interface Building {
   kind: number;
   roof: number;
@@ -90,6 +93,7 @@ export interface Building {
   roofColor: [number, number, number] | null;
   material: number;
   floors: number;
+  source: 'osm' | 'lidar' | 'microsoft' | 'invented';
   filled: boolean;
   measured: boolean;
   pts: [number, number][];

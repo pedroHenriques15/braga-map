@@ -142,6 +142,43 @@ for (let y = hy(lat0 + dLat); y <= hy(lat0 - dLat) && wanted('horizon'); y++) {
 }
 if (m) console.log(`horizon: ${m} tiles`);
 
+// ---- Microsoft's building footprints, only when named ----
+
+// Found by machine learning in aerial imagery (docs/SOURCES.md), for the buildings OpenStreetMap
+// lacks (tools/roofs.mjs, task 011): Portugal's files for the level-9 quadkeys over the box, each
+// gzipped GeoJSON, a feature a line. Only the outlines inside the box are kept, as rings of
+// [lon, lat], in .cache/microsoft.json.
+if (only.includes('microsoft')) {
+  const zlib = await import('node:zlib');
+  const quadkey = (lat, lon, z) => {
+    const n = 2 ** z, x = Math.floor(((lon + 180) / 360) * n), r = (lat * Math.PI) / 180;
+    const y = Math.floor(((1 - Math.log(Math.tan(r) + 1 / Math.cos(r)) / Math.PI) / 2) * n);
+    let q = '';
+    for (let i = z; i > 0; i--) q += ((x >> (i - 1)) & 1) + 2 * ((y >> (i - 1)) & 1);
+    return q;
+  };
+  const keys = new Set([[S, W], [S, E], [N, W], [N, E]].map(([lat, lon]) => quadkey(lat, lon, 9)));
+  const res = await fetch('https://minedbuildings.z5.web.core.windows.net/global-buildings/dataset-links.csv', { headers: { 'user-agent': UA } });
+  if (!res.ok) throw new Error(`Microsoft's dataset links: ${res.status}`);
+  const links = (await res.text()).split('\n').map((l) => l.split(',')).filter(([where, key]) => where === 'Portugal' && keys.has(key));
+  const rings = [];
+  for (const [, key, url, size] of links) {
+    const got = await fetch(url, { headers: { 'user-agent': UA } });
+    if (!got.ok) throw new Error(`Microsoft's footprints ${key}: ${got.status}`);
+    const lines = zlib.gunzipSync(Buffer.from(await got.arrayBuffer())).toString('utf8').split('\n');
+    let kept = 0;
+    for (const line of lines) {
+      if (!line.trim()) continue;
+      const g = JSON.parse(line).geometry, ring = g.type === 'Polygon' ? g.coordinates[0] : null;
+      if (!ring || !ring.some(([lon, lat]) => lat > S && lat < N && lon > W && lon < E)) continue;
+      rings.push(ring.map(([lon, lat]) => [Math.round(lon * 1e7) / 1e7, Math.round(lat * 1e7) / 1e7]));
+      kept++;
+    }
+    console.log(`microsoft: quadkey ${key}, ${size}: ${kept} of ${lines.length} footprints in the box`);
+  }
+  fs.writeFileSync(path.join(cache, 'microsoft.json'), JSON.stringify({ fetched: new Date().toISOString().slice(0, 10), rings }));
+}
+
 // ---- DGT's open data, only when named ----
 
 const dgtParts = ['lidar', 'ortho', 'cos'].filter((p) => only.includes(p));

@@ -403,12 +403,12 @@ section { display: flex; flex-direction: column; gap: 10px; }
     G.bList = [];
     G.bGrid = new Map();
     const BC = 50;
-    const addBuilding = (pts, m, of) => {
+    const addBuilding = (pts, m, of, f) => {
       const path = m ? G.heights[binOf(m[0] / 10)] : G.unseen;
       line(path, pts); path.closePath();
       let x0 = Infinity, x1 = -Infinity, z0 = Infinity, z1 = -Infinity;
       for (let i = 0; i < pts.length; i += 2) { x0 = Math.min(x0, pts[i]); x1 = Math.max(x1, pts[i]); z0 = Math.min(z0, pts[i + 1]); z1 = Math.max(z1, pts[i + 1]); }
-      const idx = G.bList.push({ pts, m, of, area: (x1 - x0) * (z1 - z0) }) - 1;
+      const idx = G.bList.push({ pts, m, of, f, area: (x1 - x0) * (z1 - z0) }) - 1;
       for (let gx = Math.floor(x0 / BC); gx <= Math.floor(x1 / BC); gx++) for (let gz = Math.floor(z0 / BC); gz <= Math.floor(z1 / BC); gz++) {
         const key = gx + ',' + gz;
         let cell = G.bGrid.get(key);
@@ -418,8 +418,8 @@ section { display: flex; flex-direction: column; gap: 10px; }
     };
     G.bCell = BC;
     for (const b of D.buildings) {
-      if (b.parts) b.parts.forEach((q, i) => addBuilding(unpack(q.p), q.m, [i + 1, b.parts.length]));
-      else addBuilding(unpack(b.p), b.m || null, null);
+      if (b.parts) b.parts.forEach((q, i) => addBuilding(unpack(q.p), q.m, [i + 1, b.parts.length], b.f));
+      else addBuilding(unpack(b.p), b.m || null, null, b.f);
     }
 
     // Roads keep their points for the pointer to find them, and a grid of 80 m cells to search.
@@ -1041,13 +1041,15 @@ section { display: flex; flex-direction: column; gap: 10px; }
     return best;
   }
   const pisos = (n) => `${n} ${n === 1 ? 'piso' : 'pisos'}`;
-  // What a building's tooltip says: its storeys and height, its roof, and its roof's colour from above.
+  // What a building's tooltip says: its storeys and height, its roof, and its roof's colour from above;
+  // and, for one the map lacks, that the LiDAR found it.
   function buildingText(b) {
     const m = b.m, part = b.of ? ` · parte ${b.of[0]} de ${b.of[1]}` : '';
-    if (!m) return ['Edifício sem medida', `O LiDAR não o viu: construído depois de julho de 2025, debaixo de árvores, ou baixo de mais${part}.`];
+    const found = b.f ? ` · não está no OpenStreetMap: o LiDAR encontrou-o${b.f === 2 ? ' (contorno da Microsoft)' : ''}` : '';
+    if (!m) return ['Edifício sem medida', `O LiDAR não o viu: construído depois de julho de 2025, debaixo de árvores, ou baixo de mais${part}${found}.`];
     const ridge = m[1] - m[0] >= 5 ? `, cumeeira a ${fmt(m[1] / 10, 1)} m` : '';
     const colour = m[4] >= 0 ? '#' + m[4].toString(16).padStart(6, '0') : null;
-    return [`${pisos(m[2])} · ${fmt(m[0] / 10, 1)} m até ao beirado`, `${ROOF_NAME[m[3]]}${ridge}${part}`, colour];
+    return [`${pisos(m[2])} · ${fmt(m[0] / 10, 1)} m até ao beirado`, `${ROOF_NAME[m[3]]}${ridge}${part}${found}`, colour];
   }
   function showTip(p, title, sub, chip) {
     const t = $('tip');
@@ -1356,12 +1358,13 @@ section { display: flex; flex-direction: column; gap: 10px; }
     }));
 
     // The buildings' heights: the colours, how many the LiDAR measured, and the tallest.
-    const whole = D.buildings.filter((b) => b.m).length, split = D.buildings.filter((b) => b.parts);
+    const osm = D.buildings.filter((b) => !b.f), lacked = D.buildings.length - osm.length;
+    const whole = osm.filter((b) => b.m).length, split = osm.filter((b) => b.parts);
     if (whole + split.length) {
       $('buildBox').hidden = false;
       $('ramp').replaceChildren(...RAMP.map((c, i) => h('span', { style: 'background:' + c }, h('small', null, i === BINS.length - 1 ? `${BINS[i]} m` : String(BINS[i])))),
         h('span', { style: 'background:' + UNSEEN }, h('small', null, 'sem medida')));
-      const parts = split.reduce((s, b) => s + b.parts.length, 0), all = D.buildings.length, seen = whole + split.length;
+      const parts = split.reduce((s, b) => s + b.parts.length, 0), all = osm.length, seen = whole + split.length;
       const top = G.bList.filter((b) => b.m).reduce((a, b) => (b.m[0] > a.m[0] ? b : a));
       let tx = 0, tz = 0;
       for (let i = 0; i < top.pts.length; i += 2) { tx += top.pts[i]; tz += top.pts[i + 1]; }
@@ -1369,6 +1372,7 @@ section { display: flex; flex-direction: column; gap: 10px; }
       $('buildStats').replaceChildren(
         h('dt', null, `${fmt(seen)} de ${fmt(all)}`), h('dd', null, h('b', null, 'Medidos. '), `${fmt(Math.round((seen / all) * 100))}% dos edifícios do mapa. Os outros, a cinzento, ficam com a altura adivinhada no jogo.`),
         h('dt', null, fmt(parts)), h('dd', null, h('b', null, 'Partes. '), `${fmt(split.length)} edifícios divididos onde o telhado sobe um andar ou faz esquina, cada parte com a sua altura.`),
+        ...(lacked ? [h('dt', null, fmt(lacked)), h('dd', null, h('b', null, 'Encontrados. '), 'Edifícios que o OpenStreetMap não tem e o LiDAR viu, com o contorno tirado dele. No jogo substituem as casas inventadas.')] : []),
         h('dt', null, `${fmt(top.m[0] / 10)} m`), h('dd', null, h('b', null, 'O mais alto, '), `${pisos(top.m[2])} até ao beirado. `,
           h('button', { type: 'button', class: 'inline', onclick: () => { if (!ui.layers.heights) { ui.layers.heights = true; $('layer-heights').checked = true; remember(); invalidate(); } flyTo({ cx: tx, cz: tz, s: Math.max(view.s, 2) }); } }, 'Ver no mapa')),
       );

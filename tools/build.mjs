@@ -159,7 +159,7 @@ roads.sort((p, q) => q.k - p.k);
 // [eaves, ridge] in decimetres above the ground under it, its storeys, its roof (0 flat, 1 hipped,
 // 2 gabled, 3 one slope) and its colour from the orthophoto as 0xrrggbb (-1 for none).
 const ROOF_SHAPES = ['flat', 'hipped', 'gabled', 'skillion'];
-const roofs = fs.existsSync(path.join(CACHE, 'roofs.json')) ? readCache('roofs.json').buildings : {};
+const { buildings: roofs = {}, found = [] } = fs.existsSync(path.join(CACHE, 'roofs.json')) ? readCache('roofs.json') : {};
 const measured = (q) => [Math.round((q.eaves - q.ground) * 10), Math.round((q.ridge - q.ground) * 10), storeys(q.eaves - q.ground), ROOF_SHAPES.indexOf(q.roof), q.colour ? (q.colour[0] << 16) | (q.colour[1] << 8) | q.colour[2] : -1];
 const buildings = [];
 const CHURCH = new Set(['church', 'cathedral', 'chapel', 'basilica', 'religious', 'monastery', 'convent']);
@@ -179,6 +179,15 @@ for (const e of bld.elements) {
     if (r.parts.length === 1) one.m = measured(r.parts[0]);
     else one.parts = r.parts.map((q) => ({ p: pack(dp([...q.pts, q.pts[0]], 0.3)), m: q.roof ? measured(q) : null }));
   }
+  buildings.push(one);
+}
+// The buildings the map lacks, as the LiDAR found them (task 011): f is 1, or 2 for Microsoft's
+// outline.
+for (const e of found) {
+  if (!touches(e.pts, 0) || !(e.cover >= 0.35 && e.parts.some((q) => q.roof))) continue;
+  const one = { k: area(e.pts) > 450 ? 1 : 0, f: e.src === 'microsoft' ? 2 : 1, p: pack(dp([...e.pts, e.pts[0]], 0.3)) };
+  if (e.parts.length === 1) one.m = measured(e.parts[0]);
+  else one.parts = e.parts.map((q) => ({ p: pack(dp([...q.pts, q.pts[0]], 0.3)), m: q.roof ? measured(q) : null }));
   buildings.push(one);
 }
 

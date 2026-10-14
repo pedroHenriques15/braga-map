@@ -90,10 +90,11 @@ export async function check() {
     if (terracotta(c) === terracotta(b.main.colour)) cAgree++;
   }
 
-  // The world's tiles: the map's buildings measured (a part each) and guessed, and those filled in.
+  // The world's tiles: the map's buildings measured (a part each) and guessed, those it lacks that
+  // the LiDAR found (task 011), and those filled in.
   const w = await loadWorld({ sections: map().sections.map((s) => s.id) });
-  const tiles = { measured: 0, guessed: 0, filled: 0 };
-  for (const b of w.buildings) tiles[b.filled ? 'filled' : b.measured ? 'measured' : 'guessed']++;
+  const tiles = { measured: 0, guessed: 0, found: 0, filled: 0 };
+  for (const b of w.buildings) tiles[b.source === 'invented' ? 'filled' : b.source !== 'osm' ? 'found' : b.measured ? 'measured' : 'guessed']++;
   const parts = seen.reduce((s, b) => s + b.m.parts.length, 0);
 
   const moved = Object.values(shifts).map(([dx, dz]) => Math.hypot(dx, dz));
@@ -118,7 +119,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   const pub = (list) => list.filter((r) => !r.private);
   console.log(`The map's buildings: ${c.buildings}. Measured by the LiDAR: ${c.seen} (${c.parts} parts, ${c.split} split where the roof steps or turns); not seen: ${c.unseen}.`);
   console.log(`Their roofs (the main part): ${Object.entries(c.roofs).map(([k, v]) => `${k} ${v}`).join(', ')}.`);
-  console.log(`In the world's tiles: ${c.tiles.measured} measured, ${c.tiles.guessed} guessed, ${c.tiles.filled} filled in.`);
+  console.log(`In the world's tiles: ${c.tiles.measured} measured, ${c.tiles.guessed} guessed, ${c.tiles.found} the map lacks, found by the LiDAR, ${c.tiles.filled} filled in.`);
   console.log(`The map's outlines against the LiDAR's buildings, in ${c.shifts.squares} squares of 250 m: off by ${c.shifts.median} m (median), under ${c.shifts.p90} m in 9 of 10, ${c.shifts.max} m at most.`);
   console.log(`\nheight (${c.heights.length} tagged): the LiDAR's top less the map's, median ${r1(quantile(c.heights.map((h) => h.diff), 0.5))} m; within 2 m: ${c.heights.filter((h) => Math.abs(h.diff) <= 2).length}.`);
   for (const h of pub(c.heights).filter((h) => Math.abs(h.diff) > 3).sort((a, b) => Math.abs(b.diff) - Math.abs(a.diff))) console.log(`  way ${h.id}: the map ${h.osm} m, the LiDAR ${h.lidar} m`);

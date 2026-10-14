@@ -99,4 +99,8 @@ Steps:
   - The owner's pin on the shared map is 31 m south of OSM's node; the photos agree with OSM's.
   - The red board's words ("TOURIGALO", "churrasqueira") aren't legible in any photo; it's a
     churrasqueira by the reviews. Worth a look on the photo walk (task 008).
-- **Left:** release with tasks 028 and 030, then `/task finish 029`.
+- **Released** on 2026-10-14: braga-map `5d6ca6b`, tagged `v1.3.0`; party-kart `6309e63`, on it,
+  deployed to https://pedrohenriques15.github.io/party-kart/. The peer id prefix is `pk31`, so
+  players on the old build must reload to race. On v1.3.0: party-kart's `npm test` 19 of 19,
+  `tsc` clean.
+- **Left:** `/task finish 029`: the round `2026-10-14-friends` (shot) posted to the scorecard.

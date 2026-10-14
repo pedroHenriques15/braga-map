@@ -103,5 +103,8 @@ Steps:
     on the roof over the house's spot, from `roofAt` in `city.ts`; up from 230 m before the house
     to 40 m past); `sfx.alarm`; the feed line in `eggReact`.
   - The shared map's database still describes each egg in words; it wasn't changed.
-- **Left:** release with tasks 028 and 029: tag braga-map (v1.3.0), move party-kart to it,
-  commit, deploy, when the owner asks; then `/task finish 030`.
+- **Released** on 2026-10-14: braga-map `5d6ca6b`, tagged `v1.3.0`; party-kart `6309e63`, on it,
+  deployed to https://pedrohenriques15.github.io/party-kart/. The peer id prefix is `pk31`, so
+  players on the old build must reload to race. On v1.3.0: party-kart's `npm test` 19 of 19,
+  `tsc` clean.
+- **Left:** `/task finish 030`: the round `2026-10-14-friends` (shot) posted to the scorecard.

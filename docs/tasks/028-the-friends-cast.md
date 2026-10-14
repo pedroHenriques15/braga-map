@@ -153,5 +153,8 @@ Steps:
     the wall with the arms is behind the car.
   - The sign's subtitle is no longer gold, and the default frame is grey; the item boxes are
     blue.
-- **Left:** release (braga-map tagged with tasks 029 and 030, party-kart moved to the tag,
-  committed and deployed, when the owner asks), then `/task finish 028`.
+- **Released** on 2026-10-14: braga-map `5d6ca6b`, tagged `v1.3.0`; party-kart `6309e63`, on it,
+  deployed to https://pedrohenriques15.github.io/party-kart/. The peer id prefix is `pk31`, so
+  players on the old build must reload to race. On v1.3.0: party-kart's `npm test` 19 of 19,
+  `tsc` clean.
+- **Left:** `/task finish 028`: the round `2026-10-14-friends` (shot) posted to the scorecard.

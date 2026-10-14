@@ -144,7 +144,9 @@ street), seeded RNG 4242. A filled building is flagged `filled` in the tiles.
 - **Released** on 2026-10-14, at the owner's word: braga-map `3b753b7`, tagged `v1.5.0` and pushed;
   party-kart `5379a82` pinned to it (`npm test` 24 of 24, the lap unchanged, `npm run check`
   clean), its `docs/architecture.md` saying what the city costs now and that the budget is a guide
-  (decision 017). Not pushed or deployed. The round shot in the copy is filed in party-kart's
+  (decision 017). Pushed and deployed from a clean checkout of it, live at
+  https://pedrohenriques15.github.io/party-kart/ (`index-CTT-5MQO.js`); the peer id prefix is
+  unchanged. The round shot in the copy is filed in party-kart's
   `shots/2026-10-14-task011/`.
 - **Left for `/task finish`:** the round of viewpoints, shot in party-kart itself and posted on the
   scorecard to be rated. The owner wants the viewpoints shot again once the other tasks are done

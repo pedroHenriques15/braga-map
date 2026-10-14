@@ -32,6 +32,12 @@ const R_KERB = [10, 8, 8, 7, 6, 5, 3, 3, 3];
 // than this, no building stands on it and it isn't the rows of a car park between its aisles, or
 // when a roundabout goes round it.
 const ISLAND = 600;
+// A deck or a tunnel's road within this of the ground is at its level: nothing passes under it, so
+// nothing on the ground lies over it, nor its pavements on the ground's road (task 040).
+const GRADE = 2;
+// How far a deck's end follows the ground across it, from its own height: farther off, the ground
+// there is an embankment's side, not the street it meets.
+const TWIST = 0.5;
 // The lines painted: as wide as the track's (party-kart's road.ts), dashes 3 m on and 4 m off; a
 // zebra 4 m deep, a stop line 0.5 m.
 const LINE_W = 0.14, DASH = [3, 4], ZEBRA = 4, STOP = 0.5;
@@ -233,7 +239,8 @@ const marked = (t) => !['unmarked', 'no'].includes(t.crossing) && t['crossing:ma
 
 // The surfaces of every street (osm.mjs's LINE kinds 0–8, not the railway) with a point in `box`,
 // from `lines` (lines.mjs's streetLines: { k, w, pts, nodes, t, level }) and the heights of those off
-// the ground (`heights`, above the sea; out above `elev0`); `nodes`, the crossings and traffic lights
+// the ground (`heights`, above the sea; out above `elev0`), and `height`, the ground's at (x, z) as the
+// tiles hold it, above the sea, for a deck's ends; `nodes`, the crossings and traffic lights
 // (fetch.mjs's street.json); `buildings`, `squares` and `water`, rings round them. Everything comes
 // out cut to each of `cuts` ([{ id, box }], the box itself by default), in `cuts`, a Map by id:
 // - carriageways: [{ surface, level, rings: [outer, ...holes], ys? }], surface asphalt, setts,
@@ -243,7 +250,7 @@ const marked = (t) => !['unmarked', 'no'].includes(t.crossing) && t['crossing:ma
 // - markings: [{ kind, w, dash, level, pts, ys? }], kind lane, centre, zebra or stop: a line w wide,
 //   dashed [on, off] or solid (null); a zebra's line runs across the road, w is how deep it is;
 // level ground, bridge or tunnel, and ys a height at each point (each ring's) off the ground.
-export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, nodes = [], buildings = [], squares = [], water = [], box, cuts = [{ id: 'box', box }], margin = 80 }) {
+export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height = null, nodes = [], buildings = [], squares = [], water = [], box, cuts = [{ id: 'box', box }], margin = 80 }) {
   const t0 = Date.now();
   const near = ([x, z], m) => x >= box.x0 - m && x <= box.x1 + m && z >= box.z0 - m && z <= box.z1 + m;
   const ways = lines.filter((l) => l.k <= 8 && l.pts.some((p) => near(p, margin)));
@@ -366,25 +373,75 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, nodes = 
   }
 
   // Where a bridge or a tunnel meets the ground's streets at its ends, its own carriageway: the
-  // ground's stops there, so the two don't lie one on the other.
+  // ground's stops there, so the two don't lie one on the other. Each end: its point, the ways into
+  // the bridge or the tunnel from it (two where it forks there), and how far round it the cut reaches.
   const ground = made.get('ground');
-  if (ground) for (const [key, g] of made) {
-    if (key === 'ground') continue;
-    const ends = [...g.arms.keys()].filter((n) => ground.arms.has(n)).map((n) => circle(g.arms.get(n)[0].e.pts[g.arms.get(n)[0].i], Math.max(...g.list.map((e) => e.w)) + 1));
-    if (!ends.length) continue;
-    const cut = meet(g.U, union(ends));
-    ground.U = minus(ground.U, cut);
-    for (const [s, p] of ground.bySurface) ground.bySurface.set(s, minus(p, cut));
+  const paved = (key, g) => key.startsWith('bridge') && !g.list.some((e) => e.k <= 1 || sidewalk(e.t, true) === false);
+  if (ground) {
+    const bare = ground.U;
+    for (const [key, g] of made) {
+      if (key === 'ground') continue;
+      const joined = [...g.arms].filter(([n]) => ground.arms.has(n)), r = Math.max(...g.list.map((e) => e.w)) + 1;
+      if (!joined.length) continue;
+      g.cut = meet(g.U, union(joined.map(([, [a]]) => circle(a.e.pts[a.i], r))));
+      ground.U = minus(ground.U, g.cut);
+      for (const [s, p] of ground.bySurface) ground.bySurface.set(s, minus(p, g.cut));
+      g.ends = joined.map(([, a]) => ({ p: a[0].e.pts[a[0].i], us: a.map((x) => x.dir), r }));
+    }
+    // The pavements stop as the carriageways do (task 040): the ground's where a bridge's or a
+    // tunnel's carriageway begins, a deck's at its end's line. And wherever a deck or a tunnel's road
+    // is at the ground's level (`flat`: its ends, and along its centre lines, looked at every 2 m,
+    // wherever else it's within GRADE of the ground), the ground's pavements give way to it and to a
+    // deck's pavements, and those to the ground's carriageway. Where a bridge meets the ground's
+    // carriageway at its level, or took its place: `touches`.
+    ground.noPave = [];
+    for (const [key, g] of made) {
+      if (key === 'ground') continue;
+      g.ends ??= [];
+      const runs = [];
+      if (height) for (const e of g.list) {
+        let run = [];
+        for (let i = 1; i < e.pts.length; i++) {
+          const a = e.pts[i - 1], b = e.pts[i], n = Math.max(1, Math.ceil(dist(a, b) / 2));
+          for (let k = i > 1 ? 1 : 0; k <= n; k++) {
+            const f = k / n, p = [a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f];
+            if (Math.abs(e.ys[i - 1] + (e.ys[i] - e.ys[i - 1]) * f + elev0 - height(...p)) < GRADE) run.push(p);
+            else if (run.length) { runs.push(run); run = []; }
+          }
+        }
+        if (run.length) runs.push(run);
+      }
+      // Cut square across where it stops being flat, so it doesn't reach a street the deck passes over.
+      const flat = runs.length ? band(runs.map(toPath), Math.max(...g.list.map((e) => e.w)) / 2 + 2, true) : [];
+      const round = meet(ground.U, flat);
+      const behind = (e) => e.us.map((u) => [positive(toPath(rectAcross([e.p[0] - u[0] * 1.5, e.p[1] - u[1] * 1.5], u, e.r + 2, 1.5)))]).reduce((a, b) => meet(a, b));
+      g.touches = insideOf(grow(union(meet(g.cut ?? [], bare), round), 0.15));
+      g.noPave = [...g.ends.flatMap(behind), ...round];
+      const own = paved(key, g) ? minus(minus(grow(g.U, 1.5), g.U), g.noPave) : [];
+      ground.noPave.push(...(g.cut ?? []), ...meet(union(g.U, own), flat));
+    }
   }
 
-  // The heights of a group off the ground, at any point: its nearest centre line's, between its points.
-  const yOf = (list) => {
+  // The heights of a group off the ground, at any point: its nearest centre line's, between its
+  // points. But on a bridge, round an end where it meets the ground's streets, the ground's as the
+  // tiles hold it (`height`), where that's within TWIST of it: on the end's line and behind it, and
+  // where it meets the ground's carriageway or took its place; so the deck and the street meet to the
+  // centimetre (task 040). `ys.join` says whether a point is where it meets the ground's streets.
+  const yOf = (list, ends = [], touches = () => false) => {
     const find = lineIndex(list);
-    return (x, z) => {
-      const f = find(x, z, 60);
-      if (!f) return list[0].ys[0];
-      return f.e.ys[f.i - 1] + (f.e.ys[f.i] - f.e.ys[f.i - 1]) * f.f;
+    const own = (x, z) => { const f = find(x, z, 60); return f ? f.e.ys[f.i - 1] + (f.e.ys[f.i] - f.e.ys[f.i - 1]) * f.f : list[0].ys[0]; };
+    const join = (x, z) => !!height && ends.some((e) => {
+      const dx = x - e.p[0], dz = z - e.p[1];
+      return dx * dx + dz * dz <= (e.r + 2) ** 2 && (e.us.some(([ux, uz]) => dx * ux + dz * uz <= 0.15) || touches(x, z));
+    });
+    const ys = (x, z) => {
+      const y = own(x, z);
+      if (!join(x, z)) return y;
+      const h = height(x, z) - elev0;
+      return Math.abs(h - y) < TWIST ? h : y;
     };
+    ys.join = join;
+    return ys;
   };
   // What comes out, cut to each box asked for: a piece wholly inside one goes as it is.
   const boxPath = [rect(box)];
@@ -404,9 +461,10 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, nodes = 
       for (const c of into) {
         if (!meets(b, c.box)) continue;
         // To the nearest 10 cm, as the tiles keep them, by Clipper on a 10 cm grid, so no ring
-        // rounded crosses itself or another.
+        // rounded crosses itself or another; and along a deck's end, where it meets the ground's
+        // streets, a point every 2 m or less, so it follows the street's shape across.
         for (const piece of within(b, c.box) ? [sh] : shapes(meet(sh, c.path))) for (const snapped of shapes(piece.map((r) => r.map((q) => ({ X: Math.round(q.X / 10), Y: Math.round(q.Y / 10) }))), true)) {
-          const rings = snapped.map((r) => r.map((q) => [q.X / 10, q.Y / 10])).filter((r) => r.length > 2);
+          const rings = snapped.map((r) => r.map((q) => [q.X / 10, q.Y / 10])).filter((r) => r.length > 2).map((r) => (ys?.join ? dense(r, ys.join) : r));
           if (!rings.length || Math.abs(C.Clipper.Area(snapped[0])) / 100 < 0.25) continue;
           c.out[kind].push(withYs({ ...props, rings }, ys, 'rings', rings));
         }
@@ -429,7 +487,7 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, nodes = 
   };
 
   for (const [key, g] of made) {
-    const level = levelName(key), ys = level === 'ground' ? null : yOf(g.list), U = g.U;
+    const level = levelName(key), ys = level === 'ground' ? null : level === 'bridge' ? yOf(g.list, g.ends, g.touches) : yOf(g.list), U = g.U;
     const inU = insideOf(U), owner = lineIndex(g.list);
     for (const [surface, paths] of g.bySurface) {
       addShapes('carriageways', paths, { surface, level }, ys);
@@ -449,8 +507,9 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, nodes = 
       if ((a < ISLAND && !builtOn && service < 0.5) || round > 0.6) islands.push(positive(h));
     }
     stats.islands += islands.length;
-    // As Clipper rounds them, kept off the carriageways.
-    islands = minus(union(islands), U);
+    // As Clipper rounds them, kept off the carriageways, and on the ground off a deck or a tunnel's
+    // road where the ground's carriageway gave way to it.
+    islands = minus(union(islands), [...U, ...(g.noPave ?? [])]);
     const inIsland = insideOf(islands);
     const pieces = [];
     for (const ring of U) {
@@ -501,7 +560,7 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, nodes = 
         }
         flush();
       }
-      res = minus(union(res), [...U, ...B, ...islands]);
+      res = minus(union(res), [...U, ...B, ...islands, ...(g.noPave ?? [])]);
     }
     const inRes = insideOf(res);
 
@@ -536,8 +595,9 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, nodes = 
       pave = minus(grow(U, PAVE), [...U, ...B, ...W]);
       pave = minus(pave, [...band(none, PAVE + 0.5, true), ...res, ...islands]);
       pave = union(pave, minus(Q, [...U, ...B, ...W, ...res, ...islands]));
-    } else if (level === 'bridge' && !g.list.some((e) => e.k <= 1 || sidewalk(e.t, true) === false)) {
-      pave = minus(grow(U, 1.5), U);
+      pave = minus(pave, g.noPave ?? []);
+    } else if (paved(key, g)) {
+      pave = minus(minus(grow(U, 1.5), U), g.noPave ?? []);
     }
     pave = shapes(pave).filter((sh) => Math.abs(C.Clipper.Area(sh[0])) / (S * S) > 1).flat();
     addShapes('pavements', pave, { kind: 'pavement', level }, ys);
@@ -677,6 +737,16 @@ function along(pts, d) {
   return { p: pts[0], t: [1, 0] };
 }
 
+// A ring with a point every 2 m or less along each of its edges whose two ends `test` holds for, on
+// the 10 cm grid.
+function dense(r, test) {
+  const at = r.map(([x, z]) => test(x, z));
+  return r.flatMap((a, i) => {
+    const j = (i + 1) % r.length, b = r[j], n = at[i] && at[j] ? Math.ceil(dist(a, b) / 2) : 1;
+    return Array.from({ length: n }, (_, k) => (k ? [Math.round((a[0] + ((b[0] - a[0]) * k) / n) * 10) / 10, Math.round((a[1] + ((b[1] - a[1]) * k) / n) * 10) / 10] : a));
+  });
+}
+
 // A rectangle centred on p, running along d: `across` either side of it, `ahead` along it each way.
 function rectAcross(p, d, across, ahead) {
   const [ax, az] = d, [nx, nz] = [-az, ax];
@@ -690,11 +760,13 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const a = process.argv.slice(2).map(Number);
   const box = a.length === 4 ? { x0: a[0], x1: a[1], z0: a[2], z1: a[3] } : { x0: -450, x1: 450, z0: 500, z1: 1150 };
   const ground = await terrain();
-  const { lines, heights } = streetLines(readCache('osm/base.json'), ground, (x, z, m) => x >= box.x0 - 300 - m && x <= box.x1 + 300 + m && z >= box.z0 - 300 - m && z <= box.z1 + 300 + m);
+  // The ground as the tiles hold it, from the last `npm run world`, for the decks' ends.
   const world = await loadWorld({ x0: box.x0 - 200, x1: box.x1 + 200, z0: box.z0 - 200, z1: box.z1 + 200 });
+  const height = (x, z) => world.height(x, z) + ELEV0;
+  const { lines, heights } = streetLines(readCache('osm/base.json'), ground, (x, z, m) => x >= box.x0 - 300 - m && x <= box.x1 + 300 + m && z >= box.z0 - 300 - m && z <= box.z1 + 300 + m, height);
   const nodes = readCache('osm/street.json').elements.filter((e) => e.type === 'node');
   const made = streetSurfaces({
-    lines, heights, elev0: ELEV0, nodes, box,
+    lines, heights, elev0: ELEV0, height, nodes, box,
     buildings: world.buildings.map((b) => b.pts),
     squares: world.areas.filter((x) => x.kind === 'plaza').map((x) => x.pts),
     water: world.areas.filter((x) => x.kind === 'water').map((x) => x.pts),

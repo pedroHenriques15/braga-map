@@ -511,3 +511,30 @@ nobody will (the owner, 2026-10-14). So the map's streets are OpenStreetMap's, a
 
 The alternative, fixing OpenStreetMap at the source, would reach every map made from it and
 survive each fetch, but needs someone in the group to do it.
+
+## 023 · A deck meets the street at the ground the tiles hold, and at one level nothing lies over another
+
+*2026-10-15 · task 040 · makes decision 021's "braga-map fixes the data" concrete for the decks*
+
+The height a street on the ground has is the tiles' ground (`height(x, z)`: the LiDAR's mean round
+each point of a 2 m grid), not the LiDAR's own. So that's what a bridge meets:
+
+- **A deck's end is at the ground as the tiles hold it,** so a game drawing or driving the streets
+  needs no easing there: the end's node, and its end's line across the deck (a point every 2 m),
+  meet the street on the ground within 5 cm. The deck doesn't follow the ground across it where
+  that's half a metre or more off it: there the ground is an embankment's side, where the deck is
+  wider than the street or the 2 m grid falls away at the abutment.
+- **A tunnel's end is on the cutting's floor:** the lowest of the tiles' ground from its mouth to
+  4 m out. The map's node is at the portal's face, where the 2 m ground is halfway up the hill, so
+  a tunnel doesn't meet `height(x, z)` there: the ground is what's off, not the tunnel.
+- **Within 2 m of each other's height, a deck or a tunnel's road and the ground are one level:**
+  nothing passes under a deck that low, so no pavement on the ground lies over it (the road wins),
+  and a deck's pavements give way to the ground's carriageway and stop at its end's line.
+- **The ground itself is held to the street at a deck's end and a tunnel's mouth** in a task of its
+  own (043): where the 2 m mean averages in what's under a deck or over a tunnel, the street on the
+  ground dips into the abutment or climbs the portal, and the data should hold it level, once, for
+  every game, rather than each game holding its land down (as party-kart does at the mouths).
+
+The alternative, a deck's end at the LiDAR's height at its node, is closer to the real abutment
+where the grid blurs it, but leaves a step of up to 0.66 m at the join, which each game would have
+to ease.

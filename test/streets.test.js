@@ -153,6 +153,123 @@ test('nothing lies on anything else at its level: carriageways, pavements', () =
   }
 });
 
+// Where a bridge or a tunnel meets the ground's streets (task 040): each end of a line off the
+// ground that is a point of a line on it, with the way into the bridge or the tunnel, its height and
+// its width; in the area.
+const joins = (() => {
+  const onGround = new Set(w.lines.filter((l) => l.level === 'ground' || l.level === 'under').flatMap((l) => l.pts.map(([x, z]) => x + ',' + z)));
+  const out = [];
+  for (const l of w.lines) {
+    if ((l.level !== 'bridge' && l.level !== 'tunnel') || l.kind > 8 || l.pts.length < 2) continue;
+    for (const [k, k2] of [[0, 1], [l.pts.length - 1, l.pts.length - 2]]) {
+      const p = l.pts[k], q = l.pts[k2], L = Math.hypot(q[0] - p[0], q[1] - p[1]);
+      if (!onGround.has(p[0] + ',' + p[1]) || !inOpen(p) || out.some((e) => e.p[0] === p[0] && e.p[1] === p[1])) continue;
+      out.push({ level: l.level, p, u: [(q[0] - p[0]) / L, (q[1] - p[1]) / L], y: l.heights[k], w: l.w });
+    }
+  }
+  return out;
+})();
+// Whether a piece's outline comes within a square r either side of an end.
+const near = (e, r) => (q) => {
+  const xs = q.rings[0].map((v) => v[0]), zs = q.rings[0].map((v) => v[1]);
+  return Math.min(...xs) < e.p[0] + r && Math.max(...xs) > e.p[0] - r && Math.min(...zs) < e.p[1] + r && Math.max(...zs) > e.p[1] - r;
+};
+
+test("a deck meets the ground's streets at its ends to within 5 cm, and a tunnel's end is on the cutting's floor", () => {
+  const decks = joins.filter((e) => e.level === 'bridge'), tunnels = joins.filter((e) => e.level === 'tunnel');
+  assert.ok(decks.length >= 15 && tunnels.length >= 6, `${decks.length} decks' ends and ${tunnels.length} tunnels' meet the ground's streets in the area`);
+  // A deck's heights at a point, its lines' whose width (and pavements) reach it: two where two
+  // carriageways run side by side (the lines to the half metre and the decimetre, thinned to 0.8 m).
+  const decksLines = w.lines.filter((l) => l.level === 'bridge' && l.kind <= 8);
+  const lineYs = ([x, z]) => {
+    const out = [];
+    for (const l of decksLines) {
+      let best = Infinity, y = 0;
+      for (let i = 1; i < l.pts.length; i++) {
+        const a = l.pts[i - 1], b = l.pts[i];
+        if (Math.abs(a[0] - x) > 80 && Math.abs(b[0] - x) > 80) continue;
+        const dx = b[0] - a[0], dz = b[1] - a[1], f = Math.max(0, Math.min(1, ((x - a[0]) * dx + (z - a[1]) * dz) / (dx * dx + dz * dz || 1))), d = Math.hypot(a[0] + dx * f - x, a[1] + dz * f - z);
+        if (d < best) { best = d; y = l.heights[i - 1] + (l.heights[i] - l.heights[i - 1]) * f; }
+      }
+      if (best < l.w / 2 + 2.5) out.push(y);
+    }
+    return out;
+  };
+  const offLine = (v, y) => Math.min(...lineYs(v).map((q) => Math.abs(y - q)));
+  // On a deck at each end, every point of a carriageway or a pavement on the end's line (the lines'
+  // points are to the half metre), and every point of its carriageway on the edge of the ground's:
+  // within 5 cm of the ground, but where the ground there is half a metre or more off the deck (an
+  // embankment's side, where the deck is wider than the street it meets), which it doesn't follow.
+  const edges = S.carriageways.filter((p) => p.level === 'ground').flatMap((p) => p.rings.flatMap((r) => r.map((a, i) => [a, r[(i + 1) % r.length]])));
+  const onEdge = (v) => edges.some(([a, b]) => Math.abs(a[0] - v[0]) < 30 && Math.abs(a[1] - v[1]) < 30 && segDist(v, a, b) < 0.15);
+  let n = 0, worst = 0, steep = 0;
+  const off = [];
+  for (const e of decks) {
+    for (const piece of [...S.carriageways, ...S.pavements].filter((q) => q.level === 'bridge' && near(e, e.w + 4)(q))) {
+      piece.rings.forEach((r, i) => r.forEach((v, k) => {
+        const d = [v[0] - e.p[0], v[1] - e.p[1]], along = d[0] * e.u[0] + d[1] * e.u[1];
+        if (Math.hypot(...d) > e.w / 2 + 3 || !(along < 0.5 || ('surface' in piece && Math.hypot(...d) < e.w + 2 && onEdge(v)))) return;
+        const dy = Math.abs(piece.ys[i][k] - w.height(...v));
+        if (dy > 0.0501 && offLine(v, w.height(...v)) >= 0.4) { steep++; return; }
+        n++;
+        worst = Math.max(worst, dy);
+        if (dy > 0.0501) off.push(`(${v}) ${dy.toFixed(2)}`);
+      }));
+    }
+  }
+  // And nowhere is a deck pulled to the ground under it: every point of a deck within 0.6 m of its
+  // lines' height there (at its ends, the ground's across the end's line, half a metre at most).
+  const pulled = [];
+  for (const q of [...S.carriageways, ...S.pavements].filter((p) => p.level === 'bridge')) q.rings.forEach((r, i) => r.forEach((v, k) => { if (!(offLine(v, q.ys[i][k]) <= 0.6)) pulled.push(`(${v}) ${q.ys[i][k]} by lines at ${lineYs(v).map((y) => y.toFixed(1))}`); }));
+  assert.deepEqual(pulled, [], 'points of a deck off its own height');
+  // A tunnel's end: the lowest of the ground at it and out from it up to 4 m, as the tiles have it.
+  const floor = tunnels.map((e) => Math.abs(e.y - Math.min(...[0, 1, 2, 3, 4, 5, 6, 7, 8].map((k) => w.height(e.p[0] - e.u[0] * k * 0.5, e.p[1] - e.u[1] * k * 0.5)))));
+  console.log(`${decks.length} decks' ends: ${n} points where they meet the ground, ${worst.toFixed(3)} m off at most, and ${steep} by ground half a metre or more off them; ${tunnels.length} tunnels' ends, ${Math.max(...floor).toFixed(2)} m off the cutting's floor at most`);
+  assert.ok(n >= decks.length * 2, `${n} points at ${decks.length} decks' ends`);
+  assert.deepEqual(off, [], 'points of a deck more than 5 cm off the ground where it meets it');
+  assert.ok(Math.max(...floor) < 0.2, `a tunnel's end ${Math.max(...floor).toFixed(2)} m off the cutting's floor`);
+});
+
+test("no pavement on one level lies over the other's surfaces where the two are at one height", () => {
+  // A pavement on the ground over a carriageway or a pavement off it, or a deck's pavement over the
+  // ground's carriageway or pavement, where they're within 1 m of each other's height: where a deck
+  // or a tunnel meets the ground, at its end. Each pavement shrunk by 10 cm first, as in the test
+  // above; the height of a piece off the ground anywhere, its nearest edge's.
+  const shrunk = (list) => { const o = new C.ClipperOffset(), out = []; o.AddPaths(list.flatMap(turned), C.JoinType.jtMiter, C.EndType.etClosedPolygon); o.Execute(out, -10); return out; };
+  const yOn = (q) => (x, z) => {
+    let best = Infinity, y = 0;
+    q.rings.forEach((r, i) => r.forEach((a, k) => {
+      const b = r[(k + 1) % r.length], dx = b[0] - a[0], dz = b[1] - a[1], f = Math.max(0, Math.min(1, ((x - a[0]) * dx + (z - a[1]) * dz) / (dx * dx + dz * dz || 1))), d = Math.hypot(a[0] + dx * f - x, a[1] + dz * f - z);
+      if (d < best) { best = d; y = q.ys[i][k] + (q.ys[i][(k + 1) % r.length] - q.ys[i][k]) * f; }
+    }));
+    return y;
+  };
+  let onUp = 0, onGround = 0;
+  const bad = [];
+  for (const q of [...S.carriageways, ...S.pavements].filter((p) => p.level !== 'ground')) {
+    const e = { p: [(Math.min(...q.rings[0].map((v) => v[0])) + Math.max(...q.rings[0].map((v) => v[0]))) / 2, (Math.min(...q.rings[0].map((v) => v[1])) + Math.max(...q.rings[0].map((v) => v[1]))) / 2] };
+    const r = Math.max(...q.rings[0].map((v) => Math.max(Math.abs(v[0] - e.p[0]), Math.abs(v[1] - e.p[1])))) + 1, y = yOn(q);
+    // The ground's pavements over it; and if it's a pavement, it over the ground's surfaces.
+    const pairs = [[shrunk(S.pavements.filter((p) => p.level === 'ground' && near(e, r)(p))), turned(q), 'up']];
+    if (!('surface' in q)) pairs.push([shrunk([q]), [...S.carriageways, ...S.pavements].filter((p) => p.level === 'ground' && near(e, r)(p)).flatMap(turned), 'ground']);
+    for (const [a, b, which] of pairs) {
+      if (!a.length || !b.length) continue;
+      const c = new C.Clipper(), got = [];
+      c.AddPaths(a, C.PolyType.ptSubject, true);
+      c.AddPaths(b, C.PolyType.ptClip, true);
+      c.Execute(C.ClipType.ctIntersection, got, NZ, NZ);
+      for (const g of got) {
+        const m = Math.abs(C.Clipper.Area(g)) / 1e4, cx = g.reduce((s, v) => s + v.X, 0) / g.length / 100, cz = g.reduce((s, v) => s + v.Y, 0) / g.length / 100;
+        if (Math.abs(y(cx, cz) - w.height(cx, cz)) > 1) continue;
+        if (which === 'up') onUp += m; else onGround += m;
+        if (m > 0.5) bad.push(`${m.toFixed(1)} m² of ${which === 'up' ? `the ground's pavement over a ${q.level}'s ${q.surface ? 'carriageway' : 'pavement'}` : `a ${q.level}'s pavement over the ground's surfaces`} at (${cx.toFixed(0)}, ${cz.toFixed(0)})`);
+      }
+    }
+  }
+  console.log(`at one height: ${onUp.toFixed(1)} m² of the ground's pavements over a deck or a tunnel, ${onGround.toFixed(1)} m² of a deck's pavements over the ground's surfaces`);
+  assert.deepEqual(bad, []);
+});
+
 test('every street in the area has its carriageway, at its real width', () => {
   // The tiles' lines are thinned to within 0.8 m of the map's, so the width is measured across each
   // carriageway at its line, out to where it ends either side, on the straight stretches of streets

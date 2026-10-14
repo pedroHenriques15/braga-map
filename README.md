@@ -57,8 +57,10 @@ world.inOpen(x, z); // inside its edge?
 - Each street says its level (task 012): on the ground; on a bridge, with its deck's height at
   each point (`heights`); in a tunnel, under the ground, with its road's; or under something at the
   ground's own level (a building over it, or a deck the map draws as a tunnel under a bridge). A
-  deck and a tunnel's road run straight between the ground where they end. Where the LiDAR took a
-  deck for the ground, the bridge is ground too, and what passes under it a tunnel.
+  deck and a tunnel's road run straight between the ground where they end, as `height(x, z)` has
+  it: a deck meets the street on the ground at its end within 5 cm (task 040), and a tunnel's end is
+  on the cutting's floor. Where the LiDAR took a deck for the ground, the bridge is ground too, and
+  what passes under it a tunnel.
 - **The open world's area** (decision 019, task 032) is where a game lets the player drive
   anywhere: the Volta dos Amigos' and about 150 m round it, and the Picoto's top. `map().open` has
   its edge (`pts`, a ring) and its gates (`gates`): where each street crosses the edge, with the
@@ -183,7 +185,9 @@ heights and roofs from `roofs.mjs`'s measurements. All of them need the LiDAR.
   (`test/levels.test.js`): under a deck there's room for what passes, over a tunnel its roof; a
   bridge that meets a street at its end, or that the LiDAR took for the ground, meets it at grade.
   `lines.mjs` is how it reads the streets: each way's kind, width, level, and the heights of a
-  bridge's deck or a tunnel's road.
+  bridge's deck or a tunnel's road, straight between its ends at the ground as the tiles hold it
+  (task 040), so a deck and the street it meets are at one height there; a tunnel's end on the
+  cutting's floor, the lowest of that ground from its mouth to 4 m out.
 - `open.mjs` works out the open world's edge (task 032) from the streets and the buildings, on a
   grid of 1 m: near the loop is within 120 m of it and what that closes round (its inside, and a
   pocket between two of its arms), and the Picoto's top; every street that comes near is in, from
@@ -211,12 +215,18 @@ heights and roofs from `roofs.mjs`'s measurements. All of them need the LiDAR.
   or island is behind the carriageway, 15 cm high, dropped at the crossings; the lines from
   `lanesOf` (each lane at least 2.5 m), stopping at the junctions and short of the zebras; a zebra
   at every crossing the map has, 4 m deep, but the unmarked ones. Everything to the nearest 10 cm.
-  On its own, `node tools/streets.mjs [x0 x1 z0 z1]` makes a box's streets (Fujacal's by default)
-  into `.cache/streets/` with `index.html`, a page that sets them over the 2025 orthophoto, each
-  kind on a layer, to check them by eye. `test/streets.test.js` checks it on made-up streets (a T
-  junction, a roundabout, a reservation) and in the world's tiles: every ring simple, nothing lying
-  on anything else at its level, every street inside the open world's edge with its carriageway at
-  its width.
+  Where a bridge or a tunnel meets the ground's streets (task 040), its carriageway takes the
+  ground's place round its end, and a deck's end follows the ground as the tiles hold it, a point
+  every 2 m across it, where that's within 0.5 m of the deck; wherever a deck or a tunnel's road is
+  within 2 m of the ground, the two are one level, and the ground's pavements give way to it, a
+  deck's pavements to the ground's carriageway. On its own, `node tools/streets.mjs [x0 x1 z0 z1]`
+  makes a box's streets (Fujacal's by default) into `.cache/streets/` with `index.html`, a page that
+  sets them over the 2025 orthophoto, each kind on a layer, to check them by eye.
+  `test/streets.test.js` checks it on made-up streets (a T junction, a roundabout, a reservation) and
+  in the world's tiles: every ring simple, nothing lying on anything else at its level, a deck
+  meeting the ground's streets within 5 cm at its ends and a tunnel's end on the cutting's floor, no
+  pavement of one level over the other's surfaces where they're at one height, every street inside
+  the open world's edge with its carriageway at its width.
 - `audit.mjs` is the street audit (task 006): over the Volta dos Amigos' box, the open world's area
   and the shooter's, every street, square, railway, footway, step, path and cycleway the map has,
   by class, its length and how much of it the world's tiles draw (a line of its own kind within a

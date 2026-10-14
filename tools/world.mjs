@@ -53,11 +53,39 @@ for (const f of fs.readdirSync(path.join(ROOT, 'tracks')).filter((f) => f.endsWi
   for (const { p } of points) for (const t of tilesOver({ x0: p[0], x1: p[0], z0: p[2], z1: p[2] }, 60)) FINE.add(t.id);
 }
 
+// The ground as the tiles hold it, which index.js's height reads and a street on the ground takes:
+// on each tile's grid, every 2 m on the FINE tiles and 10 m on the rest, the mean round each point in
+// decimetres above ELEV0; between the points, bilinear; above the sea, as the LiDAR's. Each point is
+// made when it's first asked for, and kept for the tile's terrain. A bridge's end takes its height
+// from it (task 040), so its deck and the street it meets are at one height there.
+const grids = new Map(); // tile id → { step, n, dm }
+const gridOf = (t) => {
+  let g = grids.get(t.id);
+  if (!g) {
+    const step = FINE.has(t.id) ? 2 : 10, n = TILE / step + 1;
+    grids.set(t.id, (g = { step, n, dm: new Float64Array(n * n).fill(NaN) }));
+  }
+  return g;
+};
+const gridDm = (t, i, j) => {
+  const g = gridOf(t), k = j * g.n + i;
+  if (Number.isNaN(g.dm[k])) g.dm[k] = dm(ground.mean(t.box.x0 + i * g.step, t.box.z0 + j * g.step, g.step) - ELEV0);
+  return g.dm[k];
+};
+const tileGround = (x, z) => {
+  const t = tileAt(x, z);
+  if (!t) return ground.at(x, z);
+  const g = gridOf(t), fx = Math.max(0, Math.min(g.n - 1.001, (x - t.box.x0) / g.step)), fz = Math.max(0, Math.min(g.n - 1.001, (z - t.box.z0) / g.step));
+  const i = Math.floor(fx), j = Math.floor(fz), u = fx - i, v = fz - j, h = (a, b) => gridDm(t, a, b) / 10;
+  return ELEV0 + (h(i, j) * (1 - u) + h(i + 1, j) * u) * (1 - v) + (h(i, j + 1) * (1 - u) + h(i + 1, j + 1) * u) * v;
+};
+
 // ---------------------------------------------------------------------------------------------
 // The streets, the railway, and what the ground is.
 
-// Every street and railway (lines.mjs), and the heights of those on a bridge's deck or in a tunnel.
-const { lines, heights, open } = streetLines(base, ground, inExt);
+// Every street and railway (lines.mjs), and the heights of those on a bridge's deck or in a tunnel,
+// their ends at the ground as the tiles hold it.
+const { lines, heights, open } = streetLines(base, ground, inExt, tileGround);
 const areas = []; // [kind, ring]
 for (const e of base.elements) {
   const t = e.tags || {};
@@ -481,7 +509,7 @@ let nTrees = 0;
   const nodes = readCache('osm/street.json').elements.filter((e) => e.type === 'node');
   const rings = (kind) => areas.filter(([k]) => k === AREA.indexOf(kind)).map(([, r]) => r);
   const B = OPEN_BOX, over = tilesOver(B).map((t) => ({ id: t.id, box: { x0: Math.max(t.box.x0, B.x0), x1: Math.min(t.box.x1, B.x1), z0: Math.max(t.box.z0, B.z0), z1: Math.min(t.box.z1, B.z1) } }));
-  const { cuts, stats } = streetSurfaces({ lines, heights, elev0: ELEV0, nodes, buildings: outlines, squares: rings('plaza'), water: rings('water'), box: B, cuts: over });
+  const { cuts, stats } = streetSurfaces({ lines, heights, elev0: ELEV0, height: tileGround, nodes, buildings: outlines, squares: rings('plaza'), water: rings('water'), box: B, cuts: over });
   for (const { id } of over) tiles.get(id).streets = packStreets(cuts.get(id), tiles.get(id).box.x0, tiles.get(id).box.z0);
   console.log(`streets: ${stats.edges} stretches in the open world's ${over.length} tiles, ${stats.junctions} junctions, ${stats.islands} islands, ${stats.reservations} reservations, ${Math.round(stats.km.kerb)} km of kerb, in ${Math.round(stats.seconds)} s`);
 }
@@ -634,8 +662,9 @@ const HEAD = `// Made by tools/world.mjs from OpenStreetMap and DGT's LiDAR: run
 let bytes = 0;
 const sizes = [];
 for (const t of tiles.values()) {
-  const p = new Packer(), b = t.box, step = FINE.has(t.id) ? 2 : 10, n = TILE / step + 1, h = [];
-  for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) h.push(dm(ground.mean(b.x0 + i * step, b.z0 + j * step, step) - ELEV0));
+  const p = new Packer(), b = t.box, { step, n } = gridOf(t), h = [];
+  for (let j = 0; j < n; j++) for (let i = 0; i < n; i++) h.push(gridDm(t, i, j));
+  grids.delete(t.id);
   p.part('terrain', packGrid(h, n), { x0: b.x0, z0: b.z0, step, nx: n, nz: n });
   p.part('areas', t.areas);
   p.part('lines', t.lines);

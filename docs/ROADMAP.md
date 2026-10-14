@@ -30,8 +30,10 @@ whole area, and ships as one release when 037 is done, so the live game never lo
 - **038** The city streamed tile by tile, when the area grows.
 - **039** Into the dead end by a ramp: the made-up `(joined)` road goes, and the race jumps
   from a real street onto another, only during a race.
-- **040** The levels joined exactly: decks and tunnels meeting the ground at its height, and no
-  pavement on the ground over their roads.
+- **042** Every street's name and every bus stop in the tiles, and their plates and stops drawn
+  on every street in the area (035 draws the route's).
+- **043** The ground held to the street at a deck's end and a tunnel's mouth, where the tiles'
+  2 m ground dips into the abutment or climbs the portal (040 made the decks meet it exactly).
 
 ## Phase 1 · See it: references, the scorecard and the budget
 
@@ -79,7 +81,7 @@ race car's engine for every kart, and Braga round the track. More of Braga's sou
 
 Phase 1 comes first, but not all of it waits on itself:
 
-- **The open world first:** 032, 033 and 034 are done; 035 next, with 040 beside it (its data);
+- **The open world first:** 032, 033, 034 and 040 are done; 035 next, with 043 beside it (its data);
   036 once the streets are drawn; 037 last. 038 when the area grows. 039 any time, in today's race; 037 carries its ramp
   into the open world. 014, 018 and 026 now work on 033's surfaces, for every street in the area.
 - **Side by side:** 007 (the textures' pipeline) and 015 (the shooter's area). 006 (the street

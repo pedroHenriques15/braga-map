@@ -23,12 +23,16 @@ export const isSquare = (e, pts) => e.tags.highway === 'pedestrian' && (e.tags.a
 // The heights of what's off the ground: a bridge's deck, and a tunnel's road. Each runs straight
 // between the ground where it ends: the LiDAR's ground is the bare earth, which has what's under a
 // deck and over a tunnel, not the deck or the tunnel's road. A bridge or a tunnel the map draws as
-// several ways is taken whole: its ends are where it meets nothing more of its kind, and each point
-// between is as high as its two nearest ends make it, by how far it is from each along the way. A
-// tunnel's end is at its mouth, where the ground is the cutting's floor: the lower of the ground
-// there and 4 m out from it. Then a tunnel whose ground stays within 2.5 m of its road is open to
-// the sky, under a bridge's deck only: `under`.
-export function streetLines(base, ground, near) {
+// several ways is taken whole: its ends are where it meets nothing more of its kind, or a street on
+// the ground, and each point between is as high as its two nearest ends make it, by how far it is
+// from each along the way. A tunnel's end is at its mouth, where the ground is the cutting's floor:
+// the lowest of the ground there and out from it, up to 4 m. Then a tunnel whose ground stays within
+// 2.5 m of its road is open to the sky, under a bridge's deck only: `under`.
+//
+// The ground at the ends is `grid`'s, by default the LiDAR's: world.mjs gives it the ground as the
+// tiles hold it, which a street on the ground takes, so a deck and the street it meets are at one
+// height there (task 040).
+export function streetLines(base, ground, near, grid = ground.at) {
   const lines = [];
   for (const e of base.elements) {
     if (!isLine(e)) continue;
@@ -46,11 +50,15 @@ export function streetLines(base, ground, near) {
       if (!nb.has(n)) nb.set(n, []);
       if (i) { const d = Math.hypot(l.pts[i][0] - l.pts[i - 1][0], l.pts[i][1] - l.pts[i - 1][1]); nb.get(n).push([l.nodes[i - 1], d]); nb.get(l.nodes[i - 1]).push([n, d]); }
     });
-    // The ends: nodes with one neighbour of their kind, and the ground there.
-    const ends = [...nb].filter(([, ns]) => new Set(ns.map(([m]) => m)).size === 1).map(([n, ns]) => {
+    // The ends: nodes with one neighbour of their kind, or that a street on the ground shares (where
+    // the bridge forks as it meets it), and the ground there.
+    const onGround = new Set(lines.filter((l) => l.level === LEVEL.ground || l.level === LEVEL.under).flatMap((l) => l.nodes ?? []));
+    const ends = [...nb].filter(([n, ns]) => new Set(ns.map(([m]) => m)).size === 1 || onGround.has(n)).map(([n, ns]) => {
       const [x, z] = at.get(n), [px, pz] = at.get(ns[0][0]), d = Math.hypot(x - px, z - pz) || 1;
-      const out = level === LEVEL.tunnel ? ground.at(x + ((x - px) / d) * 4, z + ((z - pz) / d) * 4) : Infinity;
-      return { n, y: Math.min(ground.at(x, z), out) };
+      // A tunnel's: the lowest from its mouth to 4 m out, every half metre (the tiles' 2 m ground
+      // reaches the cutting's floor before 4 m out, and rises again).
+      const out = level === LEVEL.tunnel ? Math.min(...[1, 2, 3, 4, 5, 6, 7, 8].map((k) => grid(x + ((x - px) / d) * k * 0.5, z + ((z - pz) / d) * k * 0.5))) : Infinity;
+      return { n, y: Math.min(grid(x, z), out) };
     });
     // The two nearest ends of each node, along the ways (Dijkstra from all the ends at once).
     const best = new Map(); // node → [{ e, d }] up to two, of different ends

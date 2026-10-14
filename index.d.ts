@@ -58,7 +58,8 @@ export interface Area {
 // level: on the ground (the ground's height is its own); on a bridge, its deck at `heights`; in a
 // tunnel, under the ground's surface, its road at `heights`; or under something at the ground's
 // own level, open either side (a building over it, or a bridge's deck). heights: a bridge's or a
-// tunnel's, at each point, above elev0: straight between the ground where it ends.
+// tunnel's, at each point, above elev0: straight between the ground where it ends (`height(x, z)`'s;
+// a tunnel's end on the cutting's floor, the lowest of it from its mouth to 4 m out).
 export interface Line {
   kind: number;
   level: 'ground' | 'bridge' | 'tunnel' | 'under';
@@ -108,6 +109,9 @@ export interface Building {
 // Every street as surfaces, in the open world's area (task 033, tools/streets.mjs), each piece cut to
 // the tile it's on. level: on the ground, whose heights are the ground's (`height(x, z)`); on a
 // bridge's deck or in a tunnel's road, with ys, the height of each point (each ring's) above elev0.
+// Where a deck meets the ground's streets, its end is at `height(x, z)` within 5 cm (where that's
+// within half a metre of the deck), with a point every 2 m across it; and where a deck or a tunnel's
+// road is within 2 m of the ground, no pavement of one lies over the other's surfaces (task 040).
 export type StreetLevel = 'ground' | 'bridge' | 'tunnel';
 
 // Where cars drive: each street's carriageway at its real width (the map's `width`, or its lanes, or

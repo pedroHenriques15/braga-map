@@ -1,5 +1,5 @@
 ---
-status: todo
+status: dropped
 priority: medium
 kind: code
 repo: party-kart
@@ -52,3 +52,6 @@ Steps:
 ## Notes
 
 - Found while finishing the budget's check for task 010.
+- **Dropped** on 2026-10-14, at the owner's word: the budget is a guide, not a limit (decision
+  017), so Medium's 61 MB of 60 is no longer something to fix. What the city costs is still measured
+  and recorded by each task that adds to it.

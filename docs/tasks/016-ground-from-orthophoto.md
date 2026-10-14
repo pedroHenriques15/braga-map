@@ -38,7 +38,7 @@ pavements stroked on top, and grain. In the data, ground areas keep their holes 
    - **B.** The orthophoto itself, draped, with cars and shadows in it. Real at a distance,
      blurry and wrong up close.
    - **C.** A mix: A near the road, B beyond 100 m.
-3. **Draw it** in party-kart through task 007's pipeline, inside the budget (task 004).
+3. **Draw it** in party-kart through task 007's pipeline, measured against the budget (task 004, decision 017).
 4. **Fix the holes:** inner rings of multipolygons are holes (`world.mjs:55`).
 5. **Parking:** the car parks the orthophoto shows, with their bay lines (task 018), and where
    it shows parked cars along a kerb, the kerb's parking for task 020.
@@ -60,7 +60,7 @@ pavements stroked on top, and grain. In the data, ground areas keep their holes 
 - [ ] The ground classes are in the tiles for the track's box and the shooter's area.
 - [ ] The way to draw it is chosen from a test, and recorded as a decision.
 - [ ] The route's viewpoints score higher than the round before, and none lower.
-- [ ] The budget (task 004) holds.
+- [ ] What it adds is measured against the budget (task 004) and recorded in Notes (decision 017).
 
 ## Out of scope
 

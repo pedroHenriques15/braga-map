@@ -50,9 +50,9 @@ street), seeded RNG 4242. A filled building is flagged `filled` in the tiles.
   even trimmed hard they stay over. Trim (straighter outlines, no strips under 4 m wide or sheds
   under 40 m²) and raise the budget by what's left; keep them all and raise it; or stay inside it,
   with a party-kart task to draw far buildings simpler? Recommendation: trim, then raise.
-  > Keep them all, and raise the budget (2026-10-14): to about Low 0.59 M, Medium 0.94 M, High
-  > 1.12 M triangles and 1.6 MB, once a phone is checked with `?stats`, as decision 013 says a
-  > raise is made.
+  > Keep them all, and raise the budget (2026-10-14). Then: the budget shouldn't be a hard
+  > constraint; the games can move to a stack that scales better, or to the owner's homelab
+  > server, if need be. No phone check: decision 017, the budget is a guide, not a limit.
 
 ## Read first
 
@@ -139,10 +139,10 @@ street), seeded RNG 4242. A filled building is flagged `filled` in the tiles.
   1.13 → 1.25 MB), over 1.5. Within 300 m of the route the found buildings are 2,297 parts with
   20,038 corners where the invented houses were 1,671 with 6,684: the real city is denser and its
   outlines aren't boxes. Trimming hard (outlines at 0.8 m, no building under 40 m², no part under
-  4 m wide) leaves 11,586 corners, still over. The owner keeps them all and raises the budget
-  (the question above).
-- **Left for `/task finish`:** a phone measured with `?stats&autodrive` on the new city (task
-  004's steps; the city has to reach the phone first: a release, or the dev server on the network),
-  and the budget raised in party-kart's `docs/architecture.md` to what it holds, with a
-  `DECISIONS.md` entry; the round posted on the scorecard and rated; braga-map released as 1.5.0
-  (the tiles' format changed) and party-kart pinned to it; `ROADMAP.md`.
+  4 m wide) leaves 11,586 corners, still over. The owner keeps them all: the budget is a guide, not
+  a limit (decision 017, the question above).
+- **Left for `/task finish`:** the round posted on the scorecard and rated (the shots are in the
+  copy of party-kart, so they're shot again in party-kart itself once it's pinned); braga-map
+  released as 1.5.0 (the tiles' format changed) and party-kart pinned to it; party-kart's
+  `docs/architecture.md`, "The city's budget": what the city costs now, and decision 017 in place
+  of "a change may not take the city past it"; `ROADMAP.md`.

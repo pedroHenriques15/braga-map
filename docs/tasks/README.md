@@ -64,9 +64,11 @@ improve (task 001's `refs/viewpoints.json`). Finishing it means shooting those v
 (task 002) and posting them as a new round on the scorecard, "Braga real" (task 003, decision
 012), for the owner, and the friends they invite, to rate. A task that makes a viewpoint look less like Braga isn't done.
 
-Every task that adds geometry or textures also checks the budget (task 004, decision 013), in
-party-kart's `docs/architecture.md`: draw calls, triangles, textures' memory and download, on
-High, Medium and Low (`scripts/shots.mjs <label> --medium` and `scripts/download.mjs`).
+Every task that adds geometry or textures also measures what it costs against the budget (task
+004), in party-kart's `docs/architecture.md`: draw calls, triangles, textures' memory and
+download, on High, Medium and Low (`scripts/shots.mjs <label> --medium` and
+`scripts/download.mjs`), and records it in its Notes. The budget is a guide, not a limit
+(decision 017): realism comes first, and a task doesn't trim what's real to stay inside it.
 
 ## Template
 

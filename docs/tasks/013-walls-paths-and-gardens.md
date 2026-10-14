@@ -65,7 +65,7 @@ Steps:
   gardens where its photo has them.
 - [ ] In the shooter's area, every wall and step in the photos is in the game, checked at its
   foot viewpoints.
-- [ ] The budget (task 004) holds.
+- [ ] What it adds is measured against the budget (task 004) and recorded in Notes (decision 017).
 
 ## Out of scope
 

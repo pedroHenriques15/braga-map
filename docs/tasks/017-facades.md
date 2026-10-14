@@ -76,7 +76,7 @@ Steps:
   `refs/buildings.json`.
 - [ ] The route's viewpoints score higher on the scorecard than the round before, and none
   lower.
-- [ ] The budget (task 004) holds.
+- [ ] What it adds is measured against the budget (task 004) and recorded in Notes (decision 017).
 
 ## Out of scope
 

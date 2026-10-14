@@ -46,7 +46,7 @@ party-kart draws icosahedra or cones with a random colour (`src/render/trees.ts:
 - [ ] Every tree in the LiDAR's cover along the route and in the shooter's area is in the tiles
   with its height and crown; fill trees are gone there.
 - [ ] Trees on the route are drawn as their kind, checked at the viewpoints.
-- [ ] The budget (task 004) holds.
+- [ ] What it adds is measured against the budget (task 004) and recorded in Notes (decision 017).
 
 ## Out of scope
 

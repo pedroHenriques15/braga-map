@@ -67,7 +67,7 @@ Steps, landmark by landmark, nearest first:
   the Igreja de Lamaçães (if seen from the route) are built at their real size, each checked
   against its photos at a viewpoint.
 - [ ] Their viewpoints score higher on the scorecard than at the baseline.
-- [ ] The budget (task 004) holds.
+- [ ] What it adds is measured against the budget (task 004) and recorded in Notes (decision 017).
 
 ## Out of scope
 

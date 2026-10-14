@@ -57,7 +57,8 @@ route. Traffic lights cycle 20 s.
 - [ ] The world tiles carry furniture for the track's box and the shooter's area, with sources.
 - [ ] Lamps, signs and shelters on the route stand where their photos show them, checked at
   the viewpoints.
-- [ ] The budget (task 004) holds: furniture is instanced.
+- [ ] Furniture is instanced, and what it adds is measured against the budget (task 004) and
+  recorded in Notes (decision 017).
 
 ## Out of scope
 

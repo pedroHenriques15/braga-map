@@ -350,3 +350,19 @@ The conditions, as decision 002's for photos:
   the game: a small OHV engine's recording, the kind rental karts have ("too harsh"), and a
   synthesized racing kart's two-stroke ("not two stroke, several gears and should be closer to a
   race car"). A kart's lack of a gearbox doesn't bind the game.
+
+## 017 · The budget is a guide, not a limit
+
+*2026-10-14 · replaces decision 013's "a change may not take the city past it"*
+
+Realism comes first (decision 001). The budget stays (task 004, party-kart's `docs/architecture.md`)
+as what the city cost when the friends raced on it, and every task that adds to the city still
+measures what it adds against it and records that in its notes: draw calls, triangles, textures
+and download, on High, Medium and Low. But a task no longer stops, trims what's real, or waits on a
+phone to get past it. When the city outgrows the friends' phones or GitHub Pages, the owner moves
+the games to a stack that scales better, or serves them from their homelab server: the map is data,
+and any game can draw it.
+
+The owner said so on 2026-10-14, when task 011's real buildings took the city past the budget
+(Low 0.583 M triangles of 0.55, and 1.56 MB of 1.5 to download) and the choice was to trim them,
+keep them all and measure a phone first, or stay inside it with simpler buildings far from the road.

@@ -191,6 +191,61 @@ committed; `node tools/refs.mjs` fetches the photos into `.cache/refs/`.
 - **KartaView** (`https://api.openstreetcam.org/2.0/photo/`): every query near Braga timed out or
   answered "Restricted access" on 2026-10-13.
 
+## Sounds
+
+Recordings a game may play, for its karts' engines and the city round the track (decision 016).
+Only CC0, which owes no credit; each is on record here all the same, with what was cut from it.
+They live in the game that plays them, not in the map: party-kart's `src/sounds/`, for the city
+round the track (task 025). The karts' engine is synthesized (task 024).
+
+### In use: the city round the track
+
+All CC0 1.0, on Freesound, had from each page's 128 kbps MP3 preview (the originals need an
+account) on 2026-10-14. Each bed is a loop: mixed to mono, its head crossfaded with what follows
+it, set to −20 dBFS RMS (less where its peak would pass −1 dBFS), padded 0.1 s either side with
+its own wrap-around, as MP3 with lamejs. The bells and the bus are played once, faded out at the
+end, their peak at −3 dBFS. 673 KB in all.
+
+| File | Recording | Where | Cut |
+|---|---|---|---|
+| `traffic.mp3` | 613245, "City traffic mid-distance" by tferrino | Coimbra | 12 s from 50.5 s, 48 kbps |
+| `town.mp3` | 869045, "El_Retiro_Park_Ambience_Madrid_Spain_Roadside" by SignatureSoundsOrg | Madrid | 12 s from 550.75 s, 48 kbps |
+| `park.mp3` | 267448, "Dawn in the city (Olivais Sul), Lisbon" by Refrain | Lisbon | 20 s from 181 s, 56 kbps |
+| `woods.mp3` | 527541, "Nature_Ambience_June_2020_H6N_Longos_Braga_Portugal" by siddharthgovindan | Longos, by Braga | 16 s from 70.5 s, 56 kbps |
+| `water.mp3` | 534741, "River at old tanneries area" by ondamarela | Couros, Guimarães | 10 s from 31 s, 48 kbps (−28 dBFS RMS, for a splash's peak) |
+| `crowd.mp3` | 868982, "Norwegian football match / soccer game ambience" by Vogyik, from habbis92's 206003 (CC0) | Stavanger | 12 s from 5.25 s, in the original XY take of the four the file holds, 48 kbps |
+| `bells.mp3` | 643878, "Church Bells, church of São Pedro de Miragaia" by justjare | Porto | all 12 s, 64 kbps |
+| `bus.mp3` | 393763, "Bus Leaving From a Bus Stop" by bcatalog | Portland, Oregon | all 6.9 s, 64 kbps |
+
+tferrino asks that their recordings be used "in creative way as a part of art-form", not
+re-distributed raw or as stock sounds: a game's processed loop is the former. No Portuguese bus,
+football crowd or Braga street was found under CC0; the woods are the nearest, recorded in Longos.
+
+### Tried and dropped, 2026-10-14
+
+- **Freesound 836786**, "ohv_gov_over_take1.wav" by Mihacappy, https://freesound.org/s/836786/
+  (CC0 1.0, from its 128 kbps preview): a small OHV engine, the kind rental karts have, held at
+  several revs, on a phone in a garage. Cut into four loops (idle at 36.0 s, low at 63.9, mid at
+  70.8, high at 46.9; firing at 13.29, 19.94, 22.21 and 24.06 Hz; 100 KB as 96 kbps MP3) and played
+  in party-kart as the karts' engine. The owner found it too harsh, and not a race engine. The
+  author asks that their sounds not be used to train AI models; a request, not the licence's.
+
+### Checked and not used, 2026-10-14
+
+All CC0, on Freesound:
+
+- **Crowds of karts:** qubodup's 189622, 189628 and 189629 (an iPod in an indoor hall, its
+  automatic gain flattening everything to one roar) and OverlookHotelRecords' 317470 and 317471
+  (outdoors, many karts passing, a generator's or a fan's tone under 317470). No one engine is
+  held anywhere in them, so no loop can be cut (task 024's notes).
+- **One engine, not a kart's:** richwise's 361407, a Honda CRF250 ridden off, from a backpack:
+  the cleanest, but a dirt bike's engine. Alex_hears_things' 379915, an ATV revved, 21 s at one
+  speed.
+- **Race engines:** escortmarius's 141526, a 1984 Formula Ford started: it mostly idles, then dies;
+  victormalloy's 113205, a Lotus Elise: clean, but its revs only blip up and down, never held;
+  escortmarius's 141269, a tuned road Ford Escort, and nnus_'s 243634, a race car onboard, muffled.
+  None holds a race engine steady over its revs, which loops need.
+
 ## Not fetched
 
 ### Microsoft's building footprints

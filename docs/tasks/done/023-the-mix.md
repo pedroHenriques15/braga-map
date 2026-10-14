@@ -1,5 +1,5 @@
 ---
-status: todo
+status: done
 priority: high
 kind: code
 repo: party-kart
@@ -74,14 +74,24 @@ Steps:
 
 ## Done when
 
-- [ ] `?autodrive&record=60` gives the race's sound as a file, and the baseline recordings are
+- [x] `?autodrive&record=60` gives the race's sound as a file, and the baseline recordings are
   kept, with the commit they were made at.
-- [ ] In an eight-kart race with items under `?autodrive`, `__kart.audio` shows nothing clipped,
+  > `scripts/listen.mjs` records both takes through it. The baseline is party-kart's
+  > `sounds/2026-10-14-baseline/` (ignored by git), its `sound.json` saying "8946d3d with changes":
+  > the recorder and the meter only.
+- [x] In an eight-kart race with items under `?autodrive`, `__kart.audio` shows nothing clipped,
   and the peak stays under −1 dBFS.
-- [ ] The owner listens to the after recordings beside the baseline and says the beeps and item
+  > The race take: −7.7 dBFS, 0 clipped, with 31 item and egg effects in it (a boom, 7 hits, 8
+  > throws…). The loudest sounds played at once over it: −4.4 dBFS, 0 clipped.
+- [x] The owner listens to the after recordings beside the baseline and says the beeps and item
   sounds no longer grate, and nothing jumps out too loud.
-- [ ] Others' items are heard from where they are: left or right, near or far.
-- [ ] `npm test` and `npm run check` pass.
+  > "Sounds right", 2026-10-14, of `sounds/2026-10-14-mix/` beside the baseline.
+- [x] Others' items are heard from where they are: left or right, near or far.
+  > A boom 30 m to the camera's right is 12 dB louder on the right, 30 m to its left 33 dB louder
+  > on the left, ahead the same on both; fainter with distance (−16, −28 and −37 dBFS on its side
+  > at 30, 120 and 350 m), and past 400 m not played.
+- [x] `npm test` and `npm run check` pass.
+  > 19 of 19, and `tsc` clean.
 
 ## Out of scope
 
@@ -98,3 +108,43 @@ Steps:
   and the city, from CC0 recordings, while menu and item sounds stay synthesized; the karts
   should sound like real karts; no music.
 - No viewpoints apply: the before and after recordings take their place.
+- **Done in party-kart, 2026-10-14, committed as `31dcce9`:** `?record=60` and `scripts/listen.mjs`
+  (two 60 s takes, `race`: eight karts with items, and `alone`: at speed from sample 2535, the
+  autopilot's fastest minute; a page setting each beside the baseline's); `__kart.audio` (the peak
+  on each side, the samples clipped, which effects played); the four buses, the limiter and the
+  ducking; a `PannerNode` for every sound with a place and the listener on the camera; one noise
+  buffer and at most 24 sounds at once; every effect and jingle remade. The engine is unchanged
+  (024), on its bus. Docs: `docs/architecture.md` ("Sound"), `docs/making-changes.md`, `CLAUDE.md`.
+- **The baseline** is in party-kart's `sounds/2026-10-14-baseline/` (ignored by git), made at
+  8946d3d with only the recorder and the meter added. The "after" is `sounds/2026-10-14-mix/`; its
+  `index.html` plays each take beside the baseline's.
+- **The old mix didn't clip.** The assumption in "What" was false: with the master at 0.5, the
+  baseline's race take peaked at −4.7 dBFS, and the loudest sounds at once (a foguete, a hit, a
+  best lap, a horn, a wall and a turbo) at −3.3 dBFS. The limiter stays, for the four engines (024)
+  and the city (025) to come. There is no `bass` sound or "bass drop" in the code.
+- **The worst of the old sound was the bumps:** 1,685 in the 60 s race take. The simulation notes
+  a bump on every step (120 a second) that two karts touch, however gently, so karts rubbing in a
+  pack made a buzz of square waves at 90–120 Hz. A knock now needs 1 m/s, and 0.12 s since the
+  last: 21 and 28 in two takes since. The simulation is unchanged.
+- **Measured, before and after** (`listen.mjs`; loudness over the take, and how far its loudest
+  400 ms stands over the typical one):
+
+  | Take | Peak | Clipped | Loudness | Loudest over typical | The loudest sounds at once |
+  |---|---|---|---|---|---|
+  | race, before | −4.7 dBFS | 0 | −26.1 dBFS | 6.1 dB | −3.3 dBFS |
+  | race, after | −7.7 dBFS | 0 | −25.2 dBFS | 3.1 dB | −4.4 dBFS |
+  | alone, before | −13.2 dBFS | 0 | −26.3 dBFS | 0.7 dB | −3.1 dBFS |
+  | alone, after | −9.6 dBFS | 0 | −25.3 dBFS | 1.8 dB | −4.5 dBFS |
+
+  The alone take's loudest moment, before and after, is the countdown's "go", at 4 s. It's a full
+  chord now, louder than the old beep: at first 4.5 dB over the three strokes before it (−7.1
+  dBFS), it was brought down to 1.8 dB over them, and these are that take. The race take's
+  loudest is now in the race (at 40 s), no longer at its start.
+- **Where sounds are**, measured in Chromium with a foguete's boom round the camera (each side's
+  peak): 30 m right, left −28 / right −16 dBFS; 30 m left, −15 / −48; 30 m ahead, −19 / −19;
+  120 m right, −70 / −28; 350 m right, −84 / −37; 500 m, not played; in your head, −5.8 / −5.8.
+- **The owner listened** to `sounds/2026-10-14-mix/index.html` beside the baseline on 2026-10-14:
+  it sounds right.
+- **Not verified:** anything by ear; Safari and Firefox (Playwright's WebKit on Windows has no Web
+  Audio, and its Firefox isn't installed), where the listener falls back to `setPosition` and
+  `setOrientation`; what the sound costs a phone.

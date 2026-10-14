@@ -326,3 +326,27 @@ not a mistake for a task to fix. A shooter may draw it at its real size. From th
 for about 150 m, ahead and to the left on the way to the roundabout; the corner block hides it
 before that.
 
+
+## 016 · The engines and the city may be recordings; the rest stays synthesized
+
+*2026-10-13, written 2026-10-14 · adds to decision 002*
+
+party-kart's rule was "no asset files: every sound is synthesized". For the karts' engines and the
+city's sound round the track it no longer holds: they may be recordings, which sound like the
+thing itself where a synthesis only sounds like a game. The menus', the items', the jingles' and
+the eggs' sounds stay synthesized, and there's no music. The owner chose this on 2026-10-13, over
+recording everything and over keeping everything synthesized.
+
+The conditions, as decision 002's for photos:
+
+- **Licence: CC0 only**, from Freesound or the like, each on record in `docs/SOURCES.md`
+  ("Sounds") with what was cut from it, though CC0 owes no credit. Nothing is recorded on the
+  photo walk.
+- **Size:** MP3, which every browser decodes, fetched after the city so a race never waits for
+  it; the engines' loops under 300 KB in all, the city's under 1 MB.
+- **The karts' engine is a race car's, synthesized:** a V8 through six gears, its revs climbing
+  in each and dropping at the shifts (task 024). No CC0 recording holds a race engine, or a kart's,
+  steady over its revs, which loops need. The owner chose it on 2026-10-14 after hearing two in
+  the game: a small OHV engine's recording, the kind rental karts have ("too harsh"), and a
+  synthesized racing kart's two-stroke ("not two stroke, several gears and should be closer to a
+  race car"). A kart's lack of a gearbox doesn't bind the game.

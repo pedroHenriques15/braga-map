@@ -435,3 +435,31 @@ race goes from being the whole game to being one thing to do in it.
 
 The alternative, the kart race as it was with more streets painted round it, can't be driven off
 the route: everything but the track is paint on the ground.
+
+## 020 · The open world's edge is worked out from the streets, and the Picoto's top is in it
+
+*2026-10-14 · task 032*
+
+Where the open world ends (decision 019) is drawn by a script from the map, not by hand
+(`tools/open.mjs`, into `tools/open.json`), so it can be drawn again when the map changes or the
+area grows, by the same rules:
+
+- **The streets decide it.** Every street that comes within 120 m of the Volta dos Amigos (or of a
+  pocket between two of its arms) is in, whole, from junction to junction; so is a street between
+  two junctions that are in. The edge runs half way between the streets in and those out, which
+  puts it along the backs of the buildings between them, and goes round a building rather than
+  through it. The loop is always more than 100 m inside it.
+- **A street leaving is closed just past its junction,** where its kerbs have turned the corner,
+  with the edge straight across it at right angles: a game stands its road-works barriers there
+  ("Estrada cortada"), the gates. A roundabout is never cut: it's in whole, and its exits are
+  closed where their two carriageways run side by side, one row of barriers across both.
+- **The Picoto's top is in** (its viewpoint and its cross, with the road round the summit), taken
+  in as if the loop passed there. The owner chose this after looking at the edge on the map page,
+  over leaving it 150 m outside.
+- **Where a kart can go, the ground is every 2 m:** on every tile the area touches. A game loads
+  those and the tiles within 500 m of them, so the city stays drawn past the edge
+  (`loadWorld({ open: true })`).
+
+The owner looked at the edge on the map page and kept it as it came out. A hand-drawn edge would
+have been tidier in places, but couldn't follow the map when it changes, and nothing would say
+where it crosses each street.

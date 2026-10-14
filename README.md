@@ -211,7 +211,8 @@ the buildings' heights and roofs from `roofs.mjs`'s measurements. All of them ne
   into `.cache/streets/` with `index.html`, a page that sets them over the 2025 orthophoto, each
   kind on a layer, to check them by eye. `test/streets.test.js` checks it on made-up streets (a T
   junction, a roundabout, a reservation) and in the world's tiles: every ring simple, nothing lying
-  on anything else at its level, every street with its carriageway at its width.
+  on anything else at its level, every street inside the open world's edge with its carriageway at
+  its width.
 - `track.mjs` plans the tracks in `tracks.mjs`: below.
 - `refs/viewpoints.json` lists the viewpoints, the places where a game is set against the real
   Braga (task 001): 29 cameras along the Volta dos Amigos, on foot in Fujacal, and on Bom Jesus

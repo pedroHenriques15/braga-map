@@ -1,5 +1,5 @@
 ---
-status: doing
+status: done
 priority: high
 kind: code
 repo: braga-map
@@ -64,13 +64,17 @@ Steps:
 
 ## Done when
 
-- [ ] The owner has looked at the edge on the map page.
-- [ ] `map().open` gives the area and its gates, and `loadWorld({ open: true })` loads it; typed in
-  `index.d.ts`, with the README's "Using it from a game" saying so.
-- [ ] Every tile the area touches has its ground every 2 m; the download's growth is in Notes.
-- [ ] Every street inside the edge has its surfaces in the tiles (`test/streets.test.js` over the
-  polygon).
-- [ ] `npm test` passes, with `test/open.test.js`.
+- [x] The owner has looked at the edge on the map page. (In the chat, 2026-10-14: "looks right, go
+  on", and take the Picoto's top in; the shared copy shows it too, version 7.)
+- [x] `map().open` gives the area and its gates, and `loadWorld({ open: true })` loads it; typed in
+  `index.d.ts`, with the README's "Using it from a game" saying so. (`Open`, `Gate` and `Region` in
+  `index.d.ts`; `test/open.test.js` loads it: 49 tiles, the 23 under it and 26 round it.)
+- [x] Every tile the area touches has its ground every 2 m; the download's growth is in Notes.
+  (`test/open.test.js`; +0.16 MB gzipped, in Notes.)
+- [x] Every street inside the edge has its surfaces in the tiles (`test/streets.test.js` over the
+  polygon). (The surfaces are made over the box round the edge, `OPEN_BOX`; the test now checks
+  every point inside the edge: 10,514 of 10,516 on a carriageway.)
+- [x] `npm test` passes, with `test/open.test.js`. (49 of 49.)
 
 ## Out of scope
 
@@ -115,3 +119,8 @@ Steps:
   - **Footpaths:** the map has none yet (`fetch.mjs` doesn't fetch `footway`, `path` or `steps`),
     so only pedestrian streets get gates. When task 013 brings them in as lines, `open.mjs` and
     `gatesOf` take them like any street, once they have a kind in `LINE`.
+- 2026-10-14, finished (`/task finish 032`): the viewpoints weren't shot again. The task names none,
+  and nothing a game draws has changed: party-kart still pins braga-map `v1.6.0`. Its budget
+  (task 004) is measured again when it moves to a tag with this (tasks 034–036); the tiles' own
+  growth is above. The shared map page (https://claude.ai/artifact/UdwdhZYkR76J5xyPcRUHUb) was
+  published again with the «Mundo aberto» layer. Decision 020 records how the edge is drawn.

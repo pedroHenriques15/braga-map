@@ -1,7 +1,7 @@
 // Every street as surfaces (task 033): on made-up streets, the corners a kerb rounds, a roundabout's
 // island, a reservation, the pavements where a street is built up and the crossings; and in the open
-// world's tiles as the games read them, every street there with its carriageway at its real width,
-// nothing lying on anything else at its level, and the Volta dos Amigos on them.
+// world's tiles as the games read them, every street inside its edge (task 032) with its carriageway
+// at its real width, nothing lying on anything else at its level, and the Volta dos Amigos on them.
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
 import ClipperLib from 'clipper-lib';
@@ -99,9 +99,11 @@ test('a reservation between a road\'s two carriageways, the way each goes', () =
 
 // ---- In the open world's tiles ----
 
+// The tiles under the box round the area, where the surfaces are made; the streets checked are those
+// inside its edge.
 const w = await loadWorld(OPEN_BOX);
 const S = w.streets;
-const inOpen = ([x, z]) => x > OPEN_BOX.x0 + 5 && x < OPEN_BOX.x1 - 5 && z > OPEN_BOX.z0 + 5 && z < OPEN_BOX.z1 - 5;
+const inOpen = ([x, z]) => w.inOpen(x, z);
 
 test("every ring is closed and simple, and off the ground has its heights", () => {
   for (const p of [...S.carriageways, ...S.pavements]) {

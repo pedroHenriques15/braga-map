@@ -8,7 +8,8 @@ it. Party Kart races on it, and the games after it (a shooter, say) use the same
   on a track or an arena: the same streets, buildings and trees in every game.
 - **The sections** are named parts of the map, each a set of whole tiles: Centro, Estádio, Gualtar,
   Lamaçães, Picoto, and Bom Jesus e Sameiro, grown from the six zones voted on for tracks until
-  they cover all of it.
+  they cover all of it. Fujacal, the shooter's area, loads like one, with the tiles round it
+  ([docs/SHOOTER-AREA.md](docs/SHOOTER-AREA.md)).
 - **The tracks** (`tracks/`) are the kart tracks planned on the map's streets. Party Kart races
   the Volta dos Amigos, through Centro, Picoto and Lamaçães.
 - **The map page** (`map/`) draws it all, for planning, every building coloured by the height
@@ -35,20 +36,22 @@ import { loadWorld, map } from 'braga-map';
 import amigos from 'braga-map/tracks/amigos.js';
 
 const world = await loadWorld({ open: true }); // the open world's area and the city round it
-// or loadWorld(amigos.box), loadWorld({ sections: ['centro'] })
+// or loadWorld(amigos.box), loadWorld({ sections: ['centro'] }), loadWorld({ sections: ['fujacal'] })
 world.height(x, z); // the ground: every 2 m or 10 m on the tiles loaded, every 50 m elsewhere
 world.buildings; // [{ kind, roof, ends, dir, pitch, y, h, ridge, floors, roofColor, … pts }], and areas, lines, trees…
 world.streets; // in the open world's area: { carriageways, pavements, kerbs, markings }, each piece at its level
 world.open.gates; // where each street leaves the area: [{ x, z, heading, w, k, level, y }]
 world.inOpen(x, z); // inside its edge?
+world.shooter; // the shooter's area, Fujacal: { id: 'fujacal', name, pts, gates, tiles, seen }, and world.inShooter(x, z)
 world.photos; // the photo textures on the tiles loaded: [{ id, kind, box | wall, s, y, files: { high, medium, low }, credit }]
 ```
 
 - `map()` is what every game needs whichever part of the map it's in: the sections and their
   tiles, the relief over the whole map and the horizon round it, the rivers, the landmarks, the
-  sights, and the open world's area with its gates. It's small, and it's always there.
+  sights, and the open world's area and the shooter's with their gates. It's small, and it's always
+  there.
 - `loadWorld(box)`, `loadWorld({ sections })` or `loadWorld({ open: true })` loads the tiles under
-  it, each a module of its own that the game's bundler splits off, so a player only downloads those.
+  it (the section `fujacal`, the shooter's area, and the tiles round it), each a module of its own that the game's bundler splits off, so a player only downloads those.
   The types are in `index.d.ts`, and a track's in `tracks/track.d.ts`.
 - The ground is the bare ground, from DGT's 2025 LiDAR: every 2 m on the tiles within 60 m of a
   track, over the shooter's area and under the open world's, every 10 m on the others. A street is
@@ -133,6 +136,7 @@ node tools/decks.mjs   # the bridges' decks DGT's point cloud saw: .cache/decks.
 npm run page     # the map page's map/braga.json
 npm run tracks   # every track: tracks/<id>.js, and map/tracks.json for the page
 npm run open     # the open world's edge, round the Volta dos Amigos: tools/open.json (seconds)
+npm run shooter  # the shooter's area's edge, round Fujacal: tools/shooter.json (seconds)
 npm run world    # the world: world/base.js, world/tiles.js and a module per tile (1.5 minutes)
 node tools/audit.mjs   # every street and path round the Volta dos Amigos, and whether the world draws it: .cache/audit.json (1 minute)
 node tools/streets.mjs [x0 x1 z0 z1]  # the streets as surfaces in a box (Fujacal's), and a page over the orthophoto to check them
@@ -148,7 +152,7 @@ node tools/round.mjs <round> --label "…"  # a round of party-kart's shots, for
 They need Node 22.18 or later. Run them in that order: `track.mjs` and `world.mjs` read the
 landmarks from `map/braga.json`, `open.mjs` the Volta dos Amigos, `world.mjs` makes the ground finer
 on the tiles the tracks in `tracks/` run through and the open world's edge touches, the map page
-draws the edge (run `npm run page` again after `npm run open`) and the street audit (again after
+draws the edges (run `npm run page` again after `npm run open` or `npm run shooter`) and the street audit (again after
 `audit.mjs`, which reads the world's tiles), `textures.mjs` lays each facade on its building in
 the world (after `world.mjs`; `test/textures.test.js` says if a building moved from under one),
 and `build.mjs` and `world.mjs` take the buildings'
@@ -176,8 +180,9 @@ streets; when a track moves enough to change the edge, run the three again until
   `.cache/credentials.json` as `{ "cdd": { "username", "password" } }`. `dgt.mjs` reads them all
   in the map's metres. [docs/SOURCES.md](docs/SOURCES.md) has what each is, and its licence and
   credit.
-- `sections.mjs` has the map's extent, the tiles, the sections, the shooter's area, and the open
-  world's (`OPEN`, read from `open.json`), the box round it and the tiles under it and round it.
+- `sections.mjs` has the map's extent, the tiles, the sections, the shooter's area (`SHOOTER`, read
+  from `shooter.json`) and the open world's (`OPEN`, read from `open.json`), and for each the box
+  round it and the tiles under it and round it.
   `geo.mjs` has the projection, `ELEV0` and the Terrain Tiles. `terrain.mjs` is the ground: the
   LiDAR's at 50 cm where it was fetched, at 2 m over the rest of the map, and the Terrain Tiles
   (EU-DEM) beyond, for the horizon. `osm.mjs` is what `world.mjs` and `track.mjs` share: how wide a
@@ -229,6 +234,13 @@ streets; when a track moves enough to change the edge, run the three again until
   `gatesOf` finds the gates, for `world.mjs` (with each one's height) and `build.mjs`.
   `test/open.test.js` checks the ring is simple, the loop at least 100 m inside it, a gate where
   every street crosses it and nowhere else, each square, and the ground every 2 m under it.
+- `shooter.mjs` works out the shooter's area's edge (task 015) on a grid of half a metre: the
+  Avenida Imaculada Conceição, the Avenida da Liberdade and the Rio Este close the five streets in
+  with the Rua Monsenhor Airosa, and everything between them is in, up to the avenues' near kerbs
+  and the river's near bank; past the Rua Monsenhor Airosa, the block behind it is in, half way to
+  the streets out, round the buildings, as `open.mjs` does it. `test/shooter.test.js` checks the
+  ring is simple, the five streets in it and the avenues and the river out, that it loads as the
+  section `fujacal`, and a gate where every street crosses it.
 - `streets.mjs` makes every street in the open world's area a surface (task 033), for
   `world.mjs`, with Clipper (`clipper-lib`, a dev dependency): each street's band at its width
   (`carriageway` in `osm.mjs`), cut square across where it meets another and round at a dead end;

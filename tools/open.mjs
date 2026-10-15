@@ -88,7 +88,7 @@ export function gatesOf(pts, lines, y) {
 // straightening would make the ring cross itself, it's left. Returns the new ring, and how many
 // crossings were left as they were.
 const SPAN = 2;
-function square(pts, lines) {
+export function square(pts, lines) {
   let left = 0;
   for (let round = 0; round < 12; round++) {
     // Starting from the point furthest from any crossing, so no crossing straddles the ring's start.

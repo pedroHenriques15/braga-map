@@ -54,6 +54,8 @@ pavements stroked on top, and grain. In the data, ground areas keep their holes 
 - `../party-kart/src/render/city.ts` (`paintGround`, `LAND`, `groundMaterial`).
 - `tools/world.mjs` (areas, `:55`), `tools/osm.mjs` (`AREA_OF`).
 - Tasks 005 and 007.
+- `docs/SHOOTER-AREA.md` (task 015): in the shooter's area, what every surface is, seen on foot:
+  the lawns, gardens, the pitch and the waste ground by the river.
 
 ## Done when
 

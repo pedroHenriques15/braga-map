@@ -7,7 +7,7 @@ import path from 'node:path';
 import { test } from 'node:test';
 import { map } from '../index.js';
 import { CACHE } from '../tools/geo.mjs';
-import { SHOOTER } from '../tools/sections.mjs';
+import { SHOOTER_BOX } from '../tools/sections.mjs';
 import { TILES } from '../world/tiles.js';
 
 const tracks = await Promise.all(fs.readdirSync(new URL('../tracks/', import.meta.url)).filter((f) => f.endsWith('.js')).map(async (f) => (await import(`../tracks/${f}`)).default));
@@ -22,7 +22,7 @@ test('the ground is every 2 m on the tiles the tracks run through and over the s
   const m = map();
   const want = new Set();
   for (const t of tracks) for (const { p } of t.points) want.add(m.tileAt(p[0], p[2]));
-  for (let x = SHOOTER.x0; x <= SHOOTER.x1; x += 50) for (let z = SHOOTER.z0; z <= SHOOTER.z1; z += 50) want.add(m.tileAt(x, z));
+  for (let x = SHOOTER_BOX.x0; x <= SHOOTER_BOX.x1; x += 50) for (let z = SHOOTER_BOX.z0; z <= SHOOTER_BOX.z1; z += 50) want.add(m.tileAt(x, z));
   for (const id of want) assert.equal(await stepOf(id), 2, id);
   assert.equal(await stepOf(m.tileAt(4380, 1030)), 10, 'the Sameiro, far from any track');
 });

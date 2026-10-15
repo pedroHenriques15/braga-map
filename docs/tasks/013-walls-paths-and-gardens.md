@@ -57,6 +57,10 @@ Steps:
 - `tools/fetch.mjs`, `tools/world.mjs`, `tools/track.mjs:443-450`.
 - `../party-kart/src/render/road.ts:139-180`, `city.ts`.
 - Task 005 (the sources), 006 (the footways), 009 (the LiDAR surface).
+- `docs/SHOOTER-AREA.md` (task 015): in the shooter's area, every wall, fence, gate, railing and
+  hedge at its height and of its kind, which gates into the courtyards open, and gates where its
+  footways, steps and the Ecovia cross its edge (`npm run shooter`, as `npm run open` does for the
+  open world).
 
 ## Done when
 

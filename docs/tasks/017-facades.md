@@ -67,7 +67,8 @@ Steps:
 - `tools/world.mjs:121-146`: kind, height, roof and colour today.
 - `../party-kart/src/render/textures.ts:420-502`, `city.ts` (`buildBuildings`, `FACADES`).
 - Tasks 007 (how photo textures are stored and loaded), 008 (the photos), 010 (heights).
-- `docs/SHOOTER-AREA.md` (task 015), once it exists.
+- `docs/SHOOTER-AREA.md` (task 015): in the shooter's area, every facade its own photo texture,
+  doors, windows and shop fronts where they are, and every building closed.
 
 ## Done when
 

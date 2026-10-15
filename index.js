@@ -121,6 +121,18 @@ const DASH = [3, 4];
 
 let base = null;
 
+// The box round the ring `pts`.
+function boxOf(pts) {
+  const b = { x0: Infinity, x1: -Infinity, z0: Infinity, z1: -Infinity };
+  for (const [x, z] of pts) {
+    b.x0 = Math.min(b.x0, x);
+    b.x1 = Math.max(b.x1, x);
+    b.z0 = Math.min(b.z0, z);
+    b.z1 = Math.max(b.z1, z);
+  }
+  return b;
+}
+
 // Whether (x, z) is inside the ring `pts` (even-odd).
 function inRing(pts, x, z) {
   let c = false;
@@ -134,7 +146,7 @@ function inRing(pts, x, z) {
 
 // What every game needs, whichever part of the map it's in: the extent, the tiles and the
 // sections, the relief everywhere and the horizon round it, the rivers, the landmarks and the
-// sights, and the open world's area with the gates where the streets leave it.
+// sights, the open world's area with the gates where the streets leave it, and the shooter's.
 export function map() {
   if (base) return base;
   const { head, nums } = unpack(BASE);
@@ -147,14 +159,9 @@ export function map() {
     rivers.push({ pts });
     i += n * 3;
   }
-  const open = m.open;
-  const ob = { x0: Infinity, x1: -Infinity, z0: Infinity, z1: -Infinity };
-  for (const [x, z] of open.pts) {
-    ob.x0 = Math.min(ob.x0, x);
-    ob.x1 = Math.max(ob.x1, x);
-    ob.z0 = Math.min(ob.z0, z);
-    ob.z1 = Math.max(ob.z1, z);
-  }
+  const { open, shooter } = m;
+  const ob = boxOf(open.pts);
+  const sb = boxOf(shooter.pts);
   const sectionOfTile = new Map();
   for (const s of m.sections) for (const id of s.tiles) sectionOfTile.set(id, s.id);
   base = {
@@ -177,17 +184,24 @@ export function map() {
     riverHalfWidth: head.rivers.halfWidth,
     open,
     inOpen: (x, z) => x >= ob.x0 && x <= ob.x1 && z >= ob.z0 && z <= ob.z1 && inRing(open.pts, x, z),
+    shooter,
+    inShooter: (x, z) => x >= sb.x0 && x <= sb.x1 && z >= sb.z0 && z <= sb.z1 && inRing(shooter.pts, x, z),
     tileAt: (x, z) => `x${Math.floor(x / m.tile)}z${Math.floor(z / m.tile)}`,
     sectionAt: (x, z) => sectionOfTile.get(`x${Math.floor(x / m.tile)}z${Math.floor(z / m.tile)}`) ?? null,
   };
   return base;
 }
 
-// The tiles under a box, or making up some sections, or under the open world's area and round it.
+// The tiles under a box, or making up some sections (the shooter's area among them, with the tiles
+// round it), or under the open world's area and round it.
 export function tilesFor(area) {
   const m = map();
   if (area.open) return [...m.open.tiles, ...m.open.seen];
-  if ('sections' in area) return m.sections.filter((s) => area.sections.includes(s.id)).flatMap((s) => s.tiles);
+  if ('sections' in area) {
+    const ids = m.sections.filter((s) => area.sections.includes(s.id)).flatMap((s) => s.tiles);
+    if (area.sections.includes(m.shooter.id)) for (const id of [...m.shooter.tiles, ...m.shooter.seen]) if (!ids.includes(id)) ids.push(id);
+    return ids;
+  }
   const ids = [];
   for (let j = Math.floor(area.z0 / m.tile); j * m.tile < area.z1; j++) {
     for (let i = Math.floor(area.x0 / m.tile); i * m.tile < area.x1; i++) {
@@ -198,9 +212,10 @@ export function tilesFor(area) {
   return ids;
 }
 
-// The world in a box ({ x0, x1, z0, z1 }), some sections ({ sections: [ids] }) or the open world's
-// area ({ open: true }: the tiles under it, and those round it for the city seen past its edge):
-// everything map() has, and what's on every tile under it, read and put together.
+// The world in a box ({ x0, x1, z0, z1 }), some sections ({ sections: [ids] }; 'fujacal', the
+// shooter's area, brings the tiles round it too) or the open world's area ({ open: true }: the tiles
+// under it, and those round it for the city seen past its edge): everything map() has, and what's on
+// every tile under it, read and put together.
 export async function loadWorld(area) {
   const m = map();
   const ids = tilesFor(area);

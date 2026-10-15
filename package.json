@@ -26,6 +26,7 @@
     "fetch": "node tools/fetch.mjs",
     "page": "node tools/build.mjs",
     "open": "node tools/open.mjs",
+    "shooter": "node tools/shooter.mjs",
     "world": "node tools/world.mjs",
     "tracks": "node tools/track.mjs"
   },

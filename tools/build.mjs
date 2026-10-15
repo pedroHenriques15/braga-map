@@ -8,7 +8,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { CACHE, KX, KZ, LAT0, LON0, P, readCache, ROOT } from './geo.mjs';
 import { storeys } from './osm.mjs';
-import { CORE, EXT, OPEN, SECTIONS, TILE } from './sections.mjs';
+import { CORE, EXT, OPEN, SECTIONS, SHOOTER, TILE } from './sections.mjs';
 import { streetLines } from './lines.mjs';
 import { gatesOf } from './open.mjs';
 import { terrain } from './terrain.mjs';
@@ -289,9 +289,13 @@ for (let j = 0; j < nz; j++) for (let i = 0; i < nx; i++) {
 // fountain on the real one in the Praça da República.
 const game = JSON.parse(fs.readFileSync(path.join(ROOT, 'tools/first-track.json'), 'utf8'));
 
-// ---- The open world's area (task 032): its edge, and the gates where streets leave it ----
-const openGates = gatesOf(OPEN, streetLines(base, ground, (x, z, m) => inBox(EXT, x, z, m)).lines).map(({ x, z, heading, w, k, level }) => ({ x, z, heading, w, k, level }));
-const openArea = Math.abs(OPEN.reduce((a, [x, z], i) => { const [x2, z2] = OPEN[(i + 1) % OPEN.length]; return a + x * z2 - x2 * z; }, 0)) / 2;
+// ---- The open world's area (task 032) and the shooter's (task 015): each one's edge, and the gates
+// where streets cross it ----
+const extLines = streetLines(base, ground, (x, z, m) => inBox(EXT, x, z, m)).lines;
+const gatesAt = (ring) => gatesOf(ring, extLines).map(({ x, z, heading, w, k, level }) => ({ x, z, heading, w, k, level }));
+const areaOf = (ring) => Math.abs(ring.reduce((a, [x, z], i) => { const [x2, z2] = ring[(i + 1) % ring.length]; return a + x * z2 - x2 * z; }, 0)) / 2;
+const openGates = gatesAt(OPEN), openArea = areaOf(OPEN);
+const shooterGates = gatesAt(SHOOTER), shooterArea = areaOf(SHOOTER);
 
 // ---- The street audit (task 006), where tools/audit.mjs has run ----
 // Every way OpenStreetMap has in the Volta dos Amigos' box, streets and paths: its class (c), name,
@@ -323,12 +327,14 @@ const data = {
   height: { x0: EXT.x0, z0: EXT.z0, step: STEP, nx, nz, scale: 4, b64: Buffer.from(H.buffer).toString('base64') },
   game,
   open: { pts: OPEN, gates: openGates, area: Math.round(openArea) },
+  shooter: { pts: SHOOTER, gates: shooterGates, area: Math.round(shooterArea) },
   ...(audit && { audit }),
   len: { core: km(lenCore), ext: km(lenExt) },
 };
 fs.writeFileSync(outFile, JSON.stringify(data));
 console.log('roads', roads.length, 'areas', areas.length, 'water', water.length, 'rail', rail.length, 'buildings', buildings.length, 'parish lines', parishLines.size, 'parishes', parishes.map((p) => p.name).join(' | '));
 console.log('the open world', Math.round(openArea / 1e4) / 100, 'km²,', openGates.length, 'gates');
+console.log("the shooter's area", Math.round(shooterArea / 1e3) / 10, 'ha,', shooterGates.length, 'gates');
 console.log('landmarks', landmarks.length, 'height', nx, 'x', nz, 'min', hmin.toFixed(0), 'max', hmax.toFixed(0));
 console.log('km core', JSON.stringify(km(lenCore)), 'ext', JSON.stringify(km(lenExt)));
 console.log('size', (fs.statSync(outFile).size / 1024).toFixed(0), 'KB');

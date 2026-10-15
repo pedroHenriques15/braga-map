@@ -17,7 +17,7 @@ import path from 'node:path';
 import { CACHE, P, readCache } from './geo.mjs';
 import { Grid, inside, LINE } from './osm.mjs';
 import { isSquare } from './lines.mjs';
-import { OPEN, SHOOTER } from './sections.mjs';
+import { inShooter, OPEN, SHOOTER_BOX } from './sections.mjs';
 import { loadWorld } from '../index.js';
 import amigos from '../tracks/amigos.js';
 
@@ -33,7 +33,7 @@ const inBox = (b, x, z) => x >= b.x0 && x <= b.x1 && z >= b.z0 && z <= b.z1;
 const AREAS = [
   { id: 'box', name: "the Volta dos Amigos' box", in: (x, z) => inBox(amigos.box, x, z) },
   { id: 'open', name: "the open world's area", in: (x, z) => inside(OPEN, x, z) },
-  { id: 'shooter', name: "the shooter's area", in: (x, z) => inBox(SHOOTER, x, z) },
+  { id: 'shooter', name: "the shooter's area", in: inShooter },
 ];
 
 // The classes, in the table's order: OpenStreetMap's own, a footway split by what it is, the squares
@@ -198,7 +198,7 @@ async function photos() {
   fs.mkdirSync(out, { recursive: true });
   // The squares: on the shooter's area, and within 60 m of the route.
   const squares = new Set();
-  for (let i = Math.floor(SHOOTER.x0 / S); i * S < SHOOTER.x1; i++) for (let j = Math.floor(SHOOTER.z0 / S); j * S < SHOOTER.z1; j++) squares.add(i + ',' + j);
+  for (let i = Math.floor(SHOOTER_BOX.x0 / S); i * S < SHOOTER_BOX.x1; i++) for (let j = Math.floor(SHOOTER_BOX.z0 / S); j * S < SHOOTER_BOX.z1; j++) squares.add(i + ',' + j);
   for (const { p } of amigos.points) for (const dx of [-60, 0, 60]) for (const dz of [-60, 0, 60]) squares.add(Math.floor((p[0] + dx) / S) + ',' + Math.floor((p[2] + dz) / S));
   const tiles = new Map();
   const tile = (key) => {

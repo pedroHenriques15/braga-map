@@ -59,6 +59,7 @@ Steps:
   `index.js` and `index.d.ts`, `docs/SOURCES.md` (OSM's licence).
 - party-kart: `src/render/streets.ts` (the plates and the stops), `src/render/textures.ts`
   (`streetPlates`), `docs/architecture.md` ("The city's budget": the plates' texture).
+- `docs/SHOOTER-AREA.md` (task 015): in the shooter's area, a plate at every corner.
 
 ## Done when
 

@@ -8,7 +8,7 @@ import path from 'node:path';
 import { test } from 'node:test';
 import { loadWorld } from '../index.js';
 import { CACHE, P } from '../tools/geo.mjs';
-import { SHOOTER } from '../tools/sections.mjs';
+import { inShooter } from '../tools/sections.mjs';
 
 const { credit, viewpoints: views } = JSON.parse(fs.readFileSync(new URL('../refs/viewpoints.json', import.meta.url), 'utf8'));
 const tracks = await Promise.all(fs.readdirSync(new URL('../tracks/', import.meta.url)).filter((f) => f.endsWith('.js')).map(async (f) => (await import(`../tracks/${f}`)).default));
@@ -31,7 +31,6 @@ function onRoute(x, z) {
   }
   return best;
 }
-const inShooter = (v) => v.x >= SHOOTER.x0 && v.x <= SHOOTER.x1 && v.z >= SHOOTER.z0 && v.z <= SHOOTER.z1;
 
 test('each viewpoint says where it looks from, and whose photo it is set against', () => {
   assert.match(credit, /Mapillary/);
@@ -53,7 +52,7 @@ test('each viewpoint says where it looks from, and whose photo it is set against
 
 test('there are 20 along the route, 6 on foot in the shooter\'s area and 2 of the skyline', () => {
   assert.ok(views.filter((v) => onRoute(v.x, v.z).d < 30).length >= 20);
-  assert.ok(views.filter((v) => v.kind === 'foot' && inShooter(v)).length >= 6);
+  assert.ok(views.filter((v) => v.kind === 'foot' && inShooter(v.x, v.z)).length >= 6);
   assert.ok(views.filter((v) => v.kind === 'skyline').length >= 2);
 });
 

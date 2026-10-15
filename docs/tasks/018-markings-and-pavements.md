@@ -58,6 +58,8 @@ Steps:
 - `../party-kart/src/render/road.ts:112-180`, `textures.ts:26-90`.
 - `tools/track.mjs` (`lanes`, `kerbs`, `surface`), `tools/osm.mjs` (`lanesOf`).
 - Tasks 005, 007 and 008.
+- `docs/SHOOTER-AREA.md` (task 015): in the shooter's area, each surface's material, its drains and
+  manhole covers, and every marking as painted, seen on foot.
 
 ## Done when
 

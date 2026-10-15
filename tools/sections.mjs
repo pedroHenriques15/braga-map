@@ -7,20 +7,27 @@ import { inside } from './osm.mjs';
 export const EXT = { x0: -1600, x1: 4900, z0: -2450, z1: 2150 };
 // The area first asked for, inside it.
 export const CORE = { x0: -1500, x1: 2830, z0: -2300, z1: 2010 };
-// Where the first shooter is played: the streets of Fujacal and Conselheiro Lobato (decision 003;
-// task 015 settles their edge). It gets the detail the tracks get.
-export const SHOOTER = { x0: -350, x1: 350, z0: 600, z1: 1050 };
 // The open world's area (decision 019): the Volta dos Amigos' and about 150 m round it, where a game
 // lets the player drive anywhere. OPEN is its edge, a ring of [x, z] points (open.mjs works it out,
 // task 032), and OPEN_BOX the box round it. Every street in the box is a surface (streets.mjs, task
 // 033), and the ground on every tile it touches is every 2 m (world.mjs).
 export const { pts: OPEN } = JSON.parse(fs.readFileSync(new URL('./open.json', import.meta.url), 'utf8'));
-export const OPEN_BOX = {
-  x0: Math.floor(Math.min(...OPEN.map((p) => p[0]))),
-  x1: Math.ceil(Math.max(...OPEN.map((p) => p[0]))),
-  z0: Math.floor(Math.min(...OPEN.map((p) => p[1]))),
-  z1: Math.ceil(Math.max(...OPEN.map((p) => p[1]))),
-};
+const boxOf = (pts) => ({
+  x0: Math.floor(Math.min(...pts.map((p) => p[0]))),
+  x1: Math.ceil(Math.max(...pts.map((p) => p[0]))),
+  z0: Math.floor(Math.min(...pts.map((p) => p[1]))),
+  z1: Math.ceil(Math.max(...pts.map((p) => p[1]))),
+});
+export const OPEN_BOX = boxOf(OPEN);
+// Where the first shooter is played (decision 003, task 015): Fujacal and Conselheiro Lobato, the
+// five streets and a block each side of them, between the Avenida Imaculada Conceição, the Avenida da
+// Liberdade and the Rio Este. It gets the detail the tracks get, and more (docs/SHOOTER-AREA.md).
+// SHOOTER is its edge, a ring of [x, z] points (shooter.mjs works it out), SHOOTER_BOX the box round
+// it, and inShooter whether a point is in it. A game loads it as the section 'fujacal'.
+export const SHOOTER_ID = 'fujacal', SHOOTER_NAME = 'Fujacal';
+export const { pts: SHOOTER } = JSON.parse(fs.readFileSync(new URL('./shooter.json', import.meta.url), 'utf8'));
+export const SHOOTER_BOX = boxOf(SHOOTER);
+export const inShooter = (x, z) => x >= SHOOTER_BOX.x0 && x <= SHOOTER_BOX.x1 && z >= SHOOTER_BOX.z0 && z <= SHOOTER_BOX.z1 && inside(SHOOTER, x, z);
 
 // Tiles are TILE metres square, on a grid from the Praça da República: tile (i, j) runs from
 // x = i·TILE to (i + 1)·TILE and z = j·TILE to (j + 1)·TILE. They cover EXT.
@@ -74,6 +81,12 @@ export const OPEN_ROUND = 500;
 export const OPEN_TILES = allTiles().filter(([i, j]) => meets(OPEN, tileBox(i, j))).map(([i, j]) => tileId(i, j));
 export const OPEN_SEEN = allTiles()
   .filter(([i, j]) => { const b = tileBox(i, j); return !OPEN_TILES.includes(tileId(i, j)) && meets(OPEN, { x0: b.x0 - OPEN_ROUND, x1: b.x1 + OPEN_ROUND, z0: b.z0 - OPEN_ROUND, z1: b.z1 + OPEN_ROUND }); })
+  .map(([i, j]) => tileId(i, j));
+// The same for the shooter's area: the tiles it touches, and those round it within as far, for the
+// city seen past its edge down the avenues and over the river.
+export const SHOOTER_TILES = allTiles().filter(([i, j]) => meets(SHOOTER, tileBox(i, j))).map(([i, j]) => tileId(i, j));
+export const SHOOTER_SEEN = allTiles()
+  .filter(([i, j]) => { const b = tileBox(i, j); return !SHOOTER_TILES.includes(tileId(i, j)) && meets(SHOOTER, { x0: b.x0 - OPEN_ROUND, x1: b.x1 + OPEN_ROUND, z0: b.z0 - OPEN_ROUND, z1: b.z1 + OPEN_ROUND }); })
   .map(([i, j]) => tileId(i, j));
 
 export const SECTIONS = ZONES.map(({ id, name }) => ({

@@ -17,7 +17,7 @@ import path from 'node:path';
 import zlib from 'node:zlib';
 import jpeg from 'jpeg-js';
 import { CACHE, ROOT } from './geo.mjs';
-import { SHOOTER } from './sections.mjs';
+import { inShooter } from './sections.mjs';
 
 const W = 960;
 const QUALITY = 82;
@@ -128,7 +128,7 @@ function toRoute(x, z) {
 }
 const areasOf = (v) => [
   ...(v.kind !== 'skyline' && toRoute(v.x, v.z) < 30 ? ['route'] : []),
-  ...(v.x >= SHOOTER.x0 && v.x <= SHOOTER.x1 && v.z >= SHOOTER.z0 && v.z <= SHOOTER.z1 ? ['shooter'] : []),
+  ...(inShooter(v.x, v.z) ? ['shooter'] : []),
   ...(v.kind === 'skyline' ? ['skyline'] : []),
 ];
 

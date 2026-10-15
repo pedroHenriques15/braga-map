@@ -24,7 +24,7 @@ import path from 'node:path';
 import { CACHE, ELEV0, P, ROOT, readCache, relief } from './geo.mjs';
 import { tileKey, toTM } from './dgt.mjs';
 import { AREA, AREA_OF, blur, bounds, dm, footprints, Grid, half, hash, inside, minRect, openThin, overlaps, Packer, packGrid, packPts, rectAxis, STOREY, STOREY_BASE as BASE, ringArea, ringOf, seeded, segDist, simplify, W_MIN } from './osm.mjs';
-import { allTiles, EXT, OPEN, OPEN_BOX, OPEN_SEEN, OPEN_TILES, SECTIONS, sectionOf, SHOOTER, TILE, tileBox, tileId, tileOf } from './sections.mjs';
+import { allTiles, EXT, OPEN, OPEN_BOX, OPEN_SEEN, OPEN_TILES, SECTIONS, sectionOf, SHOOTER, SHOOTER_BOX, SHOOTER_ID, SHOOTER_NAME, SHOOTER_SEEN, SHOOTER_TILES, TILE, tileBox, tileId, tileOf } from './sections.mjs';
 import { gatesOf } from './open.mjs';
 import { terrain } from './terrain.mjs';
 import { decks } from './decks.mjs';
@@ -48,7 +48,7 @@ const tilesOver = (b, m = 0) => [...tiles.values()].filter((t) => overlaps(t.box
 // Where the ground is every 2 m: the tiles within 60 m of a track planned on the map (the last
 // `npm run tracks`, so plan a new track before this), over the shooter's area, and every tile the open
 // world's area touches, since a kart can be anywhere in it.
-const FINE = new Set([...tilesOver(SHOOTER).map((t) => t.id), ...OPEN_TILES]);
+const FINE = new Set([...tilesOver(SHOOTER_BOX).map((t) => t.id), ...OPEN_TILES]);
 for (const f of fs.readdirSync(path.join(ROOT, 'tracks')).filter((f) => f.endsWith('.js'))) {
   const { points } = (await import(`../tracks/${f}`)).default;
   for (const { p } of points) for (const t of tilesOver({ x0: p[0], x1: p[0], z0: p[2], z1: p[2] }, 60)) FINE.add(t.id);
@@ -163,13 +163,16 @@ for (const s of lines) {
     flush();
   }
 }
-// Where the streets leave the open world's area (open.mjs): each one's crossing, with the height of
-// its road there above ELEV0, on the ground, a bridge's deck or a tunnel's road.
-const gates = gatesOf(OPEN, lines, (l, i, t) => {
+// Where the streets leave the open world's area (open.mjs), and the shooter's (shooter.mjs): each
+// one's crossing, with the height of its road there above ELEV0, on the ground, a bridge's deck or a
+// tunnel's road.
+const roadAt = (l, i, t) => {
   const p = l.pts[i], q = l.pts[i + 1], x = p[0] + (q[0] - p[0]) * t, z = p[1] + (q[1] - p[1]) * t;
   if (l.level !== LEVEL.bridge && l.level !== LEVEL.tunnel) return ground.at(x, z) - ELEV0;
   return (heights.get(p) ?? ground.at(...p)) * (1 - t) + (heights.get(q) ?? ground.at(...q)) * t - ELEV0;
-}).map(({ x, z, heading, w, k, level, y }) => ({ x, z, heading, w, k, level, y }));
+};
+const gates = gatesOf(OPEN, lines, roadAt).map(({ x, z, heading, w, k, level, y }) => ({ x, z, heading, w, k, level, y }));
+const shooterGates = gatesOf(SHOOTER, lines, roadAt).map(({ x, z, heading, w, k, level, y }) => ({ x, z, heading, w, k, level, y }));
 console.log(`ground: ${areas.length} areas, ${lines.length} streets and railways (${lines.filter((l) => l.level === LEVEL.bridge).length} on bridges, ${lines.filter((l) => l.level === LEVEL.tunnel).length} in tunnels, ${lines.filter((l) => l.level === LEVEL.under).length} under something, ${open} of them tunnels the map has under a bridge)`);
 
 // ---------------------------------------------------------------------------------------------
@@ -709,6 +712,7 @@ out.header.meta = {
   landmarks,
   sights,
   open: { pts: OPEN, gates, tiles: OPEN_TILES, seen: OPEN_SEEN },
+  shooter: { id: SHOOTER_ID, name: SHOOTER_NAME, pts: SHOOTER, gates: shooterGates, tiles: SHOOTER_TILES, seen: SHOOTER_SEEN },
 };
 const b64 = out.encode();
 fs.writeFileSync(path.join(dir, 'base.js'), `${HEAD}export default '${b64}';\n`);
@@ -717,3 +721,4 @@ console.log(`base ${Math.round(b64.length / 1024)} KB; ${tiles.size} tiles, ${Ma
 console.log(`sections: ${SECTIONS.map((s) => `${s.id} ${s.tiles.length}`).join(', ')}`);
 console.log(`the ground every 2 m on ${FINE.size} tiles: ${[...FINE].sort().join(' ')}`);
 console.log(`the open world: ${OPEN_TILES.length} tiles under it and ${OPEN_SEEN.length} round it, ${gates.length} gates (${Object.entries(Object.groupBy(gates, (g) => g.level)).map(([l, g]) => `${g.length} ${l}`).join(', ')})`);
+console.log(`the shooter's area: ${SHOOTER_TILES.length} tiles under it and ${SHOOTER_SEEN.length} round it, ${shooterGates.length} gates`);

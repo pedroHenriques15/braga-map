@@ -40,6 +40,8 @@ party-kart draws icosahedra or cones with a random colour (`src/render/trees.ts:
 
 - `tools/world.mjs` (trees), `../party-kart/src/render/trees.ts`, `city.ts` (planting).
 - Tasks 005 and 009.
+- `docs/SHOOTER-AREA.md` (task 015): in the shooter's area, each tree where it stands, at its
+  height and with its crown.
 
 ## Done when
 

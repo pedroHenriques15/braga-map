@@ -57,6 +57,8 @@ Steps:
   `src/world/ground.ts` (`floor`, `raise`), `test/streets.test.ts`, `test/ground.test.ts`.
 - braga-map: `tools/streets.mjs`, `index.d.ts` (`Pavement`), decisions 021, 023 and 024.
 - The round `2026-10-15-task035`: `bom-jesus`, `devesa`, `lobato-pavement`.
+- `docs/SHOOTER-AREA.md` (task 015): in the shooter's area, kerbs and pavements at centimetres,
+  each step at its rise: on foot, the 2 m ground shows.
 
 ## Done when
 

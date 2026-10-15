@@ -171,9 +171,10 @@ export interface Tree {
   filled: boolean;
 }
 
-// Where a street leaves the open world's area: a game stands road-works barriers across it there
-// ("Estrada cortada"). heading: the way the street leaves, (cos, sin) pointing out of the area (x
-// east, z south); the edge crosses it square, straight across its width. w: its width kerb to kerb.
+// Where a street leaves the open world's area, or the shooter's: a game closes it there (Party Kart
+// stands road-works barriers across it, "Estrada cortada"). heading: the way the street leaves, (cos,
+// sin) pointing out of the area (x east, z south); the edge crosses it square, straight across its
+// width. w: its width kerb to kerb.
 // k: its kind, as a Line's. level and y: on the ground, on a bridge's deck, in a tunnel's road or
 // under something, as a Line's, and its road's height there above elev0.
 export interface Gate {
@@ -193,6 +194,23 @@ export interface Gate {
 // the tiles it touches, the ground every 2 m on all of them; seen: those round it, within 500 m, for
 // the city seen past its edge.
 export interface Open {
+  pts: [number, number][];
+  gates: Gate[];
+  tiles: string[];
+  seen: string[];
+}
+
+// The shooter's area (decision 003, task 015): Fujacal and Conselheiro Lobato, the five streets and a
+// block each side of them, between the Avenida Imaculada Conceição, the Avenida da Liberdade and the
+// Rio Este, where the first shooter is played on foot (docs/SHOOTER-AREA.md). A game loads it as the
+// section `id` ('fujacal'), which brings the tiles round it too. pts: its edge, a ring of [x, z]
+// points (closed: the last joins the first), along the avenues' near kerbs and the river's near bank,
+// and on the west half way between the streets in it and those out, round the buildings between
+// them. gates: where every street crosses it. tiles: the tiles it touches; seen: those round it,
+// within 500 m, for the city seen past its edge.
+export interface ShooterArea {
+  id: string;
+  name: string;
   pts: [number, number][];
   gates: Gate[];
   tiles: string[];
@@ -286,6 +304,9 @@ export interface BragaMap {
   open: Open;
   // Whether (x, z) is inside the open world's area.
   inOpen(x: number, z: number): boolean;
+  shooter: ShooterArea;
+  // Whether (x, z) is inside the shooter's area.
+  inShooter(x: number, z: number): boolean;
   tileAt(x: number, z: number): string;
   sectionAt(x: number, z: number): string | null;
 }
@@ -310,7 +331,8 @@ export interface World extends BragaMap {
 }
 
 export function map(): BragaMap;
-// A box, some sections, or the open world's area and the tiles round it.
+// A box, some sections (the shooter's area, 'fujacal', among them, with the tiles round it), or the
+// open world's area and the tiles round it.
 export type Region = Box | { sections: string[] } | { open: true };
 export function tilesFor(area: Region): string[];
 export function loadWorld(area: Region): Promise<World>;

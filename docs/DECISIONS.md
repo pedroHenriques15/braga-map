@@ -739,3 +739,34 @@ every game on the map gets the same ones.
 
 The alternatives were WebP (half the download, eight times the memory) and Basis's UASTC (sharper,
 five times ETC1S's download for twice its memory).
+
+## 031 · The shooter's area: between two avenues and the river, and braga-map stays data only
+
+*2026-10-15 · task 015 · settles decision 003's edge for Fujacal*
+
+The first shooter is played on foot in Fujacal and Conselheiro Lobato: the five streets (the Rua,
+the Travessa and the Alameda do Fujacal, the Rua and the Travessa Conselheiro Lobato) and a block
+each side of them, 21.5 ha. What it needs at walking distance, and where each thing comes from, is
+in [SHOOTER-AREA.md](SHOOTER-AREA.md).
+
+- **Its edge is where a player would take one:** the near kerbs of the Avenida Imaculada Conceição
+  and the Avenida da Liberdade, and the near bank of the Rio Este, so the player walks their
+  pavements and sees across but doesn't cross. On the west, past the Rua Monsenhor Airosa, the
+  block behind it is in, the flats round the Rua Doutor José Vilaça's driveway and their courtyard
+  with it, down to the river; there the edge runs half way between the streets in and those out,
+  along the buildings' backs, as the open world's does (decision 020). `tools/shooter.mjs` works it
+  out from OpenStreetMap and the buildings; run it again rather than editing `tools/shooter.json`.
+  The owner agreed it as drawn, over taking in the block across the Avenida Imaculada Conceição
+  and over keeping the west to the row of houses on the Rua Monsenhor Airosa.
+- **A game loads it as the section `fujacal`,** with the 12 tiles round it for what's seen past the
+  edge, and finds it in `map().shooter` and `inShooter`. It isn't one of the six sections that share
+  the map out: those stay as they are, and Fujacal overlaps two of them.
+- **The player goes** in the streets, the squares and the open courtyards, never inside a building
+  (the owner's answer, 2026-10-14). Every building is closed to its roof.
+- **braga-map stays data only:** it gives the shooter the same tiles it gives Party Kart, and no
+  ready-made meshes, since the shooter's engine isn't chosen (the owner, 2026-10-14). If the
+  shooter turns out to use three.js, sharing Party Kart's renderer is a task then.
+- **Every task in Phases 2–4 does this area first,** to the bar SHOOTER-AREA.md sets for it.
+
+The alternatives were the box decision 003 gave (x −350…350, z 600…1050), which cut across streets
+and blocks, and the five streets alone, with nothing past their far kerbs.

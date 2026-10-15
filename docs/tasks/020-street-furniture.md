@@ -51,6 +51,8 @@ route. Traffic lights cycle 20 s.
 - `../party-kart/src/render/road.ts:241-331`, `city.ts` (`streetFurniture`), `kit.ts`.
 - `tools/track.mjs:601-618`: crossings, signals and stops in the track's data today.
 - `docs/DECISIONS.md` 006: what Mapillary's data may be used for.
+- `docs/SHOOTER-AREA.md` (task 015): in the shooter's area, every piece where it stands, and the
+  parked cars along the kerbs, which are a player's cover.
 
 ## Done when
 

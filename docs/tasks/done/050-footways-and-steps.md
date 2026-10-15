@@ -257,6 +257,6 @@ Steps:
   cut away by a carriageway), so a kart only comes down them: task 051.
 - **Live** (2026-10-15): braga-map 1.14.0, and party-kart `4ef5a70` on it, deployed and served at
   https://pedrohenriques15.github.io/party-kart/. The round `2026-10-15-after050` ("Caminhos e
-  escadas") is on the scorecard, open for marks. The shared map page's data (`map/braga.json`: the
-  paths' gates, the audit) is made but not republished: its audit layer still calls the paths
-  drawn by no game, which the page's code says.
+  escadas") is on the scorecard, open for marks. The shared map page is republished with its data
+  (`map/braga.json`: the paths' gates, the audit), its audit layer now saying which paths the game
+  draws: in the open world's area, green, and out of it purple (`map/index.html`).

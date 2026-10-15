@@ -5,6 +5,7 @@
 // roofs: informação geográfica cedida pela Direção-Geral do Território (CC BY 4.0).
 import BASE from './world/base.js';
 import { TILES } from './world/tiles.js';
+import { CREDITS, TEXTURES } from './world/textures.js';
 
 // A packed part of the map: a JSON header (where each part's numbers start, how many, and what
 // else it needs), then 16-bit numbers, in base64.
@@ -158,6 +159,7 @@ export function map() {
   for (const s of m.sections) for (const id of s.tiles) sectionOfTile.set(id, s.id);
   base = {
     credit: m.credit,
+    photoCredits: CREDITS,
     elev0: m.elev0,
     ext: m.ext,
     tile: m.tile,
@@ -202,7 +204,11 @@ export function tilesFor(area) {
 export async function loadWorld(area) {
   const m = map();
   const ids = tilesFor(area);
-  const parts = await Promise.all(ids.map((id) => TILES[id]().then((mod) => unpack(mod.default))));
+  const [parts, photos] = await Promise.all([
+    Promise.all(ids.map((id) => TILES[id]().then((mod) => unpack(mod.default)))),
+    // The photo textures' indexes (tools/textures.mjs): where each goes and its files, not the files.
+    Promise.all(ids.filter((id) => id in TEXTURES).map((id) => TEXTURES[id]().then((mod) => mod.default))),
+  ]);
   const near = new Map();
   const areas = [];
   const lines = [];
@@ -344,5 +350,6 @@ export async function loadWorld(area) {
     buildings,
     trees,
     streets,
+    photos: photos.flat(),
   };
 }

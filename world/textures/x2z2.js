@@ -1,0 +1,23 @@
+// Made by tools/textures.mjs: the photo textures on tile x2z2, each at every graphics level.
+export default [
+  { id: 'facade-way-906140272', kind: 'facade', wall: [[1146.5, 1154], [1146.5, 1156], [1147.5, 1156], [1148.5, 1159], [1150.5, 1158.5], [1151, 1161]], s: [0, 8.32], y: [41.7, 54.2],
+    files: { high: { url: new URL('./x2z2/facade-way-906140272-high.ktx2', import.meta.url).href, w: 332, h: 500, bytes: 42299 },
+      medium: { url: new URL('./x2z2/facade-way-906140272-medium.ktx2', import.meta.url).href, w: 168, h: 252, bytes: 12905 },
+      low: { url: new URL('./x2z2/facade-way-906140272-low.ktx2', import.meta.url).href, w: 84, h: 124, bytes: 4193 } },
+    credit: { source: 'Mapillary', author: 'apires', licence: 'CC BY-SA 4.0', url: 'https://www.mapillary.com/app/?pKey=792473818049240', date: '2018-01-14' } },
+  { id: 'facade-way-146464170', kind: 'facade', wall: [[1217.5, 1146], [1230, 1115.5]], s: [3, 30], y: [41.1, 49.9],
+    files: { high: { url: new URL('./x2z2/facade-way-146464170-high.ktx2', import.meta.url).href, w: 1080, h: 352, bytes: 93588 },
+      medium: { url: new URL('./x2z2/facade-way-146464170-medium.ktx2', import.meta.url).href, w: 540, h: 176, bytes: 31739 },
+      low: { url: new URL('./x2z2/facade-way-146464170-low.ktx2', import.meta.url).href, w: 272, h: 88, bytes: 9472 } },
+    credit: { source: 'Mapillary', author: 'apires', licence: 'CC BY-SA 4.0', url: 'https://www.mapillary.com/app/?pKey=834497247170184', date: '2018-11-17' } },
+  { id: 'facade-lidar-x1150z1177', kind: 'facade', wall: [[1147.5, 1172], [1148, 1178.5], [1149.5, 1178.5], [1149.5, 1181.5]], s: [0, 9.71], y: [42.5, 45],
+    files: { high: { url: new URL('./x2z2/facade-lidar-x1150z1177-high.ktx2', import.meta.url).href, w: 388, h: 100, bytes: 11185 },
+      medium: { url: new URL('./x2z2/facade-lidar-x1150z1177-medium.ktx2', import.meta.url).href, w: 196, h: 52, bytes: 3875 },
+      low: { url: new URL('./x2z2/facade-lidar-x1150z1177-low.ktx2', import.meta.url).href, w: 96, h: 24, bytes: 1566 } },
+    credit: { source: 'Mapillary', author: 'apires', licence: 'CC BY-SA 4.0', url: 'https://www.mapillary.com/app/?pKey=1164128714028065', date: '2018-01-14' } },
+  { id: 'facade-way-163978042', kind: 'facade', wall: [[1096.5, 1270], [1094, 1254]], s: [2.3, 16.2], y: [40.4, 52.6],
+    files: { high: { url: new URL('./x2z2/facade-way-163978042-high.ktx2', import.meta.url).href, w: 556, h: 488, bytes: 76177 },
+      medium: { url: new URL('./x2z2/facade-way-163978042-medium.ktx2', import.meta.url).href, w: 280, h: 244, bytes: 23630 },
+      low: { url: new URL('./x2z2/facade-way-163978042-low.ktx2', import.meta.url).href, w: 140, h: 124, bytes: 7163 } },
+    credit: { source: 'Mapillary', author: 'apires', licence: 'CC BY-SA 4.0', url: 'https://www.mapillary.com/app/?pKey=212013343818419', date: '2018-03-03' } },
+];

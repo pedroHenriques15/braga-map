@@ -83,3 +83,13 @@ Steps:
 - Heights and roofs: task 010. Footprints: task 011. Landmarks: task 021.
 
 ## Notes
+
+- From task 007 (2026-10-15): the pipeline is there. A facade is a recipe in `refs/textures.json`
+  (the photo, the wall's points, its four corners in the photo, read off by eye, and what part of
+  the wall it spans), made by `tools/textures.mjs` and drawn by party-kart with `?photos` as quads
+  in front of the wall, a mesh each: ten are made. Hundreds want an atlas or an array per tile, or
+  they're a draw call each. The photos' light and white balance differ from each other's and the
+  game's (dusk is blue, low sun orange, and all read paler under the game's light): matching them
+  is this task's. Seven of the ten have cars at their foot. Mapillary's cameras are 1–3 m out, so
+  the corners have to be read off each photo; projecting the world's buildings into it only says
+  which building it shows.

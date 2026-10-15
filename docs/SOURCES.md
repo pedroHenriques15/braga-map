@@ -138,8 +138,10 @@ millimetre (the test).
   latitude and longitude, for the test. Colour only: the near-infrared layer is there when task
   016 or 019 needs it.
 - **Used for:** each roof's colour (task 010: the median of the lighter half of the photo in the
-  middle of the roof, one of the map's 127 `roofColors`), and checking the street surfaces by
-  (task 033's page).
+  middle of the roof, one of the map's 127 `roofColors`), checking the street surfaces by
+  (task 033's page), and the first ground texture (task 007, `tools/textures.mjs`): the photo
+  over the tile `x-1z1`, Fujacal, resampled onto the map's grid, in `world/textures/`, with the
+  credit in its index.
 
 ### DGT's land use, COS2025
 
@@ -213,7 +215,9 @@ their lists are committed; `node tools/refs.mjs` fetches the photos into `.cache
   from one is CC BY-SA. The detected features never get copied into this repository; they may
   guide someone mapping those things in OpenStreetMap, which then brings them here.
 - **Used:** all 29 viewpoints' photos, and 399 of the reference photos (task 008), 19 of them
-  marked good enough for a texture.
+  marked good enough for a texture. Ten of those are facade textures since task 007
+  (`refs/textures.json`, `world/textures/`), so CC BY-SA 4.0, each with its author and link in
+  its tile's index; `map().photoCredits` gathers the authors for a game's credits.
 
 ### Wikimedia Commons
 

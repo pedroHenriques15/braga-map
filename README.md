@@ -41,6 +41,7 @@ world.buildings; // [{ kind, roof, ends, dir, pitch, y, h, ridge, floors, roofCo
 world.streets; // in the open world's area: { carriageways, pavements, kerbs, markings }, each piece at its level
 world.open.gates; // where each street leaves the area: [{ x, z, heading, w, k, level, y }]
 world.inOpen(x, z); // inside its edge?
+world.photos; // the photo textures on the tiles loaded: [{ id, kind, box | wall, s, y, files: { high, medium, low }, credit }]
 ```
 
 - `map()` is what every game needs whichever part of the map it's in: the sections and their
@@ -100,6 +101,19 @@ world.inOpen(x, z); // inside its edge?
   itself knows nothing of a road: the trees, and the houses it fills in on empty frontages (where
   the LiDAR wasn't fetched), stand clear of every street taken at least 9 m wide (`W_MIN`), and the
   real buildings stand where they are.
+- **Photo textures** (task 007, decision 030) belong to the place, so they're in the world too,
+  in `world/textures/`: for now the 2025 orthophoto over one tile of the ground (Fujacal's,
+  `x-1z1`) and ten facades, until tasks 016 and 017 make more. `world.photos` lists those on
+  the tiles loaded: what each is (`ground`, over its tile's `box`; or `facade`, straightened
+  onto its `wall`), and a file for each graphics level, `files.high`, `.medium` and `.low`,
+  each with its `url`, which the game's bundler serves as an asset (Vite does: in its dev server
+  and its build), its size in pixels and its bytes. Only the list comes with a tile; the game
+  fetches the files it draws. They're KTX2, compressed with Basis Universal's ETC1S, sRGB, with
+  their mipmaps, row 0 at the top: three.js's `KTX2Loader` turns them into what the graphics
+  card takes (ETC1 on a phone, BC7 on a PC), and they stay compressed on it, half a byte a pixel
+  on a phone where a canvas or a WebP takes four. Each has its credit, which a game shows where it
+  credits the map; `map().photoCredits` gathers them, each source with its licence and authors.
+  `index.d.ts` says how a facade's texture lies along its wall.
 - The package is plain JavaScript and data, so Node runs it as it is (its tests, a game's tests)
   and there's nothing to build.
 
@@ -127,6 +141,7 @@ node tools/relief.mjs  # the ground checked: known places, bridges, and each tra
 node tools/heights.mjs # the buildings checked against the map's own heights and floors, and the outliers
 node tools/levels.mjs  # the streets that cross on two levels round the track, and the room between them
 node tools/refs.mjs    # the viewpoints' and the reference photos, into .cache/refs/ (with Mapillary's free token)
+node tools/textures.mjs  # the photo textures refs/textures.json asks for: world/textures/ (about a minute)
 node tools/round.mjs <round> --label "…"  # a round of party-kart's shots, for the scorecard
 ```
 
@@ -134,7 +149,9 @@ They need Node 22.18 or later. Run them in that order: `track.mjs` and `world.mj
 landmarks from `map/braga.json`, `open.mjs` the Volta dos Amigos, `world.mjs` makes the ground finer
 on the tiles the tracks in `tracks/` run through and the open world's edge touches, the map page
 draws the edge (run `npm run page` again after `npm run open`) and the street audit (again after
-`audit.mjs`, which reads the world's tiles), and `build.mjs` and `world.mjs` take the buildings'
+`audit.mjs`, which reads the world's tiles), `textures.mjs` lays each facade on its building in
+the world (after `world.mjs`; `test/textures.test.js` says if a building moved from under one),
+and `build.mjs` and `world.mjs` take the buildings'
 heights and roofs from `roofs.mjs`'s measurements. All of them need the LiDAR. `track.mjs` also reads
 the streets the world draws (`world.streets`, which don't depend on a track) for the race's road, so
 a new track's area needs `npm run open` and `npm run world` before `npm run tracks` plans it on the
@@ -265,6 +282,20 @@ streets; when a track moves enough to change the edge, run the three again until
   a waypoint or an egg or looks towards one. party-kart's
   `node scripts/shots.mjs <label>` shoots its city from every viewpoint, at the photo's field of
   view and shape, into a round beside the photos and the round before (task 002, decision 011).
+- `textures.mjs` makes the photo textures (task 007) that `refs/textures.json` asks for, into
+  `world/textures/`: a ground texture, the 2025 orthophoto over a tile, resampled onto the map's
+  grid (2048 pixels a side on High, 24 cm a pixel); a facade, a reference photo (`refs/photos.json`,
+  marked good enough for a texture) straightened onto its wall, from the corners of the wall in the
+  photo, read off it by eye, to the wall's points on the map and its height above the building's
+  ground (2.5 cm a pixel on High, as far as the photo has it). Each is sized for High, Medium and
+  Low (half, then a quarter, as many pixels across), compressed as KTX2 with Basis Universal's
+  ETC1S, and listed with its credit in its tile's index, `world/textures/<tile>.js`; and
+  `world/textures.js` loads each tile's index, and gathers the credits. It needs the orthophoto
+  (`fetch.mjs ortho`) and the photos (`refs.mjs`). `--check` also writes each one at High as a
+  PNG into `.cache/textures/`, and `--compare` as WebP and Basis's UASTC too, for weighing the
+  formats. `test/textures.test.js` checks each is made at every level and credited, and that each
+  facade faces the camera its photo was taken from. The orthophoto's shadows and cars stay in it
+  (task 007's notes say why).
 - `round.mjs` prepares one of those rounds for the scorecard (`scorecard/index.html`): its High
   shots and the photos, 960 pixels wide, and the lists the page reads, in `.cache/scorecard/` as
   they're published beside the page. It records the round in `refs/rounds.json` (committed): its
@@ -422,6 +453,11 @@ The viewpoints' photos (`refs/viewpoints.json`, fetched into `.cache/refs/`, not
 which `photo` gives. So are most reference photos (`refs/photos.json`); the rest are from
 Wikimedia Commons, each under its own licence (CC BY, CC BY-SA, CC0 or public domain), whose
 author, licence and link `photo` gives too. A texture made from a CC BY-SA photo is CC BY-SA.
+
+The photo textures in `world/textures/` (task 007) are made from the 2025 orthophoto, which owes
+DGT's credit above, and from Mapillary's photos, © Mapillary contributors, under CC BY-SA 4.0: the
+textures made from them are CC BY-SA 4.0 too. Each texture's index entry gives its author, licence
+and link, and `map().photoCredits` every author, for a game's credits.
 
 Every source the map uses or may use, with its licence, its exact credit and what it may be used
 for, is in [docs/SOURCES.md](docs/SOURCES.md).

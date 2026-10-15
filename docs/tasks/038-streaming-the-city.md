@@ -54,3 +54,5 @@ Steps, when the owner grows the area or a phone can't hold it:
 ## Notes
 
 - Decision 019: built whole for the small area; this waits until it's needed.
+- From task 007: a tile's photo textures come with it (`world.photos`), and `render/photos.ts`'s
+  `Photos.dispose` frees them; nothing calls it yet, as no tile goes.

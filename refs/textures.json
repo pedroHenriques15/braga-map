@@ -1,0 +1,104 @@
+{
+  "about": "Photo textures (task 007): what tools/textures.mjs makes, and from what. A ground texture is the 2025 orthophoto over a tile. A facade is a reference photo (refs/photos.json, by its id) straightened onto a wall: wall is the wall's points on the map, left to right as the photo sees it (along a building's footprint); quad its corners in the photo's own pixels, top left, top right, bottom right, bottom left; s the metres along the wall they span (from its first point, the whole wall if left out); y the metres above the building's ground (its y) at the quad's bottom and top. Read off the photo by eye.",
+  "textures": [
+    {
+      "id": "ground-x-1z1",
+      "kind": "ground",
+      "tile": "x-1z1",
+      "notes": "Fujacal, the shooter's area: seven of the viewpoints."
+    },
+    {
+      "id": "facade-way-906140272",
+      "kind": "facade",
+      "photo": "facade-way-906140272",
+      "wall": [[1146.5, 1154], [1146.5, 1156], [1147.5, 1156], [1148.5, 1159], [1150.5, 1158.5], [1151, 1161]],
+      "quad": [[1672, 558], [2423, 558], [2423, 2168], [1672, 2168]],
+      "y": [0, 12.5],
+      "notes": "The middle of three. Its front steps back twice; the top metre of the taller part is left out. Dusk, a parked car at its foot."
+    },
+    {
+      "id": "facade-way-147545836",
+      "kind": "facade",
+      "photo": "facade-way-147545836",
+      "wall": [[369.5, 978.5], [379, 1000]],
+      "quad": [[106, 198], [823, 206], [823, 671], [106, 715]],
+      "y": [0, 16],
+      "notes": "Two blocks under one outline: the right one a floor taller, its top floor left out."
+    },
+    {
+      "id": "facade-way-1463270529",
+      "kind": "facade",
+      "photo": "facade-way-1463270529",
+      "wall": [[474, 966], [487, 966]],
+      "quad": [[1332, 241], [3798, 198], [3798, 2239], [1332, 2126]],
+      "s": [0, 12.5],
+      "y": [0, 7],
+      "notes": "Taken from a moving car: blurred. Only the shops and the first floor; the top floor is out of the photo."
+    },
+    {
+      "id": "facade-way-146464170",
+      "kind": "facade",
+      "photo": "facade-way-146464170",
+      "wall": [[1217.5, 1146], [1230, 1115.5]],
+      "quad": [[0, 714], [3600, 556], [3600, 1871], [0, 1956]],
+      "s": [3, 30],
+      "y": [0, 8.8],
+      "notes": "Most of the retail park's front: the ends are out of the photo, and a dark blur on the right is the car's window frame."
+    },
+    {
+      "id": "facade-lidar-x1150z1177",
+      "kind": "facade",
+      "photo": "facade-lidar-x1150z1177",
+      "wall": [[1147.5, 1172], [1148, 1178.5], [1149.5, 1178.5], [1149.5, 1181.5]],
+      "quad": [[1771, 1593], [3968, 1610], [3968, 2282], [1771, 2267]],
+      "y": [0, 2.5],
+      "notes": "The café's ground floor, which the LiDAR found as a building of its own; a car hides its left end."
+    },
+    {
+      "id": "facade-way-163978042",
+      "kind": "facade",
+      "photo": "facade-way-163978042",
+      "wall": [[1096.5, 1270], [1094, 1254]],
+      "quad": [[0, 62], [2253, 71], [2253, 2046], [0, 2063]],
+      "s": [2.3, 16.2],
+      "y": [0, 12.2],
+      "notes": "The corner block from its corner; its left end is out of the photo. A lamp post and cars in front."
+    },
+    {
+      "id": "facade-way-440182287",
+      "kind": "facade",
+      "photo": "facade-way-440182287",
+      "wall": [[-85.5, 693], [-91.5, 695]],
+      "quad": [[400, 457], [1634, 297], [1634, 1943], [400, 1971]],
+      "y": [0, 10],
+      "notes": "The left of a pair of semi-detached houses, its azulejos. The garden wall and fence stand in front of its lowest floor."
+    },
+    {
+      "id": "facade-way-440314428",
+      "kind": "facade",
+      "photo": "facade-way-440314428",
+      "wall": [[-165, 771], [-159.5, 769]],
+      "quad": [[1545, 241], [2423, 241], [2423, 1752], [1545, 1743]],
+      "y": [0, 12.8],
+      "notes": "A narrow part of a long block, where the map cuts it; a lorry hides the ground floor."
+    },
+    {
+      "id": "facade-way-1491347983",
+      "kind": "facade",
+      "photo": "facade-way-1491347983",
+      "wall": [[269.5, 753.5], [278.5, 772.5]],
+      "quad": [[362, 281], [880, 281], [880, 882], [362, 882]],
+      "y": [0, 24],
+      "notes": "The middle of three blocks, its top floor set back and left out; the map's outline is wider than the block, so a little of each neighbour comes too."
+    },
+    {
+      "id": "facade-way-159208687",
+      "kind": "facade",
+      "photo": "facade-way-159208687",
+      "wall": [[150, 1024], [120.5, 1039.5]],
+      "quad": [[178, 333], [823, 322], [823, 503], [178, 518]],
+      "y": [0, 10.9],
+      "notes": "Seen from across a car park, so 5 cm a pixel at best."
+    }
+  ]
+}

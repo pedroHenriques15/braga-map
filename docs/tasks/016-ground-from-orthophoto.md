@@ -71,3 +71,11 @@ pavements stroked on top, and grain. In the data, ground areas keep their holes 
 - From task 005: `.cache/dgt/ortho/` has the colour orthophoto only (`Ortos2025-RGB`, JPEG, 25
   cm), read by `tools/dgt.mjs`'s `ortho(box)`. The near-infrared is the WMS's `Ortos2025-IRG` layer:
   add it to `fetch.mjs` the same way. The point cloud's points carry near-infrared too.
+- From task 007 (2026-10-15): the pipeline is there. `tools/textures.mjs` makes a tile's
+  orthophoto as a ground texture (`refs/textures.json`, `kind: 'ground'`; `x-1z1`, Fujacal, is
+  made), and party-kart draws it with `?photos` in the land's shader (`groundMaterial`, one tile
+  for now: more need a texture each or an array). That is option B, to set beside A. What 007
+  found of B: it reads paler than the painted ground under the game's light; the buildings lean in
+  the photo, so a roof shows on the ground beside a building, offset; and its shadows couldn't be
+  lifted (007's notes say what was tried). A ground tile is 1.2 MB to download at all three levels,
+  0.9 MB at High, and 2.7 MB on a phone's graphics card at High.

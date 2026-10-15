@@ -204,8 +204,64 @@ export interface River {
   pts: [number, number, number][];
 }
 
+// A photo texture (task 007, decision 030), made by tools/textures.mjs: KTX2 files compressed with
+// Basis Universal's ETC1S, sRGB, with their mipmaps, row 0 at the top (a game's loader doesn't flip
+// them: three.js's KTX2Loader leaves flipY false). One file for each graphics level, each with its
+// url (the game's bundler serves it), its size in pixels and in bytes.
+export type PhotoLevel = 'high' | 'medium' | 'low';
+export interface PhotoFile {
+  url: string;
+  w: number;
+  h: number;
+  bytes: number;
+}
+// Whose photo it's made from: source (DGT, Mapillary or Wikimedia Commons), author, licence (a
+// texture made from a CC BY-SA photo is CC BY-SA), url (the photo's page, or the data's record) and
+// date. A game shows it where it credits the map, as PhotoCredit does.
+export interface PhotoCreditOf {
+  source: string;
+  author: string;
+  licence: string;
+  url: string;
+  date: string;
+}
+interface PhotoBase {
+  id: string;
+  files: Record<PhotoLevel, PhotoFile>;
+  credit: PhotoCreditOf;
+}
+// The 2025 orthophoto over a box (a tile), row 0 to the north (z0), column 0 to the west (x0).
+// Its shadows and cars are in it.
+export interface GroundPhoto extends PhotoBase {
+  kind: 'ground';
+  box: { x0: number; z0: number; x1: number; z1: number };
+}
+// A photo straightened onto a wall: the wall's points (along its building's footprint, left to
+// right as the photo faces it), from wall[0] to wall[n - 1] a chord. A point p on the wall is
+// s = (p - wall[0]) · the chord's direction along it; the texture spans s from s[0] (its left) to
+// s[1] (its right), and heights y[0] (its bottom) to y[1] (its top), above elev0. A wall's front,
+// where the photo was taken from, is (-dz, dx) of its chord (dx, dz); each step of the wall facing
+// that way, as its own (-dz, dx) says, gets its part of the texture.
+export interface FacadePhoto extends PhotoBase {
+  kind: 'facade';
+  wall: [number, number][];
+  s: [number, number];
+  y: [number, number];
+}
+export type PhotoTexture = GroundPhoto | FacadePhoto;
+// Every source the photo textures are made from, with the authors of those used and what they
+// texture: a game's credits list them.
+export interface PhotoCredit {
+  source: string;
+  licence: string;
+  authors: string[];
+  kinds: ('ground' | 'facade')[];
+}
+
 export interface BragaMap {
   credit: string;
+  // The photo textures' sources and authors, over the whole map.
+  photoCredits: PhotoCredit[];
   elev0: number;
   ext: Box;
   tile: number;
@@ -249,6 +305,8 @@ export interface World extends BragaMap {
   trees: Tree[];
   // Every street as surfaces, on the open world's tiles loaded (empty on the others).
   streets: Streets;
+  // The photo textures on the tiles loaded (task 007): which, where they go, and their files.
+  photos: PhotoTexture[];
 }
 
 export function map(): BragaMap;

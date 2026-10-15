@@ -707,3 +707,35 @@ The alternatives were barriers by the kerb line at each junction the route passe
 found by looking square off the line: the first stood barriers down the middle of a road drawn as
 one, and the second missed a street leaving behind a corner the route turns, or off a road beside
 the route's, and could stand a straight row of barriers across the route where it turns.
+
+## 030 · Photo textures live with the world, as KTX2 compressed with Basis Universal's ETC1S
+
+*2026-10-15 · task 007 · how decision 002's photo textures are made, kept and loaded*
+
+A photo texture belongs to the place, not to a game, so it lives in braga-map with the world, and
+every game on the map gets the same ones.
+
+- **Where:** `world/textures/<tile>/<id>-<level>.ktx2`, a file for each graphics level (High,
+  Medium, Low), committed and published with the package. Each tile's index,
+  `world/textures/<tile>.js`, says where each texture goes (a ground tile's box, a facade's wall),
+  its credit, and each level's file as a `new URL(…, import.meta.url)`, which a game's bundler
+  serves as an asset. `loadWorld` hands a game the index with the tile (`world.photos`), never the
+  files: a game fetches those it draws, at its level. The owner chose this over party-kart's
+  `public/` and over keeping them outside git.
+- **How they're made:** `tools/textures.mjs`, from `refs/textures.json`. The ground from DGT's 2025
+  orthophoto, resampled onto the map's grid; a facade from a reference photo (decision 018)
+  straightened onto its wall, from its corners read off the photo by eye. Each is credited in its
+  index; one made from a CC BY-SA photo is CC BY-SA.
+- **The format: KTX2, Basis Universal's ETC1S** (quality 200 of 255, sRGB, with mipmaps), which
+  three.js's `KTX2Loader` turns into what the graphics card takes, so it stays compressed on it:
+  half a byte a pixel on a phone (ETC1), where a WebP or a canvas takes four. For one ground tile
+  and ten facades on High, measured in Chromium at a phone's size with the CPU slowed 4× (the owner
+  dropped the phone, decision 013): 1.39 MB to download and 4 MB of a phone's graphics memory,
+  against WebP's 0.71 MB and 32 MB; WebP also holds the frame three times as long putting them on
+  the card. Basis's transcoder is 0.56 MB more, once. Over the open world's ground tiles WebP would
+  take some 300 MB on High, three times the city's budget, which decided it.
+- **A game draws them as it likes:** party-kart behind `?photos`, until tasks 016 and 017 decide
+  how the ground and the facades should use them.
+
+The alternatives were WebP (half the download, eight times the memory) and Basis's UASTC (sharper,
+five times ETC1S's download for twice its memory).

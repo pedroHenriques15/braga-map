@@ -73,6 +73,10 @@ the track alone and over the whole map evenly.
   44–50 m past it (`tools/track.mjs`), and the waypoints stay in `.cache/places.json`.
   *Replaced by decision 014 (2026-10-14): the eggs stand on the houses.*
 
+- **A ramp into the dead end,** in the Volta dos Amigos only during a race: planks on a pile of
+  rubble behind an "obras" sign, and a flight over the Rio Este where there's no road (decision 027,
+  2026-10-15).
+
 Anything else that looks different from the real place is a bug, and belongs in a task.
 
 ## 005 · "Looks like Braga" is judged on a shared scorecard
@@ -210,6 +214,8 @@ not use (`tools/track.mjs`, task 027). The planner fails a loop that breaks one,
   the owner.*
 - **Not a departure.** Decision 004's list stays as it was; the `(joined)` links out of dead ends,
   which a note on the map asked for, are the one way the loop leaves the streets.
+  *Replaced by decision 027 (2026-10-15): no made-up road; the race jumps into a dead end from a
+  ramp, a departure on decision 004's list.*
 
 The alternative, any street either way, made the start go the wrong way down the Rua do Fujacal
 and the race take the Via da Falperra's roundabout the wrong way round: anyone who drives in Braga
@@ -609,3 +615,62 @@ streets and braga-map 1.9.1 (party-kart `af048ce`), and 037 follows in a release
 - **Older tabs don't see the new rooms** (`partykart-pk32-`) until they reload.
 - **Not checked before it went live:** the feel by hand (a kart rolls on 20 s and more off the
   throttle), a real phone, two networks. The owner plays it live first.
+
+## 027 · The map is real; the race jumps into a dead end
+
+*2026-10-15 · task 039 · replaces decision 010's "not a departure", and adds to decision 004*
+
+One waypoint's street leads only into a pocket: a dead end, and a street off it that leads nowhere
+either. The loop drives along each waypoint's street through it, so it took a made-up road, 86 m
+straight through back gardens from the dead end to the next street. The owner wants the map as
+real as it can be, with the easter eggs as the only jokes: the made-up road goes, and the race gets
+in the way a kart game would.
+
+- **The map's streets are the only roads** `tools/track.mjs` knows. Where a waypoint's street leads
+  into a pocket, it finds every jump into it (`JUMP`): a ramp on a street a car may use outside the
+  pocket, taken nearly straight on after 40 m of straight run-up; a flight at a kart's gravity over
+  whatever's really there, clear of what DGT's surface model has under the slowest flight that
+  lands; a landing on a street in the pocket heading for the waypoint. The loop takes the cheapest
+  it can, and goes out by the pocket's own mouth. `test/rules.test.js` checks a track leaves the
+  streets only in a ramp's flight.
+- **The owner approves the jump** before it's built (task 039's answer). For the Volta dos Amigos,
+  of seven candidates one is kept and approved: from the end of a straight street west of the Rio
+  Este, over the T-junction there and the river, onto the pocket's lower street, 59 m and level, a
+  20° ramp 2.7 m high, cleared from 117 km/h. The others swerve 41–60° onto their ramps in narrow
+  streets, or have no run-up.
+- **The loop grew to 10.1 km** (9.3 before): it comes down the run-up from the north, by Ponte
+  Pedrinha. party-kart's tests take a loop of 7–10.5 km. The open world grew round it, 3.12 to
+  3.48 km² (the owner's answer), and brought in the Rotunda Santos da Cunha (task 047).
+- **The ramp is a Braga joke** (the owner's answer): planks on a pile of rubble behind an "obras"
+  sign, with the road works' red-and-white boards, as if the city's works had left it. It stands
+  only in a race: free roam is all real, and task 037 puts it out and takes it away with the race's
+  barriers. In the air there's no road, kerbs or walls; a kart that falls short goes back onto the
+  run-up.
+
+The alternatives were the made-up road; a race that passes the street's mouth without driving
+through it; turning round in the dead end; and the jump from the made-up road's own street (the
+loop as long as before, but a 51° swerve onto the ramp in a 6.5 m street, too slow to clear it).
+
+## 028 · A bridge's deck where the LiDAR saw it
+
+*2026-10-15 · task 047 · adds to decision 025's levels*
+
+A deck runs straight between the ground where it ends (task 012). That's right for a bridge over a
+valley, but a flyover humps over what it crosses with both its ends on the ground: the straight
+line laid the Rotunda Santos da Cunha's viaduct 6 m too low, on the streets under it, where the
+loop now passes.
+
+- **Where DGT's point cloud saw a deck** (class 26) 30 cm or more over that line, the deck is at the
+  LiDAR's height. `tools/decks.mjs` boils the point cloud down to its decks once (the median in each
+  metre, `.cache/decks.json`, 10 minutes); without it the world is as before.
+- **Where the map ends a bridge short of its abutment** (the deck half a metre or more over the
+  ground at its end), the street on the ground runs on along the deck the LiDAR saw, to where it
+  meets the ground: the viaduct's map ends both fall about 10 m short.
+- What it changed: the viaduct, up to 6.4 m, now within 0.1 m of the LiDAR's deck; of the other
+  decks' 45 points the LiDAR saw, 16 closer to it and none further.
+- **OpenStreetMap's errors found there are listed, not patched** (decision 022): a closed, unnamed
+  `primary` way round the viaduct's south ramp, an outline of the junction rather than a street
+  (way 160389857), is named in `test/levels.test.js` and `test/streets.test.js`.
+
+The alternative, a hump guessed from the bridge's length, would be wrong wherever a deck isn't
+symmetric, and the LiDAR has every deck it flew over.

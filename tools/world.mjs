@@ -27,6 +27,7 @@ import { AREA, AREA_OF, blur, bounds, dm, footprints, Grid, half, hash, inside, 
 import { allTiles, EXT, OPEN, OPEN_BOX, OPEN_SEEN, OPEN_TILES, SECTIONS, sectionOf, SHOOTER, TILE, tileBox, tileId, tileOf } from './sections.mjs';
 import { gatesOf } from './open.mjs';
 import { terrain } from './terrain.mjs';
+import { decks } from './decks.mjs';
 import { heldGround, isLine, isSquare, LEVEL, levelHeights, streetsOf } from './lines.mjs';
 import { packStreets, streetSurfaces } from './streets.mjs';
 
@@ -62,7 +63,10 @@ for (const f of fs.readdirSync(path.join(ROOT, 'tracks')).filter((f) => f.endsWi
 // is held to the street (lines.mjs's heldGround, task 043), not the embankment under the deck or the
 // hill over the tunnel.
 const lines = streetsOf(base, inExt);
-const held = heldGround(lines, ground, (e) => FINE.has(tileAt(...e.p)?.id));
+// The decks DGT's point cloud saw (decks.mjs), for the flyovers and the bridges the map ends short.
+const deck = decks();
+if (!deck) console.log('no .cache/decks.json: the decks straight between their ends (node tools/decks.mjs)');
+const held = heldGround(lines, ground, (e) => FINE.has(tileAt(...e.p)?.id), deck);
 const grids = new Map(); // tile id → { step, n, dm }
 const gridOf = (t) => {
   let g = grids.get(t.id);
@@ -93,7 +97,7 @@ const tileGround = (x, z) => {
 
 // Every street and railway (lines.mjs, above), and the heights of those on a bridge's deck or in a
 // tunnel, their ends at the ground as the tiles hold it.
-const { heights, open } = levelHeights(lines, ground, tileGround, held);
+const { heights, open } = levelHeights(lines, ground, tileGround, held, deck);
 const areas = []; // [kind, ring]
 for (const e of base.elements) {
   const t = e.tags || {};

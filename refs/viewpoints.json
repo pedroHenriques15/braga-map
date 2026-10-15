@@ -1,5 +1,5 @@
 {
-  "about": "Viewpoints: where the game is set against the real Braga (task 001). Metres from the Praça da República, x east, z south, y above elev0 (154 m). name is in English and nome in Portuguese, for the scorecard (task 003). The camera at (x, y, z) looks at (tx, ty, tz); fov is its vertical field of view in degrees. photo is the real one from the same place: its source, author, licence and link, and the camera that took it (lat, lon, heading, pitch and roll in degrees). Fetch the photos with node tools/refs.mjs.",
+  "about": "Viewpoints: where the game is set against the real Braga (task 001). Metres from the Praça da República, x east, z south, y above elev0 (154 m). name is in English and nome in Portuguese, for the scorecard (task 003). The camera at (x, y, z) looks at (tx, ty, tz); fov is its vertical field of view in degrees. route: false marks a kart's view the race no longer passes, on a street of the open world (task 047). photo is the real one from the same place: its source, author, licence and link, and the camera that took it (lat, lon, heading, pitch and roll in degrees). Fetch the photos with node tools/refs.mjs.",
   "credit": "Photos © Mapillary contributors, CC BY-SA 4.0: the author and link of each are under photo.",
   "viewpoints": [
     {
@@ -550,6 +550,7 @@
       "name": "Rua do Couteiro",
       "nome": "Rua do Couteiro",
       "kind": "kart",
+      "route": false,
       "x": -613,
       "y": 20.2,
       "z": 1597.8,

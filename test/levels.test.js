@@ -31,7 +31,11 @@ test("a tunnel's road is under the ground over it", () => {
 test('where streets cross on two levels by the route, there is room between them', () => {
   const near = c.pairs.filter((p) => p.route < 300);
   assert.ok(near.length >= 8, `${near.length} crossings within 300 m of the route`);
-  for (const p of near) assert.notEqual(p.is, 'low', `at (${p.x}, ${p.z}): ${p.room} m between`);
+  // But OpenStreetMap's closed, unnamed "primary" way round the Rotunda Santos da Cunha viaduct's
+  // south ramp (way 160389857), an outline of the junction rather than a street, which the world takes
+  // as it is (decision 022) and which "passes under" the deck there: listed in task 047.
+  const OUTLINE = [[-830, 1058]];
+  for (const p of near) if (!OUTLINE.some(([x, z]) => Math.hypot(p.x - x, p.z - z) < 3)) assert.notEqual(p.is, 'low', `at (${p.x}, ${p.z}): ${p.room} m between`);
   // Under the route's own bridges, the Avenida Frei Bartolomeu dos Mártires; under the streets beside
   // it at the Avenida da Liberdade and the 31 de Janeiro, the tunnels.
   assert.ok(near.filter((p) => p.is === 'over' && p.up.level === 'bridge' && p.down.level !== 'tunnel').every((p) => p.room > 5), 'room under the decks');

@@ -108,8 +108,10 @@ millimetre (the test).
   (`LO-176510-07-2025`) and version.
 - **Used for:** the ground (task 009: the terrain model, `tools/relief.mjs`); every building's
   height, roof and parts (task 010: `tools/roofs.mjs` boils each LAZ tile down to 50 cm cells of
-  the building points' tops, `.cache/dgt/roofs/`, and measures each footprint over them); and the
-  buildings OpenStreetMap lacks, outlined from those cells (task 011, `tools/footprints.mjs`).
+  the building points' tops, `.cache/dgt/roofs/`, and measures each footprint over them); the
+  buildings OpenStreetMap lacks, outlined from those cells (task 011, `tools/footprints.mjs`); and
+  the bridges' decks where it saw them, class 26 (task 047: `tools/decks.mjs`, the median in each
+  metre, `.cache/decks.json`).
 - **Its sea level:** the Cascais datum, the one DGT publishes its own heights on: the LiDAR is
   within 0.15–0.85 m of DGT's geodetic marks on the Sameiro (whose heights may be the marks', not
   the ground's) and 0.2 m of the one at Pedroso; within 0.3–1.1 m of the old maps' spot heights,

@@ -1,10 +1,10 @@
 ---
-status: todo
+status: done
 priority: high
 kind: code
 repo: both
 created: 2026-10-14
-depends-on: []
+depends-on: [047]
 roadmap: Now · The open world
 ---
 
@@ -121,6 +121,15 @@ that OSM lacks (a lane, a ford, a street not mapped), that's an OSM fix (task 00
   on a pile of rubble behind an "obras" sign, for the city's roadworks. (c) Granite setts,
   like the street it stands on. Not blocking until step 5.
   > (b), the Braga joke: planks on rubble behind an "obras" sign (the owner, 2026-10-15).
+- [x] Step 3: the planner's pick, a jump over the Rio Este (59 m, level, a 20° ramp, cleared from
+  32.5 m/s), which makes the loop 10.09 km instead of 9.27; or jump 3, from the old road's street
+  onto the dead-end stretch (9.28 km), which turns 51° onto the ramp; or stop?
+  > The river jump (the owner, 2026-10-15, after the view from above, the flight side on and the
+  > kart's-eye shots). party-kart's 7–10 km bound on the loop's length changes knowingly.
+- [x] With the river jump about 1 km of the loop runs outside the open world (it swings west by
+  Ponte Pedrinha to come down the run-up from the north): grow the area round the new loop (3.12 to
+  3.48 km², 124 gates instead of 121, the world's tiles made again), switch to jump 3, or stop?
+  > Grow it round the new loop (the owner, 2026-10-15).
 
 ## Read first
 
@@ -136,20 +145,37 @@ that OSM lacks (a lane, a ford, a street not mapped), that's an OSM fix (task 00
 
 ## Done when
 
-- [ ] `tools/track.mjs` has no `(joined)` edges. The loop is on the map's streets everywhere
-  except one ramp's flight, and a test checks that.
-- [ ] The jump was shown to the owner before it was built, and they approved it (step 3).
-- [ ] In party-kart the race takes the ramp, lap after lap: a player at racing speed, the bots
+- [x] `tools/track.mjs` has no `(joined)` edges. The loop is on the map's streets everywhere
+  except one ramp's flight, and a test checks that: `test/rules.test.js`, "no track leaves the
+  streets but in a ramp's flight" (every step within 10 m of a street a car may use; the new track
+  is within 7.1 m everywhere, the old one's link 26 m off).
+- [x] The jump was shown to the owner before it was built, and they approved it (step 3): from
+  above over the orthophoto, side on with the LiDAR and the flights, and from the kart in the game,
+  with every candidate and why it was or wasn't kept (2026-10-15).
+- [x] In party-kart the race takes the ramp, lap after lap: a player at racing speed, the bots
   and the autopilot clear it and land on the street. A kart that falls short respawns on the
-  run-up. Positions and checkpoints are right across it.
-- [ ] Nothing is drawn over the gap but what's really there.
-- [ ] No viewpoint shows the link today; the nearest, `couteiro`, stands about 200 m south
-  looking north. Shoot it again at High and Low: it's no worse. The kart's-eye shot of the old
-  link and of the ramp, before and after, went to the owner. That shot isn't a scorecard
-  viewpoint, since there's no open photo there (decision 009).
-- [ ] The budget is measured (task 004): one ramp should make no visible difference.
-- [ ] `npm test` here, and `npm test` and `npm run check` in party-kart, pass.
-- [ ] The decision is recorded, and `README.md` and party-kart's docs say how the race gets there.
+  run-up. Positions and checkpoints are right across it. `test/drive.test.ts`: from braga-map's
+  speed to 158 km/h it lands 3 to 24 m past the landing point, on the carriageway; too slow, it
+  falls and respawns 50 m back on the run-up at the speed that clears it. The autopilot laps it with
+  no respawns (287.0 and 284.9 s). Eight bots with items all finish, within 9 s of each other; a bot
+  falls in 0 to 6 times a race, always after an item or a bump on the run-up or the ramp (logged:
+  shrunk by a martelinho, launched by a foguete, run into on the lip), never on a clean run.
+- [x] Nothing is drawn over the gap but what's really there: the ramp ends at its lip, and the
+  flight has no road, kerbs or walls (`raceMarks`, up only in a race).
+- [x] No viewpoint shows the link today; the nearest, `couteiro`, stands about 200 m south
+  looking north. Shoot it again at High and Low: it's no worse (`shots/2026-10-15-rampa/`, the
+  same as `2026-10-15-mundo-aberto`; it's off the route now, task 047). The kart's-eye shots of the
+  old link's place and of the ramp went to the owner (scratch, not committed: they show the
+  waypoint's street). That shot isn't a scorecard viewpoint, since there's no open photo there
+  (decision 009).
+- [x] The budget is measured (task 004): the ramp is about 10 draw calls, in a race only. The grown
+  city round the new loop is 3 fewer to 17 more draw calls a viewpoint, up to 0.16 M more
+  triangles, 6 MB more textures on High, and the download 7.24 MB, 2.19 MB gzipped (6.83 and 2.08):
+  party-kart's `docs/architecture.md`.
+- [x] `npm test` here (54 of 54), and `npm test` (44 of 44) and `npm run check` in party-kart, pass,
+  with braga-map's tree installed in party-kart (`--install-links`).
+- [x] The decision is recorded (027, and 028 for task 047), and `README.md` and party-kart's docs
+  say how the race gets there.
 
 ## Out of scope
 
@@ -172,3 +198,52 @@ that OSM lacks (a lane, a ford, a street not mapped), that's an OSM fix (task 00
 - Privacy: the task never names the street. The old link's ends are already public in
   `map/tracks.json`. With the eggs on the houses (decision 014), that says no more than the
   repository already does.
+- **Started 2026-10-15.** `tools/track.mjs` has no `joins` and no `(joined)`; it finds the pocket
+  past a waypoint (the side of its street that leads to fewer than 300 nodes) and every jump into
+  it: takeoffs every 2 m on streets a car may use within reach, landings every 2 m on the pocket's
+  streets heading for the waypoint, the flight at party-kart's gravity (12 m/s²) from an 8 m ramp
+  of 10–20°, the gentlest that clears what DGT's surface model has under the slowest flight that
+  lands (`JUMP` in track.mjs). A jump is kept if it turns at most 25° onto the ramp and 40° off the
+  flight, with 40 m of straight run-up and 25 m of landing. The run-up is a street of its own in
+  the graph (copies of its nodes, joined only at its start), so the loop comes straight down it.
+  Seven candidates, one kept: from the end of a straight street west of the Rio Este, over the
+  T-junction there and the river, onto the lower street's top end (59 m, level, a 20° ramp, 2.7 m
+  high, cleared from 32.5 m/s, 0.7 m over the river's trees). The others turn 41–60° onto their
+  ramp (the three from the old road's street and the river bank's street), or have a 7 m run-up, or
+  hit a roof. Not measured: how a kart lands at more than 33 m/s, when it comes down beyond the
+  28 m of landing street (37 m/s lands about 22 m past the landing point, 13 m to the side of the
+  street, on the open ground there; 44 m/s reaches the trees beyond).
+- The loop with it: 10,088 m of centre line (9,274 before), round by Ponte Pedrinha and down the
+  run-up from the north; 0 m against the traffic, 0 banned turns, no clashes. The owner saw it from
+  above, side on and from the kart (scratch pages, not committed: they show the waypoint's street)
+  and approved it, then chose to grow the open world round the new loop: `npm run open` (3.12 to
+  3.48 km²), `npm run world`, `npm run page`.
+- **Found by the grown area (2026-10-15), four tests fail:** the new loop passes the Rotunda Santos
+  da Cunha, by the end of the Avenida Conde Dom Henrique's viaduct, where the map has the deck
+  1.2–3.3 m over the streets under it (`levels.test.js`, four crossings 11–55 m from the route);
+  the edge crosses a street 72° from square at (-879, 852) (`open.test.js`); two decks' ends and
+  two tunnels' mouths in the new part are 0.12–0.88 m off their street's slope
+  (`streets.test.js`, task 043's kind); and the viewpoint `couteiro` is 61 m from the route, which
+  no longer takes that stretch of its street (`viewpoints.test.js`). A loop kept off that junction
+  goes up the river bank's street through the ramp's own junction and comes back round a block
+  down the run-up: worse.
+- **Task 047** (drafted and done 2026-10-15, at the owner's choice) fixed the grown area: the
+  Rotunda Santos da Cunha's viaduct at the LiDAR's height (decision 028), the edge squared in up to
+  12 rounds, `couteiro` off the route, OSM's outline of the junction and the tunnel's two mouths
+  named in the tests.
+- **Done in party-kart** (uncommitted, with braga-map's tree installed): the layout's `air` and the
+  track's `ramps` (`buildTrack(points, ramps)`, `rampSpeed`); `trackGround` with no road or walls
+  in a flight, a kart 3 m under its line fallen; `respawn` on the run-up after a fall at a jump
+  (`jumpAt`); the autopilot at `rampSpeed` on the run-up, the corners past the lip not counted
+  until it's landed; the bots drink no café near a jump; the ramp drawn with the race's marks
+  (planks on rubble, the road works' boards, an "OBRAS" sign); the peer id prefix
+  `partykart-pk33-`; the tests (the jump and its respawn, the loop up to 10.5 km, the world-ground
+  drive skipping the jump until task 037 puts the ramp in the world).
+- **Speed at the lip.** Going up the ramp costs a kart about 6% of its speed (what isn't along the
+  slope) and the climb about 1 m/s: bots at braga-map's 32.5 m/s left the lip at 28–31 and mostly
+  still cleared it. The autopilot and a respawn take it at `rampSpeed`, the speed at its foot that
+  leaves braga-map's at the lip with 2 m/s in hand: 36.6 m/s.
+- **Not done, for the owner:** committing, braga-map's tag `v1.10.0` and party-kart's pin to it;
+  the deploy; a round on the scorecard. Not checked: the race in a browser with a room (it needs
+  PeerJS's server), and the feel of the jump by hand. A street lamp on the river's west bank stands
+  in the flight's way: in the race the karts fly through it (the race's ground has no lamps).

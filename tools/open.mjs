@@ -90,7 +90,7 @@ export function gatesOf(pts, lines, y) {
 const SPAN = 2;
 function square(pts, lines) {
   let left = 0;
-  for (let round = 0; round < 3; round++) {
+  for (let round = 0; round < 12; round++) {
     // Starting from the point furthest from any crossing, so no crossing straddles the ring's start.
     let xs = crossings(pts, lines);
     if (!xs.length) break;

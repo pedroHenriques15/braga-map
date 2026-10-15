@@ -15,6 +15,9 @@ export const storeys = (eaves) => Math.max(1, Math.round((eaves - STOREY_BASE) /
 const LANE_W = { motorway: 3.6, trunk: 3.5, primary: 3.4, secondary: 3.3, tertiary: 3.2 }; // others 3
 const BARE = { motorway: 11, trunk: 10, primary: 10, secondary: 9, tertiary: 8, residential: 6.5, unclassified: 6, living_street: 5, pedestrian: 6, service: 4, track: 3 };
 export const isOneway = (t) => t.oneway === 'yes' || t.oneway === '-1' || t.junction === 'roundabout';
+// Whether a car may use a street: yes unless the most specific of its access tags says no.
+const NO_CARS = new Set(['no', 'private', 'permit', 'forestry', 'agricultural']);
+export const carsMay = (t) => !NO_CARS.has(t.motorcar ?? t.motor_vehicle ?? t.vehicle ?? t.access);
 // Which way a car may drive a street: 1 only the way it's drawn (a one-way street, a roundabout
 // anticlockwise), -1 only against it (`oneway=-1`), 0 both. A car's own `oneway:` tag wins.
 export function driven(t = {}) {

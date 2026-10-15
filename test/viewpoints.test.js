@@ -58,10 +58,26 @@ test('there are 20 along the route, 6 on foot in the shooter\'s area and 2 of th
 });
 
 test('a kart\'s viewpoint is on the route, looking the way the race goes', () => {
-  for (const v of views.filter((q) => q.kind === 'kart')) {
+  for (const v of views.filter((q) => q.kind === 'kart' && q.route !== false)) {
     const r = onRoute(v.x, v.z);
     assert.ok(r.d < 12, `${v.id} is ${r.d.toFixed(0)} m from the route`);
     assert.ok(turn(heading(v), r.race) < 35, `${v.id} looks ${turn(heading(v), r.race).toFixed(0)}° off the race`);
+  }
+});
+
+// One the route has left (`route: false`, since task 039: couteiro) is a kart's view of a street of
+// the open world, still in it.
+test('a kart\'s viewpoint off the route is on a street in the open world', async () => {
+  const off = views.filter((q) => q.kind === 'kart' && q.route === false);
+  const w = await loadWorld({ x0: Math.min(...off.map((v) => v.x)) - 20, x1: Math.max(...off.map((v) => v.x)) + 20, z0: Math.min(...off.map((v) => v.z)) - 20, z1: Math.max(...off.map((v) => v.z)) + 20 });
+  for (const v of off) {
+    assert.ok(w.inOpen(v.x, v.z), `${v.id} is outside the open world`);
+    let d = Infinity;
+    for (const l of w.lines) if (l.kind <= 5) for (let i = 1; i < l.pts.length; i++) {
+      const [ax, az] = l.pts[i - 1], [bx, bz] = l.pts[i], dx = bx - ax, dz = bz - az, f = Math.max(0, Math.min(1, ((v.x - ax) * dx + (v.z - az) * dz) / (dx * dx + dz * dz || 1)));
+      d = Math.min(d, Math.hypot(v.x - ax - f * dx, v.z - az - f * dz));
+    }
+    assert.ok(d < 6, `${v.id} is ${d.toFixed(0)} m from a street`);
   }
 });
 

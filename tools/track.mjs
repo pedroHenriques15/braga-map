@@ -17,7 +17,8 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { CACHE, ELEV0, P, readCache, ROOT } from './geo.mjs';
-import { blur, carriageway, COBBLE, driven, footprints, isOneway, lanesOf, segDist, simplify, W_MIN } from './osm.mjs';
+import { heights } from './dgt.mjs';
+import { blur, carriageway, carsMay, COBBLE, driven, footprints, isOneway, lanesOf, segDist, simplify, W_MIN } from './osm.mjs';
 import { EXT, sectionOf } from './sections.mjs';
 import { terrain } from './terrain.mjs';
 import { TRACKS } from './tracks.mjs';
@@ -44,12 +45,10 @@ places = places.map((p) => ({ ...p }));
 // What a metre of each kind of street costs: the loop prefers avenues and keeps residential
 // streets for where it has to go.
 const RES = Number(process.env.RES || 1.15), TURN = Number(process.env.TURN || 15);
-const COST = { primary: 1, secondary: 1, tertiary: 1.05, primary_link: 1.3, secondary_link: 1.3, tertiary_link: 1.3, unclassified: Math.min(1.3, RES), residential: RES, living_street: 2 };
+const COST = { primary: 1, secondary: 1, tertiary: 1.05, primary_link: 1.3, secondary_link: 1.3, tertiary_link: 1.3, unclassified: Math.min(1.3, RES), residential: RES, living_street: 2, jump: 1 };
 
-// The rules of the road. A car may use a street unless the most specific of its access tags says
-// no, and drives it only the way it may (`driven` in osm.mjs: one-way streets, roundabouts).
-const NO_CARS = new Set(['no', 'private', 'permit', 'forestry', 'agricultural']);
-const carsMay = (t) => !NO_CARS.has(t.motorcar ?? t.motor_vehicle ?? t.vehicle ?? t.access);
+// The rules of the road. A car may use a street unless its access tags say no (`carsMay` in
+// osm.mjs), and drives it only the way it may (`driven`: one-way streets, roundabouts).
 
 const nodes = new Map(); // id -> { x, z, adj: [{ to, len, kind, name, way, fwd, legal }] }
 for (const e of base.elements) {
@@ -118,51 +117,8 @@ function snap(x, z) {
   return { node: n, name: best.name, d: bd };
 }
 
-// A waypoint's street that's a dead end is joined from its end to the nearest other street, so
-// the loop can drive through it (a note on the map asked for that).
-const joins = [];
 for (const p of places) {
   const s = snap(p.x, p.z);
-  // Every node of that street within 400 m, and any dead end among them.
-  const street = new Set([s.node.id]);
-  const todo = [s.node];
-  while (todo.length) {
-    const n = todo.pop();
-    for (const e of n.adj) {
-      const m = nodes.get(e.to);
-      if (e.name === s.name && !street.has(m.id) && Math.hypot(m.x - s.node.x, m.z - s.node.z) < 400) { street.add(m.id); todo.push(m); }
-    }
-  }
-  for (const id of street) {
-    const end = nodes.get(id);
-    if (end.adj.length !== 1) continue;
-    // Carry on the way the street was going, to a street that leads somewhere (not another dead
-    // end), the nearest such, with going straight on worth more than going close.
-    const from = nodes.get(end.adj[0].to);
-    const hx = end.x - from.x, hz = end.z - from.z, hl = Math.hypot(hx, hz);
-    // Not to a street that's already a short drive away: joining it would only make a hairpin.
-    const close = new Map([...street].map((s) => [s, 0]));
-    const todo = [...street];
-    while (todo.length) {
-      const n = nodes.get(todo.shift()), dn = close.get(n.id);
-      for (const e of n.adj) if (dn + e.len < 300 && dn + e.len < (close.get(e.to) ?? Infinity)) { close.set(e.to, dn + e.len); todo.push(e.to); }
-    }
-    let to = null, d = Infinity, score = Infinity;
-    for (const n of nodes.values()) {
-      if (close.has(n.id) || n.adj.length < 2) continue;
-      const dx = n.x - end.x, dz = n.z - end.z, dd = Math.hypot(dx, dz);
-      if (dd > 200 || dd < 5) continue;
-      const ang = Math.acos(Math.max(-1, Math.min(1, (dx * hx + dz * hz) / (dd * hl))));
-      if (ang > 1.1) continue;
-      const sc = dd * (1 + 1.5 * ang);
-      if (sc < score) { score = sc; to = n; d = dd; }
-    }
-    if (!to) continue;
-    const edge = { kind: 'residential', name: '(joined)', len: d, tags: { highway: 'residential' } };
-    end.adj.push({ to: to.id, ...edge, legal: true });
-    to.adj.push({ to: end.id, ...edge, legal: true });
-    joins.push({ from: [Math.round(end.x), Math.round(end.z)], to: [Math.round(to.x), Math.round(to.z)], len: Math.round(d), street: s.name });
-  }
   p.node = s.node.id;
   p.street = s.name;
 }
@@ -205,12 +161,16 @@ function route(from, prev, to, notFrom, extra, after) {
     }
     const N = nodes.get(n);
     for (const e of N.adj) {
-      if (e.to === p || !e.legal) continue; // no turning back, nor against the traffic
-      let cost = e.len * COST[e.kind] + extra(n, e.to);
+      if (e.to === p || !e.legal || e.jump?.disabled) continue; // no turning back, nor against the traffic
+      let cost = e.len * COST[e.kind] + (e.jump ? JUMP.price : 0) + extra(n, e.to);
       if (p != null && p !== '') {
         const th = turn(nodes.get(p), N, nodes.get(e.to));
         if (th > 2.4) continue; // a hairpin a kart can't make in a street
         if (banned(p, n, e.to)) continue;
+        // A ramp is taken from its run-up, nearly straight on, and the landing street nearly
+        // straight on from the flight.
+        if (e.jump && th > (JUMP.turnOn * Math.PI) / 180) continue;
+        if (edgeOf(p, n)?.jump && th > (JUMP.turnOff * Math.PI) / 180) continue;
         cost += TURN * (th / (Math.PI / 2)) ** 2;
       }
       const kk = key(e.to, n), nc = c + cost;
@@ -224,7 +184,7 @@ function route(from, prev, to, notFrom, extra, after) {
 // out to the other. `flips` says which way round, for each waypoint.
 function through(p) {
   const n = nodes.get(p.node);
-  let along = n.adj.filter((e) => e.name === p.street || e.name === '(joined)').map((e) => e.to);
+  let along = n.adj.filter((e) => e.name === p.street && !e.jump).map((e) => e.to);
   if (along.length < 2) along = [...along, ...n.adj.map((e) => e.to).filter((id) => !along.includes(id))];
   // The two that make the straightest line through the waypoint.
   let pair = null, bestT = Infinity;
@@ -247,8 +207,10 @@ function loopThrough(order, flips) {
     const n = nodes.get(id);
     for (let a = -1; a <= 1; a++) for (let b = -1; b <= 1; b++) { const c = Math.floor(n.x / 30) + a + ',' + (Math.floor(n.z / 30) + b); if (!near.has(c)) near.set(c, []); near.get(c).push(n); }
   };
+  // A stretch by the ids of the street's own nodes, so a jump's run-up (copies of them) is the same street.
+  const key = (a, b) => [nodes.get(a).orig ?? a, nodes.get(b).orig ?? b].sort().join('-');
   const extra = (a, b) => {
-    const e = [a, b].sort().join('-');
+    const e = key(a, b);
     if (used.has(e)) return 5000;
     const A = nodes.get(a), B = nodes.get(b), mx = (A.x + B.x) / 2, mz = (A.z + B.z) / 2;
     // Close to a waypoint the loop comes and goes; elsewhere it keeps 28 m from itself.
@@ -256,7 +218,7 @@ function loopThrough(order, flips) {
     const close = (near.get(cellOf(mx, mz)) || []).some((n) => Math.hypot(n.x - mx, n.z - mz) < 28);
     return close ? 400 : 0;
   };
-  const use = (a, b) => { used.add([a, b].sort().join('-')); mark(a); mark(b); };
+  const use = (a, b) => { used.add(key(a, b)); mark(a); mark(b); };
   ends.forEach(([a, b], k) => { use(a, ids[k]); use(ids[k], b); });
   const path = [];
   let cost = 0;
@@ -283,37 +245,273 @@ if (fixed) {
   const o = fixed.map((id) => places.find((p) => p.id === id));
   orders.push(o, [o[0], ...o.slice(1).reverse()]);
 } else for (const p of perms(rest)) orders.push([first, ...p]);
-let bestLoop = null;
-for (const o of orders) {
-  for (let f = 0; f < 1 << o.length; f++) {
-    const flips = o.map((_, k) => !!(f & (1 << k)));
-    const r = loopThrough(o, flips);
-    if (!r) continue;
-    if (!bestLoop || r.cost < bestLoop.cost) bestLoop = { ...r, order: o, flips };
-  }
-  console.log('order', o.map((p) => p.id).join(' > '), 'best so far', Math.round(bestLoop?.cost ?? NaN));
-}
-if (!bestLoop) throw new Error('No loop through the waypoints.');
-const loop = bestLoop.path.map((id) => nodes.get(id));
-
-// What the loop is made of, street by street.
-{
-  let L = 0, lastName = null, run = 0;
+// What a loop is made of, street by street, and how long it is.
+const streetsOf = (path) => {
   const parts = [];
-  for (let i = 0; i < loop.length; i++) {
-    const a = loop[i], b = loop[(i + 1) % loop.length];
-    const e = edgeOf(a.id, b.id);
+  let lastName = null, run = 0;
+  for (let i = 0; i < path.length; i++) {
+    const a = nodes.get(path[i]), b = nodes.get(path[(i + 1) % path.length]), e = edgeOf(a.id, b.id);
     const name = e ? e.name || '(' + e.kind + ')' : '?';
     if (name !== lastName && lastName !== null) { parts.push(`${lastName} ${Math.round(run)}`); run = 0; }
     lastName = name;
     run += Math.hypot(b.x - a.x, b.z - a.z);
-    L += Math.hypot(b.x - a.x, b.z - a.z);
   }
   parts.push(`${lastName} ${Math.round(run)}`);
-  console.log('\nloop', bestLoop.order.map((p) => p.id).join(' > '), Math.round(L), 'm,', loop.length, 'nodes');
-  console.log(parts.join(' | '));
-  console.log('joins', JSON.stringify(joins));
+  return parts.join(' | ');
+};
+const loopLength = (path) => path.reduce((L, id, i) => { const a = nodes.get(id), b = nodes.get(path[(i + 1) % path.length]); return L + Math.hypot(b.x - a.x, b.z - a.z); }, 0);
+function search(quiet) {
+  let best = null;
+  for (const o of orders) {
+    for (let f = 0; f < 1 << o.length; f++) {
+      const flips = o.map((_, k) => !!(f & (1 << k)));
+      const r = loopThrough(o, flips);
+      if (!r) continue;
+      if (!best || r.cost < best.cost) best = { ...r, order: o, flips };
+    }
+    if (!quiet) console.log('order', o.map((p) => p.id).join(' > '), 'best so far', Math.round(best?.cost ?? NaN));
+  }
+  return best;
 }
+
+
+// ---------------------------------------------------------------------------------------------
+// 1b. Jumps into a pocket.
+//
+// Past some waypoints the street leads only into a pocket: a dead end, and any streets off it that
+// lead nowhere either, with no other way in. The loop drives along each waypoint's street through
+// it, so it could only come out of a pocket by turning back. The race jumps in instead (decision
+// 027): from a ramp on a street a car may use outside the pocket, over whatever is really there,
+// onto a street in the pocket heading for the waypoint, then on past it and out by the pocket's own
+// mouth. The map's streets are the only roads the planner knows; a jump is the one way the loop
+// leaves them, and the games put its ramp up only for a race.
+
+// What makes a jump one a kart can race. Its flight is a kart game's: party-kart's gravity, and the
+// speeds its karts reach in a street.
+const JUMP = {
+  gap: [15, 60], // m from the ramp's lip to where the flight meets the landing street's middle
+  turnOn: 25, // ° at most from the street the ramp stands on to the flight: a kart takes it at speed
+  turnOff: 40, // ° at most from the flight to the landing street
+  runUp: 40, // m of straight street before the lip
+  land: 25, // m of straight street on from the landing
+  ramp: 8, // m up the ramp's slope
+  angles: [10, 12.5, 15, 17.5, 20], // ° the ramp may rise at: the gentlest that clears is taken
+  g: 12, // m/s²
+  v: 33, // m/s, the most a kart may need to clear it: party-kart's reach 37 on the flat
+  past: 4, // m past the landing point the slowest flight comes down
+  margin: 0.5, // m between the slowest flight and anything under it, by the LiDAR's surface model
+  price: 1000, // what a jump adds to the loop's cost, so it takes one only where it has to
+};
+// A flight's height over the ramp's lip, s metres on, at speed v from a ramp at angle th.
+const arc = (th, v, s) => s * Math.tan(th) - (JUMP.g * s * s) / (2 * v * v * Math.cos(th) ** 2);
+const deg = (r) => Math.round((r * 180) / Math.PI);
+
+// The streets past a waypoint that lead nowhere else, when its street leads into a pocket.
+const POCKET = 300; // nodes at most: the rest of the map has thousands
+function pocketPast(p) {
+  const sides = through(p).map((first) => {
+    const seen = new Set([first]), todo = [first];
+    while (todo.length && seen.size <= POCKET) for (const e of nodes.get(todo.pop()).adj) if (e.to !== p.node && !seen.has(e.to)) { seen.add(e.to); todo.push(e.to); }
+    return seen.size <= POCKET ? seen : null;
+  });
+  if (sides[0] && sides[1]) throw new Error(`Waypoint ${p.id}'s street leads nowhere either way.`);
+  return sides[0] ?? sides[1];
+}
+
+// Points every 2 m along a street, the way it's driven from a to b: on the edge e, s metres from a.
+function along(a, e) {
+  const b = nodes.get(e.to), hx = (b.x - a.x) / e.len, hz = (b.z - a.z) / e.len, out = [];
+  for (let s = 0; s < e.len; s += 2) out.push({ x: a.x + hx * s, z: a.z + hz * s, hx, hz, a, b, e, s });
+  return out;
+}
+// How far the streets run straight from a point, on (dir 1) or back (dir -1): metres until they
+// stray 2.5 m from its line, taking the straightest way at each junction, and only through `keep`.
+function straight(pt, dir, keep) {
+  const ux = pt.hx * dir, uz = pt.hz * dir;
+  let cur = dir > 0 ? pt.b : pt.a, prev = dir > 0 ? pt.a : pt.b, run = 0;
+  for (let guard = 0; guard < 50; guard++) {
+    const dx = cur.x - pt.x, dz = cur.z - pt.z, off = Math.abs(dx * uz - dz * ux), fw = dx * ux + dz * uz;
+    if (off > 2.5) return Math.max(run, (fw * 2.5) / off);
+    run = fw;
+    let next = null, bc = -2;
+    for (const e of cur.adj) {
+      if (e.to === prev.id || e.jump || !keep(e.to)) continue;
+      const n = nodes.get(e.to), c = ((n.x - cur.x) * ux + (n.z - cur.z) * uz) / e.len;
+      if (c > bc) { bc = c; next = n; }
+    }
+    if (!next) return run;
+    [prev, cur] = [cur, next];
+  }
+  return run;
+}
+// A node of the graph at a point on a street: the nearer end of its stretch within a metre, or a new
+// node splitting the stretch there.
+let made = 0;
+function nodeOn({ x, z, e: { way } }) {
+  let best = null, bd = Infinity;
+  for (const a of nodes.values()) for (const e of a.adj) {
+    if (e.way !== way || !e.fwd) continue;
+    const d = segDist(x, z, a, nodes.get(e.to));
+    if (d < bd) { bd = d; best = { a, e }; }
+  }
+  const { a, e } = best, b = nodes.get(e.to), len = e.len, s = Math.hypot(x - a.x, z - a.z);
+  if (s < 1) return a;
+  if (len - s < 1) return b;
+  const m = { id: `jump-${++made}`, x, z, adj: [] }, back = b.adj.find((r) => r.to === a.id && r.way === way);
+  nodes.set(m.id, m);
+  m.adj.push({ ...back, len: s }, { ...e, len: len - s });
+  Object.assign(e, { to: m.id, len: s });
+  Object.assign(back, { to: m.id, len: len - s });
+  return m;
+}
+// Whether two segments cross.
+const crosses = (a, b, c, d) => {
+  const o = (p, q, r) => Math.sign((q[0] - p[0]) * (r[1] - q[1]) - (q[1] - p[1]) * (r[0] - q[0]));
+  return o(a, b, c) !== o(a, b, d) && o(c, d, a) !== o(c, d, b);
+};
+
+const ground = await terrain();
+const pockets = places.map((p) => ({ p, pocket: pocketPast(p) })).filter((q) => q.pocket);
+const jumps = [];
+for (const { p, pocket } of pockets) {
+  const wp = nodes.get(p.node), inside = (id) => pocket.has(id) || id === p.node;
+  console.log(`\n${p.id}'s street leads into a pocket of ${pocket.size} nodes: jumps in`);
+  // Metres along the pocket's streets to the waypoint: the landing heads for it.
+  const toWp = new Map([[p.node, 0]]);
+  for (const todo = [p.node]; todo.length; ) {
+    const n = nodes.get(todo.shift());
+    for (const e of n.adj) if (pocket.has(e.to) && toWp.get(n.id) + e.len < (toWp.get(e.to) ?? Infinity)) { toWp.set(e.to, toWp.get(n.id) + e.len); todo.push(e.to); }
+  }
+  const landings = [], takeoffs = [];
+  for (const id of pocket) { const a = nodes.get(id); for (const e of a.adj) if (e.legal && inside(e.to) && toWp.get(e.to) < toWp.get(id)) landings.push(...along(a, e)); }
+  const pts = [...pocket].map((id) => nodes.get(id));
+  const nearPocket = (n) => pts.some((q) => Math.hypot(q.x - n.x, q.z - n.z) < JUMP.gap[1] + 40);
+  for (const a of nodes.values()) {
+    if (inside(a.id) || !nearPocket(a)) continue;
+    for (const e of a.adj) if (e.legal && !inside(e.to)) takeoffs.push(...along(a, e));
+  }
+  let bx0 = Infinity, bx1 = -Infinity, bz0 = Infinity, bz1 = -Infinity;
+  for (const q of [...pts, wp]) { bx0 = Math.min(bx0, q.x); bx1 = Math.max(bx1, q.x); bz0 = Math.min(bz0, q.z); bz1 = Math.max(bz1, q.z); }
+  const reach = JUMP.gap[1] + 50, surface = await heights('mds', { x0: bx0 - reach, x1: bx1 + reach, z0: bz0 - reach, z1: bz1 + reach });
+  // Every takeoff and landing within reach, the flight heading off the one and onto the other within
+  // 60°, kept or not, so the owner sees why one isn't.
+  const all = [];
+  for (const t of takeoffs) for (const l of landings) {
+    const dx = l.x - t.x, dz = l.z - t.z, g = Math.hypot(dx, dz);
+    if (g < JUMP.gap[0] || g > JUMP.gap[1]) continue;
+    const fx = dx / g, fz = dz / g;
+    const on = Math.acos(Math.min(1, fx * t.hx + fz * t.hz)), off = Math.acos(Math.min(1, fx * l.hx + fz * l.hz));
+    if (on > Math.PI / 3 || off > Math.PI / 3) continue;
+    const c = { p: p.id, t, l, g, fx, fz, on, off, yT: ground.at(t.x, t.z), yL: ground.at(l.x, l.z) };
+    c.runUp = straight(t, -1, (id) => !inside(id));
+    c.landing = straight(l, 1, inside);
+    // The gentlest ramp whose slowest flight onto the landing clears what's under it.
+    const wT = carriageway(t.e.tags), wL = carriageway(l.e.tags);
+    c.clear = -Infinity;
+    for (const a of JUMP.angles) {
+      const th = (a * Math.PI) / 180, lip = JUMP.ramp * Math.sin(th), y0 = c.yT + lip;
+      let v = null;
+      for (let u = 10; u <= JUMP.v; u += 0.5) if (y0 + arc(th, u, g + JUMP.past) >= c.yL) { v = u; break; }
+      if (!v) continue;
+      let clear = Infinity, tallest = 0, low = Infinity;
+      for (let s = 0; s <= g; s += 0.5) for (const o of [-1.5, 0, 1.5]) {
+        const x = t.x + fx * s - fz * o, z = t.z + fz * s + fx * o;
+        // Not the streets it leaves and lands on: their parked cars aren't in the way.
+        if (segDist(x, z, t.a, t.b) < wT / 2 || segDist(x, z, l.a, l.b) < wL / 2) continue;
+        const top = surface(x, z), gy = ground.at(x, z);
+        low = Math.min(low, gy);
+        if (top == null) continue;
+        tallest = Math.max(tallest, top - gy);
+        clear = Math.min(clear, y0 + arc(th, v, s) - top);
+      }
+      if (clear > c.clear) Object.assign(c, { angle: th, lip, v, clear, tallest, low });
+      if (clear >= JUMP.margin) break;
+    }
+    c.why = [
+      c.on > (JUMP.turnOn * Math.PI) / 180 && `turns ${deg(c.on)}° onto the ramp`,
+      c.off > (JUMP.turnOff * Math.PI) / 180 && `turns ${deg(c.off)}° off the flight`,
+      c.runUp < JUMP.runUp && `a run-up of ${Math.round(c.runUp)} m`,
+      c.landing < JUMP.land && `a landing of ${Math.round(c.landing)} m`,
+      !c.v && `needs over ${JUMP.v} m/s`,
+      c.v && c.clear < JUMP.margin && `${c.clear.toFixed(1)} m clear of what's under it`,
+    ].filter(Boolean);
+    all.push(c);
+  }
+  // The best of each pair of streets, takeoff and landing: one that's kept if any is, the gentlest
+  // and slowest; otherwise the one nearest to being kept.
+  const groups = new Map();
+  for (const c of all) { const k = c.t.e.way + '>' + c.l.e.way; if (!groups.has(k)) groups.set(k, []); groups.get(k).push(c); }
+  for (const cs of groups.values()) {
+    cs.sort((a, b) => a.why.length - b.why.length || (a.angle ?? 9) - (b.angle ?? 9) || (a.v ?? 99) - (b.v ?? 99) || b.clear - a.clear);
+    jumps.push(cs[0]);
+  }
+}
+// What's under each flight, from the map: the streets and rivers it crosses, and the buildings.
+if (jumps.length) {
+  const fps = footprints(readCache('osm/buildings.json')).map((e) => e.geometry.map(P));
+  for (const c of jumps) {
+    const a = [c.t.x, c.t.z], b = [c.l.x, c.l.z], over = new Set();
+    let buildings = 0;
+    for (const e of base.elements) {
+      if (e.type !== 'way' || !(e.tags?.highway || e.tags?.waterway) || e.id === c.t.e.way || e.id === c.l.e.way) continue;
+      const g = e.geometry.map(P);
+      for (let i = 1; i < g.length; i++) if (crosses(a, b, g[i - 1], g[i])) { over.add(e.tags.name || e.tags.waterway || e.tags.highway); break; }
+    }
+    for (const g of fps) for (let i = 1; i < g.length; i++) if (crosses(a, b, g[i - 1], g[i])) { buildings++; break; }
+    c.over = [...over, `${buildings} buildings`];
+  }
+}
+const describe = (c) => `from ${c.t.e.name || c.t.e.kind} (${Math.round(c.t.x)}, ${Math.round(c.t.z)}) onto ${c.l.e.name || c.l.e.kind} (${Math.round(c.l.x)}, ${Math.round(c.l.z)}): ${Math.round(c.g)} m, ${(c.yT - c.yL).toFixed(1)} m down; turns ${deg(c.on)}° onto the ramp and ${deg(c.off)}° off the flight; run-up ${Math.round(c.runUp)} m, landing ${Math.round(c.landing)} m; ${c.v ? `a ${((c.angle * 180) / Math.PI).toFixed(1)}° ramp (lip ${c.lip.toFixed(1)} m) clears it from ${c.v} m/s, ${c.clear.toFixed(1)} m over what's under it (the tallest thing ${c.tallest.toFixed(1)} m high), the ground down to ${(c.yT - c.low).toFixed(1)} m below the takeoff` : `no ramp clears it under ${JUMP.v} m/s`}; over ${c.over.join(', ')}`;
+// Each kept jump alone, and the loop it gives; then the planner's pick, the cheapest loop, or the
+// one JUMP=<n> names.
+const kept = jumps.filter((c) => !c.why.length);
+for (const [k, c] of jumps.entries()) {
+  c.n = k + 1;
+  if (c.why.length) { console.log(`\njump ${c.n}, not kept (${c.why.join('; ')}): ${describe(c)}`); continue; }
+  const T = nodeOn(c.t), L = nodeOn(c.l);
+  // The run-up, at least JUMP.runUp m of the street straight back from the lip, as a street of its
+  // own: copies of its nodes, joined to the rest only at its start, so the loop can only reach the
+  // ramp straight down it.
+  const chain = [T];
+  for (let run = 0; run < JUMP.runUp; ) {
+    const cur = chain[0];
+    let best = null, bc = 0.9;
+    for (const e of cur.adj) {
+      const n = nodes.get(e.to), back = n.adj.find((r) => r.to === cur.id && r.legal);
+      const cos = ((cur.x - n.x) * c.t.hx + (cur.z - n.z) * c.t.hz) / e.len;
+      if (back && !chain.includes(n) && cos > bc) { bc = cos; best = n; }
+    }
+    if (!best) break;
+    run += Math.hypot(chain[0].x - best.x, chain[0].z - best.z);
+    chain.unshift(best);
+  }
+  if (chain.length < 2) throw new Error(`No run-up to jump ${c.n}.`);
+  const copy = new Map(chain.slice(1).map((n) => [n.id, { id: `${n.id}~${c.n}`, orig: n.id, x: n.x, z: n.z, adj: [] }]));
+  for (const m of copy.values()) nodes.set(m.id, m);
+  for (let i = 1; i < chain.length; i++) {
+    const a = chain[i - 1], b = chain[i], e = a.adj.find((r) => r.to === b.id && r.legal);
+    (copy.get(a.id) ?? a).adj.push({ ...e, to: copy.get(b.id).id });
+  }
+  c.edge = { to: L.id, kind: 'jump', name: '', len: c.g, way: `jump${c.n}`, tags: {}, fwd: true, legal: true, jump: c };
+  copy.get(T.id).adj.push(c.edge);
+}
+for (const c of kept) {
+  for (const o of kept) o.disabled = o !== c;
+  c.loop = search(true);
+  console.log(`\njump ${c.n}: ${describe(c)}`);
+  console.log(c.loop ? `  the loop: ${Math.round(loopLength(c.loop.path))} m, ${streetsOf(c.loop.path)}` : '  no loop through the waypoints with it');
+}
+const chosen = process.env.JUMP ? kept.find((c) => c.n === Number(process.env.JUMP)) : kept.filter((c) => c.loop).sort((a, b) => a.loop.cost - b.loop.cost)[0];
+if (process.env.JUMP && !chosen) throw new Error(`No kept jump ${process.env.JUMP}.`);
+for (const c of kept) c.disabled = c !== chosen;
+if (chosen) console.log(`\nthe pick: jump ${chosen.n}${process.env.JUMP ? ' (JUMP)' : ', the cheapest loop'}`);
+
+const bestLoop = search(false);
+if (!bestLoop) throw new Error('No loop through the waypoints.');
+const loop = bestLoop.path.map((id) => nodes.get(id));
+
+console.log('\nloop', bestLoop.order.map((p) => p.id).join(' > '), Math.round(loopLength(bestLoop.path)), 'm,', loop.length, 'nodes');
+console.log(streetsOf(bestLoop.path));
 
 // The loop checked against the rules of the road: every street driven the right way and every turn
 // allowed. The map's few bans on a turn through a short street (`via` a way) aren't kept by
@@ -426,6 +624,28 @@ let line = resample(rounded.pts, 2);
   line = line.map((_, i) => [xs[i], zs[i]]);
 }
 const n2 = line.length;
+const steps = (a, b) => (b - a + n2) % n2; // points from a on to b, round the loop
+
+// The jump, if the loop takes one: the ramp straight up to its lip, and the flight straight on from
+// the lip to where it meets the landing street's middle. foot, lip and land are points of the line.
+const jumpEdges = loopEdges.filter((e) => e.jump);
+if (jumpEdges.length > 1) throw new Error('The loop takes more than one jump.');
+let jump = null;
+if (jumpEdges.length) {
+  const c = jumpEdges[0].jump, rampH = JUMP.ramp * Math.cos(c.angle);
+  const nearest = (x, z) => { let bi = 0, bd = Infinity; line.forEach(([px, pz], i) => { const d = Math.hypot(px - x, pz - z); if (d < bd) { bd = d; bi = i; } }); return bi; };
+  const lip = nearest(c.t.x, c.t.z), land = nearest(c.l.x, c.l.z), foot = (lip - Math.round(rampH / 2) + n2) % n2;
+  if (Math.abs(steps(lip, land) * 2 - c.g) > 8) throw new Error(`The line doesn't follow jump ${c.n}'s flight: ${steps(lip, land) * 2} m for ${Math.round(c.g)}.`);
+  const F = [c.t.x - c.fx * rampH, c.t.z - c.fz * rampH], T = [c.t.x, c.t.z], L = [c.l.x, c.l.z];
+  const lerp = (a, b, f) => [a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f];
+  for (let k = 0; k <= steps(foot, lip); k++) line[(foot + k) % n2] = lerp(F, T, k / steps(foot, lip));
+  for (let k = 1; k <= steps(lip, land); k++) line[(lip + k) % n2] = lerp(T, L, k / steps(lip, land));
+  jump = { c, foot, lip, land };
+}
+// In the air: the stretches from the lip until the landing.
+const inAir = (i) => !!jump && steps(jump.lip, i) < steps(jump.lip, jump.land);
+// Near the jump: from its run-up to past its landing, where nothing else goes.
+const nearJump = (i) => !!jump && steps((jump.foot - 30 + n2) % n2, i) <= 30 + steps(jump.foot, jump.land) + 15;
 
 // What street each point is on, for its width and for the scenery.
 const onStreet = line.map(([x, z]) => {
@@ -446,7 +666,6 @@ const curvature = line.map((_, i) => { let d = heading[(i + 2) % n2] - heading[(
 // line is a metre or two off it) don't tip it. A bridge's deck isn't in the terrain, which has the
 // ground under it: the road crosses each bridge straight, from one end to the other. Then both are
 // smoothed just enough for karts.
-const ground = await terrain();
 const median = (v) => { const s = [...v].sort((a, b) => a - b), m = s.length >> 1; return s.length % 2 ? s[m] : (s[m - 1] + s[m]) / 2; };
 const cross = line.map(([x, z], i) => {
   const [xa, za] = line[(i - 1 + n2) % n2], [xb, zb] = line[(i + 1) % n2], tl = Math.hypot(xb - xa, zb - za) || 1;
@@ -467,11 +686,29 @@ const onBridge = onStreet.map((e) => !!e.tags?.bridge && e.tags.bridge !== 'no')
     for (let i = p + 1; i < q; i++) { const f = (i - p) / (q - p); cross[(i + n2) % n2] = { y: A.y + (B.y - A.y) * f, slope: A.slope + (B.slope - A.slope) * f }; }
   }
 }
+// Under the jump the road's height runs straight from the ramp's foot to the landing, so the ground
+// in the gap doesn't pull the smoothing either side; the ramp and the flight are set after.
+if (jump) {
+  const { foot, land } = jump, A = cross[foot], B = cross[land], n = steps(foot, land);
+  for (let k = 1; k < n; k++) cross[(foot + k) % n2] = { y: A.y + ((B.y - A.y) * k) / n, slope: 0 };
+}
 // Smoothed over about 10 m (a Gaussian blur's spread), and the layout's points are 8 m apart; real
 // streets tip sideways by up to a few percent, more on a hill's flank; a kart's road no more than 8%.
 const SMOOTH = 5;
 const ys = blur(blur(cross.map((c) => c.y), SMOOTH), SMOOTH).map((h) => h - ELEV0);
 const banks = blur(blur(cross.map((c) => Math.atan(c.slope)), SMOOTH), SMOOTH).map((b) => Math.max(-0.08, Math.min(0.08, b)));
+// The ramp rises straight from the street at its foot to its lip, and the flight's road (which the
+// games don't draw) runs straight from the lip to the landing; neither tips sideways.
+if (jump) {
+  const { c, foot, lip, land } = jump, rise = JUMP.ramp * Math.sin(c.angle);
+  for (let k = 0; k <= steps(foot, lip); k++) ys[(foot + k) % n2] = ys[foot] + (rise * k) / steps(foot, lip);
+  for (let k = 1; k < steps(lip, land); k++) ys[(lip + k) % n2] = ys[lip] + ((ys[land] - ys[lip]) * k) / steps(lip, land);
+  for (let k = 0; k <= steps(foot, land); k++) banks[(foot + k) % n2] = 0;
+  // The slowest flight that comes down past the landing, from the heights as they are now.
+  const g = steps(lip, land) * 2;
+  for (let v = 10; v <= 60 && !jump.v; v += 0.5) if (ys[lip] + arc(c.angle, v, g + JUMP.past) >= ys[land]) jump.v = v;
+  console.log(`\njump ${c.n}: the ramp from (${line[foot].map(Math.round)}) to its lip at (${line[lip].map(Math.round)}), ${((c.angle * 180) / Math.PI).toFixed(1)}° and ${rise.toFixed(1)} m high; ${g} m to the landing at (${line[land].map(Math.round)}), ${(ys[lip] - ys[land]).toFixed(1)} m below the lip; cleared from ${jump.v} m/s`);
+}
 const smooth = ys.map((y) => y + ELEV0);
 
 // Does any part of the road come close to another part far along it?
@@ -484,6 +721,7 @@ for (let i = 0; i < n2; i += 2) for (let j = i + 60; j < n2; j += 2) {
 
 let maxGrade = 0, minCrest = Infinity;
 for (let i = 0; i < n2; i++) {
+  if (nearJump(i)) continue;
   const a = ys[(i - 5 + n2) % n2], b = ys[i], c = ys[(i + 5) % n2];
   maxGrade = Math.max(maxGrade, Math.abs(c - a) / 20);
   const k = (a - 2 * b + c) / 100; // second derivative over 10 m
@@ -593,6 +831,8 @@ const kerbs = (() => {
     side.forEach((v, i) => (side[i] = v === 0 ? 0 : Math.sign(v) * sm[i]));
   }
   const share = (f) => Math.round((100 * out.flat().filter(f).length) / (2 * n2));
+  // None in the air.
+  for (let i = 0; i < n2; i++) if (inAir(i)) out[0][i] = out[1][i] = 0;
   console.log(`kerbs: ${share((v) => v > 0)}% pavement, ${share((v) => v < 0)}% reservation, ${share((v) => v === 0)}% open; ${gaps} side streets`);
   return out;
 })();
@@ -610,14 +850,15 @@ const startStreet = onStreet.some((e) => e.name === START_ON);
 let start = 0, startScore = Infinity;
 for (let i = 0; i < n2; i++) {
   // Not by anyone's house: the start is where everyone looks.
-  if (places.some((p) => Math.hypot(line[i][0] - p.x, line[i][1] - p.z) < 250)) continue;
+  if (places.some((p) => Math.hypot(line[i][0] - p.x, line[i][1] - p.z) < 250) || nearJump(i)) continue;
   if (startStreet && onStreet[i].name !== START_ON) continue;
   const sc = maxCurve(i, 60, 40) + (main(onStreet[i]) ? 0 : 0.01);
   if (sc < startScore) { startScore = sc; start = i; }
 }
 // Everything from here counts from the start line.
 const at = (k) => (start + k) % n2; // k samples (2 m each) after the start
-const straightest = (k, span) => { let best = k, bs = Infinity; for (let d = -span; d <= span; d++) { const sc = maxCurve(at(k + d), 10, 10); if (sc < bs) { bs = sc; best = k + d; } } return best; };
+// The straightest place within reach of k, away from the jump.
+const straightest = (k, reach) => { let best = k, bs = Infinity; for (let d = -reach; d <= reach; d++) { if (nearJump(at(k + d))) continue; const sc = maxCurve(at(k + d), 10, 10); if (sc < bs) { bs = sc; best = k + d; } } return best; };
 
 const checkpoints = [1, 2, 3, 4, 5].map((f) => straightest(Math.round((f * n2) / 6), 20));
 const busy = (k) => [0, ...checkpoints].some((c) => Math.abs(((k - c + n2 / 2 + n2) % n2) - n2 / 2) < 30);
@@ -626,7 +867,7 @@ for (let k = 150; k < n2 - 100; k += 410) { let b = straightest(k, 40); if (busy
 // Boost pads 30 m into the longest straights.
 const straights = [];
 for (let k = 0, run = 0; k < n2; k++) {
-  if (curvature[at(k)] < 0.006) run++;
+  if (curvature[at(k)] < 0.006 && !nearJump(at(k))) run++;
   else { if (run > 60) straights.push({ from: k - run, len: run }); run = 0; }
 }
 const boosts = straights.sort((a, b) => b.len - a.len).slice(0, 6).map((s) => s.from + 15).filter((k) => !busy(k) && !items.some((it) => Math.abs(it - k) < 25));
@@ -641,8 +882,8 @@ const eggs = places.filter((p) => p.egg).map((p) => {
   return { kind: p.egg, x: Math.round(p.x), z: Math.round(p.z), side };
 });
 // The streets a note on the map asked to have houses all down both sides: the waypoints marked
-// `rows` in places.json, and the joins out of them.
-const rowStreets = new Set([...places.filter((p) => p.rows).map((p) => p.street), '(joined)']);
+// `rows` in places.json.
+const rowStreets = new Set(places.filter((p) => p.rows).map((p) => p.street));
 const rows = [];
 {
   let from = -1;
@@ -656,17 +897,19 @@ const rows = [];
 console.log(`start on ${onStreet[start].name} at ${line[start].map(Math.round)}; checkpoints every ${Math.round(length / 6)} m; ${items.length} item rows; ${boosts.length} boost pads; eggs ${eggs.map((e) => e.kind).join(', ')}`);
 
 // ---------------------------------------------------------------------------------------------
-// 4. The layout for the game: a point every 8 m (every tagged sample too), from the start line.
+// 4. The layout for the game: a point every 8 m (every tagged sample too), from the start line;
+//    every 2 m round the ramp and the landing, so their shape holds.
 
 const tagAt = new Map([[0, 'start'], ...checkpoints.map((k) => [k, 'cp']), ...items.map((k) => [k, 'items']), ...boosts.map((k) => [k, 'boost'])]);
 const r1 = (v) => Math.round(v * 10) / 10;
 // Heights to the centimetre: decimetres would put bumps of their own in a road made smooth.
 const r2 = (v) => Math.round(v * 100) / 100;
 const pointsOut = [];
-let lastW = null, lastSurface = null, lastLanes = null, lastKerbs = null, lastBank = null, lastBridge = false;
+let lastW = null, lastSurface = null, lastLanes = null, lastKerbs = null, lastBank = null, lastBridge = false, lastAir = false;
+const dense = (i) => !!jump && (steps((jump.foot - 2 + n2) % n2, i) <= steps(jump.foot, jump.lip) + 4 || steps((jump.land - 2 + n2) % n2, i) <= 4);
 const half5 = (v) => Math.round(v * 2) / 2;
 for (let k = 0; k < n2; k++) {
-  if (k % 4 !== 0 && !tagAt.has(k)) continue;
+  if (k % 4 !== 0 && !tagAt.has(k) && !dense(at(k))) continue;
   const i = at(k), w = Math.round(widths[i] * 2) / 2, t = onStreet[i].tags || {};
   const o = { p: [r1(line[i][0]), r2(ys[i]), r1(line[i][1])] };
   if (w !== lastW) { o.w = w; lastW = w; }
@@ -680,6 +923,7 @@ for (let k = 0; k < n2; k++) {
   const kb = [half5(kerbs[0][i]), half5(kerbs[1][i])];
   if (kb.join() !== lastKerbs) { o.kerbs = kb; lastKerbs = kb.join(); }
   if (onBridge[i] !== lastBridge) { o.bridge = onBridge[i]; lastBridge = onBridge[i]; }
+  if (inAir(i) !== lastAir) { o.air = inAir(i); lastAir = o.air; }
   if (tagAt.has(k)) o.tag = tagAt.get(k);
   pointsOut.push(o);
 }
@@ -704,7 +948,7 @@ const streets = [];
   let last = null;
   for (let k = 0; k < n2; k++) {
     const name = onStreet[at(k)].name;
-    if (name && name !== '(joined)' && name !== last && !streets.some((s) => s.name === name)) {
+    if (name && name !== last && !streets.some((s) => s.name === name)) {
       const [x, z] = line[at(k + 8)];
       streets.push({ name, x: Math.round(x), z: Math.round(z) });
     }
@@ -743,6 +987,11 @@ const BOX = { x0: Math.max(EXT.x0, Math.floor((bx0 - 500) / 10) * 10), x1: Math.
 const sections = [...new Set(line.map((_, k) => sectionOf(...line[at(k)])))];
 console.log(`sections ${sections.join(', ')}; ${streets.length} street names; landmarks: ${landmarks.map((l) => l.name).join(', ')}`);
 
+// The ramp, for the games to put up during a race: its foot and lip on the street, and where the
+// flight meets the landing street's middle; the slowest a kart may take it at and still land there.
+const xyz = (i) => [r1(line[i][0]), r2(ys[i]), r1(line[i][1])];
+const ramps = jump ? [{ foot: xyz(jump.foot), lip: xyz(jump.lip), land: xyz(jump.land), w: Math.round(widths[jump.lip] * 2) / 2, angle: r2(jump.c.angle), v: jump.v, at: steps(start, jump.lip) * 2 }] : [];
+
 // ---------------------------------------------------------------------------------------------
 // 6. The output: the track for the games, and for the map page.
 
@@ -773,6 +1022,7 @@ export default {
   crossings: ${J(crossings)},
   signals: ${J(signals)},
   stops: ${J(stops)},
+  ramps: ${J(ramps)},
   points: [
 ${pointsOut.map(fmtPoint).join('\n')}
   ],
@@ -787,7 +1037,7 @@ page[cfg.id] = {
   name: cfg.name, length, w: Math.round(widths.reduce((a, b) => a + b, 0) / n2), elev0: ELEV0, sections,
   line: line.filter((_, i) => i % 3 === 0).map((p) => p.map(Math.round)),
   start: pick(0), checkpoints: checkpoints.map(pick), items: items.map(pick), boosts: boosts.map(pick),
-  eggs, joins, rows,
+  eggs, rows, jumps: ramps.map((r) => ({ foot: [r.foot[0], r.foot[2]], lip: [r.lip[0], r.lip[2]], land: [r.land[0], r.land[2]] })),
 };
 fs.writeFileSync(pageFile, JSON.stringify(page));
 console.log(`wrote tracks/${cfg.id}.js (${pointsOut.length} points) and map/tracks.json`);

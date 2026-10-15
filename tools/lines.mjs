@@ -18,10 +18,12 @@ export const isSquare = (e, pts) => e.tags.highway === 'pedestrian' && (e.tags.a
 // Every street and railway with a point within 50 m of the box `near` takes (x, z, margin), from
 // fetch.mjs's base.json, each { id, k, w, pts, nodes, t, level }; and `heights`, a line's point (the
 // array itself) → its height above the sea, for those on a bridge or in a tunnel (levelHeights).
-export function streetLines(base, ground, near, grid = ground.at, held = null) {
+export function streetLines(base, ground, near, grid = ground.at, held = null, deck = null) {
   const lines = streetsOf(base, near);
-  return { lines, ...levelHeights(lines, ground, grid, held) };
+  return { lines, ...levelHeights(lines, ground, grid, held, deck) };
 }
+// How far round a point of a bridge its deck is read (decks.mjs): within a lane of its middle.
+const DECK_R = 2.5;
 
 export function streetsOf(base, near) {
   const lines = [];
@@ -47,7 +49,12 @@ export function streetsOf(base, near) {
 // The ground at the ends is `grid`'s, by default the LiDAR's: world.mjs gives it the ground as the
 // tiles hold it, which a street on the ground takes, so a deck and the street it meets are at one
 // height there (task 040).
-export function levelHeights(lines, ground, grid = ground.at, held = null) {
+//
+// But a flyover humps over what it crosses, with both its ends on the ground, and the straight line
+// lays it on what it crosses (the Rotunda Santos da Cunha's viaduct, 6 m under its deck: task 047).
+// Where `deck` (decks.mjs: the decks DGT's point cloud saw) has a bridge's deck at a point between
+// its ends, 30 cm or more over the straight line, the deck's height there.
+export function levelHeights(lines, ground, grid = ground.at, held = null, deck = null) {
   const heights = new Map();
   for (const level of [LEVEL.bridge, LEVEL.tunnel]) {
     const ways = lines.filter((l) => l.level === level && l.nodes?.length === l.pts.length);
@@ -81,7 +88,10 @@ export function levelHeights(lines, ground, grid = ground.at, held = null) {
       for (const [m, l] of nb.get(n)) queue.push({ n: m, e, d: d + l });
     }
     for (const [n, got] of best) {
-      const [a, b] = got, y = !b ? ends[a.e].y : (ends[a.e].y * b.d + ends[b.e].y * a.d) / (a.d + b.d || 1);
+      const [a, b] = got;
+      let y = !b ? ends[a.e].y : (ends[a.e].y * b.d + ends[b.e].y * a.d) / (a.d + b.d || 1);
+      const d = level === LEVEL.bridge && a.d > 0 && deck?.at(...at.get(n), DECK_R);
+      if (d && d.n >= 3 && d.y > y + 0.3) y = d.y;
       for (const p of all.get(n)) heights.set(p, y);
     }
     for (const l of ways) for (const p of l.pts) if (!heights.has(p)) heights.set(p, ground.at(...p));
@@ -142,9 +152,15 @@ export function meetings(lines) {
 //   that meets no bridge or tunnel within 10 m of it (a road on the hill over a tunnel's mouth, or
 //   on its cutting's wall, or by a deck's end; not a twin bore's own street).
 //
+// - Where a bridge's deck goes on past the map's end of it, out over the street (the map's bridge
+//   stops short of its abutment; `deck`, decks.mjs, has the decks DGT's point cloud saw), the ground
+//   is the deck's along the street, out to where it meets the LiDAR's ground, and from there runs
+//   straight to the LiDAR's 2 m further out; under the deck, as above from the deck's height at the
+//   end (task 047: the Rotunda Santos da Cunha's viaduct runs on 10 m past both its ends).
+//
 // `ends`, the meetings held; `at(x, z)`, the ground there where it's held, or undefined;
 // `near(x, z, r)`, whether any of it is within r of (x, z).
-export function heldGround(lines, ground, keep = () => true) {
+export function heldGround(lines, ground, keep = () => true, deck = null) {
   const HOLD = 2, BEYOND = [6, 3], DROP = 0.03, CAMBER = 0.05, CELL = 32;
   const all = meetings(lines), met = new Map(all.map((e) => [e.n, e.p])), ends = all.filter(keep);
   // The streets on the ground, and those within 10 m of a node along them: the street an end meets,
@@ -179,7 +195,21 @@ export function heldGround(lines, ground, keep = () => true) {
     const raw = (v) => ground.at(...pt(HOLD, v)) - HOLD * slope, mid = raw(0), hw = e.w / 2;
     const edge = bridge ? [-hw, hw].map((v) => Math.max(raw(v), mid - CAMBER * hw)) : null;
     const end = (v) => (!bridge ? raw(v) : Math.max(raw(v), Math.abs(v) > hw ? edge[+(v > 0)] : mid - CAMBER * Math.abs(v)));
-    const far = BEYOND[+!bridge], corners = [pt(-far, -W), pt(-far, W), pt(HOLD, -W), pt(HOLD, W)];
+    // The deck the LiDAR saw going on out over the street, a metre at a time, smoothed: where it's half
+    // a metre or more over the ground at the end, out to where it's within 30 cm of it. Something a
+    // metre or more over or under the deck before it (a footbridge or a gantry over the street) isn't it.
+    const seen = [];
+    if (bridge && deck) {
+      for (let a = 0; a <= 40; a++) {
+        const d = deck.at(...pt(a, 0), DECK_R), last = seen[seen.length - 1];
+        const y = d && d.n >= 3 && (last === undefined || Math.abs(d.y - last) < 1) ? d.y : last;
+        if (y === undefined || y < ground.at(...pt(a, 0)) + (a ? 0.3 : 0.5)) break;
+        seen.push(y);
+      }
+    }
+    const out = seen.length, prof = seen.map((_, k) => (seen[Math.max(0, k - 1)] + seen[k] + seen[Math.min(out - 1, k + 1)]) / 3);
+    const deckAt = (a) => { const k = Math.max(0, Math.min(out - 1, a)), i = Math.floor(k); return prof[i] + (prof[Math.min(out - 1, i + 1)] - prof[i]) * (k - i); };
+    const far = BEYOND[+!bridge], reach = out ? out + HOLD : HOLD, corners = [pt(-far, -W), pt(-far, W), pt(reach, -W), pt(reach, W)];
     const box = { x0: Math.min(...corners.map((c) => c[0])), x1: Math.max(...corners.map((c) => c[0])), z0: Math.min(...corners.map((c) => c[1])), z1: Math.max(...corners.map((c) => c[1])) };
     // The other streets' stretches near it, each with how far from it is on it.
     const mine = near10(e.n), others = streets.filter((l) => !mine.has(l) && !meetsNear(l, e.p)).flatMap((l) => l.pts.slice(1).map((b, i) => [l.pts[i], b, l.w / 2])).filter(([a, b, r]) => Math.max(a[0], b[0]) + r >= box.x0 && Math.min(a[0], b[0]) - r <= box.x1 && Math.max(a[1], b[1]) + r >= box.z0 && Math.min(a[1], b[1]) - r <= box.z1);
@@ -190,7 +220,14 @@ export function heldGround(lines, ground, keep = () => true) {
     // How far across (x, z) is, by its share of the width, and the ground there; or null.
     const at = (x, z) => {
       const dx = x - e.p[0], dz = z - e.p[1], a = -(dx * ux + dz * uz), v = -dx * uz + dz * ux;
-      if (a < -far || a >= HOLD || Math.abs(v) > W || onOther(x, z)) return null;
+      if (a < -far || a >= reach || Math.abs(v) > W || onOther(x, z)) return null;
+      if (out) {
+        const h = ground.at(x, z), y0 = deckAt(0), r = Math.abs(v) / W;
+        if (a < 0) return { r, y: Math.max(y0 + DROP * Math.min(0, a + 1), Math.min(h, y0)) };
+        if (a < out - 1) return { r, y: Math.max(deckAt(a), h) };
+        const y1 = deckAt(out - 1);
+        return { r, y: Math.max(y1 + ((a - out + 1) / (HOLD + 1)) * (ground.at(...pt(reach, v)) - y1), h) };
+      }
       const y0 = end(v);
       if (a < 0) {
         const y = y0 + Math.min(slope * a, DROP * Math.min(0, a + 1));

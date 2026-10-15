@@ -35,6 +35,11 @@ Today (2026-10-15, after task 043):
   within 0.08 m). At (123.5, 611) the cutting's wall, 5 m high, stands 1.5 m from the map's line,
   inside the 4 m street; the tiles' ground along the cutting is 0.4 to 0.8 m over the LiDAR's floor
   from 4 to 12 m out. At (560, 233.5) the wall is about 2.5 m from the line.
+- **Two more, under a street** (added by task 047, when the open world grew round the loop's new
+  stretch): the Avenida Imaculada Conceição's tunnel under the Rotunda Santos da Cunha, mouths at
+  (-775, 975.5) and (-810, 1012), 0.88 m and 0.18 m off. The roundabout's carriageway is over each
+  mouth, `heldGround` never holds the ground on another street's carriageway, and the tiles' 2 m
+  ground takes the roundabout's height (5.4 m over ELEV0) into the tunnel's street (-0.8 m).
 - **The Avenida João XXI over its junction** runs along the edge of the tunnels' cutting: from
   (565, 242) to (590, 228) the tiles' ground ripples 0.3 to 0.6 m every 2 m where the LiDAR's is
   smooth within 0.1 m (178.35 to 178.22). party-kart's world-ground drive (`test/drive.test.ts`,
@@ -83,3 +88,5 @@ Steps:
 ## Notes
 
 - Found in task 043 (2026-10-15).
+- Task 047 (2026-10-15) added the Avenida Imaculada Conceição's two mouths under the Rotunda Santos
+  da Cunha to `WALLED`, at the owner's choice: six now.

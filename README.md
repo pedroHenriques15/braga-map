@@ -59,7 +59,10 @@ world.inOpen(x, z); // inside its edge?
   ground's own level (a building over it, or a deck the map draws as a tunnel under a bridge). A
   deck and a tunnel's road run straight between the ground where they end, as `height(x, z)` has
   it: a deck meets the street on the ground at its end within 5 cm (task 040), and a tunnel's end is
-  on the cutting's floor. Where the LiDAR took a deck for the ground, the bridge is ground too, and
+  on the cutting's floor. But where DGT's point cloud saw a deck over that line (a flyover humps over
+  what it crosses: the Rotunda Santos da Cunha's viaduct is 6 m over it), the deck is at the
+  LiDAR's height there; and where the map ends a bridge short of its abutment, the street on the
+  ground runs on along the deck to where it meets the ground (task 047). Where the LiDAR took a deck for the ground, the bridge is ground too, and
   what passes under it a tunnel.
 - **The open world's area** (decision 019, task 032) is where a game lets the player drive
   anywhere: the Volta dos Amigos' and about 150 m round it, and the Picoto's top. `map().open` has
@@ -110,6 +113,7 @@ npm run fetch    # the data, into .cache/ (about 20 MB, ignored by git): a few m
 node tools/fetch.mjs lidar ortho  # DGT's LiDAR and orthophoto (about 5.7 GB, with a free account)
 node tools/fetch.mjs microsoft    # Microsoft's building footprints over the map (40 MB to download, 2 MB kept)
 node tools/roofs.mjs   # every building's height and roof, and those the map lacks: .cache/roofs.json (10 minutes the first time)
+node tools/decks.mjs   # the bridges' decks DGT's point cloud saw: .cache/decks.json (10 minutes)
 npm run page     # the map page's map/braga.json
 npm run tracks   # every track: tracks/<id>.js, and map/tracks.json for the page
 npm run open     # the open world's edge, round the Volta dos Amigos: tools/open.json (seconds)
@@ -187,7 +191,10 @@ heights and roofs from `roofs.mjs`'s measurements. All of them need the LiDAR.
   `lines.mjs` is how it reads the streets: each way's kind, width, level, and the heights of a
   bridge's deck or a tunnel's road, straight between its ends at the ground as the tiles hold it
   (task 040), so a deck and the street it meets are at one height there; a tunnel's end on the
-  cutting's floor, the lowest of that ground from its mouth to 4 m out.
+  cutting's floor, the lowest of that ground from its mouth to 4 m out. A deck takes the LiDAR's
+  height where `decks.mjs` has it 30 cm or more over that line (task 047): `decks.mjs` boils DGT's
+  point cloud down to its decks (class 26), the median height in each metre, into
+  `.cache/decks.json`, once (10 minutes); without it the decks run straight as before.
 - `open.mjs` works out the open world's edge (task 032) from the streets and the buildings, on a
   grid of 1 m: near the loop is within 120 m of it and what that closes round (its inside, and a
   pocket between two of its arms), and the Picoto's top; every street that comes near is in, from
@@ -270,8 +277,14 @@ heights and roofs from `roofs.mjs`'s measurements. All of them need the LiDAR.
    streets and roundabouts only the way they go (`driven` in `osm.mjs`), no turn the map bans
    (OSM's turn restrictions, for cars at any hour), and no street cars may not use; it fails if
    it can't, and prints how much of it is one-way. It never uses a street twice or runs within
-   28 m of itself, and it drives along each waypoint's own street through it. A waypoint's street
-   that's a dead end gets a link from its end to the nearest street ahead, both ways. It tries
+   28 m of itself, and it drives along each waypoint's own street through it. The map's streets
+   are the only roads it knows (decision 027): where a waypoint's street leads into a pocket (a
+   dead end, and streets off it that lead nowhere), it finds every jump into it (`JUMP`): a ramp on
+   a street outside, taken nearly straight on after 40 m of straight run-up, a flight at a kart's
+   gravity over whatever's really there (clear of DGT's surface model under the slowest flight that
+   lands, the gentlest ramp of 10–20° that does), and a landing on a street in the pocket heading
+   for the waypoint. It prints each one and the loop it gives, takes the cheapest (or `JUMP=<n>`),
+   and goes out by the pocket's own mouth. It tries
    every order of the waypoints unless the track gives one (`order`): then only that order, round
    one way and the other, and the direction through each. To add a waypoint without reshuffling
    the loop, put it in the order between the two it falls between. A track with `sections` only
@@ -298,16 +311,19 @@ heights and roofs from `roofs.mjs`'s measurements. All of them need the LiDAR.
    from the map the zebra crossings and traffic lights on its streets and the bus stops beside it;
    the sections it runs through, and the box round it a game draws (500 m round the track).
 
-The layout is a point every 8 m from the start line, each with its options for the stretch to the
-next (`tracks/track.d.ts`). A track that changes is a different race for the games: Party Kart
-needs a new peer id prefix for it, and its tests must still pass.
+The layout is a point every 8 m from the start line (every 2 m round a ramp and its landing), each
+with its options for the stretch to the next (`tracks/track.d.ts`); a jump's flight is `air`, and
+its ramp is in `ramps` (where it stands, its angle and width, and the slowest speed that clears it),
+for a game to put up during a race. Nothing else goes near it: no start, checkpoint, item boxes or
+boost pad. A track that changes is a different race for the games: Party Kart needs a new peer id
+prefix for it, and its tests must still pass.
 
 ### A new track
 
 Add it to `tools/tracks.mjs`: an id, a name, its waypoints on the map (read them off the map
 page), and `sections` to keep it to some sections' streets. Run `npm run tracks` and look at it on
 the map page. Then a game races it by importing `braga-map/tracks/<id>.js`. Party Kart's tests
-say what makes a track raceable: a loop of 7–10 km, an autopilot lap without respawns, and so on.
+say what makes a track raceable: a loop of 7–10.5 km, an autopilot lap without respawns, and so on.
 
 ### The friends' houses
 
@@ -341,17 +357,19 @@ doc.
   Picoto's top was 34 m too low.
 - **The world**: 140 tiles, 13,000 buildings from the map (12,400 of them measured by the LiDAR,
   in 18,700 parts) and 11,500 houses filled in, 20,000 trees. 7.6 MB in all (2.6 MB gzipped); a
-  game loads the tiles it needs (the open world's area and round it, 49: 5.8 MB, 1.8 MB gzipped;
-  the Volta dos Amigos' box, 48: 5.7 MB, 1.7 MB gzipped).
-- **The open world's area** (task 032): 3.1 km² round the Volta dos Amigos and the Picoto's top,
-  its edge 14.2 km round, with 121 gates (117 on the ground, 1 on a bridge, 3 under something), on
-  23 tiles. Their ground every 2 m added 0.16 MB gzipped (5 tiles more than the track's 18).
-- **The open world's streets** (task 033), over the 2.8 × 2.0 km box round its area, 30 tiles:
-  3,066 stretches of street, 1,585 junctions, 198 islands, 119 central reservations, 158 km of
+  game loads the tiles it needs (the open world's area and round it, 53: 6.6 MB, 2.04 MB gzipped;
+  the Volta dos Amigos' box, 48: 6.4 MB, 1.96 MB gzipped).
+- **The open world's area** (task 032): 3.5 km² round the Volta dos Amigos and the Picoto's top,
+  its edge 15.1 km round, with 122 gates (117 on the ground, 1 on a bridge, 4 under something), on
+  25 tiles. Their ground every 2 m added 0.16 MB gzipped (5 tiles more than the track's 18). It grew
+  from 3.1 km² when the loop took the ramp into the dead end (task 039), by Ponte Pedrinha.
+- **The open world's streets** (task 033), over the box round its area, 35 tiles since task 039:
+  3,508 stretches of street, 1,791 junctions, 217 islands, 131 central reservations, 169 km of
   kerb. They added 0.33 MB gzipped to the tiles over a 2.6 × 2.0 km box, and 0.03 MB more as the
   box grew with the area's edge.
-- **The Volta dos Amigos**, Party Kart's track: 9.3 km round, through five friends'
-  neighbourhoods, the way the traffic goes.
+- **The Volta dos Amigos**, Party Kart's track: 10.1 km round, through five friends'
+  neighbourhoods, the way the traffic goes, and over the Rio Este by a ramp into one of them, a
+  dead end (decision 027).
 - **The first track** ("Pista antiga"), Party Kart's cartoon Braga Grand Prix, drawn at its real
   size with its fountain on the real one in the Praça da República (`tools/first-track.json`).
   It's 2.5 km round and fits in 851 × 414 m. The real Bom Jesus is 3.9 km from that fountain; on

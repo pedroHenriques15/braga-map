@@ -95,8 +95,10 @@ Steps:
 
 ## Done when
 
-- [ ] `tracks/amigos.js` has the route at the streets' real widths, on their surfaces, with its
+- [x] `tracks/amigos.js` has the route at the streets' real widths, on their surfaces, with its
   side streets listed; braga-map tagged, party-kart pinned to it.
+  > Its `road` and `closures` (188 rows); braga-map `v1.11.0` (`8930195`), party-kart pinned to it
+  > in `dd52ca1`, its tests 45 of 45 on the tag.
 - [x] A race starts from free roam, puts everyone in the room on the grid, runs, shows its results,
   and puts everyone back where they were: checked with Playwright, two browsers and bots.
   > Two browsers through PeerJS's server and 2 bots: both saw 4 karts on the grid and raced, the
@@ -113,6 +115,10 @@ Steps:
   > after: `laps 298.5, 296.7 s; respawns 0; longest air 1.98 s; top 217 km/h; wall hits 40`.
 - [ ] Shipped (party-kart's `docs/releasing.md`), live, and the owner has raced it. Tasks 035 and
   036 went live before it, on 2026-10-15 (decision 026).
+  > Shipped and live on 2026-10-15: party-kart `dd52ca1` deployed, the live page serving
+  > `assets/index-IwK7jXRW.js` 30 s later, and a race with 3 bots run on it with Playwright (back
+  > where it started, 0.01 m, no errors). The owner hasn't raced it yet: closed at their request
+  > before they had, as task 036 was.
 
 ## Out of scope
 
@@ -265,6 +271,12 @@ Steps:
   gzipped (7.24 and 2.19); round the city the same draw calls but at `fujacal-start`, within 3,000
   triangles everywhere; in a race the rows of barriers about 1,000 triangles and no draw call more,
   the race's ground built in about 60 ms.
+- **Released on 2026-10-15** at the owner's request: braga-map `cbaf5f1` (the task) and `8930195`
+  (version 1.11.0, tagged `v1.11.0`); party-kart `8390e65` (another session's fix, shipped with it
+  at the owner's choice: a phone that runs out of graphics memory says so and opens lighter, one
+  with 4 GB or less starts on Low, the loading screen says why it stopped) and `dd52ca1` (this task,
+  pinned to 1.11.0), pushed and deployed. Older tabs don't see the new rooms (`partykart-pk34-`)
+  until they reload.
 - **Decision 029:** the race runs on its own streets as they're drawn, walled at their edges.
   `README.md`, `index.d.ts`, `tracks/track.d.ts` and the roadmap updated; task 026 told how the
   race follows the streets when it moves them.

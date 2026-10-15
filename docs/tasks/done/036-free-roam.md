@@ -175,3 +175,9 @@ Steps:
 - **The round `2026-10-15-mundo-aberto`** ("Mundo aberto", tasks 036, 040 and 043) is on the
   scorecard, shot on party-kart `af048ce` and braga-map 1.9.1: the same draw calls as
   `2026-10-15-task036` at every viewpoint, triangles within 1,500, built in 2.5–2.7 s on High.
+- **Found live by the owner (2026-10-15), fixed the same day** (party-kart `720be44`): on a phone the kart
+  accelerated by itself round the city, as in a race, so 2 s after opening it drove off the plinth's
+  front (1.2 m down, 1.7 m ahead), across the Rua do Fujacal and into the building over it, and
+  charged back into it whenever Brake was let go: "fell through the stage" and couldn't get onto the
+  street. Round the city a touch screen now drives only while a thumb is on the steering half, and
+  pulls up when it lifts; a race still goes by itself. Checked with Playwright as a phone, not on one.

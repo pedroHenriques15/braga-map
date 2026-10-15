@@ -39,17 +39,19 @@ Steps:
 1. **braga-map:** the tiles carry each street's name (on `Line`, or as a short list of names its
    lines point into, since one street is many lines) and the bus stops (`{ x, z, shelter }`), in
    `index.d.ts`, credited to OpenStreetMap as the rest is. A new tag for party-kart.
-2. **party-kart:** a plate where each named street in the area begins, at its corners, as Braga's
-   are (Questions); every bus stop in the area from the tiles, and the route's no longer from
-   `amigos.js`. The plates' texture: several atlases of at most 4096 px, or the plates drawn per
-   tile, so the area's few hundred names fit.
+2. **party-kart:** a plate where each named street in the area begins, at its corners: on the
+   corner building's wall where one stands within 3 m of the corner, as most of Braga's are, else
+   on a post at the kerb (the owner's answer); every bus stop in the area from the tiles, and the
+   route's no longer from `amigos.js`. The plates' texture: several atlases of at most 4096 px, or
+   the plates drawn per tile, so the area's few hundred names fit.
 3. Shoot the viewpoints, and measure the budget (task 004, decision 017).
 
 ## Questions
 
-- [ ] Where a plate stands: on a post at the kerb, as the route's do today, or on the corner
+- [x] Where a plate stands: on a post at the kerb, as the route's do today, or on the corner
   building's wall, as most of Braga's are? Recommendation: on the corner building's wall where one
   stands within 3 m of the corner, else on a post.
+  > On the corner building's wall within 3 m, else on a post (the owner, 2026-10-15).
 
 ## Read first
 

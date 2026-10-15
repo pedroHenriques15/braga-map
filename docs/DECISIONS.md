@@ -565,3 +565,31 @@ their edges (it sees the kerbs): about 3.8 M triangles for the area. Following t
 5 cm everywhere took 3 M. Even so the city costs more than the budget's guide at its busiest views
 (decision 017): 1.57 M triangles on High where it was 1.14, and twice the time to build, which task
 038 (streaming) is for.
+
+## 025 · The buildings and the levels are the LiDAR's: measured, found, never invented
+
+*2026-10-15 · tasks 010, 011 and 012*
+
+Where the map and the LiDAR disagree about what's built and how high, the world takes the LiDAR's
+(DGT's 2025 point cloud, over the whole map), and keeps OpenStreetMap's outlines where it has them:
+
+- **Every building's height and roof are measured** (task 010): its eaves, its ridge, its shape
+  (flat, gabled, hipped at either end, skillion), the way it runs and its pitch, cut into parts
+  where its roof steps, its roof's colour from the 2025 orthophoto. OpenStreetMap's `height`,
+  `building:levels` and `roof:*` are kept only where the LiDAR didn't see the building (622 of
+  13,019), and where they disagree the LiDAR's wins: nobody fixes them in OSM (task 006's answer),
+  and `tools/heights.mjs` lists the outliers.
+- **No building is invented** (task 011): the buildings OSM lacks are outlined from the LiDAR's
+  building points and squared (`tools/footprints.mjs`), 7,251 of them, where 11,492 houses were
+  made up to fill built-up streets. Each footprint in the tiles says its source (`osm`, `lidar`,
+  `microsoft`, `invented`); `invented` is kept for places the LiDAR doesn't cover, of which there
+  are none on the map today.
+- **Streets on two levels are in the tiles** (task 012): each stretch on a bridge, in a tunnel or
+  under something, with the heights of a deck or a tunnel's road, and a game draws and drives them
+  at those levels (decisions 021, 023 and 024).
+
+The tiles' format changed for it (braga-map 1.4.0 to 1.6.0): a building packs its kind, colour,
+roof, material, source and flags into one number, and its roof's colour is one of 127
+(`map().roofColors`). The alternative, OSM's tags and guesses filled in by kind, put 4–7 floors on
+any untagged block and invented houses in real streets (in front of the stadium, on São João da
+Ponte's roundabout).

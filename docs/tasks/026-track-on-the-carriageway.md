@@ -76,3 +76,8 @@ Steps:
   (tasks 033 and 037), so this task now moves every street in the open world's area onto its real
   carriageway, and measures its width, not the track's line alone; the track follows the streets.
   `W_MIN` no longer holds (step 4). "Out of scope"'s last bullet no longer holds.
+- **From task 035's round (2026-10-15):** two viewpoints show the map's carriageways off the real
+  roads. At `bom-jesus` the photo is from a car in the road's right lane; in the game that spot is
+  on the map's left pavement (the owner's mark fell 4→2). At `liberdade` the photo is from the wide
+  pavement beside the cycle lane; in the game that spot is on the map's carriageway, wider there
+  than the real road (2→1). Shoot both again when the streets move.

@@ -59,13 +59,13 @@ export async function terrain() {
     // The mean height over a square s metres a side round (x, z): what a grid with that step should
     // hold there, so the steps and walls between its points don't alias into it. From the 50 cm
     // model for a fine grid and the 2 m one for a coarse grid, sampled at their own spacing (at
-    // most 25 × 25 points).
-    mean(x, z, s) {
+    // most 25 × 25 points). Where `held(x, z)` gives a height (lines.mjs's heldGround), that one.
+    mean(x, z, s, held) {
       const finest = s < 8, n = Math.max(1, Math.min(25, Math.round(s / (finest ? fine.res : coarse.res))));
       let sum = 0, k = 0;
       for (let a = 0; a < n; a++) {
         for (let b = 0; b < n; b++) {
-          const h = lidar(x + ((a + 0.5) / n - 0.5) * s, z + ((b + 0.5) / n - 0.5) * s, finest);
+          const px = x + ((a + 0.5) / n - 0.5) * s, pz = z + ((b + 0.5) / n - 0.5) * s, h = held?.(px, pz) ?? lidar(px, pz, finest);
           if (!Number.isNaN(h)) sum += h, k++;
         }
       }

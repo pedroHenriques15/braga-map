@@ -1,5 +1,5 @@
 ---
-status: doing
+status: done
 priority: high
 kind: code
 repo: both
@@ -57,13 +57,25 @@ Steps:
 
 ## Done when
 
-- [ ] Every building in the LiDAR's cover has a measured height and roof, and the tiles say
+- [x] Every building in the LiDAR's cover has a measured height and roof, and the tiles say
   which are measured and which guessed.
-- [ ] A check prints the difference between the LiDAR's heights and OSM's `height` and floors,
+  > 12,397 of the map's 13,019 measured, the 622 the LiDAR didn't see guessed (Notes); the tiles'
+  > `measured` flag: 34,071 of 34,856 buildings and parts on all 140 tiles (braga-map 1.7.0,
+  > counted 2026-10-15).
+- [x] A check prints the difference between the LiDAR's heights and OSM's `height` and floors,
   with the outliers.
+  > `node tools/heights.mjs`, run again 2026-10-15: the floors, the outliers, `roof:shape` the
+  > same as the LiDAR's for 614 of 764, `roof:colour` for 310 of 372.
 - [ ] The route's viewpoints, and the skyline seen from the Picoto, score higher than at the
   baseline.
-- [ ] party-kart's tests pass and the budget (task 004) holds.
+  > The route's half is true: on the round "Todas as ruas" (`2026-10-15-task035`, version 3 of "Braga real"), which carries this task's
+  work with 035's, the owner's marks on its 25 viewpoints
+  > average 3.76 against the baseline's 2.56, 19 higher and one lower (`liberdade` 2→1: the map's
+  > carriageway, task 026). The skyline from the Picoto has no viewpoint, so it wasn't scored: the
+  > owner asked to finish without it (2026-10-15).
+- [x] party-kart's tests pass and the budget (task 004) holds.
+  > At its release (party-kart `7a0f70a`, braga-map 1.4.0): `npm test` 23 of 23, `npm run check`
+  > clean, and the budget held (Notes). The budget became a guide since (decision 017).
 
 ## Out of scope
 
@@ -180,3 +192,10 @@ Steps:
   (the point cloud and the orthophoto over the whole map, and what they're used for),
   `ROADMAP.md` and a `DECISIONS.md` entry (the buildings are the LiDAR's; the tiles' format):
   another session has uncommitted changes in all three today, so they weren't touched.
+- **Finished on 2026-10-15,** at the owner's word, on their marks for the round "Todas as ruas" (`2026-10-15-task035`, version 3 of "Braga real"), which carries this task's
+  work with 035's.
+  `docs/SOURCES.md` says the point cloud and the orthophoto are fetched over the whole map, and
+  what for; the roadmap's status says the buildings are measured; decision 025 records that the
+  buildings and the levels are the LiDAR's, and the tiles' format. Left: a viewpoint for the
+  skyline from the Picoto (a photo from its lookout, as task 001 sets them), when someone wants the
+  skyline scored; `bom-jesus`, the other skyline view, fell 3→2 for its pavement (task 044).

@@ -94,6 +94,19 @@ Steps, first on Fujacal's tiles, then the whole area:
   > Not checked: the owner chose to finish without rating (2026-10-15), and to rate the round
   > "Todas as ruas" (version 3 of "Braga real") when they can. My reading of the shots is in Notes:
   > better where side streets show, worse where the camera stood on the 9 m track.
+  > Rated by the owner afterwards (2026-10-15), against "Os amigos": of the 17, 9 higher
+  > (`31-de-janeiro` 3→4, `bernardo-sequeira` 2→4, `conselheiro-lobato` 3→4, `fujacal-west` 3→4,
+  > `imaculada-conceicao` 2→4, `joao-xxi` 3→4, `robert-smith` 2→4, `sao-joao-da-ponte` 3→4,
+  > `travessa-lobato` 1→3), 5 the same, 2 lower (`devesa` 3→2, `liberdade` 2→1), `fujacal-start`
+  > not rated. Of the rest, `bom-jesus` fell 4→2. The round averages 3.7, "Os amigos" 2.9. The box
+  > stays unticked. `fujacal-start`, rated later, went 3→4: 10 of the 17 higher. No comments; the
+  > owner left the drops to me. They're the pavements and the map's streets, not the drawing's
+  > look: at `bom-jesus` a pavement creases where it's fitted loosely to the 2 m ground (task 044)
+  > and the camera stands on it because the map's road is off (026); at `devesa` the white mounds
+  > are the land, 2 m over the street where the LiDAR took a ruin for ground; at `liberdade` the
+  > camera stands on the map's carriageway, wider than the real road (026). A finer fit takes the
+  > crease out but sharpens the mounds and doubles the triangles, so 044 lays pavements level
+  > from the kerb instead.
 - [x] What it costs against the budget (task 004, decision 017: a guide), on High, Medium and Low:
   draw calls, triangles, textures and download, in Notes and party-kart's `docs/architecture.md`.
   > `shots/2026-10-15-task035/stats.json` and `node scripts/download.mjs`, in Notes and in

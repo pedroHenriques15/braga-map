@@ -1,5 +1,5 @@
 ---
-status: doing
+status: done
 priority: high
 kind: code
 repo: both
@@ -53,11 +53,23 @@ Lobato.
 
 ## Done when
 
-- [ ] No street that passes under another is drawn as a level junction in the track's box: a
+- [x] No street that passes under another is drawn as a level junction in the track's box: a
   check script lists bridge/tunnel pairs and the height between them.
-- [ ] The viewpoints at the Avenida da Liberdade and the Avenida João XXI show the levels as in
+  > `node tools/levels.mjs`, 2026-10-15: 60 crossings in the box, 47 on two levels, 7 where a
+  > bridge meets a street at its own end, 6 with a deck lower than wanted, none within 322 m of the
+  > route. party-kart draws every one at its levels (`levels.ts`, and since task 035 the streets'
+  > own decks and tunnels).
+- [x] The viewpoints at the Avenida da Liberdade and the Avenida João XXI show the levels as in
   their photos.
-- [ ] party-kart's `npm test` and `npm run check` pass.
+  > Their photos frame no crossing (Notes: the assumption was false); the levels they show, a
+  > bank to a lower street and a raised reservation, the ground has. The crossings were checked
+  > from their own spots, and again in task 035 (the João XXI's mouth under the 31 de Janeiro).
+  > On the round "Todas as ruas" (`2026-10-15-task035`, version 3 of "Braga real"), which carries this task's
+  work with 035's, `joao-xxi` 3→4; `liberdade` 2→1, for the map's carriageway
+  > (task 026), not its levels.
+- [x] party-kart's `npm test` and `npm run check` pass.
+  > 24 of 24 at its release (party-kart `f1bd3c6`); 37 of 37 on `f6d2eba` (2026-10-15), and
+  > `npm run check` clean.
 
 ## Out of scope
 
@@ -155,3 +167,7 @@ Lobato.
   tasks are done (the owner, 2026-10-14).
 - **Found along the way:** at `liberdade` the camera stands inside a lamp post (as in every round
   since the baseline): the lamps are placed every 34 m whatever stands there.
+- **Finished on 2026-10-15,** at the owner's word, on their marks for the round "Todas as ruas" (`2026-10-15-task035`, version 3 of "Braga real"), which carries this task's
+  work with 035's.
+  Decision 025 records that the levels are in the tiles. `liberdade`'s camera no longer stands in
+  a lamp post: since task 035 lamps keep off each other and stand on the pavement.

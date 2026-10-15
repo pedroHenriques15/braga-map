@@ -82,8 +82,12 @@ Steps. Run `git status` in both repositories first: task 033's work is in this t
    car may use, its way round, except a ramp's flight (extend `test/rules.test.js` or add one
    beside it). Bump braga-map's version and tag it.
 5. **In party-kart,** pin the new tag:
-   - Draw the ramp (see Questions for how it looks). Leave the gap as it really is: the ground,
-     the walls and whatever stands there, with no road over it.
+   - Draw the ramp as a Braga joke (the owner's answer): a slope of planks on a pile of rubble,
+     behind an "obras" sign, as if the city's roadworks had left it there. The planks are what the
+     kart drives up, at the planned angle; the rubble round them is only drawn. It can share the
+     red-and-white boards of the race's road-works barriers (party-kart's `tex.roadworks`), so it
+     reads as the same works. Leave the gap as it really is: the ground, the walls and whatever
+     stands there, with no road over it.
    - The kart flies off the ramp and lands on the landing street. One that falls short respawns
      on the run-up.
    - The bots and the autopilot take it at a speed that clears it. Put a boost pad on the run-up
@@ -112,10 +116,11 @@ that OSM lacks (a lane, a ford, a street not mapped), that's an OSM fix (task 00
   (recommended), or only during a race?
   > Only in a race (the owner, 2026-10-14). Free roam stays all real; the ramp comes and goes
   > with the race's barriers.
-- [ ] What does the ramp look like? (a) A plain stunt kicker: steel or timber, with chevrons. It
+- [x] What does the ramp look like? (a) A plain stunt kicker: steel or timber, with chevrons. It
   reads as a game object and doesn't pretend to be Braga (recommended). (b) A Braga joke: planks
   on a pile of rubble behind an "obras" sign, for the city's roadworks. (c) Granite setts,
   like the street it stands on. Not blocking until step 5.
+  > (b), the Braga joke: planks on rubble behind an "obras" sign (the owner, 2026-10-15).
 
 ## Read first
 

@@ -102,11 +102,14 @@ millimetre (the test).
   tiles and be published.
 - **Fetched:** the terrain and surface models at 50 cm for the 20 tiles under the track's box,
   which holds the shooter's area (about 16 MB a tile, 0.64 GB in all). The terrain model at 2 m
-  for the 48 tiles under the map and 200 m round it (about 1.1 MB a tile, 54 MB in all, task 009). The point cloud for 9
-  tiles: the route and 200 m each side of it, the shooter's area, and the Praça's tile for the
-  test (104–182 MB a tile, about 1.07 GB). Named here by their south-west corner in km
-  (`-24_209`). `.cache/dgt/lidar.json` gives each one's DGT id (`LO-176510-07-2025`) and
-  version.
+  for the 48 tiles under the map and 200 m round it (about 1.1 MB a tile, 54 MB in all, task 009). The point cloud
+  over the whole map since task 010: 42 tiles (104–182 MB a tile, 5.6 GB). Named here by their
+  south-west corner in km (`-24_209`). `.cache/dgt/lidar.json` gives each one's DGT id
+  (`LO-176510-07-2025`) and version.
+- **Used for:** the ground (task 009: the terrain model, `tools/relief.mjs`); every building's
+  height, roof and parts (task 010: `tools/roofs.mjs` boils each LAZ tile down to 50 cm cells of
+  the building points' tops, `.cache/dgt/roofs/`, and measures each footprint over them); and the
+  buildings OpenStreetMap lacks, outlined from those cells (task 011, `tools/footprints.mjs`).
 - **Its sea level:** the Cascais datum, the one DGT publishes its own heights on: the LiDAR is
   within 0.15–0.85 m of DGT's geodetic marks on the Sameiro (whose heights may be the marks', not
   the ground's) and 0.2 m of the one at Pedroso; within 0.3–1.1 m of the old maps' spot heights,
@@ -127,11 +130,14 @@ millimetre (the test).
   credit wherever it's published, even adapted.
 - **Credit:** "Informação geográfica cedida pela Direção-Geral do Território".
 - **May be used for:** everything, with the credit, textures included (decision 002).
-- **Fetched:** the 20 tiles under the track's box, the LiDAR's own tiles, from the WMS as JPEG,
-  4000 px a side (25 cm), about 2.7 MB each, 54 MB in all. JPEG and not TIFF, because the
+- **Fetched:** the LiDAR's own tiles over the whole map since task 010 (42, and the Praça's cut),
+  from the WMS as JPEG, 4000 px a side (25 cm), about 2.7 MB each, 106 MB in all. JPEG and not TIFF, because the
   source is JPEG already and TIFF is 18 times the size. Also an 80 m cut round the Praça in
   latitude and longitude, for the test. Colour only: the near-infrared layer is there when task
   016 or 019 needs it.
+- **Used for:** each roof's colour (task 010: the median of the lighter half of the photo in the
+  middle of the roof, one of the map's 127 `roofColors`), and checking the street surfaces by
+  (task 033's page).
 
 ### DGT's land use, COS2025
 

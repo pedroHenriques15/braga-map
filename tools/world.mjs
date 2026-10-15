@@ -27,7 +27,7 @@ import { AREA, AREA_OF, blur, bounds, dm, footprints, Grid, half, hash, inside, 
 import { allTiles, EXT, OPEN, OPEN_BOX, OPEN_SEEN, OPEN_TILES, SECTIONS, sectionOf, SHOOTER, TILE, tileBox, tileId, tileOf } from './sections.mjs';
 import { gatesOf } from './open.mjs';
 import { terrain } from './terrain.mjs';
-import { isLine, isSquare, LEVEL, streetLines } from './lines.mjs';
+import { heldGround, isLine, isSquare, LEVEL, levelHeights, streetsOf } from './lines.mjs';
 import { packStreets, streetSurfaces } from './streets.mjs';
 
 const base = readCache('osm/base.json');
@@ -57,7 +57,12 @@ for (const f of fs.readdirSync(path.join(ROOT, 'tracks')).filter((f) => f.endsWi
 // on each tile's grid, every 2 m on the FINE tiles and 10 m on the rest, the mean round each point in
 // decimetres above ELEV0; between the points, bilinear; above the sea, as the LiDAR's. Each point is
 // made when it's first asked for, and kept for the tile's terrain. A bridge's end takes its height
-// from it (task 040), so its deck and the street it meets are at one height there.
+// from it (task 040), so its deck and the street it meets are at one height there; and on the FINE
+// tiles, round where a street on a bridge or in a tunnel meets the streets on the ground, the ground
+// is held to the street (lines.mjs's heldGround, task 043), not the embankment under the deck or the
+// hill over the tunnel.
+const lines = streetsOf(base, inExt);
+const held = heldGround(lines, ground, (e) => FINE.has(tileAt(...e.p)?.id));
 const grids = new Map(); // tile id → { step, n, dm }
 const gridOf = (t) => {
   let g = grids.get(t.id);
@@ -69,7 +74,10 @@ const gridOf = (t) => {
 };
 const gridDm = (t, i, j) => {
   const g = gridOf(t), k = j * g.n + i;
-  if (Number.isNaN(g.dm[k])) g.dm[k] = dm(ground.mean(t.box.x0 + i * g.step, t.box.z0 + j * g.step, g.step) - ELEV0);
+  if (Number.isNaN(g.dm[k])) {
+    const x = t.box.x0 + i * g.step, z = t.box.z0 + j * g.step;
+    g.dm[k] = dm(ground.mean(x, z, g.step, g.step === 2 && held.near(x, z, g.step) ? held.at : undefined) - ELEV0);
+  }
   return g.dm[k];
 };
 const tileGround = (x, z) => {
@@ -83,9 +91,9 @@ const tileGround = (x, z) => {
 // ---------------------------------------------------------------------------------------------
 // The streets, the railway, and what the ground is.
 
-// Every street and railway (lines.mjs), and the heights of those on a bridge's deck or in a tunnel,
-// their ends at the ground as the tiles hold it.
-const { lines, heights, open } = streetLines(base, ground, inExt, tileGround);
+// Every street and railway (lines.mjs, above), and the heights of those on a bridge's deck or in a
+// tunnel, their ends at the ground as the tiles hold it.
+const { heights, open } = levelHeights(lines, ground, tileGround, held);
 const areas = []; // [kind, ring]
 for (const e of base.elements) {
   const t = e.tags || {};

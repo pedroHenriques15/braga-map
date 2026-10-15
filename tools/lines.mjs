@@ -17,22 +17,13 @@ export const isSquare = (e, pts) => e.tags.highway === 'pedestrian' && (e.tags.a
 
 // Every street and railway with a point within 50 m of the box `near` takes (x, z, margin), from
 // fetch.mjs's base.json, each { id, k, w, pts, nodes, t, level }; and `heights`, a line's point (the
-// array itself) → its height above the sea, for those on a bridge or in a tunnel. `open` counts the
-// tunnels found open to the sky under a deck, and made `under`.
-//
-// The heights of what's off the ground: a bridge's deck, and a tunnel's road. Each runs straight
-// between the ground where it ends: the LiDAR's ground is the bare earth, which has what's under a
-// deck and over a tunnel, not the deck or the tunnel's road. A bridge or a tunnel the map draws as
-// several ways is taken whole: its ends are where it meets nothing more of its kind, or a street on
-// the ground, and each point between is as high as its two nearest ends make it, by how far it is
-// from each along the way. A tunnel's end is at its mouth, where the ground is the cutting's floor:
-// the lowest of the ground there and out from it, up to 4 m. Then a tunnel whose ground stays within
-// 2.5 m of its road is open to the sky, under a bridge's deck only: `under`.
-//
-// The ground at the ends is `grid`'s, by default the LiDAR's: world.mjs gives it the ground as the
-// tiles hold it, which a street on the ground takes, so a deck and the street it meets are at one
-// height there (task 040).
-export function streetLines(base, ground, near, grid = ground.at) {
+// array itself) → its height above the sea, for those on a bridge or in a tunnel (levelHeights).
+export function streetLines(base, ground, near, grid = ground.at, held = null) {
+  const lines = streetsOf(base, near);
+  return { lines, ...levelHeights(lines, ground, grid, held) };
+}
+
+export function streetsOf(base, near) {
   const lines = [];
   for (const e of base.elements) {
     if (!isLine(e)) continue;
@@ -40,6 +31,23 @@ export function streetLines(base, ground, near, grid = ground.at) {
     if (!pts.some(([x, z]) => near(x, z, 50)) || isSquare(e, pts)) continue;
     lines.push({ id: e.id, k: t.railway ? 9 : LINE[t.highway], w: t.railway ? 4 : carriageway(t), pts, nodes: e.nodes, t, level: levelOf(t) });
   }
+  return lines;
+}
+
+// The heights of what's off the ground: a bridge's deck, and a tunnel's road. Each runs straight
+// between the ground where it ends: the LiDAR's ground is the bare earth, which has what's under a
+// deck and over a tunnel, not the deck or the tunnel's road. A bridge or a tunnel the map draws as
+// several ways is taken whole: its ends are where it meets nothing more of its kind, or a street on
+// the ground, and each point between is as high as its two nearest ends make it, by how far it is
+// from each along the way. A tunnel's end is at its mouth, where the ground is the cutting's floor:
+// the lowest of the ground there and out from it, up to 4 m; or, where the ground's `held` (below),
+// the ground at its end, as a deck's. Then a tunnel whose ground stays within 2.5 m of its road is
+// open to the sky, under a bridge's deck only: `under`, and `open` counts them.
+//
+// The ground at the ends is `grid`'s, by default the LiDAR's: world.mjs gives it the ground as the
+// tiles hold it, which a street on the ground takes, so a deck and the street it meets are at one
+// height there (task 040).
+export function levelHeights(lines, ground, grid = ground.at, held = null) {
   const heights = new Map();
   for (const level of [LEVEL.bridge, LEVEL.tunnel]) {
     const ways = lines.filter((l) => l.level === level && l.nodes?.length === l.pts.length);
@@ -57,7 +65,7 @@ export function streetLines(base, ground, near, grid = ground.at) {
       const [x, z] = at.get(n), [px, pz] = at.get(ns[0][0]), d = Math.hypot(x - px, z - pz) || 1;
       // A tunnel's: the lowest from its mouth to 4 m out, every half metre (the tiles' 2 m ground
       // reaches the cutting's floor before 4 m out, and rises again).
-      const out = level === LEVEL.tunnel ? Math.min(...[1, 2, 3, 4, 5, 6, 7, 8].map((k) => grid(x + ((x - px) / d) * k * 0.5, z + ((z - pz) / d) * k * 0.5))) : Infinity;
+      const out = level === LEVEL.tunnel && held?.at(x, z) === undefined ? Math.min(...[1, 2, 3, 4, 5, 6, 7, 8].map((k) => grid(x + ((x - px) / d) * k * 0.5, z + ((z - pz) / d) * k * 0.5))) : Infinity;
       return { n, y: Math.min(grid(x, z), out) };
     });
     // The two nearest ends of each node, along the ways (Dijkstra from all the ends at once).
@@ -83,5 +91,136 @@ export function streetLines(base, ground, near, grid = ground.at) {
     if (l.level !== LEVEL.tunnel) continue;
     if (l.pts.every((p) => !heights.has(p) || ground.at(...p) - heights.get(p) < 2.5)) { l.level = LEVEL.under; open++; }
   }
-  return { lines, heights, open };
+  return { heights, open };
+}
+
+// Where a street on a bridge or in a tunnel meets the streets on the ground: each end of a way of it
+// at a node a street on the ground shares, but where the bridge or the tunnel goes on from it the
+// other way. Each { n, p, u, w, level }: its node and point, the way into the bridge or the tunnel
+// from it (to a point 3 m along, or its last), and its width.
+export function meetings(lines) {
+  const street = (l) => l.k <= 8 && l.nodes?.length === l.pts.length;
+  const onGround = new Set(lines.filter((l) => street(l) && (l.level === LEVEL.ground || l.level === LEVEL.under)).flatMap((l) => l.nodes));
+  const up = lines.filter((l) => street(l) && (l.level === LEVEL.bridge || l.level === LEVEL.tunnel));
+  // The way into a line from its point i, towards j.
+  const into = (l, i, j) => {
+    const p = l.pts[i];
+    let q = l.pts[j];
+    for (let k = j; k >= 0 && k < l.pts.length; k += j > i ? 1 : -1) { q = l.pts[k]; if (Math.hypot(q[0] - p[0], q[1] - p[1]) >= 3) break; }
+    const d = Math.hypot(q[0] - p[0], q[1] - p[1]) || 1;
+    return [(q[0] - p[0]) / d, (q[1] - p[1]) / d];
+  };
+  const ends = up.flatMap((l) => [[0, 1], [l.pts.length - 1, l.pts.length - 2]].filter(([i]) => onGround.has(l.nodes[i])).map(([i, j]) => ({ n: l.nodes[i], p: l.pts[i], u: into(l, i, j), w: l.w, level: l.level })));
+  return ends.filter((e) => !ends.some((o) => o.n === e.n && o.level === e.level && o.u[0] * e.u[0] + o.u[1] * e.u[1] < -0.5));
+}
+
+// The ground held to the street where a street on a bridge or in a tunnel meets the streets on the
+// ground (meetings), at those `keep` keeps (task 043). The LiDAR's is the bare earth, so where a
+// street meets a bridge it has the embankment falling away under the deck, and at a tunnel's mouth
+// the hill over it, with the portal's face smeared over the first 1.5 m out of it (the abutment's
+// edge over half a metre). The tiles' 2 m means take those into the street, which dips into the
+// abutment or climbs the portal. So from 2 m out (HOLD) to 6 m under the deck or 3 m into the
+// tunnel (BEYOND), across a deck's width and 4 m more (its pavements and the abutment's top under
+// them), or a tunnel's and half a metre (not the walls and hillside beside its portal, where a
+// cutting flares), the ground is the LiDAR's across the street 2 m out, carried in at the street's
+// own slope there (from 2 to 6 m out).
+// - Past the end's line it falls from there, at that slope or, from a metre in, 3% (DROP), whichever
+//   is lower, so it doesn't stand through the deck or bury the tunnel's road; under a deck no lower
+//   than the LiDAR's (up to the end's), so an abutment's top that runs on under it is kept. It
+//   reaches that far under a deck so the 2 m means there don't take in the embankment beyond, which
+//   a game that stands a car on the higher of the land and the deck, and feels the land's slope over
+//   a car's length, feels as a ramp at the deck's end (party-kart's car was thrown 1.5 s off the
+//   Robert Smith's).
+// - At a bridge's end it's no lower across the carriageway than the middle less a camber of 5%
+//   (CAMBER), and beyond it no lower than at its edge: the abutment's top, under the deck's corners
+//   and pavements, not the embankment's side, which eats into the street's corners 2 m out.
+// - Between the end's line and 2 m out it runs straight to the LiDAR's; or where the LiDAR's is
+//   higher there at a bridge, or lower at a tunnel, the LiDAR's: what's wrong there is only ever
+//   lower at a bridge's end (the embankment, the abutment's edge) and higher at a tunnel's (the
+//   portal), and the street may sag or rise near it.
+// - Never on the carriageway of another street: one more than 10 m from the end along the streets
+//   that meets no bridge or tunnel within 10 m of it (a road on the hill over a tunnel's mouth, or
+//   on its cutting's wall, or by a deck's end; not a twin bore's own street).
+//
+// `ends`, the meetings held; `at(x, z)`, the ground there where it's held, or undefined;
+// `near(x, z, r)`, whether any of it is within r of (x, z).
+export function heldGround(lines, ground, keep = () => true) {
+  const HOLD = 2, BEYOND = [6, 3], DROP = 0.03, CAMBER = 0.05, CELL = 32;
+  const all = meetings(lines), met = new Map(all.map((e) => [e.n, e.p])), ends = all.filter(keep);
+  // The streets on the ground, and those within 10 m of a node along them: the street an end meets,
+  // and what meets that near it.
+  const streets = lines.filter((l) => l.k <= 8 && (l.level === LEVEL.ground || l.level === LEVEL.under) && l.nodes?.length === l.pts.length);
+  const byNode = new Map();
+  for (const l of streets) l.nodes.forEach((n, i) => byNode.set(n, [...(byNode.get(n) ?? []), [l, i]]));
+  const near10 = (n0) => {
+    const got = new Set(), best = new Map([[n0, 0]]), queue = [[n0, 0]];
+    while (queue.length) {
+      queue.sort((a, b) => a[1] - b[1]);
+      const [n, d] = queue.shift();
+      for (const [l, i] of byNode.get(n) ?? []) {
+        got.add(l);
+        for (const j of [i - 1, i + 1].filter((j) => j >= 0 && j < l.pts.length)) {
+          const dj = d + Math.hypot(l.pts[j][0] - l.pts[i][0], l.pts[j][1] - l.pts[i][1]);
+          if (dj <= 10 && !(best.get(l.nodes[j]) <= dj)) { best.set(l.nodes[j], dj); queue.push([l.nodes[j], dj]); }
+        }
+      }
+    }
+    return got;
+  };
+  // Whether a street meets a bridge or a tunnel within 10 m of a point (a twin bore's, or a deck's
+  // beside it, each held by its own).
+  const meetsNear = (l, [x, z]) => l.nodes.some((n) => met.has(n) && Math.hypot(met.get(n)[0] - x, met.get(n)[1] - z) < 10);
+  const zones = ends.map((e) => {
+    const bridge = e.level === LEVEL.bridge, W = e.w / 2 + (bridge ? 4 : 0.5), [ux, uz] = e.u;
+    const pt = (a, v) => [e.p[0] - ux * a - uz * v, e.p[1] - uz * a + ux * v];
+    const as = Array.from({ length: 9 }, (_, k) => HOLD + k * 0.5), hs = as.map((a) => ground.at(...pt(a, 0)));
+    const ma = as.reduce((s, a) => s + a, 0) / as.length, mh = hs.reduce((s, h) => s + h, 0) / hs.length;
+    const slope = as.reduce((s, a, k) => s + (a - ma) * (hs[k] - mh), 0) / as.reduce((s, a) => s + (a - ma) ** 2, 0);
+    const raw = (v) => ground.at(...pt(HOLD, v)) - HOLD * slope, mid = raw(0), hw = e.w / 2;
+    const edge = bridge ? [-hw, hw].map((v) => Math.max(raw(v), mid - CAMBER * hw)) : null;
+    const end = (v) => (!bridge ? raw(v) : Math.max(raw(v), Math.abs(v) > hw ? edge[+(v > 0)] : mid - CAMBER * Math.abs(v)));
+    const far = BEYOND[+!bridge], corners = [pt(-far, -W), pt(-far, W), pt(HOLD, -W), pt(HOLD, W)];
+    const box = { x0: Math.min(...corners.map((c) => c[0])), x1: Math.max(...corners.map((c) => c[0])), z0: Math.min(...corners.map((c) => c[1])), z1: Math.max(...corners.map((c) => c[1])) };
+    // The other streets' stretches near it, each with how far from it is on it.
+    const mine = near10(e.n), others = streets.filter((l) => !mine.has(l) && !meetsNear(l, e.p)).flatMap((l) => l.pts.slice(1).map((b, i) => [l.pts[i], b, l.w / 2])).filter(([a, b, r]) => Math.max(a[0], b[0]) + r >= box.x0 && Math.min(a[0], b[0]) - r <= box.x1 && Math.max(a[1], b[1]) + r >= box.z0 && Math.min(a[1], b[1]) - r <= box.z1);
+    const onOther = (x, z) => others.some(([[ax, az], [bx, bz], r]) => {
+      const dx = bx - ax, dz = bz - az, f = Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / (dx * dx + dz * dz || 1)));
+      return Math.hypot(x - ax - dx * f, z - az - dz * f) < r;
+    });
+    // How far across (x, z) is, by its share of the width, and the ground there; or null.
+    const at = (x, z) => {
+      const dx = x - e.p[0], dz = z - e.p[1], a = -(dx * ux + dz * uz), v = -dx * uz + dz * ux;
+      if (a < -far || a >= HOLD || Math.abs(v) > W || onOther(x, z)) return null;
+      const y0 = end(v);
+      if (a < 0) {
+        const y = y0 + Math.min(slope * a, DROP * Math.min(0, a + 1));
+        return { r: Math.abs(v) / W, y: bridge ? Math.max(y, Math.min(ground.at(x, z), y0)) : y };
+      }
+      const y = y0 + (a / HOLD) * (ground.at(...pt(HOLD, v)) - y0), h = ground.at(x, z);
+      return { r: Math.abs(v) / W, y: bridge ? Math.max(y, h) : Math.min(y, h) };
+    };
+    return { box, at };
+  });
+  const cells = new Map();
+  for (const z of zones) {
+    for (let i = Math.floor(z.box.x0 / CELL); i <= Math.floor(z.box.x1 / CELL); i++) for (let j = Math.floor(z.box.z0 / CELL); j <= Math.floor(z.box.z1 / CELL); j++) {
+      const k = i + ',' + j;
+      if (!cells.has(k)) cells.set(k, []);
+      cells.get(k).push(z);
+    }
+  }
+  const of = (x, z) => cells.get(Math.floor(x / CELL) + ',' + Math.floor(z / CELL)) ?? [];
+  return {
+    ends,
+    // Where two overlap (two carriageways side by side), the one it's nearer the middle of.
+    at(x, z) {
+      let best = null;
+      for (const zone of of(x, z)) { const h = zone.at(x, z); if (h && (!best || h.r < best.r)) best = h; }
+      return best?.y;
+    },
+    near(x, z, r) {
+      for (const dx of [-r, r]) for (const dz of [-r, r]) if (of(x + dx, z + dz).some(({ box: b }) => x + r >= b.x0 && x - r <= b.x1 && z + r >= b.z0 && z - r <= b.z1)) return true;
+      return false;
+    },
+  };
 }

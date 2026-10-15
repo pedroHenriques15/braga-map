@@ -1,5 +1,5 @@
 ---
-status: doing
+status: done
 priority: high
 kind: code
 repo: braga-map
@@ -62,11 +62,20 @@ street), seeded RNG 4242. A filled building is flagged `filled` in the tiles.
 
 ## Done when
 
-- [ ] No invented building is left where the LiDAR covers; the count before and after is in
+- [x] No invented building is left where the LiDAR covers; the count before and after is in
   Notes.
-- [ ] Every footprint in the tiles has its source.
+  > 11,492 invented before, none after (Notes); counted again on 2026-10-15 over all 140 tiles of
+  > braga-map 1.7.0: 34,856 buildings and parts, none invented.
+- [x] Every footprint in the tiles has its source.
+  > All 34,856: 19,362 `osm`, 15,494 `lidar` (none from Microsoft, none invented), 2026-10-15.
 - [ ] The route's viewpoints score higher than the round before, and none lower.
-- [ ] `npm test` passes.
+  > On the round "Todas as ruas" (`2026-10-15-task035`, version 3 of "Braga real"), which carries this task's
+  work with 035's, against "Os amigos": 15 of the route's 25 higher, 8 the same,
+  > 2 lower, neither for its buildings (`liberdade` 2→1: the map's carriageway, task 026; `devesa`
+  > 3→2: the land humping where the LiDAR took a ruin for ground). Against the baseline, 19 higher.
+  > The owner asked to finish on these marks (2026-10-15).
+- [x] `npm test` passes.
+  > 31 of 31 at its release (`v1.5.0`); 51 of 51 on 2026-10-15.
 
 ## Out of scope
 
@@ -151,3 +160,8 @@ street), seeded RNG 4242. A filled building is flagged `filled` in the tiles.
 - **Left for `/task finish`:** the round of viewpoints, shot in party-kart itself and posted on the
   scorecard to be rated. The owner wants the viewpoints shot again once the other tasks are done
   (2026-10-14), so this waits for them.
+- **Finished on 2026-10-15,** at the owner's word, on their marks for the round "Todas as ruas" (`2026-10-15-task035`, version 3 of "Braga real"), which carries this task's
+  work with 035's.
+  Decision 025 records that no building is invented and each footprint says its source. The
+  invented houses the baseline's comments pointed at are gone: `alameda-fujacal` (4), `estadio`
+  (1→4), `viriato-amaral-nunes` (1→4) and `lobato-east` (4) score as the owner rated them.

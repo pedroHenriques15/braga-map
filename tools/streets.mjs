@@ -756,14 +756,16 @@ function rectAcross(p, d, across, ahead) {
 // ---- On its own: the streets in a box, and a page to look at them over the orthophoto ----
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  const [{ CACHE, ELEV0, readCache }, { terrain }, { streetLines }, { ortho }, { loadWorld }, jpeg] = await Promise.all([import('./geo.mjs'), import('./terrain.mjs'), import('./lines.mjs'), import('./dgt.mjs'), import('../index.js'), import('jpeg-js')]);
+  const [{ CACHE, ELEV0, readCache }, { terrain }, { heldGround, levelHeights, streetsOf }, { ortho }, { loadWorld }, jpeg] = await Promise.all([import('./geo.mjs'), import('./terrain.mjs'), import('./lines.mjs'), import('./dgt.mjs'), import('../index.js'), import('jpeg-js')]);
   const a = process.argv.slice(2).map(Number);
   const box = a.length === 4 ? { x0: a[0], x1: a[1], z0: a[2], z1: a[3] } : { x0: -450, x1: 450, z0: 500, z1: 1150 };
   const ground = await terrain();
-  // The ground as the tiles hold it, from the last `npm run world`, for the decks' ends.
+  // The ground as the tiles hold it, from the last `npm run world`, for the decks' ends (held to the
+  // street there, as world.mjs holds it).
   const world = await loadWorld({ x0: box.x0 - 200, x1: box.x1 + 200, z0: box.z0 - 200, z1: box.z1 + 200 });
   const height = (x, z) => world.height(x, z) + ELEV0;
-  const { lines, heights } = streetLines(readCache('osm/base.json'), ground, (x, z, m) => x >= box.x0 - 300 - m && x <= box.x1 + 300 + m && z >= box.z0 - 300 - m && z <= box.z1 + 300 + m, height);
+  const lines = streetsOf(readCache('osm/base.json'), (x, z, m) => x >= box.x0 - 300 - m && x <= box.x1 + 300 + m && z >= box.z0 - 300 - m && z <= box.z1 + 300 + m);
+  const { heights } = levelHeights(lines, ground, height, heldGround(lines, ground));
   const nodes = readCache('osm/street.json').elements.filter((e) => e.type === 'node');
   const made = streetSurfaces({
     lines, heights, elev0: ELEV0, height, nodes, box,

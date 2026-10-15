@@ -175,7 +175,7 @@ const near = (e, r) => (q) => {
   return Math.min(...xs) < e.p[0] + r && Math.max(...xs) > e.p[0] - r && Math.min(...zs) < e.p[1] + r && Math.max(...zs) > e.p[1] - r;
 };
 
-test("a deck meets the ground's streets at its ends to within 5 cm, and a tunnel's end is on the cutting's floor", () => {
+test("a deck or a tunnel meets the ground's streets at its ends to within 5 cm", () => {
   const decks = joins.filter((e) => e.level === 'bridge'), tunnels = joins.filter((e) => e.level === 'tunnel');
   assert.ok(decks.length >= 15 && tunnels.length >= 6, `${decks.length} decks' ends and ${tunnels.length} tunnels' meet the ground's streets in the area`);
   // A deck's heights at a point, its lines' whose width (and pavements) reach it: two where two
@@ -222,12 +222,48 @@ test("a deck meets the ground's streets at its ends to within 5 cm, and a tunnel
   const pulled = [];
   for (const q of [...S.carriageways, ...S.pavements].filter((p) => p.level === 'bridge')) q.rings.forEach((r, i) => r.forEach((v, k) => { if (!(offLine(v, q.ys[i][k]) <= 0.6)) pulled.push(`(${v}) ${q.ys[i][k]} by lines at ${lineYs(v).map((y) => y.toFixed(1))}`); }));
   assert.deepEqual(pulled, [], 'points of a deck off its own height');
-  // A tunnel's end: the lowest of the ground at it and out from it up to 4 m, as the tiles have it.
-  const floor = tunnels.map((e) => Math.abs(e.y - Math.min(...[0, 1, 2, 3, 4, 5, 6, 7, 8].map((k) => w.height(e.p[0] - e.u[0] * k * 0.5, e.p[1] - e.u[1] * k * 0.5)))));
-  console.log(`${decks.length} decks' ends: ${n} points where they meet the ground, ${worst.toFixed(3)} m off at most, and ${steep} by ground half a metre or more off them; ${tunnels.length} tunnels' ends, ${Math.max(...floor).toFixed(2)} m off the cutting's floor at most`);
+  // A tunnel's end: at the ground at its mouth, which the tiles hold down to the cutting's floor
+  // there (task 043); within 5 cm of it somewhere in the half metre round its point, as the tiles
+  // keep a line's points to the half metre (and its heights to the decimetre).
+  const mouths = tunnels.map((e) => {
+    const hs = [-1, 0, 1].flatMap((i) => [-1, 0, 1].map((j) => w.height(e.p[0] + i * 0.25, e.p[1] + j * 0.25)));
+    return Math.max(0, e.y - Math.max(...hs), Math.min(...hs) - e.y);
+  });
+  console.log(`${decks.length} decks' ends: ${n} points where they meet the ground, ${worst.toFixed(3)} m off at most, and ${steep} by ground half a metre or more off them; ${tunnels.length} tunnels' ends, ${Math.max(...mouths).toFixed(3)} m off the ground at most`);
   assert.ok(n >= decks.length * 2, `${n} points at ${decks.length} decks' ends`);
   assert.deepEqual(off, [], 'points of a deck more than 5 cm off the ground where it meets it');
-  assert.ok(Math.max(...floor) < 0.2, `a tunnel's end ${Math.max(...floor).toFixed(2)} m off the cutting's floor`);
+  // 32 before task 043 held the ground at the ends. Two are left: the Largo Santa Justa deck's outer
+  // corners, where the bank beside the street falls 2 m in the 2 m out from the end, more than the
+  // tiles' 2 m ground can turn.
+  assert.ok(steep <= 2, `${steep} points by ground half a metre or more off a deck at its end`);
+  assert.ok(Math.max(...mouths) <= 0.0501, `a tunnel's end ${Math.max(...mouths).toFixed(3)} m off the ground at its mouth`);
+});
+
+test('the street on the ground runs into every deck and tunnel on its own slope', () => {
+  // Out along the street from each end (the bridge's or the tunnel's line carried straight on), the
+  // tiles' ground every 50 cm to 6 m, and a line fitted to it from 2 to 6 m: over the first 2 m the
+  // ground stays within a decimetre of it, the tiles' own step (they hold heights in decimetres, so
+  // the ground anywhere is up to 5 cm off what it rounds, and the ends where nothing dipped are up to
+  // 7 cm off such a line). Before task 043 the ground dipped 0.2 to 0.6 m into five decks' abutments,
+  // and climbed 0.5 to 4.5 m up the tunnels' portals.
+  // But at four mouths of the narrow bores (the João XXI's and the Liberdade's), a cutting's wall
+  // stands 1.5 to 4 m from the street's middle, and the tiles' 2 m ground takes it into the street,
+  // there and on along the cutting: task 045.
+  const WALLED = [[560, 233.5], [530, 249], [123.5, 611], [122.5, 607.5]];
+  const off = [], walled = [];
+  let worst = 0;
+  for (const e of joins) {
+    const as = Array.from({ length: 13 }, (_, k) => k * 0.5), hs = as.map((a) => w.height(e.p[0] - e.u[0] * a, e.p[1] - e.u[1] * a));
+    const fit = as.map((a, k) => [a, hs[k]]).filter(([a]) => a >= 2), ma = fit.reduce((s, [a]) => s + a, 0) / fit.length, mh = fit.reduce((s, [, h]) => s + h, 0) / fit.length;
+    const slope = fit.reduce((s, [a, h]) => s + (a - ma) * (h - mh), 0) / fit.reduce((s, [a]) => s + (a - ma) ** 2, 0);
+    const d = Math.max(...as.filter((a) => a <= 2).map((a, k) => Math.abs(hs[k] - mh - slope * (a - ma))));
+    const at = `${e.level} at (${e.p}) ${d.toFixed(2)} m`;
+    if (WALLED.some(([x, z]) => Math.hypot(x - e.p[0], z - e.p[1]) < 2)) walled.push(at);
+    else { worst = Math.max(worst, d); if (d > 0.1) off.push(at); }
+  }
+  console.log(`${joins.length - walled.length} decks' ends and tunnels' mouths: the first 2 m within ${worst.toFixed(2)} m of the street's slope beyond; in a walled cutting, ${walled.join(', ')}`);
+  assert.equal(walled.length, WALLED.length, 'the walled mouths are where they were');
+  assert.deepEqual(off, [], "the ground dips or climbs where the street meets a deck or a tunnel");
 });
 
 test("no pavement on one level lies over the other's surfaces where the two are at one height", () => {

@@ -2,9 +2,12 @@
 import type { Box } from '../index.js';
 
 // A point of the centre line, every 8 m from the start line (2 m round a ramp and where it lands),
-// in metres (x east, z south, y up): the street's own surface in its middle, from the LiDAR. Its
-// options apply to the stretch from it to the next, and carry on until a later point changes them,
-// except `tag`. `w` is the width kerb to kerb. `bank` is how much the street tips sideways, in radians (+ lifts the right edge), as the
+// in metres (x east, z south, y up): the street's own surface in its middle, from the LiDAR. The line
+// is the map's line for each street, which its carriageway is drawn round, but where it folds a jog
+// at a junction or rounds a corner, 1.2 m or more inside the race's road (`road`). Its options apply
+// to the stretch from it to the next, and carry on until a later point changes them, except `tag`.
+// `w` is the street's width kerb to kerb, at its real width (decision 019), but never past the race's
+// road either side of the line: narrower where it rounds a corner. `bank` is how much the street tips sideways, in radians (+ lifts the right edge), as the
 // real one does, up to 0.08. `lanes` is the lanes painted on it (0 for no lines), negative when
 // it's one way. `kerbs` is what's beyond the left and right edges: a pavement (its width,
 // positive), a central reservation (its width, negative) or nothing (0). `bridge` is a stretch on
@@ -50,6 +53,17 @@ export interface Track {
   // there and comes down on the street past `land`, where the flight meets its middle. `v` is the
   // slowest it may leave the lip at and land there, in m/s, at a kart's 12 m/s² of gravity.
   ramps: { foot: [number, number, number]; lip: [number, number, number]; land: [number, number, number]; w: number; angle: number; v: number; at: number }[];
+  // The race's road (decision 019): the route's own streets at their real widths, each a band round
+  // the map's line as the streets are drawn (world.streets), the corners between them rounded as a
+  // kerb turns them, where the streets drawn have carriageway; and a ramp's flight, as wide as the
+  // ramp and 2 m either side, on past the landing as far as a kart flat out comes down, and 6 m more. Its outline is the race's walls: the kerbs, and the closures. Its pieces,
+  // each an outline and its holes, rings of [x, z] (closed: the last joins the first).
+  road: [number, number][][][];
+  // Where the carriageway drawn goes on past the race's road: rows of barriers a game stands only for
+  // a race, across each side street's mouth on the line of the route's kerb, and along a road's
+  // other carriageway where the two are drawn as one. Each a row along its points, [x, y, z], y the
+  // road's height there above elev0.
+  closures: [number, number, number][][];
   points: TrackPoint[];
 }
 

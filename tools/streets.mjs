@@ -131,6 +131,9 @@ function insideOf(paths) {
   };
 }
 
+// For track.mjs, which cuts the race's road out of the streets.
+export { band, grow, meet, minus, positive, shapes, toPath, toPts, union };
+
 // ---- Lines ----
 
 const dist = (a, b) => Math.hypot(b[0] - a[0], b[1] - a[1]);

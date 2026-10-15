@@ -4,7 +4,9 @@ import { P } from './geo.mjs';
 
 // ---- Streets ----
 
-// No street in the games is narrower than this, kerb to kerb, so eight karts still fit.
+// How wide world.mjs takes a street to be at the least, kerb to kerb, for what it keeps off it: the
+// trees, and the houses it fills in where the LiDAR didn't see (none today). It was the race's
+// narrowest road until decision 019: the games' streets, the race's included, are at their real widths.
 export const W_MIN = 9;
 // How tall a storey is, and what a building has besides its storeys (the ground floor's extra, the
 // slab on top): fitted to the floors OpenStreetMap gives against the heights the LiDAR measured
@@ -190,6 +192,51 @@ export function rectAxis(pts) {
   let { ux, uz } = best;
   if (uz < 0 || (uz === 0 && ux < 0)) { ux = -ux; uz = -uz; }
   return Math.atan2(uz, ux);
+}
+
+// Whether a point is inside some rings, read even-odd (so pieces that don't overlap can share one set),
+// quickly for many points: each cell 10 m square keeps the edges that cross it and whether its
+// reference point (near its middle, off any 10 cm grid) is inside; a point is inside when that, and
+// the number of edges between it and the reference point, say so. As party-kart's Rings.
+export class Inside {
+  constructor(rings) {
+    this.cells = new Map();
+    const C = 10, rows = new Map();
+    for (const r of rings) for (let k = 0; k < r.length; k++) {
+      const [ax, az] = r[k], [bx, bz] = r[(k + 1) % r.length];
+      for (let i = Math.floor((Math.min(ax, bx) - 0.01) / C); i <= Math.floor((Math.max(ax, bx) + 0.01) / C); i++) {
+        for (let j = Math.floor((Math.min(az, bz) - 0.01) / C); j <= Math.floor((Math.max(az, bz) + 0.01) / C); j++) this.cell(i, j).e.push(ax, az, bx, bz);
+      }
+      // Where the edge crosses each row of reference points, for whether they're inside.
+      for (let j = Math.floor(Math.min(az, bz) / C) - 1; j <= Math.floor(Math.max(az, bz) / C) + 1; j++) {
+        const zr = (j + 0.50371) * C;
+        if (az > zr !== bz > zr) { if (!rows.has(j)) rows.set(j, []); rows.get(j).push(ax + ((zr - az) / (bz - az)) * (bx - ax)); }
+      }
+    }
+    for (const [j, xs] of rows) {
+      xs.sort((a, b) => a - b);
+      for (let k = 0; k + 1 < xs.length; k += 2) for (let i = Math.ceil(xs[k] / C - 0.50123); (i + 0.50123) * C < xs[k + 1]; i++) this.cell(i, j).inside = true;
+    }
+  }
+  cell(i, j) {
+    const k = i * 100003 + j;
+    let c = this.cells.get(k);
+    if (!c) this.cells.set(k, (c = { inside: false, e: [] }));
+    return c;
+  }
+  has(x, z) {
+    const i = Math.floor(x / 10), j = Math.floor(z / 10), c = this.cells.get(i * 100003 + j);
+    if (!c) return false;
+    const rx = (i + 0.50123) * 10, rz = (j + 0.50371) * 10, dx = rx - x, dz = rz - z, e = c.e;
+    let odd = false;
+    for (let k = 0; k < e.length; k += 4) {
+      const ax = e[k], az = e[k + 1], bx = e[k + 2], bz = e[k + 3];
+      if (dx * (az - z) - dz * (ax - x) >= 0 === dx * (bz - z) - dz * (bx - x) >= 0) continue;
+      const ex = bx - ax, ez = bz - az;
+      if (ex * (z - az) - ez * (x - ax) > 0 !== ex * (rz - az) - ez * (rx - ax) > 0) odd = !odd;
+    }
+    return c.inside !== odd;
+  }
 }
 
 // A spatial index of things by the cells of a grid `cell` metres square.

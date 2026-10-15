@@ -76,6 +76,12 @@ Steps:
   (tasks 033 and 037), so this task now moves every street in the open world's area onto its real
   carriageway, and measures its width, not the track's line alone; the track follows the streets.
   `W_MIN` no longer holds (step 4). "Out of scope"'s last bullet no longer holds.
+- **From task 037 (2026-10-15):** the race's line is the map's line for each street, and its road
+  (`road`) the route's streets as `world.streets` draws them, which `tools/track.mjs` reads from the
+  tiles. When this task moves a street onto its real carriageway, run `npm run world` and then
+  `npm run tracks`: the race's road and its barriers follow the streets drawn; the line follows
+  the map's lines, so move those the same way (`lines.mjs`), or take the line from the street's
+  middle as drawn.
 - **From task 035's round (2026-10-15):** two viewpoints show the map's carriageways off the real
   roads. At `bom-jesus` the photo is from a car in the road's right lane; in the game that spot is
   on the map's left pavement (the owner's mark fell 4→2). At `liberdade` the photo is from the wide

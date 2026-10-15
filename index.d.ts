@@ -54,7 +54,7 @@ export interface Area {
 
 // A street or the railway. kind: 0 the fast roads, 1 their links, 2 primary, 3 secondary,
 // 4 tertiary, 5 residential, 6 pedestrian, 7 service, 8 track, 9 railway. w: its width, kerb to
-// kerb, as the map has it (the games take a street at least 9 m wide).
+// kerb, as the map has it: its real width, which the games take it at (decision 019).
 // level: on the ground (the ground's height is its own); on a bridge, its deck at `heights`; in a
 // tunnel, under the ground's surface, its road at `heights`; or under something at the ground's
 // own level, open either side (a building over it, or a bridge's deck). heights: a bridge's or a

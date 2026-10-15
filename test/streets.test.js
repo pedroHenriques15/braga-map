@@ -345,14 +345,35 @@ test('every street in the area has its carriageway, at its real width', () => {
   assert.ok(q(0.1) > 0.85, `one in ten carriageways is under ${q(0.1)} of its width`);
 });
 
-test("the Volta dos Amigos's streets are all there", () => {
-  // Every point of the track within 4 m of a carriageway (track.mjs thins its line to within 3 m of
-  // the map's, which task 037 puts on the carriageway's middle), but on the link the loop takes out
-  // of a dead end (decision 010), which isn't a street: one run of points, under 100 m.
+test("the Volta dos Amigos runs on its streets: every point on a carriageway, but in the jump's flight", () => {
+  // track.mjs puts the line on each street's own line, which its carriageway is drawn round, and
+  // where it rounds a corner or folds a jog keeps it 1.2 m inside the race's road (task 037).
   const levels = ['ground', 'bridge', 'tunnel'].map((l) => inside(S.carriageways.filter((p) => p.level === l))), any = (x, z) => levels.some((f) => f(x, z));
-  const near = ([x, z]) => any(x, z) || [1, 2, 3, 4].some((r) => Array.from({ length: 24 }, (_, k) => (k * Math.PI) / 12).some((a) => any(x + r * Math.cos(a), z + r * Math.sin(a))));
-  const pts = amigos.points.map((p, i) => ({ i, p: [p.p[0], p.p[2]] })).filter(({ p }) => inOpen(p)), off = pts.filter(({ p }) => !near(p));
+  let air = false;
+  const pts = amigos.points.flatMap((p, i) => { if (p.air !== undefined) air = p.air; return air || !inOpen([p.p[0], p.p[2]]) ? [] : [{ i, p: [p.p[0], p.p[2]] }]; });
+  const off = pts.filter(({ p }) => !any(...p));
   assert.ok(pts.length > 1000, `${pts.length} of the track's points in the area`);
-  const runs = off.reduce((r, q) => (r.length && q.i - r.at(-1).at(-1).i <= 2 ? r.at(-1).push(q) : r.push([q]), r), []);
-  assert.ok(runs.length <= 1 && (runs[0]?.length ?? 0) <= 12, `the track's points more than 4 m from a carriageway: ${runs.map((r) => `${r.length} from (${r[0].p})`).join(', ')}`);
+  assert.deepEqual(off.map(({ p }) => p), [], `the track's points off a carriageway`);
+});
+
+test("the race's road takes in the whole line, and its barriers stand on its edge across the streets that go on", () => {
+  // The race's road (task 037): the route's own streets at their real widths, as they're drawn, and
+  // the jump's flight; a closure where the street drawn goes on past its edge.
+  const road = inside(amigos.road.map((rings) => ({ rings }))), carriageway = inside(S.carriageways.filter((p) => p.level !== 'tunnel'));
+  assert.equal(amigos.road.length, 1, 'one piece');
+  const out = amigos.points.filter(({ p }) => !road(p[0], p[2]));
+  assert.deepEqual(out.map(({ p }) => p), [], "the line's points off the race's road");
+  // Each closure's points on the road's edge (within half a metre of it), and most of each over a
+  // carriageway.
+  const edge = amigos.road.flat().flatMap((r) => r.map((p, k) => [p, r[(k + 1) % r.length]]));
+  const near = (x, z) => edge.some(([[ax, az], [bx, bz]]) => {
+    if (Math.min(ax, bx) - 1 > x || Math.max(ax, bx) + 1 < x || Math.min(az, bz) - 1 > z || Math.max(az, bz) + 1 < z) return false;
+    const dx = bx - ax, dz = bz - az, f = Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / (dx * dx + dz * dz || 1)));
+    return Math.hypot(ax + dx * f - x, az + dz * f - z) < 0.5;
+  });
+  assert.ok(amigos.closures.length > 100, `${amigos.closures.length} closures`);
+  const loose = amigos.closures.filter((c) => !c.every(([x, , z]) => near(x, z)));
+  assert.deepEqual(loose.map((c) => c[0]), [], "closures off the race's edge");
+  const over = amigos.closures.flat().filter(([x, , z]) => carriageway(x, z)).length / amigos.closures.flat().length;
+  assert.ok(over > 0.8, `only ${(over * 100).toFixed(0)}% of the closures' points over a carriageway`);
 });

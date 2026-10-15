@@ -93,11 +93,13 @@ world.inOpen(x, z); // inside its edge?
   from (`source`: OpenStreetMap, the LiDAR, Microsoft's, or invented). Nothing is invented where
   the LiDAR was fetched, which is the whole map; elsewhere houses are filled in on empty frontages
   (`filled`). `index.d.ts` says what each field means.
-- The world knows nothing of your road. A game clears its own road and arena of buildings and
-  trees when it loads (Party Kart's `src/render/city.ts` does it for a track). The map takes every
-  street at least 9 m wide, and the houses it fills in on empty frontages (where the LiDAR wasn't
-  fetched) stand clear of that and the pavement. The real buildings stand where they are, so on a
-  street narrower than that, some meet the road as a game draws it.
+- A track brings its race's road (`road`, decision 019): the route's own streets at their real
+  widths, as `world.streets` draws them, and its jump's flight. Its outline is the race's walls, and
+  where the street drawn goes on past it (across a side street's mouth, between a road's two
+  carriageways drawn as one) a game stands a row of barriers for a race (`closures`). The world
+  itself knows nothing of a road: the trees, and the houses it fills in on empty frontages (where
+  the LiDAR wasn't fetched), stand clear of every street taken at least 9 m wide (`W_MIN`), and the
+  real buildings stand where they are.
 - The package is plain JavaScript and data, so Node runs it as it is (its tests, a game's tests)
   and there's nothing to build.
 
@@ -133,7 +135,10 @@ landmarks from `map/braga.json`, `open.mjs` the Volta dos Amigos, `world.mjs` ma
 on the tiles the tracks in `tracks/` run through and the open world's edge touches, the map page
 draws the edge (run `npm run page` again after `npm run open`) and the street audit (again after
 `audit.mjs`, which reads the world's tiles), and `build.mjs` and `world.mjs` take the buildings'
-heights and roofs from `roofs.mjs`'s measurements. All of them need the LiDAR.
+heights and roofs from `roofs.mjs`'s measurements. All of them need the LiDAR. `track.mjs` also reads
+the streets the world draws (`world.streets`, which don't depend on a track) for the race's road, so
+a new track's area needs `npm run open` and `npm run world` before `npm run tracks` plans it on the
+streets; when a track moves enough to change the edge, run the three again until it holds.
 
 - `fetch.mjs` gets OpenStreetMap through Overpass (streets and land; the footways, steps, paths
   and cycleways, and the squares mapped in parts, which only the street audit reads so far;
@@ -289,8 +294,18 @@ heights and roofs from `roofs.mjs`'s measurements. All of them need the LiDAR.
    one way and the other, and the direction through each. To add a waypoint without reshuffling
    the loop, put it in the order between the two it falls between. A track with `sections` only
    has those sections' streets.
-2. **The centre line.** Short jogs at junctions are folded into one corner, and corners are rounded
-   to `R_MIN` (12 m, a street corner) where the streets allow. The heights are the street's own
+2. **The race's road and its centre line.** The race's road is the route's own streets at their real
+   widths, as the open world's tiles draw them (`npm run world` makes those, and they don't depend
+   on a track): each street's band round the map's line, the corners between them rounded as a
+   kerb turns them (up to `KERB_R`, 10 m), where the streets drawn have carriageway (a sliver of
+   pavement into it under 1.2 m wide taken as road), and the jump's flight, as wide as the ramp and
+   2 m either side, on past the landing as far as a kart flat out comes down (`JUMP.flat`) and 6 m
+   more, so it lands there and drives back onto the street. The centre line is each street's own line from the map, which its carriageway
+   is drawn round, thinned only of points within 0.25 m of it. A short jog at a junction (two corners
+   turning opposite ways, under 14 m apart) is folded into one corner, and corners are rounded to
+   `R_MIN` (12 m, a street corner) where the streets allow, both only as far as the line stays
+   `CLEAR` (1.2 m) inside the race's road. It prints how much of the line is on a carriageway and
+   where it comes within 1.2 m of the road's edge. The heights are the street's own
    surface, from the LiDAR: at each point a line across the carriageway (the median of the slopes
    between every two heights on it, so a kerb or a drop beside the street doesn't tip it) gives
    the height in the middle and how much the street tips sideways (`bank`, up to 8%). A bridge is
@@ -298,8 +313,10 @@ heights and roofs from `roofs.mjs`'s measurements. All of them need the LiDAR.
    smoothed over about 10 m. It prints the corners it had to make tighter, the widths, the
    steepest grade, the sharpest crest, how much of it tips sideways, the bridges, and any place the
    road comes too close to itself.
-3. **The street as it is.** The width, kerb to kerb, is the map's `width`, or its `lanes`, or what
-   that kind of street usually is (`carriageway` in `osm.mjs`), never under `W_MIN` (9 m). Lane
+3. **The street as it is.** The width, kerb to kerb, is the street's real width (decision 019): the
+   map's `width`, or its `lanes`, or what that kind of street usually is (`carriageway` in
+   `osm.mjs`), but never past the race's road either side of the line, so narrower where it rounds
+   a corner; it prints the widths and the narrowest places. Lane
    lines follow `lanes` and `lane_markings`; `surface=sett` and the like make granite setts.
    Beyond each edge (`kerbs`) is a pavement as wide as the buildings leave room for (none where
    `sidewalk` says no, or out in the open), a central reservation where a one-way carriageway runs
@@ -309,21 +326,25 @@ heights and roofs from `roofs.mjs`'s measurements. All of them need the LiDAR.
    boost pads 30 m into the longest straights, and the easter eggs on their waypoints.
 5. **What's along it.** The street names as it turns into each, the landmarks within 220 m, and
    from the map the zebra crossings and traffic lights on its streets and the bus stops beside it;
-   the sections it runs through, and the box round it a game draws (500 m round the track).
+   the rows of barriers across the side streets it passes (`closures`: the race's road's edge
+   wherever the street drawn goes on past it, looked at half a metre beyond it); the sections it
+   runs through, and the box round it a game draws (500 m round the track).
 
 The layout is a point every 8 m from the start line (every 2 m round a ramp and its landing), each
 with its options for the stretch to the next (`tracks/track.d.ts`); a jump's flight is `air`, and
 its ramp is in `ramps` (where it stands, its angle and width, and the slowest speed that clears it),
 for a game to put up during a race. Nothing else goes near it: no start, checkpoint, item boxes or
-boost pad. A track that changes is a different race for the games: Party Kart needs a new peer id
-prefix for it, and its tests must still pass.
+boost pad. With it come the race's road (`road`, its pieces' outlines and holes) and its closures
+(`closures`, rows of points). A track that changes is a different race for the games: Party Kart
+needs a new peer id prefix for it, and its tests must still pass.
 
 ### A new track
 
 Add it to `tools/tracks.mjs`: an id, a name, its waypoints on the map (read them off the map
 page), and `sections` to keep it to some sections' streets. Run `npm run tracks` and look at it on
 the map page. Then a game races it by importing `braga-map/tracks/<id>.js`. Party Kart's tests
-say what makes a track raceable: a loop of 7–10.5 km, an autopilot lap without respawns, and so on.
+say what makes a track raceable: a loop of 7–10.5 km, an autopilot lap without respawns, a race
+closed by its walls and barriers, and so on.
 
 ### The friends' houses
 

@@ -383,7 +383,7 @@ let real = 0, lidar = 0, stands = 0, measured = 0, parts = 0;
 // Where the point cloud wasn't fetched, the LiDAR can't say which buildings OpenStreetMap is
 // missing: there, where the land is built-up and a street's frontage is empty, line it with houses,
 // and flats on the main roads. Never in a park, a wood, a field or a pitch, on a street, or over a
-// building. Each street is taken at least W_MIN wide, as the games draw it, with a pavement as wide
+// building. Each street is taken at least W_MIN wide, as the games once drew it, with a pavement as wide
 // as the buildings leave room for. The streets a note on the map asked for (the waypoints marked
 // `rows`) get them all down both sides. Where the LiDAR saw, nothing is invented: only what's there.
 let infill = 0;

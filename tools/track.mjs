@@ -18,8 +18,10 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { CACHE, ELEV0, P, readCache, ROOT } from './geo.mjs';
 import { heights } from './dgt.mjs';
-import { blur, carriageway, carsMay, COBBLE, driven, footprints, isOneway, lanesOf, segDist, simplify, W_MIN } from './osm.mjs';
+import { blur, carriageway, carsMay, COBBLE, driven, footprints, Inside, isOneway, lanesOf, LINE, openThin, segDist, simplify } from './osm.mjs';
+import { loadWorld } from '../index.js';
 import { EXT, sectionOf } from './sections.mjs';
+import { band, grow, meet, positive, shapes, toPath, toPts, union } from './streets.mjs';
 import { terrain } from './terrain.mjs';
 import { TRACKS } from './tracks.mjs';
 
@@ -298,6 +300,7 @@ const JUMP = {
   angles: [10, 12.5, 15, 17.5, 20], // ° the ramp may rise at: the gentlest that clears is taken
   g: 12, // m/s²
   v: 33, // m/s, the most a kart may need to clear it: party-kart's reach 37 on the flat
+  flat: 44, // m/s, a kart flat out (party-kart's top speed), at the ramp's foot
   past: 4, // m past the landing point the slowest flight comes down
   margin: 0.5, // m between the slowest flight and anything under it, by the LiDAR's surface model
   price: 1000, // what a jump adds to the loop's cost, so it takes one only where it has to
@@ -547,35 +550,114 @@ console.log(streetsOf(bestLoop.path));
 // 2. The centre line.
 
 const loopEdges = loop.map((a, i) => edgeOf(a.id, loop[(i + 1) % loop.length].id));
-// The race is never narrower than W_MIN, so eight karts still fit.
 const R_MIN = 12; // the corner radius aimed for: a street corner, about 80 km/h for a kart
+
+// The streets as the games draw and drive them (task 033): each one's carriageway, a band round the
+// map's line at its real width, joined to the others where they meet, each corner rounded as a kerb
+// turns it; read from the open world's tiles (`npm run world` makes them, and they don't depend on a
+// track).
+const world = await loadWorld({ open: true });
+if (!world.streets.carriageways.length) throw new Error('No streets in the tiles: npm run world first.');
+const pieces = world.streets.carriageways.filter((c) => c.level !== 'tunnel');
+const paved = ['ground', 'bridge'].map((level) => new Inside(pieces.filter((c) => c.level === level).flatMap((c) => c.rings)));
+const drawnRoad = (x, z) => paved[0].has(x, z) || paved[1].has(x, z);
+
+// The race's road (decision 019): the route's own streets at their real widths, as they're drawn
+// (each a band round the map's line, the corners between them rounded as a kerb turns them, at most
+// KERB_R), where the streets drawn have carriageway; a sliver of pavement into it under 2 × SLIVER
+// wide taken as road (task 037 found the tiles have a few). And in a ramp's flight, the flight, as
+// wide as the ramp and 2 m either side. Its outline is the race's walls: the kerbs, and rows of
+// barriers across the side streets it passes, wherever the carriageway goes on past it.
+const KERB_R = 10, SLIVER = 0.6;
+const road = (() => {
+  // The route's streets, a run of the loop's stretches of one width at a time.
+  const N = loop.length, w = loopEdges.map((e) => (e.jump ? 0 : carriageway(e.tags)));
+  let k0 = w.findIndex((v, i) => v !== w[(i - 1 + N) % N]);
+  if (k0 < 0) k0 = 0;
+  const bands = [];
+  for (let k = 0; k < N; ) {
+    const i = (k0 + k) % N;
+    let j = k;
+    while (j + 1 < N && w[(k0 + j + 1) % N] === w[i]) j++;
+    if (w[i]) bands.push(...band([toPath(Array.from({ length: j - k + 2 }, (_, m) => [loop[(k0 + k + m) % N].x, loop[(k0 + k + m) % N].z]))], w[i] / 2, true));
+    k = j + 1;
+  }
+  const U = union(bands);
+  const W = union(pieces.flatMap((c) => c.rings.map((r, k) => (k ? positive(toPath(r)).reverse() : positive(toPath(r))))));
+  const near = meet(W, grow(U, 20));
+  let R = meet(grow(grow(U, KERB_R), -KERB_R), grow(grow(near, SLIVER), -SLIVER));
+  // Only the pieces the route runs through.
+  R = shapes(R).filter((rings) => { const p = new Inside(rings.map(toPts)); return loop.some((n) => p.has(n.x, n.z)); }).flatMap((rings) => rings);
+  const flight = loopEdges.find((e) => e.jump)?.jump;
+  if (flight) {
+    // Flat out at the ramp's foot, less what its slope and climb cost, a kart comes down this far past
+    // the landing point: the race's road takes in the flight to there and 6 m on, over whatever is
+    // there, so it lands and drives back onto the street (the owner's answer in task 037).
+    const { t, l, fx, fz } = flight, h = carriageway(t.e.tags) / 2 + 2, foot = JUMP.ramp + 2;
+    const v = JUMP.flat * Math.cos(flight.angle) - 1.5, lip = JUMP.ramp * Math.sin(flight.angle);
+    let s = flight.g;
+    while (s < 200 && flight.yT + lip + arc(flight.angle, v, s) > flight.yL) s += 0.5;
+    const past = s - flight.g + 6;
+    console.log(`the race's road takes in the jump's flight to ${Math.round(past)} m past its landing, where a kart flat out comes down`);
+    const ends = [[t.x - fx * foot, t.z - fz * foot], [l.x + fx * past, l.z + fz * past]];
+    R = union(R, [positive(toPath([[ends[0][0] - fz * h, ends[0][1] + fx * h], [ends[1][0] - fz * h, ends[1][1] + fx * h], [ends[1][0] + fz * h, ends[1][1] - fx * h], [ends[0][0] + fz * h, ends[0][1] - fx * h]]))]);
+  }
+  return shapes(R).map((rings) => rings.map(toPts));
+})();
+const raceRoad = new Inside(road.flat());
+// The race runs on it: its line is the streets' own middles, and where it folds a jog at a junction or
+// rounds a corner, it keeps CLEAR of its edges.
+const onRoad = (x, z) => raceRoad.has(x, z);
+const CLEAR = 1.2;
+// On a carriageway, with the kerbs at least r away all round.
+const clear = (x, z, r = CLEAR) => onRoad(x, z) && [0, 1, 2, 3, 4, 5, 6, 7].every((k) => onRoad(x + r * Math.cos((k * Math.PI) / 4), z + r * Math.sin((k * Math.PI) / 4)));
+// Every metre of a path (open, [x, z] points) clear.
+const keeps = (path) => path.every((a, i) => {
+  if (!i) return clear(...a);
+  const b = path[i - 1], n = Math.max(1, Math.ceil(Math.hypot(a[0] - b[0], a[1] - b[1])));
+  for (let k = 1; k <= n; k++) if (!clear(b[0] + ((a[0] - b[0]) * k) / n, b[1] + ((a[1] - b[1]) * k) / n)) return false;
+  return true;
+});
+// How far from (x, z) along (dx, dz) the carriageway goes, to 20 m.
+const reach = (x, z, dx, dz) => { let o = 0; while (o < 20 && onRoad(x + dx * (o + 0.1), z + dz * (o + 0.1))) o += 0.1; return o; };
 
 const sub = (a, b) => [a[0] - b[0], a[1] - b[1]];
 const len2 = (a) => Math.hypot(a[0], a[1]);
 const unit = (a) => { const l = len2(a) || 1; return [a[0] / l, a[1] / l]; };
 
 // Each corner becomes an arc of radius R_MIN, or tighter where the streets either side are too
-// short for it. Returns the points every few metres, and the corners that had to be tighter.
+// short for it, or where a wider one would take the line within CLEAR of the kerb on the inside.
+// Returns the points every few metres, the corners that had to be tighter, and those whose arc
+// comes closer to the kerb than CLEAR at any radius.
 function fillet(pts) {
-  const n = pts.length, out = [], tight = [];
+  const n = pts.length, out = [], tight = [], close = [];
   for (let i = 0; i < n; i++) {
     const a = pts[(i - 1 + n) % n], b = pts[i], c = pts[(i + 1) % n];
     const u = unit(sub(b, a)), v = unit(sub(c, b));
     const th = Math.atan2(u[0] * v[1] - u[1] * v[0], u[0] * v[0] + u[1] * v[1]);
     if (Math.abs(th) < 0.05) { out.push(b); continue; }
     const half = Math.tan(Math.abs(th) / 2);
-    let r = R_MIN, t = r * half;
     const room = Math.min(len2(sub(b, a)), len2(sub(c, b))) / 2;
-    if (t > room) { t = room; r = t / half; }
+    const arc = (r) => {
+      const t = r * half, p1 = [b[0] - u[0] * t, b[1] - u[1] * t];
+      const side = Math.sign(th);
+      const cx = p1[0] - u[1] * side * r, cz = p1[1] + u[0] * side * r;
+      const a0 = Math.atan2(p1[1] - cz, p1[0] - cx);
+      const steps = Math.max(2, Math.ceil((Math.abs(th) * r) / 2.5));
+      return Array.from({ length: steps + 1 }, (_, k) => { const ang = a0 + (th * k) / steps; return [cx + Math.cos(ang) * r, cz + Math.sin(ang) * r]; });
+    };
+    // The widest radius the streets leave room for that keeps clear; if none does, the widest.
+    const widest = Math.min(R_MIN, room / half);
+    let r = null;
+    for (let f = 1; f > 0.25 && r === null; f -= 0.1) if (keeps(arc(widest * f))) r = widest * f;
+    if (r === null) {
+      r = widest;
+      close.push({ x: Math.round(b[0]), z: Math.round(b[1]) });
+    }
     if (r < 9) tight.push({ x: Math.round(b[0]), z: Math.round(b[1]), r: Math.round(r) });
-    const p1 = [b[0] - u[0] * t, b[1] - u[1] * t];
-    const side = Math.sign(th);
-    const cx = p1[0] - u[1] * side * r, cz = p1[1] + u[0] * side * r;
-    const a0 = Math.atan2(p1[1] - cz, p1[0] - cx);
-    const steps = Math.max(2, Math.ceil((Math.abs(th) * r) / 2.5));
-    for (let k = 0; k <= steps; k++) { const ang = a0 + (th * k) / steps; out.push([cx + Math.cos(ang) * r, cz + Math.sin(ang) * r]); }
+    out.push(...arc(r));
   }
-  return { pts: out, tight };
+  return { pts: out, tight, close };
 }
 
 // Every `step` metres round a closed loop.
@@ -592,30 +674,36 @@ function resample(pts, step) {
 }
 
 // Junctions often jog a few metres from one street to the next: a stretch shorter than 14 m
-// between two corners is folded into one corner at its middle.
+// between two corners turning opposite ways is folded into one corner at its middle, where that
+// keeps the line clear of the kerbs. (Corners turning the same way are a bend, a roundabout's: folded,
+// the line would cut across it to the island.)
 function fold(pts) {
-  let out = pts.slice();
-  for (let pass = 0; pass < 20; pass++) {
-    let changed = false;
-    const next = [];
-    for (let i = 0; i < out.length; i++) {
-      const a = out[i], b = out[(i + 1) % out.length];
-      if (len2(sub(b, a)) < 14 && out.length > 4 && !changed) {
-        next.push([(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]);
-        if (i === out.length - 1) next.shift();
-        else i++;
-        changed = true;
-      } else next.push(a);
+  const out = pts.slice();
+  const skip = new Set();
+  const turnAt = (p, q, r) => { const u = sub(q, p), v = sub(r, q); return Math.sign(u[0] * v[1] - u[1] * v[0]); };
+  for (let pass = 0; pass < 500 && out.length > 4; pass++) {
+    let at = -1;
+    for (let i = 0; i < out.length && at < 0; i++) {
+      const a = out[i], b = out[(i + 1) % out.length], n = out.length;
+      if (len2(sub(b, a)) >= 14 || skip.has(a)) continue;
+      if (turnAt(out[(i - 1 + n) % n], a, b) === turnAt(a, b, out[(i + 2) % n])) continue;
+      const m = [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2];
+      if (keeps([out[(i - 1 + out.length) % out.length], m, out[(i + 2) % out.length]])) at = i;
+      else skip.add(a);
     }
-    out = next;
-    if (!changed) break;
+    if (at < 0) break;
+    const a = out[at], b = out[(at + 1) % out.length];
+    out.splice(at, 1, [(a[0] + b[0]) / 2, (a[1] + b[1]) / 2]);
+    out.splice(out.indexOf(b), 1);
   }
   return out;
 }
 
+// The line is the map's, thinned only of points within LINE_TOL of it: the carriageways are drawn
+// round the map's own line.
+const LINE_TOL = 0.25;
 const raw = loop.map((n) => [n.x, n.z]);
-let simple = simplify(raw, 3);
-for (let k = 0; k < 40; k++) { const f = fold(simple); if (f.length === simple.length) break; simple = simplify(f, 3); }
+const simple = fold(simplify(raw, LINE_TOL));
 const rounded = fillet(simple);
 let line = resample(rounded.pts, 2);
 // A light blur joins the arcs to the straights without kinks.
@@ -653,7 +741,19 @@ const onStreet = line.map(([x, z]) => {
   for (let i = 0; i < loop.length; i++) { const d = segDist(x, z, loop[i], loop[(i + 1) % loop.length]); if (d < bd) { bd = d; best = i; } }
   return loopEdges[best];
 });
-const widths = blur(onStreet.map((e) => Math.max(W_MIN, carriageway(e.tags))), 12);
+// How far the carriageway reaches either side of each point, to the left and the right as the games
+// take them; and the road's width: its street's, kerb to kerb, but never past the nearer kerb either
+// side of the line (where it rounds a corner, or folds a jog), so its edges are the kerbs drawn or
+// inside them. Narrowest over 16 m, then eased over a few metres.
+const sides = line.map(([x, z], i) => {
+  const [xa, za] = line[(i - 1 + n2) % n2], [xb, zb] = line[(i + 1) % n2], tl = Math.hypot(xb - xa, zb - za) || 1;
+  const rx = -(zb - za) / tl, rz = (xb - xa) / tl;
+  return onRoad(x, z) ? [reach(x, z, -rx, -rz), reach(x, z, rx, rz)] : [0, 0];
+});
+const widths = (() => {
+  const own = onStreet.map((e, i) => (inAir(i) || !onRoad(...line[i]) ? carriageway(e.tags) : Math.min(carriageway(e.tags), 2 * Math.min(...sides[i]))));
+  return blur(own.map((_, i) => Math.min(...[-4, -3, -2, -1, 0, 1, 2, 3, 4].map((k) => own[(i + k + n2) % n2]))), 2);
+})();
 
 // The tightest corners, by heading change over 6 m.
 const heading = line.map((p, i) => { const q = line[(i + 1) % n2]; return Math.atan2(q[1] - p[1], q[0] - p[0]); });
@@ -729,7 +829,26 @@ for (let i = 0; i < n2; i++) {
 }
 const length = n2 * 2;
 console.log(`\ncentre line ${length} m; corners tighter than 9 m: ${rounded.tight.length} ${JSON.stringify(rounded.tight)}`);
-console.log(`widths ${Math.min(...widths).toFixed(1)}–${Math.max(...widths).toFixed(1)} m, ${Math.round((100 * widths.filter((w) => w < W_MIN + 0.5).length) / n2)}% at the least`);
+// Where the line is on the streets: every point on a carriageway (but in a ramp's flight), and how
+// close it comes to a kerb.
+{
+  const ground = line.map((_, i) => i).filter((i) => !inAir(i));
+  const off = ground.filter((i) => !onRoad(...line[i]));
+  const near = ground.filter((i) => onRoad(...line[i]) && Math.min(...sides[i]) < CLEAR);
+  const at = (list) => list.reduce((r, i) => (r.length && i - r.at(-1).at(-1) <= 3 ? r.at(-1).push(i) : r.push([i]), r), []).map((r) => `${r.length * 2} m at (${line[r[0]].map(Math.round)})`);
+  console.log(`on the streets: ${ground.length - off.length} of ${ground.length} points on a carriageway${off.length ? `; off it: ${at(off).join(', ')}` : ''}; within ${CLEAR} m of a kerb: ${at(near).join(', ') || 'none'}; corners that can't keep clear: ${JSON.stringify(rounded.close)}`);
+}
+{
+  const s = [...widths].sort((a, b) => a - b), q = (f) => s[Math.floor(f * (n2 - 1))].toFixed(1);
+  // The narrowest places, one each 100 m.
+  const narrow = [];
+  for (const i of widths.map((_, i) => i).sort((a, b) => widths[a] - widths[b])) {
+    if (narrow.length >= 8) break;
+    if (inAir(i) || narrow.some((j) => Math.abs(steps(j, i) * 2) < 100 || Math.abs(steps(i, j) * 2) < 100)) continue;
+    narrow.push(i);
+  }
+  console.log(`widths ${q(0)}–${q(1)} m, median ${q(0.5)}; ${Math.round((100 * widths.filter((w) => w < 6).length) / n2)}% under 6 m, ${Math.round((100 * widths.filter((w) => w < 9).length) / n2)}% under 9 m; the narrowest: ${narrow.map((i) => `${widths[i].toFixed(1)} m on ${onStreet[i].name || onStreet[i].kind} (${line[i].map(Math.round)})`).join(', ')}`);
+}
 console.log(`tightest radius ${(1 / Math.max(...curvature)).toFixed(1)} m; height ${Math.min(...smooth).toFixed(0)}–${Math.max(...smooth).toFixed(0)} m (zero at ${ELEV0}); steepest ${(maxGrade * 100).toFixed(1)}%; sharpest crest radius ${minCrest.toFixed(0)} m`);
 console.log(`tipping sideways: ${Math.round((100 * banks.filter((b) => Math.abs(b) > 0.02).length) / n2)}% over 2%, ${Math.round((100 * banks.filter((b) => Math.abs(b) >= 0.08).length) / n2)}% at 8%; bridges: ${onBridge.filter(Boolean).length * 2} m`);
 console.log(`clashes: ${clashes.length} ${JSON.stringify(clashes.slice(0, 8))}`);
@@ -979,6 +1098,50 @@ const crossings = [], signals = [], stops = [];
   console.log(`along the road: ${crossings.length} crossings, ${signals.length} traffic lights, ${stops.length} bus stops`);
 }
 
+// -- The side streets it passes, closed for a race (decision 019): rows of barriers along the race's
+//    road's edge wherever the carriageway drawn goes on past it (looked at half a metre beyond it):
+//    across each side street's mouth, on the line of the route's kerb, and along a road's other
+//    carriageway where the two are drawn as one. Each a row of barriers along its points, [x, y, z],
+//    y the road's height there.
+const closures = [];
+{
+  const yAt = (x, z) => r2(ys[roadDist(x, z, 1).i]);
+  for (const rings of road) for (const ring of rings) {
+    // Every half metre round the ring, whether the carriageway goes on past it.
+    const marks = [];
+    ring.forEach(([ax, az], k) => {
+      const [bx, bz] = ring[(k + 1) % ring.length], L = Math.hypot(bx - ax, bz - az);
+      if (L < 1e-6) return;
+      let nx = -(bz - az) / L, nz = (bx - ax) / L;
+      for (let m = Math.ceil(L / 0.5), f = 0; f < m; f++) {
+        const x = ax + ((bx - ax) * f) / m, z = az + ((bz - az) * f) / m, mx = ax + ((bx - ax) * (f + 0.5)) / m, mz = az + ((bz - az) * (f + 0.5)) / m;
+        if (raceRoad.has(mx + nx * 0.2, mz + nz * 0.2)) [nx, nz] = [-nx, -nz];
+        marks.push({ p: [x, z], open: drawnRoad(mx + nx * 0.5, mz + nz * 0.5) });
+      }
+    });
+    // Each run of them, from the mark before it to the one after (on the kerb), but those under a
+    // metre: a crack in the drawing.
+    const n = marks.length;
+    let k0 = marks.findIndex((q) => !q.open);
+    if (k0 < 0) continue;
+    for (let k = 1; k <= n; k++) {
+      const i = (k0 + k) % n;
+      if (!marks[i].open || marks[(i - 1 + n) % n].open) continue;
+      let j = i;
+      while (marks[(j + 1) % n].open) j = (j + 1) % n;
+      const pts = [];
+      for (let q = i; ; q = (q + 1) % n) { pts.push(marks[q].p); if (q === (j + 1) % n) break; }
+      pts.push(marks[(j + 1) % n].p);
+      const len = pts.reduce((s, p, q) => (q ? s + Math.hypot(p[0] - pts[q - 1][0], p[1] - pts[q - 1][1]) : 0), 0);
+      if (len >= 1) closures.push(openThin(pts, 0.15).map(([x, z]) => [r1(x), yAt(x, z), r1(z)]));
+    }
+  }
+  const lens = closures.map((c) => c.reduce((s, p, k) => (k ? s + Math.hypot(p[0] - c[k - 1][0], p[2] - c[k - 1][2]) : 0), 0));
+  const order = lens.map((_, k) => k).sort((a, b) => lens[b] - lens[a]);
+  console.log(`closures: ${closures.length} rows of barriers, ${Math.round(lens.reduce((a, b) => a + b, 0))} m in all, median ${lens[order[order.length >> 1]].toFixed(0)} m; the longest ${order.slice(0, 6).map((k) => `${Math.round(lens[k])} m at (${closures[k][0][0].toFixed(0)}, ${closures[k][0][2].toFixed(0)})`).join(', ')}`);
+  console.log(`the race's road: ${road.length} pieces, ${road.reduce((s, r) => s + r.length - 1, 0)} holes, ${road.flat().reduce((s, r) => s + r.length, 0)} points round them`);
+}
+
 // The box the games draw round it: the track and 500 m round it, inside the map. And the sections
 // it runs through, from the start.
 let bx0 = Infinity, bx1 = -Infinity, bz0 = Infinity, bz1 = -Infinity;
@@ -1023,6 +1186,8 @@ export default {
   signals: ${J(signals)},
   stops: ${J(stops)},
   ramps: ${J(ramps)},
+  road: ${J(road)},
+  closures: ${J(closures)},
   points: [
 ${pointsOut.map(fmtPoint).join('\n')}
   ],

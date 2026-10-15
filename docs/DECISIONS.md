@@ -674,3 +674,36 @@ loop now passes.
 
 The alternative, a hump guessed from the bridge's length, would be wrong wherever a deck isn't
 symmetric, and the LiDAR has every deck it flew over.
+
+## 029 · The race runs on its own streets as they're drawn, walled at their edges
+
+*2026-10-15 · task 037 · makes decision 019's race concrete, and replaces decision 004's 9 m for good*
+
+The Volta dos Amigos is a game mode in the open world: it runs on the streets everyone drives, at
+their real widths, and a game walls its route in only while it's on.
+
+- **The race's road is the route's own streets** as `world.streets` draws them: each street's band
+  round the map's line at its real width, the corners between them rounded as a kerb turns them,
+  cut to the carriageways drawn (a sliver of pavement under 1.2 m wide taken as road). A track
+  gives it as `road`; its outline is the race's walls, closed by construction, so nothing is left
+  for a kart to slip out by. `tools/track.mjs` reads the streets from the tiles for it.
+- **Barriers where the street goes on.** Wherever the carriageway drawn goes on past the race's
+  road, a game stands a row of barriers for the race (`closures`): across each side street's mouth,
+  on the line of the route's kerb, and between a road's two carriageways where the map draws them
+  as one and the route takes one (the Avenida João XXI, the Avenida da Liberdade). The owner chose
+  that row down the middle over opening the other carriageway to the race.
+- **The line is the street's own,** the map's line its carriageway is drawn round, folded at a
+  jog or rounded at a corner only as far as it stays 1.2 m inside the race's road; a point's width
+  is its street's, never past the race's road either side. Both only place the race (the bots'
+  lines, the item boxes, the grid): the walls are the road's outline.
+- **The jump's landing takes in the ground beside its street** as far as a kart flat out comes down
+  (the owner's choice, over sending it back onto the run-up): a 4 m landing street can't catch a
+  flight that lands up to 33 m past it, and a kart that comes down there drives back on, walled in
+  the open.
+- **The race is slower, as the streets are:** party-kart's autopilot's second lap went from 285 s
+  on the 9 m road to 297 s, and its test takes 170–310 s (the owner, knowing it went over 290).
+
+The alternatives were barriers by the kerb line at each junction the route passes, and openings
+found by looking square off the line: the first stood barriers down the middle of a road drawn as
+one, and the second missed a street leaving behind a corner the route turns, or off a road beside
+the route's, and could stand a straight row of barriers across the route where it turns.

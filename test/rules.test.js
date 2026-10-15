@@ -57,8 +57,8 @@ test('no track runs against a one-way street', { skip: !fs.existsSync(BASE) && '
 });
 
 // Every step of a track is on a street a car may use: its middle within 10 m of one's middle (the
-// line is rounded at the corners, and up to 3 m off a street's middle, task 026), but in a ramp's
-// flight. The made-up road out of a dead end it once had ran 26 m from any.
+// line is the street's own, but rounded at its corners and folded at its jogs, task 037), but in a
+// ramp's flight. The made-up road out of a dead end it once had ran 26 m from any.
 test("no track leaves the streets but in a ramp's flight", { skip: !fs.existsSync(BASE) && 'no .cache/osm/base.json' }, () => {
   const segs = [];
   for (const e of readCache('osm/base.json').elements) {

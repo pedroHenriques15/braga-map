@@ -81,3 +81,6 @@ pavements stroked on top, and grain. In the data, ground areas keep their holes 
   the photo, so a roof shows on the ground beside a building, offset; and its shadows couldn't be
   lifted (007's notes say what was tried). A ground tile is 1.2 MB to download at all three levels,
   0.9 MB at High, and 2.7 MB on a phone's graphics card at High.
+- From task 013's split (2026-10-15): what the ground is inside a plot, between a building and the
+  street (a front garden's lawn, a paved yard, a driveway, parking), is this task's; 013 keeps the
+  walls, fences, gates, railings and hedges round it.

@@ -76,8 +76,8 @@ Steps:
 - [ ] No kart leaves the route during a race: the side streets' barriers and the kerbs hold.
 - [ ] party-kart's `npm test` and `npm run check` pass, the lap's summary line before and after in
   Notes; braga-map's `npm test` passes.
-- [ ] Shipped with tasks 035 and 036 (party-kart's `docs/releasing.md`), live, and the owner has
-  raced it.
+- [ ] Shipped (party-kart's `docs/releasing.md`), live, and the owner has raced it. Tasks 035 and
+  036 went live before it, on 2026-10-15 (decision 026).
 
 ## Out of scope
 

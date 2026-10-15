@@ -593,3 +593,19 @@ roof, material, source and flags into one number, and its roof's colour is one o
 (`map().roofColors`). The alternative, OSM's tags and guesses filled in by kind, put 4–7 floors on
 any untagged block and invented houses in real streets (in front of the stadium, on São João da
 Ponte's roundabout).
+
+## 026 · Free roam goes live before the race moves onto the streets
+
+*2026-10-15 · task 036 · changes the roadmap's "one release when 037 is done"*
+
+The open world was to go live in one release with task 037, so the live game never lost its race.
+The owner wanted to play free roam away from home, so it went live on 2026-10-15 with task 035's
+streets and braga-map 1.9.1 (party-kart `af048ce`), and 037 follows in a release of its own:
+
+- **The race is still there.** 🏁 Corrida in the menu starts today's race on the track's road, its
+  barriers, gates, boost pads and line up only while it runs, and everyone is back where they were
+  when it ends (task 036's answer). Until 037 that road is the 9 m one, not drawn: in a race a kart
+  can be on a drawn pavement, and a gate can stand in the middle of a street (task 035's round).
+- **Older tabs don't see the new rooms** (`partykart-pk32-`) until they reload.
+- **Not checked before it went live:** the feel by hand (a kart rolls on 20 s and more off the
+  throttle), a real phone, two networks. The owner plays it live first.

@@ -159,3 +159,5 @@ Steps:
   tag); the railway's bridges' ends aren't held (streets only, `k ≤ 8`); the 10 m tiles aren't.
 - **Released as 1.9.1 (2026-10-15).** The tag `v1.9.0` was pushed by mistake on the version's
   commit before this task's tiles were committed: it holds 1.8.0's tiles. Pin `v1.9.1` or later.
+- **Shot** in the round `2026-10-15-mundo-aberto` ("Mundo aberto"), with task 036, once party-kart
+  took 1.9.1 (`af048ce`); its tests (43) and check pass on it.

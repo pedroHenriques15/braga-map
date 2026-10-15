@@ -1,0 +1,70 @@
+---
+status: todo
+priority: medium
+kind: code
+repo: both
+created: 2026-10-15
+depends-on: [050]
+roadmap: Phase 2 · The shape
+---
+
+# 051 · A flight of steps meets the street, the path or the land at its foot and its top
+
+## Why
+
+Since task 050 every flight of steps in the open world's area is its treads, each at its height,
+and a kart climbs them a riser at a time. But 51 of the 236 flights of two treads or more stand
+more than a kart's step (0.3 m) over whatever is beside their lowest tread, so a kart can only
+come down them, never go up: in Braga a flight's foot is on the pavement or the street it leaves
+from, a riser up.
+
+## What
+
+Today (task 050, `tools/lines.mjs`'s `flight` and `tools/streets.mjs`'s `groundPaths`):
+
+- A flight's ends are at DGT's terrain at 50 cm (`MDT-50cm`) where it has them, else the tiles'
+  ground; the first riser at the foot, each tread `(top - foot) / n` over the one before.
+- The street or path a flight meets is at the tiles' ground (`height(x, z)`, the 2 m means), and a
+  pavement 15 cm over it, so where the terrain's foot is above the tiles' ground the first riser is
+  higher than the others; party-kart counts what's over 0.3 m (`ground.counts['tread edges over a
+  street over a step']`: 234 of 420 edges, many of them a flight's sides, which are rightly walls).
+- Where a flight's foot runs under a carriageway (the map's width, or where it draws the flight),
+  its lowest treads are cut away, and the next one up stands two or three risers over the street.
+
+Steps:
+
+1. Measure it: for each flight, what's at its foot and its top (a carriageway, a pavement, a path,
+   the land) and how far its end tread is over it; by cause (the terrain's foot over the tiles'
+   ground, treads cut away, a door's landing, which is right). A test in `test/paths.test.js`.
+2. Where a flight's end meets a street or a path, its end at that street's or path's height as the
+   tiles hold it (a pavement's kerb with it), as a deck's end is (decision 023), the risers between
+   evened out; where it meets the land, the terrain's, as now.
+3. Where its lowest treads are cut away by a carriageway, the flight's treads spread over what's
+   left of it, so its first riser is at the kerb.
+4. In party-kart, the test that counts the risers a kart can't take says how many flights it can go
+   up from their foot, before and after.
+
+## Read first
+
+- `tools/lines.mjs` (`flight`, `pathLines`), `tools/streets.mjs` (`groundPaths`): how the treads are
+  made.
+- `test/paths.test.js`: the steps' test.
+- party-kart: `src/world/ground.ts` (the risers, `STEP`), `test/ground.test.ts` (the steps' tests).
+- Decision 023: a deck meets the street at the ground the tiles hold.
+
+## Done when
+
+- [ ] A test says, for the flights in the open world's area, how many a kart can go up from their
+  foot, and that's most of them but those climbing to a door or a landing.
+- [ ] party-kart's tests pass, a kart up and down a flight among them.
+
+## Out of scope
+
+- The pavements' own heights from their kerbs: task 044.
+- The steps' look: their nosing, their material from the photos (task 018).
+
+## Notes
+
+- Found in task 050, 2026-10-15: 51 of 236 flights more than a step over what's at their lowest
+  tread (median 0.11 m, 90% under 0.54 m); the terrain's height at a flight's end is within 4 cm of
+  the tiles' ground for half the ends, but 27 of 308 differ by more than 0.3 m.

@@ -1,11 +1,15 @@
 // The open world's area (task 032, decision 019): its edge, a simple ring round the Volta dos Amigos
-// with the loop well inside it; a gate wherever a street crosses it, and nowhere else, each crossed
-// square; and the ground every 2 m on every tile it touches.
+// with the loop well inside it; a gate wherever a street or a path crosses it, and nowhere else, each
+// street crossed square; and the ground every 2 m on every tile it touches.
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
 import { test } from 'node:test';
 import { loadWorld, map, tilesFor } from '../index.js';
 import { TILES } from '../world/tiles.js';
 import amigos from '../tracks/amigos.js';
+import { CACHE, readCache } from '../tools/geo.mjs';
+import { pathsOf } from '../tools/lines.mjs';
 
 const m = map();
 const { pts, gates } = m.open;
@@ -55,6 +59,9 @@ test('it loads the tiles under the area and those round it', () => {
   for (const [x, z] of pts) assert.ok(m.open.tiles.includes(m.tileAt(x, z)), `${x}, ${z}`);
 });
 
+// The paths the world draws (task 050), from the map's, where they're fetched.
+const walks = fs.existsSync(path.join(CACHE, 'osm', 'paths.json')) ? pathsOf(readCache('osm/paths.json'), () => true) : null;
+
 test('a gate wherever a street crosses the edge, and nowhere else, each crossed square', () => {
   // Every street's crossings, as the tiles have it (the railway isn't a street).
   const C = 50, grid = new Map(), found = [];
@@ -80,13 +87,14 @@ test('a gate wherever a street crosses the edge, and nowhere else, each crossed 
       }
     }
   }
-  assert.ok(gates.length > 50, `${gates.length} gates`);
+  const streets = gates.filter((g) => g.k <= 8);
+  assert.ok(streets.length > 50, `${streets.length} gates`);
   let square = 0;
   for (const c of found) {
-    const g = gates.find((g) => Math.hypot(g.x - c.x, g.z - c.z) < 2.5 && g.level === c.level);
+    const g = streets.find((g) => Math.hypot(g.x - c.x, g.z - c.z) < 2.5 && g.level === c.level);
     assert.ok(g, `a street crosses at ${c.x.toFixed(1)}, ${c.z.toFixed(1)} (${c.level}) with no gate`);
   }
-  for (const g of gates) {
+  for (const g of streets) {
     assert.ok(found.some((c) => Math.hypot(g.x - c.x, g.z - c.z) < 2.5), `a gate at ${g.x}, ${g.z} with no street`);
     assert.ok(LEVELS.includes(g.level) && g.w >= 2 && g.k >= 0 && g.k <= 8 && Number.isFinite(g.y), `a gate at ${g.x}, ${g.z}: ${JSON.stringify(g)}`);
     // Square: the edge's side through it runs across the street's heading.
@@ -101,7 +109,30 @@ test('a gate wherever a street crosses the edge, and nowhere else, each crossed 
     // Its heading points out.
     assert.ok(!m.inOpen(g.x + Math.cos(g.heading) * 1.5, g.z + Math.sin(g.heading) * 1.5) && m.inOpen(g.x - Math.cos(g.heading) * 1.5, g.z - Math.sin(g.heading) * 1.5), `the gate at ${g.x}, ${g.z} points out`);
   }
-  assert.ok(square >= gates.length * 0.9, `${square} of ${gates.length} crossed within 5° of square`);
+  assert.ok(square >= streets.length * 0.9, `${square} of ${streets.length} crossed within 5° of square`);
+});
+
+test('a gate wherever a path crosses the edge (task 050), and nowhere else', { skip: !walks && 'the paths aren\'t fetched (node tools/fetch.mjs paths)' }, () => {
+  const found = [];
+  for (const l of walks) for (let i = 1; i < l.pts.length; i++) for (let k = 0; k < n; k++) {
+    const p = l.pts[i - 1], q = l.pts[i], [a, b] = side(k);
+    if (!cross(p, q, a, b)) continue;
+    const dx = q[0] - p[0], dz = q[1] - p[1], ex = b[0] - a[0], ez = b[1] - a[1], t = ((a[0] - p[0]) * ez - (a[1] - p[1]) * ex) / (dx * ez - dz * ex);
+    found.push({ x: p[0] + dx * t, z: p[1] + dz * t, k: l.k });
+  }
+  const own = gates.filter((g) => g.k >= 10);
+  assert.ok(own.length > 30, `${own.length} gates on paths`);
+  for (const c of found) assert.ok(own.some((g) => Math.hypot(g.x - c.x, g.z - c.z) < 2.5 && g.k === c.k), `a path crosses at ${c.x.toFixed(1)}, ${c.z.toFixed(1)} with no gate`);
+  const wrong = [];
+  for (const g of own) {
+    assert.ok(found.some((c) => Math.hypot(g.x - c.x, g.z - c.z) < 2.5), `a gate at ${g.x}, ${g.z} with no path`);
+    assert.ok(g.k <= 13 && g.w >= 1 && Number.isFinite(g.y), `a gate at ${g.x}, ${g.z}: ${JSON.stringify(g)}`);
+    if (!(!m.inOpen(g.x + Math.cos(g.heading) * 0.3, g.z + Math.sin(g.heading) * 0.3) && m.inOpen(g.x - Math.cos(g.heading) * 0.3, g.z - Math.sin(g.heading) * 0.3))) wrong.push(`(${g.x}, ${g.z})`);
+  }
+  // Pointing out, 30 cm either side: a path may cross the edge and back within a metre, or at one of
+  // its corners, where the edge, worked out from the streets, isn't straight across it.
+  assert.ok(wrong.length <= own.length / 10, `${wrong.length} of ${own.length} gates don't point out: ${wrong.join(', ')}`);
+  console.log(`${own.length} gates on paths: ${Object.entries(Object.groupBy(own, (g) => ['footways', 'paths', 'cycleways', 'flights of steps'][g.k - 10])).map(([k, v]) => `${v.length} ${k}`).join(', ')}`);
 });
 
 test('the ground is every 2 m on every tile the area touches', async () => {

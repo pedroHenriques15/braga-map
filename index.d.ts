@@ -156,11 +156,53 @@ export interface Marking {
   ys?: number[];
 }
 
+// What's walked or cycled (task 050): every footway, path (a bridleway too), cycleway and flight of
+// steps the map has in the open world's area, but the pavements, crossings and islands it draws as
+// footways (or cycleways), which are the streets' own, and what's indoors. Each piece cut back to the
+// carriageways at its level, the buildings (but a passage under one) and the water, at the map's
+// width or what its kind usually is (a footway 2 m, a path 1.5 m, a cycleway 2.5 m or 1.5 m one way,
+// steps 2 m). Where two overlap, steps keep their place, then a cycleway, a footway, a path.
+// - A footway or a path gives way to the pavements: where it meets a street, it joins the pavement.
+// - The pavements give way to a cycleway: where one runs in a pavement it's drawn there, `raised`,
+//   flush with the pavement, a kerb over the ground; or where it runs along the carriageway's edge,
+//   a lane at the carriageway's level, with a kerb behind it up to the pavement (a Kerb).
+// - A flight of steps is a tread between each two risers, each its own piece at its height (ys, the
+//   same at every point), from its foot to its top: as many as the map counts, or its rise over
+//   16 cm, the first riser at the foot and the last tread at the top's height. Its ends: on a
+//   bridge's deck where it ends on one, else DGT's terrain at 50 cm, else the ground as the tiles
+//   hold it; but where the map counts the steps and the terrain rises less than 8 cm a step, or the
+//   other way from the map's incline, it climbs to something the terrain doesn't have (a door's
+//   landing): from its foot at the ground, 16 cm a step. The pavements give way to it.
+// level: on the ground (the ground's height), under something at the ground's level (a passage under
+// a building, which a game opens as a carriageway's is), a footbridge's deck or a tunnel, those two
+// with ys, each point's height above elev0 (a footbridge's ends on the deck DGT's point cloud saw,
+// where it's over the ground, as on stairs up to it).
+export type PathLevel = 'ground' | 'under' | 'bridge' | 'tunnel';
+export interface Path {
+  kind: 'footway' | 'path' | 'cycleway' | 'steps';
+  surface: 'calcada' | 'paving' | 'setts' | 'asphalt' | 'concrete' | 'gravel' | 'dirt' | 'metal' | 'wood';
+  level: PathLevel;
+  raised: boolean;
+  rings: [number, number][][];
+  ys?: number[][];
+}
+
+// A handrail along a flight of steps, where the map has one (both sides for `handrail=yes`, else the
+// sides it names): 15 cm in from the flight's side, ys its top's height at each point above elev0,
+// 0.9 m over the steps' nosing from the first riser to the top.
+export interface Handrail {
+  level: PathLevel;
+  pts: [number, number][];
+  ys: number[];
+}
+
 export interface Streets {
   carriageways: Carriageway[];
   pavements: Pavement[];
   kerbs: Kerb[];
   markings: Marking[];
+  paths: Path[];
+  handrails: Handrail[];
 }
 
 // filled: planted in a wood or a park, where the map has no trees of its own.
@@ -171,12 +213,15 @@ export interface Tree {
   filled: boolean;
 }
 
-// Where a street leaves the open world's area, or the shooter's: a game closes it there (Party Kart
-// stands road-works barriers across it, "Estrada cortada"). heading: the way the street leaves, (cos,
-// sin) pointing out of the area (x east, z south); the edge crosses it square, straight across its
-// width. w: its width kerb to kerb.
-// k: its kind, as a Line's. level and y: on the ground, on a bridge's deck, in a tunnel's road or
-// under something, as a Line's, and its road's height there above elev0.
+// Where a street or a path leaves the open world's area, or the shooter's: a game closes it there
+// (Party Kart stands road-works barriers across it, "Estrada cortada"). heading: the way it leaves,
+// (cos, sin) pointing out of the area (x east, z south); the edge crosses a street square, straight
+// across its width (a path as it comes, the edge worked out from the streets). w: its width, kerb to
+// kerb.
+// k: its kind, a street's as a Line's (0 to 8), or a path's (task 050): 10 a footway, 11 a path, 12 a
+// cycleway, 13 a flight of steps. level and y: on the ground, on a bridge's deck, in a tunnel's road
+// or under something, as a Line's, and its road's height there above elev0 (a flight's, its
+// tread's).
 export interface Gate {
   x: number;
   z: number;
@@ -190,7 +235,8 @@ export interface Gate {
 // The open world's area (decision 019, task 032): the Volta dos Amigos' and about 150 m round it, and
 // the Picoto's top, where a game lets the player drive anywhere. pts: its edge, a ring of [x, z]
 // points (closed: the last joins the first), half way between the streets in it and those out of it,
-// round the buildings between them. gates: where every street crosses it (not the railway). tiles:
+// round the buildings between them. gates: where every street and path crosses it (not the
+// railway). tiles:
 // the tiles it touches, the ground every 2 m on all of them; seen: those round it, within 500 m, for
 // the city seen past its edge.
 export interface Open {
@@ -206,8 +252,8 @@ export interface Open {
 // section `id` ('fujacal'), which brings the tiles round it too. pts: its edge, a ring of [x, z]
 // points (closed: the last joins the first), along the avenues' near kerbs and the river's near bank,
 // and on the west half way between the streets in it and those out, round the buildings between
-// them. gates: where every street crosses it. tiles: the tiles it touches; seen: those round it,
-// within 500 m, for the city seen past its edge.
+// them. gates: where every street and path crosses it. tiles: the tiles it touches; seen: those round
+// it, within 500 m, for the city seen past its edge.
 export interface ShooterArea {
   id: string;
   name: string;
@@ -324,7 +370,7 @@ export interface World extends BragaMap {
   lines: Line[];
   buildings: Building[];
   trees: Tree[];
-  // Every street as surfaces, on the open world's tiles loaded (empty on the others).
+  // Every street as surfaces, and every path, on the open world's tiles loaded (empty on the others).
   streets: Streets;
   // The photo textures on the tiles loaded (task 007): which, where they go, and their files.
   photos: PhotoTexture[];

@@ -118,6 +118,11 @@ const LEVELS = ['ground', 'bridge', 'tunnel', 'under'];
 // what's beside them, the kerbs and the markings.
 const STREET = ['asphalt', 'setts', 'paving', 'dirt', 'pavement', 'reservation', 'island', 'kerb', 'lane', 'centre', 'zebra', 'stop'];
 const DASH = [3, 4];
+// What each path is, what it's paved with, and its level (tools/streets.mjs's PATH, PATH_SURFACES
+// and PATH_LEVELS).
+const PATH = ['footway', 'path', 'cycleway', 'steps'];
+const PATH_SURFACES = ['calcada', 'paving', 'setts', 'asphalt', 'concrete', 'gravel', 'dirt', 'metal', 'wood'];
+const PATH_LEVELS = ['ground', 'bridge', 'tunnel', 'under'];
 
 let base = null;
 
@@ -229,7 +234,7 @@ export async function loadWorld(area) {
   const lines = [];
   const buildings = [];
   const trees = [];
-  const streets = { carriageways: [], pavements: [], kerbs: [], markings: [] };
+  const streets = { carriageways: [], pavements: [], kerbs: [], markings: [], paths: [], handrails: [] };
   const box = { x0: Infinity, x1: -Infinity, z0: Infinity, z1: -Infinity };
   parts.forEach(({ head, nums }, t) => {
     const g = grid(nums, head.terrain);
@@ -347,6 +352,36 @@ export async function loadWorld(area) {
         }
         (kind === 'kerb' ? streets.kerbs : streets.markings).push(piece);
       }
+    }
+    // The paths (tools/streets.mjs's packPaths): each [what, surface, rings, ...], what its kind, 4 if
+    // it's raised and 8 times its level; then a tread's height, in decimetres and the centimetres more,
+    // or on a bridge or in a tunnel each point's. And the handrails, each [level, n, points, heights].
+    const Pa = head.paths;
+    for (let i = Pa ? Pa.at : 0; Pa && i < Pa.at + Pa.n; ) {
+      const what = nums[i];
+      const kind = PATH[what & 3];
+      const level = PATH_LEVELS[what >> 3];
+      const rings = [];
+      let j = i + 3;
+      for (let r = 0; r < nums[i + 2]; r++) {
+        const n = nums[j];
+        rings.push(dm(j + 1, n));
+        j += 1 + n * 2;
+      }
+      const piece = { kind, surface: PATH_SURFACES[nums[i + 1]], level, raised: (what & 4) !== 0, rings };
+      if (kind === 'steps') {
+        const y = (nums[j] * 10 + nums[j + 1]) / 100;
+        piece.ys = rings.map((r) => r.map(() => y));
+        j += 2;
+      } else if (level === 'bridge' || level === 'tunnel') piece.ys = rings.map((r) => r.map(() => nums[j++] / 10));
+      streets.paths.push(piece);
+      i = j;
+    }
+    const Ra = head.rails;
+    for (let i = Ra ? Ra.at : 0; Ra && i < Ra.at + Ra.n; ) {
+      const n = nums[i + 1];
+      streets.handrails.push({ level: PATH_LEVELS[nums[i]], pts: dm(i + 2, n), ys: Array.from(nums.subarray(i + 2 + n * 2, i + 2 + n * 3), (v) => v / 10) });
+      i += 2 + n * 3;
     }
   });
   // Big areas first and squares last, as the map orders them; the small streets, then the big.

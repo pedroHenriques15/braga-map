@@ -39,8 +39,8 @@ const world = await loadWorld({ open: true }); // the open world's area and the 
 // or loadWorld(amigos.box), loadWorld({ sections: ['centro'] }), loadWorld({ sections: ['fujacal'] })
 world.height(x, z); // the ground: every 2 m or 10 m on the tiles loaded, every 50 m elsewhere
 world.buildings; // [{ kind, roof, ends, dir, pitch, y, h, ridge, floors, roofColor, … pts }], and areas, lines, trees…
-world.streets; // in the open world's area: { carriageways, pavements, kerbs, markings }, each piece at its level
-world.open.gates; // where each street leaves the area: [{ x, z, heading, w, k, level, y }]
+world.streets; // in the open world's area: { carriageways, pavements, kerbs, markings, paths, handrails }, each piece at its level
+world.open.gates; // where each street or path leaves the area: [{ x, z, heading, w, k, level, y }]
 world.inOpen(x, z); // inside its edge?
 world.shooter; // the shooter's area, Fujacal: { id: 'fujacal', name, pts, gates, tiles, seen }, and world.inShooter(x, z)
 world.photos; // the photo textures on the tiles loaded: [{ id, kind, box | wall, s, y, files: { high, medium, low }, credit }]
@@ -70,10 +70,10 @@ world.photos; // the photo textures on the tiles loaded: [{ id, kind, box | wall
   what passes under it a tunnel.
 - **The open world's area** (decision 019, task 032) is where a game lets the player drive
   anywhere: the Volta dos Amigos' and about 150 m round it, and the Picoto's top. `map().open` has
-  its edge (`pts`, a ring) and its gates (`gates`): where each street crosses the edge, with the
-  way it leaves (`heading`, pointing out), its width kerb to kerb, its kind and level and its
-  road's height there, for a game to stand a row of road-works barriers across it ("Estrada
-  cortada"). The edge runs half way between the streets in and those out, round the buildings
+  its edge (`pts`, a ring) and its gates (`gates`): where each street crosses the edge, and each
+  footway, path, cycleway and flight of steps (task 050, `k` 10 to 13), with the way it leaves
+  (`heading`, pointing out), its width kerb to kerb, its kind and level and its road's height
+  there, for a game to stand a row of road-works barriers across it ("Estrada cortada"). The edge runs half way between the streets in and those out, round the buildings
   between them, and crosses each street square, straight across its width, just past the mouth of
   the junction it leaves from (off a roundabout, past where its exit's two ways splay apart). A
   roundabout is never cut. `inOpen(x, z)` says whether a point is inside it. `loadWorld({ open:
@@ -87,6 +87,19 @@ world.photos; // the photo textures on the tiles loaded: [{ id, kind, box | wall
   reservations; and the lines painted on them, from what the map says (lanes, the line between the
   two ways, zebras, stop lines at traffic lights). Each piece is cut to its tile, at its street's
   level, with its heights off the ground. `index.d.ts` says what each part is.
+- So is every footway, path, cycleway and flight of steps the map has there (task 050,
+  `world.streets.paths`), but the pavements, crossings and islands it draws as footways, which are
+  the streets' own, and what's indoors: each at the map's width or its kind's (a footway 2 m, a path
+  1.5 m, a cycleway 2.5 m, or 1.5 m one way, steps 2 m), in what it's paved with, cut back to the
+  carriageways, the buildings (but a passage under one, `under`) and the water. A footway gives way
+  to the pavements, where it meets a street; the pavements give way to a cycleway, which runs in one
+  flush with it (`raised`), or along the carriageway's edge as a lane at the road's level with a kerb
+  behind it (the Avenida da Liberdade's red lanes). A footbridge is on its deck, at its heights as a
+  bridge's are (its ends on the deck DGT's point cloud saw, where it's over the ground). A flight of
+  steps is its treads, each its own piece at its height, as many as the map counts or its rise over
+  16 cm, its ends on DGT's terrain at 50 cm; where the map counts the steps and the terrain shows
+  less than 8 cm a step (a landing at a door isn't ground to it), from its foot 16 cm a step (the
+  owner's answer). Its handrails are lines at their tops (`world.streets.handrails`).
 - The buildings are as DGT's LiDAR measured them (`measured`), 95% of those on the map: the
   height of the eaves (`h`) and of the ridge, the roof's shape, the way it runs (`dir`), which
   ends are hipped, its pitch, its storeys, and its colour as the 2025 orthophoto sees it (from
@@ -162,7 +175,8 @@ a new track's area needs `npm run open` and `npm run world` before `npm run trac
 streets; when a track moves enough to change the edge, run the three again until it holds.
 
 - `fetch.mjs` gets OpenStreetMap through Overpass (streets and land; the footways, steps, paths
-  and cycleways, and the squares mapped in parts, which only the street audit reads so far;
+  and cycleways, which the world draws in the open world's area, and the squares mapped in parts,
+  which only the street audit reads so far;
   buildings, parishes, landmarks, trees, the crossings, traffic lights and bus stops, and the turn
   restrictions) and elevation tiles, plus coarser ones 16 km round for the horizon. The public
   Overpass server is often busy: it waits and tries again. `node tools/fetch.mjs trees` fetches
@@ -231,16 +245,18 @@ streets; when a track moves enough to change the edge, run the three again until
   corner. The area is what's nearer a street in than a street out (within 60 m of one out in the
   open), and always 105 m round the loop; a building it would cut goes in or out whole, as most of
   it is. Then its outline is drawn round, straightened, and made to cross each street square.
-  `gatesOf` finds the gates, for `world.mjs` (with each one's height) and `build.mjs`.
+  `gatesOf` finds the gates, for `world.mjs` (with each one's height) and `build.mjs`, where the
+  streets cross it and the paths (the edge isn't moved for them: a path crosses it as it comes).
   `test/open.test.js` checks the ring is simple, the loop at least 100 m inside it, a gate where
-  every street crosses it and nowhere else, each square, and the ground every 2 m under it.
+  every street and path crosses it and nowhere else, each street square, and the ground every 2 m
+  under it.
 - `shooter.mjs` works out the shooter's area's edge (task 015) on a grid of half a metre: the
   Avenida Imaculada Conceição, the Avenida da Liberdade and the Rio Este close the five streets in
   with the Rua Monsenhor Airosa, and everything between them is in, up to the avenues' near kerbs
   and the river's near bank; past the Rua Monsenhor Airosa, the block behind it is in, half way to
   the streets out, round the buildings, as `open.mjs` does it. `test/shooter.test.js` checks the
   ring is simple, the five streets in it and the avenues and the river out, that it loads as the
-  section `fujacal`, and a gate where every street crosses it.
+  section `fujacal`, and a gate where every street and path crosses it.
 - `streets.mjs` makes every street in the open world's area a surface (task 033), for
   `world.mjs`, with Clipper (`clipper-lib`, a dev dependency): each street's band at its width
   (`carriageway` in `osm.mjs`), cut square across where it meets another and round at a dead end;
@@ -263,16 +279,27 @@ streets; when a track moves enough to change the edge, run the three again until
   deck's pavements to the ground's carriageway. On its own, `node tools/streets.mjs [x0 x1 z0 z1]`
   makes a box's streets (Fujacal's by default) into `.cache/streets/` with `index.html`, a page that
   sets them over the 2025 orthophoto, each kind on a layer, to check them by eye.
+  And the paths (task 050, `groundPaths`): from `lines.mjs`'s `pathsOf` (what the map has) and
+  `pathLines` (a footbridge's and a path's tunnel's heights, as `levelHeights` makes a street's; a
+  flight's treads, `flight`), each way's band cut back to the carriageways, the buildings, the water
+  and a footbridge's end, against pieces of them split small (`splitter`) so it's quick; then a
+  flight of steps a tread at a time (each slab of its line, from the foot), the cycleways, the
+  footways and the paths, each giving way to those before it. A cycleway in a pavement is a lane
+  where, 40 cm out, the carriageway is beside it along half its length or more.
   `test/streets.test.js` checks it on made-up streets (a T junction, a roundabout, a reservation) and
   in the world's tiles: every ring simple, nothing lying on anything else at its level, a deck
   meeting the ground's streets within 5 cm at its ends and a tunnel's end on the cutting's floor, no
   pavement of one level over the other's surfaces where they're at one height, every street inside
-  the open world's edge with its carriageway at its width.
+  the open world's edge with its carriageway at its width. `test/paths.test.js` checks the paths
+  against the map's (`.cache/osm/paths.json`): each drawn, or what's there instead; the streets'
+  own left to them; each at its level; each flight's treads a riser apart, as many as the map
+  counts; the Liberdade's lanes; and nothing on anything else.
 - `audit.mjs` is the street audit (task 006): over the Volta dos Amigos' box, the open world's area
   and the shooter's, every street, square, railway, footway, step, path and cycleway the map has,
   by class, its length and how much of it the world's tiles draw (a line of its own kind within a
-  metre; for a square, its outline), and the reverse, any line in the tiles along no street of its
-  kind. It prints a table, lists what isn't drawn whole, and writes `.cache/audit.json`, which
+  metre; for a square, its outline; for a path, a path of its kind, and for a pavement or a
+  crossing the map draws as a footway, the streets' surfaces, both only in the open world's area),
+  and the reverse, any line in the tiles along no street of its kind. It prints a table, lists what isn't drawn whole, and writes `.cache/audit.json`, which
   `build.mjs` puts on the map page as the layer "Auditoria". `node tools/audit.mjs photos` also
   sets the 2025 orthophoto under the map's ways in 250 m squares, over the shooter's area and
   along the route, into `.cache/audit/`: to find by eye a street the photo shows and the map lacks.
@@ -414,7 +441,11 @@ doc.
 - **The street audit** (task 006, the layer "Auditoria"): round the Volta dos Amigos, the world
   draws all 202 km of street the map has, service roads and dirt tracks too, but 360 m of streets
   being built or of no known class; 43 of its 51 squares (all 11 in the open world: the other 8
-  are mapped in parts); and none of the 171 km of footways, steps, paths and cycleways yet.
+  are mapped in parts). In the open world's area (task 050), of the map's paths, 83% of the 21.6 km
+  of footways (the rest giving way to the pavements and the streets), 84% of the 1.8 km of steps,
+  95% of the 6.7 km of paths and 89% of the 7.9 km of cycleways; and the streets' own, 65% of the
+  47.5 km of pavements the map draws as footways under the streets' pavements, 90% of its 6.3 km
+  of crossings.
 - **The ground** from DGT's 2025 LiDAR: every 20 m on the page, every 2 m in the world on the 23
   tiles the open world's area touches (the Volta dos Amigos and Fujacal among them), every 10 m on
   the rest; from 56 m in the north-west corner to 573 m on the Sameiro. Before, from EU-DEM, the
@@ -424,13 +455,17 @@ doc.
   game loads the tiles it needs (the open world's area and round it, 53: 6.6 MB, 2.04 MB gzipped;
   the Volta dos Amigos' box, 48: 6.4 MB, 1.96 MB gzipped).
 - **The open world's area** (task 032): 3.5 km² round the Volta dos Amigos and the Picoto's top,
-  its edge 15.1 km round, with 122 gates (117 on the ground, 1 on a bridge, 4 under something), on
-  25 tiles. Their ground every 2 m added 0.16 MB gzipped (5 tiles more than the track's 18). It grew
+  its edge 15.1 km round, with 200 gates on 25 tiles: 121 across its streets (118 on the ground, 1
+  on a bridge, 2 under something) and 79 across its paths (40 footways, 9 paths, 25 cycleways, 5
+  flights of steps). Their ground every 2 m added 0.16 MB gzipped (5 tiles more than the track's 18). It grew
   from 3.1 km² when the loop took the ramp into the dead end (task 039), by Ponte Pedrinha.
 - **The open world's streets** (task 033), over the box round its area, 35 tiles since task 039:
   3,508 stretches of street, 1,791 junctions, 217 islands, 131 central reservations, 169 km of
   kerb. They added 0.33 MB gzipped to the tiles over a 2.6 × 2.0 km box, and 0.03 MB more as the
-  box grew with the area's edge.
+  box grew with the area's edge. And its paths (task 050), from 1,752 of the map's ways: 5.5 ha of
+  footways, 2.1 ha of cycleways (0.19 ha of it lanes beside the road, 0.26 ha flush with a
+  pavement), 1.1 ha of paths, and 258 flights of steps in 3,361 treads with 139 handrails; 0.11 MB
+  more gzipped (the open world's 53 tiles, 2.00 to 2.11 MB).
 - **The Volta dos Amigos**, Party Kart's track: 10.1 km round, through five friends'
   neighbourhoods, the way the traffic goes, and over the Rio Este by a ramp into one of them, a
   dead end (decision 027).

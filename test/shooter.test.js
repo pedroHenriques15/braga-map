@@ -1,11 +1,15 @@
 // The shooter's area (task 015, decision 003): Fujacal and Conselheiro Lobato, a simple ring round the
 // five streets and a block each side of them, kept off the two avenues and the Rio Este; a game loads
-// it as the section 'fujacal', with the tiles round it; and a gate wherever a street crosses its edge.
+// it as the section 'fujacal', with the tiles round it; and a gate wherever a street or a path (task
+// 050) crosses its edge.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
+import path from 'node:path';
 import { test } from 'node:test';
 import { loadWorld, map, tilesFor } from '../index.js';
 import amigos from '../tracks/amigos.js';
+import { CACHE, readCache } from '../tools/geo.mjs';
+import { pathsOf } from '../tools/lines.mjs';
 
 const m = map();
 const { pts, gates } = m.shooter;
@@ -93,13 +97,14 @@ test('a gate wherever a street crosses the edge, and nowhere else', () => {
       found.push({ x: p[0] + dx * t, z: p[1] + dz * t, level: l.level });
     }
   }
-  assert.ok(gates.length >= 5, `${gates.length} gates`);
-  for (const c of found) assert.ok(gates.some((g) => Math.hypot(g.x - c.x, g.z - c.z) < 2.5 && g.level === c.level), `a street crosses at ${c.x.toFixed(1)}, ${c.z.toFixed(1)} with no gate`);
+  const streets = gates.filter((g) => g.k <= 8);
+  assert.ok(streets.length >= 5, `${streets.length} gates`);
+  for (const c of found) assert.ok(streets.some((g) => Math.hypot(g.x - c.x, g.z - c.z) < 2.5 && g.level === c.level), `a street crosses at ${c.x.toFixed(1)}, ${c.z.toFixed(1)} with no gate`);
   // The fast roads' and the river's points, to tell a street meeting an avenue at its kerb or crossing
   // the river at its bank, where the edge runs along the kerb or the bank, from one leaving, which the
   // edge crosses square.
   const fast = [...world.lines.filter((l) => l.kind === 2 && l.level !== 'tunnel').flatMap((l) => l.pts), ...m.rivers.flatMap((r) => r.pts)];
-  for (const g of gates) {
+  for (const g of streets) {
     assert.ok(found.some((c) => Math.hypot(g.x - c.x, g.z - c.z) < 2.5), `a gate at ${g.x}, ${g.z} with no street`);
     assert.ok(Number.isFinite(g.y) && g.w >= 2, `a gate at ${g.x}, ${g.z}: ${JSON.stringify(g)}`);
     assert.ok(!m.inShooter(g.x + Math.cos(g.heading) * 1.5, g.z + Math.sin(g.heading) * 1.5) && m.inShooter(g.x - Math.cos(g.heading) * 1.5, g.z - Math.sin(g.heading) * 1.5), `the gate at ${g.x}, ${g.z} points out`);
@@ -110,4 +115,26 @@ test('a gate wherever a street crosses the edge, and nowhere else', () => {
     const off = Math.abs(90 - (Math.acos(Math.abs(Math.cos(g.heading) * ex + Math.sin(g.heading) * ez) / Math.hypot(ex, ez)) * 180) / Math.PI);
     assert.ok(off <= 5, `the edge crosses the street at ${g.x}, ${g.z} ${off.toFixed(0)}° from square`);
   }
+});
+
+// The paths the world draws (task 050): its footways, steps and the Ecovia, where they cross its edge.
+test('a gate wherever a path crosses the edge, and nowhere else', { skip: !fs.existsSync(path.join(CACHE, 'osm', 'paths.json')) && 'the paths aren\'t fetched (node tools/fetch.mjs paths)' }, () => {
+  const found = [];
+  for (const l of pathsOf(readCache('osm/paths.json'), () => true)) for (let i = 1; i < l.pts.length; i++) for (let k = 0; k < n; k++) {
+    const p = l.pts[i - 1], q = l.pts[i], [a, b] = side(k);
+    if (!cross(p, q, a, b)) continue;
+    const dx = q[0] - p[0], dz = q[1] - p[1], ex = b[0] - a[0], ez = b[1] - a[1], t = ((a[0] - p[0]) * ez - (a[1] - p[1]) * ex) / (dx * ez - dz * ex);
+    found.push({ x: p[0] + dx * t, z: p[1] + dz * t, k: l.k });
+  }
+  const own = gates.filter((g) => g.k >= 10);
+  assert.ok(own.length >= 3, `${own.length} gates on paths`);
+  for (const c of found) assert.ok(own.some((g) => Math.hypot(g.x - c.x, g.z - c.z) < 2.5 && g.k === c.k), `a path crosses at ${c.x.toFixed(1)}, ${c.z.toFixed(1)} with no gate`);
+  const wrong = [];
+  for (const g of own) {
+    assert.ok(found.some((c) => Math.hypot(g.x - c.x, g.z - c.z) < 2.5), `a gate at ${g.x}, ${g.z} with no path`);
+    if (!(!m.inShooter(g.x + Math.cos(g.heading) * 0.3, g.z + Math.sin(g.heading) * 0.3) && m.inShooter(g.x - Math.cos(g.heading) * 0.3, g.z - Math.sin(g.heading) * 0.3))) wrong.push(`(${g.x}, ${g.z})`);
+  }
+  // Pointing out, 30 cm either side: a path may cross the edge and back within a metre, or at one of
+  // its corners, where the edge, worked out from the streets, isn't straight across it.
+  assert.ok(wrong.length <= own.length / 10, `${wrong.length} of ${own.length} gates don't point out: ${wrong.join(', ')}`);
 });

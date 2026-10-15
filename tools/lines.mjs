@@ -36,6 +36,99 @@ export function streetsOf(base, near) {
   return lines;
 }
 
+// ---- What's walked or cycled (task 050) ----
+
+// The kinds of path, as a gate has them after the streets' (osm.mjs's LINE) and the railway's 9.
+export const PATH_K = { footway: 10, path: 11, cycleway: 12, steps: 13 };
+const PATH_OF = { footway: 'footway', path: 'path', bridleway: 'path', cycleway: 'cycleway', steps: 'steps' };
+// What the map draws as a footway or a cycleway that's the streets' own (streets.mjs): the pavements
+// beside them, the crossings over them, the islands between, and the links from one to another.
+const STREETS_OWN = new Set(['sidewalk', 'crossing', 'traffic_island', 'link']);
+// The map's surfaces, as the world has them; and each kind's where it says none.
+const PATH_SURFACE = {
+  asphalt: 'asphalt', chipseal: 'asphalt', concrete: 'concrete', 'concrete:plates': 'concrete', 'concrete:lanes': 'concrete',
+  paving_stones: 'paving', paved: 'paving', granite: 'paving', granito: 'paving',
+  sett: 'setts', cobblestone: 'setts', unhewn_cobblestone: 'setts',
+  gravel: 'gravel', fine_gravel: 'gravel', compacted: 'gravel', pebblestone: 'gravel',
+  dirt: 'dirt', earth: 'dirt', ground: 'dirt', grass: 'dirt', mud: 'dirt', sand: 'dirt', rock: 'dirt', grass_paver: 'dirt',
+  metal: 'metal', wood: 'wood',
+};
+const PATH_USUAL = { footway: 'calcada', path: 'dirt', cycleway: 'asphalt', steps: 'paving' };
+// How wide each kind usually is where the map doesn't say: a cycleway 2.5 m, a lane each way, and
+// one way 1.5 m.
+const pathWidth = (kind, t) => {
+  const w = parseFloat(t.width);
+  if (w > 0.5) return Math.min(w, 15);
+  return kind === 'cycleway' ? (t.oneway === 'yes' ? 1.5 : 2.5) : kind === 'path' ? 1.5 : 2;
+};
+
+// Every footway, path, cycleway, bridleway and flight of steps with a point within 50 m of the box
+// `near` takes, from fetch.mjs's paths.json: but the streets' own, and what's indoors (in a building,
+// or on one of its floors, `level`). Each { id, kind, k, w, surface, pts, nodes, t, level }: kind
+// footway, path (a bridleway too), cycleway or steps, k its PATH_K, w its width, surface one of
+// calcada, paving, setts, asphalt, concrete, gravel, dirt, metal or wood.
+export function pathsOf(paths, near) {
+  const out = [];
+  for (const e of paths.elements) {
+    const t = e.tags ?? {}, kind = PATH_OF[t.highway];
+    if (e.type !== 'way' || !kind || STREETS_OWN.has(t.footway) || STREETS_OWN.has(t.cycleway)) continue;
+    if ((t.indoor && t.indoor !== 'no') || (t.level != null && t.level !== '0')) continue;
+    const pts = e.geometry.map(P);
+    if (pts.length < 2 || !pts.some(([x, z]) => near(x, z, 50))) continue;
+    out.push({ id: e.id, kind, k: PATH_K[kind], w: pathWidth(kind, t), surface: PATH_SURFACE[t.surface] ?? PATH_USUAL[kind], pts, nodes: e.nodes, t, level: levelOf(t) });
+  }
+  return out;
+}
+
+// A riser, where the map doesn't count the steps; and the least a counted step rises in the terrain
+// for the terrain to be taken to have the flight's rise.
+export const RISER = 0.16;
+const SHOWS = 0.08;
+
+// A flight of steps' treads, from its foot to its top: as many as the map counts (step_count), or its
+// rise over RISER, the first riser at the foot; each tread at its own height, the last at the top's.
+// The heights at its ends: `at(n, x, z)`, a bridge's deck where the flight ends on one (by its node),
+// else the LiDAR's terrain at 50 cm where it has it, else the tiles' ground. Which end is up: the
+// heights'. But where the map counts the steps and the terrain rises less than SHOWS a step between
+// them, or the other way from the map's `incline`, the flight climbs to something the terrain doesn't
+// have, a door's landing or a terrace's: its foot is at the ground, the incline's lower end (or the
+// heights'), and each step a RISER up from it (the owner's answer, task 050). Returns { pts, ys, n,
+// counted }: pts the flight's line from its foot, ys each tread's height.
+export function flight(p, at) {
+  const ya = at(p.nodes[0], ...p.pts[0]), yb = at(p.nodes.at(-1), ...p.pts.at(-1)), count = parseInt(p.t.step_count);
+  const up = p.t.incline === 'up' ? true : p.t.incline === 'down' ? false : null;
+  const rise = yb - ya, counted = count > 0;
+  let foot, top, from;
+  if (counted && (Math.abs(rise) < SHOWS * count || (up !== null && up !== rise > 0))) {
+    from = (up ?? rise >= 0) ? 0 : 1;
+    foot = from ? yb : ya;
+    top = foot + RISER * count;
+  } else {
+    from = rise >= 0 ? 0 : 1;
+    [foot, top] = from ? [yb, ya] : [ya, yb];
+  }
+  const n = counted ? count : Math.max(1, Math.round(Math.abs(rise) / RISER));
+  return { pts: from ? p.pts.slice().reverse() : p.pts, ys: Array.from({ length: n }, (_, i) => foot + ((top - foot) * (i + 1)) / n), n, counted, foot };
+}
+
+// The paths (pathsOf) with what streets.mjs needs to make them surfaces, heights above elev0: a
+// footbridge's and a path's tunnel's at each point (ys), as a street's are (levelHeights, from `grid`,
+// the ground as the tiles hold it), but a footbridge's ends on the deck the LiDAR saw (`deck`), where
+// it's over the ground, on the stairs or the ramps up to it; and a flight of steps' treads (`flight`),
+// its ends on the deck of a bridge it ends on (the streets' `lines` at their `heights`, or a
+// footbridge), else the LiDAR's terrain at 50 cm, else the tiles' ground.
+export function pathLines(paths, { ground, grid = ground.at, deck = null, lines = [], heights = new Map(), elev0 = 0 }) {
+  const own = levelHeights(paths, ground, grid, null, deck, true).heights, onDeck = new Map();
+  for (const [list, hs] of [[lines, heights], [paths, own]]) for (const l of list) if (l.level === LEVEL.bridge && l.nodes?.length === l.pts.length) l.nodes.forEach((n, i) => { if (hs.has(l.pts[i])) onDeck.set(n, hs.get(l.pts[i])); });
+  for (const p of paths) {
+    if (p.kind === 'steps') {
+      const f = flight(p, (n, x, z) => onDeck.get(n) ?? (ground.covers(x, z, true) ? ground.at(x, z) : grid(x, z)));
+      p.flight = { ...f, foot: f.foot - elev0, ys: f.ys.map((y) => y - elev0) };
+    } else if (p.level === LEVEL.bridge || p.level === LEVEL.tunnel) p.ys = p.pts.map((q) => (own.get(q) ?? ground.at(...q)) - elev0);
+  }
+  return paths;
+}
+
 // The heights of what's off the ground: a bridge's deck, and a tunnel's road. Each runs straight
 // between the ground where it ends: the LiDAR's ground is the bare earth, which has what's under a
 // deck and over a tunnel, not the deck or the tunnel's road. A bridge or a tunnel the map draws as
@@ -53,8 +146,10 @@ export function streetsOf(base, near) {
 // But a flyover humps over what it crosses, with both its ends on the ground, and the straight line
 // lays it on what it crosses (the Rotunda Santos da Cunha's viaduct, 6 m under its deck: task 047).
 // Where `deck` (decks.mjs: the decks DGT's point cloud saw) has a bridge's deck at a point between
-// its ends, 30 cm or more over the straight line, the deck's height there.
-export function levelHeights(lines, ground, grid = ground.at, held = null, deck = null) {
+// its ends, 30 cm or more over the straight line, the deck's height there. With `deckEnds` (a
+// footbridge, task 050, whose ends are often on stairs or ramps up to it), at its ends too, where the
+// deck is half a metre or more over the ground.
+export function levelHeights(lines, ground, grid = ground.at, held = null, deck = null, deckEnds = false) {
   const heights = new Map();
   for (const level of [LEVEL.bridge, LEVEL.tunnel]) {
     const ways = lines.filter((l) => l.level === level && l.nodes?.length === l.pts.length);
@@ -73,7 +168,8 @@ export function levelHeights(lines, ground, grid = ground.at, held = null, deck 
       // A tunnel's: the lowest from its mouth to 4 m out, every half metre (the tiles' 2 m ground
       // reaches the cutting's floor before 4 m out, and rises again).
       const out = level === LEVEL.tunnel && held?.at(x, z) === undefined ? Math.min(...[1, 2, 3, 4, 5, 6, 7, 8].map((k) => grid(x + ((x - px) / d) * k * 0.5, z + ((z - pz) / d) * k * 0.5))) : Infinity;
-      return { n, y: Math.min(grid(x, z), out) };
+      const y = Math.min(grid(x, z), out), seen = level === LEVEL.bridge && deckEnds && deck?.at(x, z, DECK_R);
+      return { n, y: seen && seen.n >= 3 && seen.y > y + 0.5 ? seen.y : y };
     });
     // The two nearest ends of each node, along the ways (Dijkstra from all the ends at once).
     const best = new Map(); // node → [{ e, d }] up to two, of different ends

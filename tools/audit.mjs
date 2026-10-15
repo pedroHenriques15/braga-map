@@ -2,7 +2,10 @@
 // played, and whether the world's tiles draw it; and the reverse, every line in the tiles that's no
 // street OpenStreetMap has. A way is drawn where a line of its own kind in the tiles runs within a
 // metre of it (a square, where a square's outline does): party-kart paints every line the tiles
-// have on the ground, but a tunnel (its mouths are drawn) and a bridge's deck (drawn whole).
+// have on the ground, but a tunnel (its mouths are drawn) and a bridge's deck (drawn whole). A path
+// (task 050) is drawn where a path of its kind in the tiles' surfaces is within a metre of it; a
+// pavement or a crossing the map draws as a footway, where the streets' pavements or carriageways
+// are: those are only in the open world's area.
 //
 // node tools/audit.mjs           after world.mjs: the table, and .cache/audit.json, which build.mjs
 //                                puts on the map page as the layer "Auditoria"
@@ -46,9 +49,12 @@ const CLASSES = [
   'road', 'busway',
 ];
 const kindOf = (c) => (c === 'railway' ? 9 : c === 'square' ? PLAZA : LINE[c] ?? null);
-// What's walked or cycled: no game draws it yet (task 013). The rest are streets, squares and the
-// railway, which a game should draw: a street being built, or of no known class, too.
+// What's walked or cycled, drawn in the open world's area (task 050). The rest are streets, squares
+// and the railway, which a game should draw: a street being built, or of no known class, too.
 const PATHS = new Set(['sidewalk', 'crossing', 'footway', 'steps', 'path', 'cycleway', 'bridleway']);
+// The kind of path (the tiles' Path's) each is drawn as; a pavement and a crossing the map draws as
+// a footway are the streets'.
+const PATH_AS = { footway: 'footway', steps: 'steps', path: 'path', bridleway: 'path', cycleway: 'cycleway', sidewalk: 'street', crossing: 'street' };
 // On the map page, at the level the owner chose (decisions.json): which classes it shows. It never
 // shows the service roads, and the "Principais" level leaves out the residential streets and tracks.
 const PAGE_MAIN = new Set(['motorway', 'motorway_link', 'trunk', 'trunk_link', 'primary', 'primary_link', 'secondary', 'secondary_link', 'tertiary', 'tertiary_link', 'pedestrian', 'square', 'railway']);
@@ -71,7 +77,10 @@ for (const e of paths.elements) {
     ways.push({ id: e.id, rel: true, c: 'square', name: t.name, lines: e.members.filter((m) => m.type === 'way' && m.geometry).map((m) => ring(m.geometry)) });
     continue;
   }
-  const c = t.highway === 'footway' && (t.footway === 'sidewalk' || t.footway === 'crossing') ? t.footway : t.highway;
+  // The streets' own (lines.mjs's pathsOf leaves them out): a pavement, or a link to one; a crossing,
+  // or an island it crosses.
+  const own = t.footway ?? (t.highway === 'cycleway' ? t.cycleway : undefined);
+  const c = own === 'sidewalk' || own === 'link' ? 'sidewalk' : own === 'crossing' || own === 'traffic_island' ? 'crossing' : t.highway;
   ways.push({ id: e.id, c, name: t.name, lines: [ring(e.geometry)] });
 }
 
@@ -103,11 +112,26 @@ function* pieces(pts) {
   }
 }
 
-// What the tiles under the box have: their lines, and the squares' outlines.
+// What the tiles under the box have: their lines, and the squares' outlines; and in the open world's
+// area, the paths' surfaces and the streets'.
 const world = await loadWorld(amigos.box);
 const drawn = segGrid();
 for (const l of world.lines) for (let i = 1; i < l.pts.length; i++) drawn.put(l.pts[i - 1], l.pts[i], l.kind);
 for (const a of world.areas) if (a.kind === 'plaza') a.pts.forEach((p, i) => drawn.put(p, a.pts[(i + 1) % a.pts.length], PLAZA));
+// Pieces by what they are, in cells of 10 m: whether (x, z) is on one of `kind`, or within TOL.
+const surfaces = new Map();
+const putSurface = (kind, rings) => {
+  const xs = rings[0].map((p) => p[0]), zs = rings[0].map((p) => p[1]);
+  for (let i = Math.floor((Math.min(...xs) - TOL) / 10); i <= Math.floor((Math.max(...xs) + TOL) / 10); i++) for (let j = Math.floor((Math.min(...zs) - TOL) / 10); j <= Math.floor((Math.max(...zs) + TOL) / 10); j++) {
+    const k = `${kind}:${i},${j}`;
+    if (!surfaces.has(k)) surfaces.set(k, []);
+    surfaces.get(k).push(rings);
+  }
+};
+for (const p of world.streets.paths) putSurface(p.kind, p.rings);
+for (const p of [...world.streets.carriageways, ...world.streets.pavements]) putSurface('street', p.rings);
+const inRings = (rings, x, z) => { let odd = false; for (const r of rings) for (let i = 0, j = r.length - 1; i < r.length; j = i++) if (r[i][1] > z !== r[j][1] > z && x < r[i][0] + ((z - r[i][1]) / (r[j][1] - r[i][1])) * (r[j][0] - r[i][0])) odd = !odd; return odd; };
+const onSurface = (x, z, kind) => [[0, 0], [TOL, 0], [-TOL, 0], [0, TOL], [0, -TOL]].some(([a, b]) => (surfaces.get(`${kind}:${Math.floor((x + a) / 10)},${Math.floor((z + b) / 10)}`) ?? []).some((r) => inRings(r, x + a, z + b)));
 
 // Each way: how much of it is in each area, and how much of that the tiles draw.
 const table = Object.fromEntries(AREAS.map((a) => [a.id, {}]));
@@ -117,7 +141,7 @@ for (const w of ways) {
   for (const pts of w.lines) for (const [x, z, L] of pieces(pts)) {
     const where = AREAS.filter((a) => a.in(x, z));
     if (!where.length) continue;
-    const hit = kind != null && drawn.hits(x, z, kind);
+    const hit = PATHS.has(w.c) ? onSurface(x, z, PATH_AS[w.c]) : kind != null && drawn.hits(x, z, kind);
     for (const a of where) { len[a.id] = (len[a.id] ?? 0) + L; if (hit) got[a.id] = (got[a.id] ?? 0) + L; }
   }
   if (!len.box) continue;
@@ -164,11 +188,12 @@ for (const a of AREAS) {
     const street = !PATHS.has(c);
     L += r.len, D += r.drawn;
     if (street) LS += r.len, DS += r.drawn;
-    const pct = street ? `${((r.drawn / r.len) * 100).toFixed(1).padStart(5)}%` : '    – ';
+    const pct = `${((r.drawn / r.len) * 100).toFixed(1).padStart(5)}%`;
     console.log(`${c.padEnd(15)} ${String(r.ways).padStart(5)}  ${km(r.len)}    ${km(r.drawn)}  ${pct}  ${String(r.whole).padStart(5)} ${String(r.part).padStart(5)} ${String(r.none).padStart(5)}   ${PAGE_MAIN.has(c) ? 'yes' : c === 'service' || kindOf(c) == null ? 'never' : 'no (Todas only)'}`);
   }
   console.log(`streets, squares and railway: ${km(LS)} km in OSM, ${km(DS)} km drawn (${((DS / LS) * 100).toFixed(1)}%); with the paths: ${km(L)} km, ${km(D)} km drawn`);
 }
+console.log("\nThe paths are drawn in the open world's area only (task 050): a footway, a path or a cycleway as itself where it doesn't give way to a pavement, a carriageway or a building; a pavement or a crossing the map draws as a footway, as the streets' pavements and carriageways.");
 const missed = audited.filter((w) => !PATHS.has(w.c) && w.drawn < 0.9);
 console.log(`\nStreets, squares and railway in the box the tiles don't draw whole: ${missed.length}`);
 for (const w of missed.sort((p, q) => q.len - p.len)) {

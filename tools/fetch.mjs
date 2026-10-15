@@ -36,9 +36,9 @@ const QUERIES = {
   way["amenity"~"^(hospital|university|school|college)$"];
 );
 out geom;`,
-  // What's walked or cycled, which no game draws yet (task 013), and the ways `base` leaves out (a
-  // street being built, one of no known class, a bus lane of its own): for the street audit
-  // (tools/audit.mjs). Squares mapped as a multipolygon too.
+  // What's walked or cycled, which the world draws in the open world's area (task 050), and the ways
+  // `base` leaves out (a street being built, one of no known class, a bus lane of its own), for the
+  // street audit (tools/audit.mjs). Squares mapped as a multipolygon too.
   paths: `[out:json][timeout:180][bbox:${BOX}];
 (
   way["highway"~"^(footway|path|steps|cycleway|bridleway|construction|road|busway)$"];

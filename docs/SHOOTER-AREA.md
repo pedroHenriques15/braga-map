@@ -44,12 +44,13 @@ world.inShooter(x, z);
 `fujacal` loads like a section, but it isn't one of the six that share the map out: it overlaps
 Centro and Picoto, and `sectionAt` never answers it. The ground is every 2 m on every tile under it.
 
-**Its gates,** where a street crosses the edge (`shooter.gates`, as the open world's): 10. Six where
-a street leaves on the west or crosses the river at the Largo Santa Justa's bridge, which the game
-closes as the street is (a barrier, a parked van, a gate in a wall); four where a street meets an
-avenue, at the kerb, which the avenue's traffic or a railing closes. The footways, the steps and the
-Ecovia that cross the edge have no gates yet: the map's footways come into the world with task 013,
-and their gates with them.
+**Its gates,** where a street or a path crosses the edge (`shooter.gates`, as the open world's): 17.
+Ten across streets: six where a street leaves on the west or crosses the river at the Largo Santa
+Justa's bridge, which the game closes as the street is (a barrier, a parked van, a gate in a wall);
+four where a street meets an avenue, at the kerb, which the avenue's traffic or a railing closes.
+And seven across paths, since the map's footways, steps and cycleways came into the world (task
+050): two footways (one on a footbridge), a path, and four cycleways, the Ecovia among them, two of
+them on its bridges.
 
 ## What's in it
 
@@ -82,7 +83,7 @@ from. The task that does it does this area first.
 | | Each facade its own: its colour, material and face, doors and windows where they are, balconies, roller shutters, the ground floor's shops and cafés with their signs and awnings, house numbers. Every facade a photo texture (the owner's answer to 017). | The reference photos (task 008); OpenStreetMap has no shops here, so the photos say where they are. | 017 |
 | | Closed: no gap between two buildings a player can see through or fall into, doors and shop windows drawn shut. | The footprints, and the photos where two meet. | 017 |
 | | Roofs seen from above, from the higher streets: tiles, terraces, chimneys, aerials. | The LiDAR's parts (task 010), the orthophoto's colour. | 010, 017 |
-| **The ground** | At centimetres, not the tiles' 2 m: each kerb at its own height (`streets.mjs` takes 15 cm for all), dropped at the crossings; each pavement level from its kerb (task 044); each step at its rise, with its handrail; ramps and driveways. | The LiDAR's terrain model at 50 cm (`MDT-50cm`, fetched for the area) and its point cloud, about 10 points a m²; OpenStreetMap's steps and kerbs; the photos. | 044, 013 |
+| **The ground** | At centimetres, not the tiles' 2 m: each kerb at its own height (`streets.mjs` takes 15 cm for all), dropped at the crossings; each pavement level from its kerb (task 044); each step at its rise, with its handrail; ramps and driveways. | The LiDAR's terrain model at 50 cm (`MDT-50cm`, fetched for the area) and its point cloud, about 10 points a m²; OpenStreetMap's steps and kerbs; the photos. | 044, 050 |
 | | What each surface is: asphalt, calçada, granite slabs, setts, paving stones; drains and manhole covers where they are. | The orthophoto (25 cm), OpenStreetMap's `surface`, the photos and close-ups. | 018, 016 |
 | | What isn't paved: lawns, gardens, the pitch, the waste ground by the river, soil. | The orthophoto and its near-infrared. | 016 |
 | **Walls** | Every wall, fence, gate, railing and hedge, at its height and of its kind: the granite walls round the houses, the railings by the river, the school's fence. Cover and climbing for the player. | The LiDAR's surface model (`MDS-50cm`) for where and how high, the photos for what. | 013 |

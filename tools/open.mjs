@@ -37,13 +37,13 @@ export const FILE = path.join(ROOT, 'tools/open.json');
 // Where the streets cross a ring `pts`: each crossing's point, the street's way there (ux, uz), the
 // ring's side it's on (e, from pts[e] to the next) and how far along (u), and the street's line and
 // stretch (from its point i, t of the way to the next). lines: [{ k, w, pts }]; the railway (k 9)
-// isn't a street.
+// isn't a street, and a path (k 10 to 13, task 050) is crossed as one.
 function crossings(pts, lines) {
   const n = pts.length, C = 50, sides = new Grid(C), out = [];
   const cells = ([ax, az], [bx, bz], f) => { for (let gx = Math.floor(Math.min(ax, bx) / C); gx <= Math.floor(Math.max(ax, bx) / C); gx++) for (let gz = Math.floor(Math.min(az, bz) / C); gz <= Math.floor(Math.max(az, bz) / C); gz++) f(gx * C + C / 2, gz * C + C / 2); };
   for (let e = 0; e < n; e++) cells(pts[e], pts[(e + 1) % n], (x, z) => sides.add(x, z, e));
   for (const l of lines) {
-    if (l.k > 8) continue;
+    if (l.k === 9) continue;
     for (let i = 1; i < l.pts.length; i++) {
       const [px, pz] = l.pts[i - 1], [qx, qz] = l.pts[i], dx = qx - px, dz = qz - pz, L = Math.hypot(dx, dz), seen = new Set();
       if (!L) continue;
@@ -69,9 +69,10 @@ const offSquare = (ux, uz, ex, ez) => Math.abs(90 - (Math.acos(Math.min(1, Math.
 
 // Where the streets cross the edge `pts`: each street's crossing, with which way the street leaves
 // (heading: (cos, sin) points out of the area, x east and z south), its width kerb to kerb, its kind
-// (osm.mjs's LINE), its level (lines.mjs's LEVEL, by name) and how far it crosses from square, in
-// degrees (off). lines: [{ k, w, pts, level }], the level by number or name. y(line, i, t), if given,
-// is the street's height where it crosses, t of the way from its point i to i + 1.
+// (osm.mjs's LINE, or a path's, lines.mjs's PATH_K), its level (lines.mjs's LEVEL, by name) and how
+// far it crosses from square, in degrees (off). lines: [{ k, w, pts, level }], the level by number
+// or name. y(line, i, t), if given, is the street's height where it crosses, t of the way from its
+// point i to i + 1.
 export function gatesOf(pts, lines, y) {
   const names = Object.keys(LEVEL), n = pts.length;
   return crossings(pts, lines).map(({ x, z, ux, uz, e, l, i, t }) => {

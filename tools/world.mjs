@@ -13,7 +13,8 @@
 // - world/tiles/<id>.js, one per tile: the relief (every 2 m on the tiles within 60 m of a track
 //   in tracks/, over the shooter's area and under the open world's, every 10 m on the rest), what
 //   the ground is (clipped to the tile), the streets and the railway, the buildings, and the trees;
-//   and round the open world's area, every street as surfaces (streets.mjs).
+//   and round the open world's area, every street as surfaces (streets.mjs), and every footway,
+//   path, cycleway and flight of steps (task 050).
 // - world/tiles.js, a loader for each tile, for index.js.
 //
 // All in metres from the Praça da República, x east and z south, heights above ELEV0, packed as
@@ -28,10 +29,12 @@ import { allTiles, EXT, OPEN, OPEN_BOX, OPEN_SEEN, OPEN_TILES, SECTIONS, section
 import { gatesOf } from './open.mjs';
 import { terrain } from './terrain.mjs';
 import { decks } from './decks.mjs';
-import { heldGround, isLine, isSquare, LEVEL, levelHeights, streetsOf } from './lines.mjs';
-import { packStreets, streetSurfaces } from './streets.mjs';
+import { heldGround, isLine, isSquare, LEVEL, levelHeights, pathLines, pathsOf, streetsOf } from './lines.mjs';
+import { packPaths, packStreets, streetSurfaces } from './streets.mjs';
 
 const base = readCache('osm/base.json');
+if (!fs.existsSync(path.join(CACHE, 'osm', 'paths.json'))) throw new Error('No footways yet: node tools/fetch.mjs paths');
+const pathsOsm = readCache('osm/paths.json');
 const buildingsOsm = readCache('osm/buildings.json');
 const treesOsm = readCache('osm/trees.json');
 const pois = readCache('osm/pois.json').elements;
@@ -41,7 +44,7 @@ const places = fs.existsSync(path.join(CACHE, 'places.json')) ? readCache('place
 const ground = await terrain();
 const inExt = (x, z, m = 0) => x >= EXT.x0 - m && x <= EXT.x1 + m && z >= EXT.z0 - m && z <= EXT.z1 + m;
 
-const tiles = new Map(allTiles().map(([i, j]) => [tileId(i, j), { id: tileId(i, j), box: tileBox(i, j), areas: [], lines: [], buildings: [], trees: [], streets: [] }]));
+const tiles = new Map(allTiles().map(([i, j]) => [tileId(i, j), { id: tileId(i, j), box: tileBox(i, j), areas: [], lines: [], buildings: [], trees: [], streets: [], paths: [], rails: [] }]));
 const tileAt = (x, z) => tiles.get(tileId(...tileOf(x, z)));
 const tilesOver = (b, m = 0) => [...tiles.values()].filter((t) => overlaps(t.box, b, m));
 
@@ -98,6 +101,11 @@ const tileGround = (x, z) => {
 // Every street and railway (lines.mjs, above), and the heights of those on a bridge's deck or in a
 // tunnel, their ends at the ground as the tiles hold it.
 const { heights, open } = levelHeights(lines, ground, tileGround, held, deck);
+
+// What's walked or cycled (lines.mjs's pathsOf and pathLines, task 050) round the open world's area,
+// where the world draws it: a footbridge and a path's tunnel at their heights, each flight of steps
+// with its treads.
+const walks = pathLines(pathsOf(pathsOsm, (x, z, m) => x >= OPEN_BOX.x0 - m && x <= OPEN_BOX.x1 + m && z >= OPEN_BOX.z0 - m && z <= OPEN_BOX.z1 + m), { ground, grid: tileGround, deck, lines, heights, elev0: ELEV0 });
 const areas = []; // [kind, ring]
 for (const e of base.elements) {
   const t = e.tags || {};
@@ -163,16 +171,24 @@ for (const s of lines) {
     flush();
   }
 }
-// Where the streets leave the open world's area (open.mjs), and the shooter's (shooter.mjs): each
-// one's crossing, with the height of its road there above ELEV0, on the ground, a bridge's deck or a
-// tunnel's road.
+// Where the streets leave the open world's area (open.mjs), and the shooter's (shooter.mjs), and the
+// paths (task 050): each one's crossing, with the height of its road there above ELEV0, on the
+// ground, a bridge's deck or a tunnel's road; a flight of steps', its tread's.
 const roadAt = (l, i, t) => {
   const p = l.pts[i], q = l.pts[i + 1], x = p[0] + (q[0] - p[0]) * t, z = p[1] + (q[1] - p[1]) * t;
+  if (l.flight) {
+    const f = l.flight, L = f.pts.reduce((a, v, k) => (k ? a + Math.hypot(v[0] - f.pts[k - 1][0], v[1] - f.pts[k - 1][1]) : 0), 0);
+    let s = t * Math.hypot(q[0] - p[0], q[1] - p[1]);
+    for (let k = 1; k <= i; k++) s += Math.hypot(l.pts[k][0] - l.pts[k - 1][0], l.pts[k][1] - l.pts[k - 1][1]);
+    if (f.pts[0] !== l.pts[0]) s = L - s;
+    return f.ys[Math.max(0, Math.min(f.n - 1, Math.floor((s / (L || 1)) * f.n)))];
+  }
+  if (l.ys) return l.ys[i] * (1 - t) + l.ys[i + 1] * t;
   if (l.level !== LEVEL.bridge && l.level !== LEVEL.tunnel) return ground.at(x, z) - ELEV0;
   return (heights.get(p) ?? ground.at(...p)) * (1 - t) + (heights.get(q) ?? ground.at(...q)) * t - ELEV0;
 };
-const gates = gatesOf(OPEN, lines, roadAt).map(({ x, z, heading, w, k, level, y }) => ({ x, z, heading, w, k, level, y }));
-const shooterGates = gatesOf(SHOOTER, lines, roadAt).map(({ x, z, heading, w, k, level, y }) => ({ x, z, heading, w, k, level, y }));
+const gates = gatesOf(OPEN, [...lines, ...walks], roadAt).map(({ x, z, heading, w, k, level, y }) => ({ x, z, heading, w, k, level, y }));
+const shooterGates = gatesOf(SHOOTER, [...lines, ...walks], roadAt).map(({ x, z, heading, w, k, level, y }) => ({ x, z, heading, w, k, level, y }));
 console.log(`ground: ${areas.length} areas, ${lines.length} streets and railways (${lines.filter((l) => l.level === LEVEL.bridge).length} on bridges, ${lines.filter((l) => l.level === LEVEL.tunnel).length} in tunnels, ${lines.filter((l) => l.level === LEVEL.under).length} under something, ${open} of them tunnels the map has under a bridge)`);
 
 // ---------------------------------------------------------------------------------------------
@@ -492,8 +508,12 @@ let nTrees = 0;
     if (s.k > 6) continue;
     for (let i = 1; i < s.pts.length; i++) { const [ax, az] = s.pts[i - 1], [bx, bz] = s.pts[i], n = Math.max(1, Math.ceil(Math.hypot(bx - ax, bz - az) / 15)); for (let f = 0; f <= n; f++) sgrid.add(ax + ((bx - ax) * f) / n, az + ((bz - az) * f) / n, [ax, az, bx, bz, Math.max(W_MIN, s.w) / 2]); }
   }
-  const ok = (x, z) => inExt(x, z) && !sgrid.near(x, z, 1).some(([ax, az, bx, bz, hw]) => segDist(x, z, { x: ax, z: az }, { x: bx, z: bz }) < hw + 0.5);
-  const plant = (x, z, how) => { if (ok(x, z)) { tileAt(x, z).trees.push(half(x), half(z), how); nTrees++; } };
+  // And none of those filled in on a path (task 050).
+  const pgrid = new Grid(30);
+  for (const p of walks) for (let i = 1; i < p.pts.length; i++) { const [ax, az] = p.pts[i - 1], [bx, bz] = p.pts[i], n = Math.max(1, Math.ceil(Math.hypot(bx - ax, bz - az) / 15)); for (let f = 0; f <= n; f++) pgrid.add(ax + ((bx - ax) * f) / n, az + ((bz - az) * f) / n, [ax, az, bx, bz, p.w / 2]); }
+  const onPath = (x, z) => pgrid.near(x, z, 1).some(([ax, az, bx, bz, hw]) => segDist(x, z, { x: ax, z: az }, { x: bx, z: bz }) < hw + 0.5);
+  const ok = (x, z, how) => inExt(x, z) && !sgrid.near(x, z, 1).some(([ax, az, bx, bz, hw]) => segDist(x, z, { x: ax, z: az }, { x: bx, z: bz }) < hw + 0.5) && !(how & 2 && onPath(x, z));
+  const plant = (x, z, how) => { if (ok(x, z, how)) { tileAt(x, z).trees.push(half(x), half(z), how); nTrees++; } };
   for (const e of treesOsm.elements) {
     if (e.type === 'node') { const [x, z] = P(e); plant(x, z, e.tags && e.tags.leaf_type === 'needleleaved' ? 1 : 0); }
     else for (const g of e.geometry) { const [x, z] = P(g); plant(x, z, 0); }
@@ -518,15 +538,22 @@ let nTrees = 0;
 // ---------------------------------------------------------------------------------------------
 // Every street in the open world's area as surfaces (streets.mjs, task 033): the carriageways at
 // their real widths, joined at the junctions, the kerbs, the pavements as wide as the buildings
-// leave room for, and the lines painted on them, at their levels; cut to the tiles.
+// leave room for, and the lines painted on them, at their levels; and the paths (task 050), each
+// flight of steps a tread at a time with its handrails; cut to the tiles.
 
 {
   const nodes = readCache('osm/street.json').elements.filter((e) => e.type === 'node');
   const rings = (kind) => areas.filter(([k]) => k === AREA.indexOf(kind)).map(([, r]) => r);
   const B = OPEN_BOX, over = tilesOver(B).map((t) => ({ id: t.id, box: { x0: Math.max(t.box.x0, B.x0), x1: Math.min(t.box.x1, B.x1), z0: Math.max(t.box.z0, B.z0), z1: Math.min(t.box.z1, B.z1) } }));
-  const { cuts, stats } = streetSurfaces({ lines, heights, elev0: ELEV0, height: tileGround, nodes, buildings: outlines, squares: rings('plaza'), water: rings('water'), box: B, cuts: over });
-  for (const { id } of over) tiles.get(id).streets = packStreets(cuts.get(id), tiles.get(id).box.x0, tiles.get(id).box.z0);
+  const { cuts, stats } = streetSurfaces({ lines, heights, elev0: ELEV0, height: tileGround, nodes, buildings: outlines, squares: rings('plaza'), water: rings('water'), paths: walks, box: B, cuts: over });
+  for (const { id } of over) {
+    const t = tiles.get(id);
+    t.streets = packStreets(cuts.get(id), t.box.x0, t.box.z0);
+    Object.assign(t, packPaths(cuts.get(id), t.box.x0, t.box.z0));
+  }
+  const ps = stats.paths;
   console.log(`streets: ${stats.edges} stretches in the open world's ${over.length} tiles, ${stats.junctions} junctions, ${stats.islands} islands, ${stats.reservations} reservations, ${Math.round(stats.km.kerb)} km of kerb, in ${Math.round(stats.seconds)} s`);
+  console.log(`paths: ${walks.length} ways round the area, ${Object.entries(ps.m2).map(([k, v]) => `${k} ${Math.round(v)} m²`).join(', ')} (cycleways ${Math.round(ps.lanes)} m² beside the road and ${Math.round(ps.flush)} m² flush with a pavement); ${ps.flights} flights of steps in ${ps.treads} treads, ${ps.steep} rising more than 0.3 m`);
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -686,6 +713,8 @@ for (const t of tiles.values()) {
   p.part('buildings', packBuildings(t.buildings));
   p.part('trees', t.trees);
   if (t.streets.length) p.part('streets', t.streets);
+  if (t.paths.length) p.part('paths', t.paths);
+  if (t.rails.length) p.part('rails', t.rails);
   const b64 = p.encode();
   fs.writeFileSync(path.join(dir, 'tiles', t.id + '.js'), `${HEAD}export default '${b64}';\n`);
   bytes += b64.length;

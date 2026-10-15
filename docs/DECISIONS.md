@@ -770,3 +770,34 @@ in [SHOOTER-AREA.md](SHOOTER-AREA.md).
 
 The alternatives were the box decision 003 gave (x −350…350, z 600…1050), which cut across streets
 and blocks, and the five streets alone, with nothing past their far kerbs.
+
+## 032 · The paths are surfaces beside the streets, each step at its height, and a kart takes them all
+
+*2026-10-15 · task 050 · adds the paths to decisions 019, 021 and 024*
+
+The world draws every footway, path, cycleway and flight of steps OpenStreetMap has in the open
+world's area (`world.streets.paths`), as the streets are drawn (decision 024), and a kart drives
+them all, steps too (the owner's answer):
+
+- **What the map draws as a footway beside a street is the street's:** a pavement, a crossing, an
+  island, or a cycleway's crossing, which the streets' surfaces already are. What's indoors stays
+  out.
+- **Who gives way:** a flight of steps keeps its place over everything; the pavements give way to a
+  cycleway, flush with them where it runs in one, or a lane at the road's level, a kerb behind it,
+  where it runs along the carriageway's edge; a footway or a path gives way to the pavements,
+  ending at a pavement where it meets a street. All of them are cut back to the carriageways at
+  their level, the buildings (but a passage under one) and the water.
+- **Each step is a tread at its own height,** from the flight's foot to its top, as many as the map
+  counts or its rise over 16 cm, the ends on DGT's terrain at 50 cm. Where the map counts the steps
+  and the terrain shows less than 8 cm a step, or the other way from the map's incline, the flight
+  climbs to something the terrain doesn't have (a landing at a door): from its foot at the ground,
+  16 cm a step (the owner's answer). The terrain's height wins over the map's incline otherwise.
+- **A kart takes a riser as a kerb,** a bump up and a drop down; one higher than a step (0.3 m) is
+  a wall, and so is a handrail. A passage under a building is open, the building cut back at its
+  edges as at a carriageway's (decision 021; the owner's answer).
+- **A gate wherever a path crosses an area's edge,** its kind after the streets' (10 to 13), as a
+  street's gate is; the edge isn't moved for the paths.
+
+The alternatives were the paths drivable and the steps a wall (what the task recommended: a kart
+can't climb stairs), a bollard where each path leaves a street (none drivable), the flights the
+terrain shows no rise for drawn flat or left out, and the passages closed, the buildings whole.

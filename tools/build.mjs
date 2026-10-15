@@ -9,7 +9,7 @@ import path from 'node:path';
 import { CACHE, KX, KZ, LAT0, LON0, P, readCache, ROOT } from './geo.mjs';
 import { storeys } from './osm.mjs';
 import { CORE, EXT, OPEN, SECTIONS, SHOOTER, TILE } from './sections.mjs';
-import { streetLines } from './lines.mjs';
+import { pathsOf, streetLines } from './lines.mjs';
 import { gatesOf } from './open.mjs';
 import { terrain } from './terrain.mjs';
 
@@ -290,8 +290,10 @@ for (let j = 0; j < nz; j++) for (let i = 0; i < nx; i++) {
 const game = JSON.parse(fs.readFileSync(path.join(ROOT, 'tools/first-track.json'), 'utf8'));
 
 // ---- The open world's area (task 032) and the shooter's (task 015): each one's edge, and the gates
-// where streets cross it ----
-const extLines = streetLines(base, ground, (x, z, m) => inBox(EXT, x, z, m)).lines;
+// where streets cross it, and paths (task 050) ----
+const near = (x, z, m) => inBox(EXT, x, z, m);
+const pathsFile = path.join(CACHE, 'osm', 'paths.json');
+const extLines = [...streetLines(base, ground, near).lines, ...(fs.existsSync(pathsFile) ? pathsOf(read('paths.json'), near) : [])];
 const gatesAt = (ring) => gatesOf(ring, extLines).map(({ x, z, heading, w, k, level }) => ({ x, z, heading, w, k, level }));
 const areaOf = (ring) => Math.abs(ring.reduce((a, [x, z], i) => { const [x2, z2] = ring[(i + 1) % ring.length]; return a + x * z2 - x2 * z; }, 0)) / 2;
 const openGates = gatesAt(OPEN), openArea = areaOf(OPEN);

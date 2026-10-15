@@ -24,8 +24,9 @@ locally.
 Today (`../party-kart/src/render/road.ts:112-180`, `textures.ts:26-90`): dashed dividers
 3 m on and 4 m off, 0.14 m wide; a solid centre line only on two-way roads of 4+ lanes; lanes
 from OSM or 2 for main roads; zebra crossings of 1 m bars where OSM maps a crossing; the
-calçada as a 2.5 m tile of rounded rectangles; granite kerbs of 15 cm. **In flight:** a party-kart
-session is changing the pavement to Braga's pattern (ROADMAP, Status); start from what it did.
+calçada as a 2.5 m tile of rounded rectangles; granite kerbs of 15 cm. A party-kart session
+set out to change the pavement to Braga's pattern (2026-10-13) but landed nothing: `calcada` in
+`textures.ts` is still that tile (checked 2026-10-15).
 
 What Portugal's rules say (Regulamento de Sinalização do Trânsito, DR 22-A/98 as amended by
 DR 6/2019; checked 2026-10-13): markings are white unless stated (art. 59); the zebra (M11) is

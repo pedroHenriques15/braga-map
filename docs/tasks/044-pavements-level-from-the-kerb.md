@@ -35,21 +35,37 @@ Today (2026-10-15):
 
 Steps:
 
-1. **A pavement's height from its kerb:** at each point, the kerb's top at the nearest point of its
-   carriageway's edge (the carriageway's ground plus the kerb), sloping across towards its back at
-   most a few per cent (Questions), sloping down to a dropped kerb as today. Where the land at the
-   back is higher or lower, a granite retaining wall or a skirt meets it, as `streets.ts` does at
-   the streets' outline.
-2. **What the karts stand on** is the same (`ground.ts`), so drawing and driving still match
-   (decision 024).
-3. Shoot the viewpoints; measure the budget (task 004): a level pavement needs fewer triangles than
+1. **braga-map gives each ground pavement its heights** (`tools/streets.mjs`, Questions): a `ys`
+   for every ring of each pavement, reservation and island on the ground, as decks' pieces have
+   (`index.d.ts`'s `Pavement.ys`, its comment saying so), in the same frame as theirs, with a point
+   at least every 2 m along each ring so the heights follow the street. At each point, the top of
+   its nearest kerb (the carriageway's ground there, `height(x, z)`, plus the kerb's `h`), rising or
+   falling towards the pavement's back at most 2% across (Questions). Between two kerbs (a
+   reservation, an island, a pavement between two streets) it runs from one kerb's top to the
+   other's. Where a kerb is dropped at a crossing, the pavement slopes down to it over 1.2 m
+   (party-kart's `DROP` today), with a point where that slope starts and one where it ends. A path that
+   runs in a pavement, flush with it (task 050's `raised`), gets its `ys` by the same rule.
+2. **party-kart reads them** (`src/render/streets.ts`'s `paveY`, `src/world/ground.ts`'s `floor`):
+   a ground pavement at its `ys`, inside its outline from its outline's nearest edges as a deck's
+   `Piece` is, instead of `firm + raise`, and a raised path the same. Drawing and driving stay one
+   surface (decision 024). Where the land at a pavement's back is higher or lower than it, a granite
+   retaining wall or a skirt meets it, as `streets.ts` does at the streets' outline.
+3. braga-map's version goes up and party-kart is pinned to it, as task 050 did.
+4. Shoot the viewpoints; measure the budget (task 004): a level pavement needs fewer triangles than
    a draped one.
 
 ## Questions
 
-- [ ] Where do the heights come from: (a) braga-map works them out and the tiles carry `ys` for
+- [x] Where do the heights come from: (a) braga-map works them out and the tiles carry `ys` for
   ground pavements, as for decks, so every game has the same (recommended: the data does it once,
   as decision 023 has it); or (b) each game works them out from the kerbs and the carriageways?
+  > (a), 2026-10-16: braga-map works them out once and the tiles carry `ys` for ground pavements.
+- [x] How steep may a pavement slope across, from its kerb to its back, before a wall or a skirt
+  meets the land behind it: (a) 2%, the cap Portugal's accessibility rules set for a footway's
+  slope across (recommended: pavements read level, as real ones do); (b) 12% up and 5% down, as the
+  track's own pavements did before task 035 (fewer walls, but they tilt on hillsides); or (c) 5%
+  either way?
+  > (a), 2026-10-16: 2% at most; beyond that a wall or a skirt meets the land.
 
 ## Read first
 
@@ -62,6 +78,9 @@ Steps:
 
 ## Done when
 
+- [ ] Every pavement, reservation and island on the ground in the tiles has `ys`, and so does every
+  raised path: at its kerb within 1 cm of the carriageway's ground plus the kerb, and, except
+  between two kerbs, no steeper than 2% across from it (braga-map's `test/streets.test.js`).
 - [ ] No pavement creases or heaves where the street beside it is smooth: `bom-jesus`, `devesa`,
   `lobato-pavement` shot again, before and after.
 - [ ] `bom-jesus` scores no lower than the round before.
@@ -83,4 +102,8 @@ Steps:
   the LiDAR took a ruin for ground (the owner had flagged it in "Os amigos"); `liberdade`'s camera
   stands on the map's carriageway, wider there than the real road (task 026). Only `bom-jesus`'s
   crease is this task's.
-- After 037: party-kart's `ground.ts` is being changed by 036 and 037 now.
+- Answered 2026-10-16. When it's finished, the answers become a decision in `docs/DECISIONS.md`: a
+  ground pavement's heights are the data's, level from its kerb at 2% across at most.
+- 2026-10-16: party-kart's `streets.ts`, `ground.ts` and `test/ground.test.ts` have uncommitted
+  changes from another session (task 013's walls, by the look of `scratch-walls.ts`). Start after
+  they land, and don't overwrite them.

@@ -59,8 +59,8 @@ hedges and gates, the map's measured and those the LiDAR finds, each a wall to a
 - **052** The streets end at their walls: a pavement stops at a wall, and a carriageway the map's
   wall stands in is brought back to it (found by 013; after 026).
 - **014** Roundabouts as they are: their islands and what stands in them.
-- **026** The track on the real carriageway: its centre line where the street's middle is, from
-  the LiDAR and the orthophoto.
+- **026** Every street on its real carriageway: its line where the street's middle is, at its
+  width, measured from the LiDAR.
 - **041** The squares OpenStreetMap maps in parts, the Praça da República among them, drawn as
   squares (found by 006's audit).
 - **049** The stadium's bowl stops short of the street beside it, 1.2 m under the LiDAR there
@@ -82,6 +82,8 @@ each kind in its own photo and the place's colour (016, decision 034).
 - **020** Street furniture where it stands: lamps, signs, bins, benches, shelters, parked cars.
 - **021** The landmarks along the route, built from their photos, São João da Ponte first.
 - **022** Braga's light: the real sun, the sky and the haze, and its weather.
+- **053** Last, after every task open on 2026-10-16 but 038: every task's notes read for what they
+  left to improve, each thing still worth doing drafted as a task.
 
 ## Alongside · The sound
 
@@ -91,17 +93,53 @@ race car's engine for every kart, and Braga round the track. More of Braga's sou
 
 ## How the work can run in parallel
 
-Phase 1 is done (007 the last of it, 2026-10-15):
+Phase 1 is done (007 the last of it, 2026-10-15), and the open world is live: 032 to 037, 039,
+040, 043, 047 and 050 are done, the race on the streets at their real widths (037, decision 029).
+Every question in the tasks is answered: 044's on 2026-10-16 (the pavements' heights are
+braga-map's, level from the kerb at 2% across at most). Each task is checked on the scorecard when
+it lands.
 
-- **The open world first:** 032 to 037, 039, 040, 043 and 047 are done, and live: the race runs
-  on the streets at their real widths (037, decision 029). 048 (slivers in the streets' surfaces)
-  can start.
-  038 when the area grows. 014, 018 and 026 now work on 033's surfaces, for every street in the
-  area.
-- **Side by side:** 041 (the squares the audit found missing) can start. 007's pipeline is there for 017 (the facades) and 021 (the landmarks), as it was for 016's photos of the ground. Every question in the tasks was answered on 2026-10-14, except 044's (drafted
-  2026-10-15): where the pavements' heights come from.
-- **Phase 2's data tasks:** 010, 011, 012 and 050 are done (decisions 025 and 032); 013, 014, 026
-  and 051 build on them. Each one is checked on the scorecard when it lands.
+The order, set with the owner on 2026-10-16: two streams side by side, as they touch different
+files, and in each the foundations first.
+
+- **Stream 1, the streets' shape, one task at a time.** Each changes `tools/streets.mjs`,
+  `lines.mjs` or `world.mjs`, or party-kart's `streets.ts` and `ground.ts`, and ends with a tag
+  party-kart is pinned to.
+  1. **013** walls, fences and hedges: done (decision 033).
+  2. **048** slivers: the outlines clean before 044 gives the pavements heights.
+  3. **046** a junction's corner at a deck: small, in the same file.
+  4. **026** every street on its real carriageway (high since 2026-10-16). What's measured against
+     a carriageway comes after it: 045's ground, 044's kerbs, 051's feet, 014's rings, 018's
+     markings, 042's corners. Half of `bom-jesus`'s fall in "Todas as ruas" is its (the camera on
+     the map's pavement). Rewritten for every street on 2026-10-16, after 016, whose LiDAR echo
+     tells the road from the pavement.
+  5. **052** the streets end at their walls (found by 013): the carriageways' edges and the
+     pavements' backs where they stop at a wall, before 045 holds the ground under them and 044
+     gives them heights.
+  6. **045** the ground under a street beside a wall: held to where the carriageway now is; 044's
+     kerbs stand on it.
+  7. **044** pavements level from the kerb.
+  8. **051** steps meet what they lead to: a flight's foot at the kerb 044 sets.
+  9. **014** roundabouts and **041** squares, either, any time after 026.
+- **Stream 2, the look.** The high ones, on 007's photo textures' pipeline, party-kart's
+  `city.ts` and `refs/`.
+  1. **016** the ground from the aerial photos: done (decision 034). 018's parking bays, 019's
+     grass and 020's parked cars come from it.
+  2. **017** facades.
+  3. **021** landmarks.
+- **When both are done:** **018** markings and pavements (on 026's carriageways, 044's pavements
+  and 016's parking; its "What" also describes the track before 033); **019** trees (016's grass,
+  013's hedges); **042** names and stops, then **020** furniture (013's gates, 016's parked cars,
+  018's bays). **022** the light touches party-kart's `look.ts` alone, so it can go whenever a
+  party-kart session is free, in a round of its own, as it changes every viewpoint.
+- **Last:** **049** the stadium's bowl, whenever party-kart's `land.ts` is free; then **053**, every
+  task's notes read for what they left, after every task open on 2026-10-16 but 038. **038** when
+  the area grows, and not before: load time doesn't matter to the owner (2026-10-16), so 016's
+  bigger download (2.3 to 7.0 MB on High) doesn't bring it forward.
+- **Two sessions at once:** `npm run world` rewrites every tile, so a second session in braga-map
+  works in a git worktree of its own, with `.cache/` linked to the main checkout's (a junction on
+  Windows: it's 7.5 GB and not in git), and the two take turns at merging and tagging. In
+  party-kart, never two sessions on the same file.
 - **The shooter's area** goes first in every task of Phases 2–4, to the bar
   [SHOOTER-AREA.md](SHOOTER-AREA.md) sets (015, decision 031).
 - **The sound** is done (023–025); what's next of it is in "Later".

@@ -56,3 +56,7 @@ Steps, when the owner grows the area or a phone can't hold it:
 - Decision 019: built whole for the small area; this waits until it's needed.
 - From task 007: a tile's photo textures come with it (`world.photos`), and `render/photos.ts`'s
   `Photos.dispose` frees them; nothing calls it yet, as no tile goes.
+- From task 016 (2026-10-16): what's downloaded before you can drive went from 2.3 to 7.0 MB
+  gzipped on High, and loading only the tiles near the player would take it down. The owner: load
+  time doesn't matter, so that isn't a reason to do this sooner. It still waits for the area to
+  grow.

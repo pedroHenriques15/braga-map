@@ -102,6 +102,15 @@ test('no sliver: a bend at a node, carriageways that touch; but a narrow median,
   // A street that bends 9° where one way ends and the next begins: the outside of the bend is road.
   const bend = on(cut(streetSurfaces({ lines: [way(1, 5, 9, [[0, 0], [50, 0]], [1, 2]), way(2, 5, 9, [[50, 0], [100, 8]], [2, 3])], box })));
   assert.ok(bend(50.3, -4) && bend(49.7, -4), 'no wedge open outside the bend');
+  // Round, too, where it runs on through a junction: the wedge outside its bend is its own, not the
+  // street across it's (the Liberdade's promenade had a point of concrete in its setts at each
+  // crossing); but its lines painted still run on to the junction, as they stop only where another
+  // street's carriageway begins.
+  const lanes = { highway: 'tertiary', lanes: '2' }, a1 = way(1, 4, 7, [[0, 0], [50, 0]], [1, 2], lanes), a2 = way(2, 4, 7, [[50, 0], [100, 8]], [2, 3], lanes);
+  const across = cut(streetSurfaces({ lines: [a1, a2, way(3, 5, 6, [[50, -40], [50, 0]], [4, 2], { surface: 'sett' }), way(4, 5, 6, [[50, 0], [50, 40]], [2, 5], { surface: 'sett' })], box }));
+  assert.ok(inside(across.carriageways.filter((p) => p.surface === 'asphalt'))(50.3, -3.4), "the wedge outside the road's bend is its asphalt");
+  const tee = cut(streetSurfaces({ lines: [a1, { ...a2, pts: [[50, 0], [100, 2]] }, way(3, 5, 6, [[50, 0], [50, 40]], [2, 4])], box }));
+  assert.ok(tee.markings.some((m) => m.kind === 'centre' && m.pts.some(([x, z]) => Math.hypot(x - 50, z) < 0.5)), 'the centre line runs on to the junction');
   // Two one-way carriageways of 7 m, joined at both ends, 0.1 m apart: they touch, and there's no
   // crack between them; 0.5 m apart, a median between them.
   const pair = (gap) => {

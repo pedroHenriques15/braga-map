@@ -71,7 +71,11 @@ the gores where a slip road leaves, some not, like the spike at (504, 980), whos
      on into one other at its level is round at that end, as wide as the narrower (a way's own bend);
      and so is one that runs on through a junction into another within 20° of straight. Through a
      junction the wedge was another street's surface: the promenade's concrete ran a 3 m point into
-     its setts at each crossing, where each crossing bends 5°.
+     its setts at each crossing, where each crossing bends 5°. The lines painted on a street still stop
+     where another's band, cut square, begins: in 1.17.0 they stopped at the round end too, and
+     the open world lost 1.8 km of its lane lines and 1.3 km of its centre lines near junctions
+     (found in the round's shots, at `alvaro-carneiro`; 1.17.1 has them back to the metre, and the
+     test a centre line that runs on to the junction).
   2. **Cracks between two surfaces' pieces,** 1 to 6 cm wide and up to 20 m long (the Liberdade's
      side streets of setts where they meet it, at (237, 687) and (170, 539); its promenade, setts
      against paving, outside the open world's edge): each piece was rounded to 10 cm on its own, one

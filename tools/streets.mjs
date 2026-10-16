@@ -388,17 +388,20 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height =
   // other's centre line, not in a roundabout's island), round at a dead end. Where it goes on into
   // one other edge at its level, or through a junction into one that runs on within 20° of straight,
   // round as a way is where it bends, as wide as the narrower: cut square, the two left a wedge open
-  // outside the bend, a sliver or another street's surface in it (task 048).
+  // outside the bend, a sliver or another street's surface in it (task 048). `square` is it without
+  // those, where the lines painted on a street stop.
   const ends = new Map(), up = (e) => (e.level === 1 || e.level === 2 ? e.level : 0);
   for (const e of edges) [[e.nodes[0], 0], [e.nodes.at(-1), e.pts.length - 1]].forEach(([n, i]) => { if (n != null) ends.set(n, [...(ends.get(n) ?? []), { e, i, dir: heading(e.pts, i, i > 0) }]); });
   for (const e of edges) {
-    const caps = [[e.nodes[0], 0], [e.nodes.at(-1), e.pts.length - 1]].flatMap(([n, i]) => {
+    const caps = [], joins = [];
+    for (const [n, i] of [[e.nodes[0], 0], [e.nodes.at(-1), e.pts.length - 1]]) {
       const p = e.pts[i], at = ends.get(n) ?? [], me = at.find((a) => a.e === e && a.i === i);
-      if (at.length < 2) return [circle(p, e.w / 2, 24)];
+      if (at.length < 2) { caps.push(circle(p, e.w / 2, 24)); continue; }
       const others = at.filter((a) => a !== me && up(a.e) === up(e)), on = at.length === 2 ? others : others.filter((a) => a.dir[0] * me.dir[0] + a.dir[1] * me.dir[1] < -0.94);
-      return on.length ? [circle(p, Math.max(...on.map((a) => Math.min(a.e.w, e.w))) / 2)] : [];
-    });
-    e.poly = union(band([toPath(e.pts)], e.w / 2, true), caps);
+      if (on.length) joins.push(circle(p, Math.max(...on.map((a) => Math.min(a.e.w, e.w))) / 2));
+    }
+    e.square = union(band([toPath(e.pts)], e.w / 2, true), caps);
+    e.poly = joins.length ? union(e.square, joins) : e.square;
   }
 
   // Which surfaces join: everything at the ground's level is one (a passage under a building is at
@@ -890,7 +893,7 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height =
       const at = [];
       for (const n of [e.nodes[0], e.nodes.at(-1)]) {
         const a = g.arms.get(n);
-        if (a?.length > 2) for (const x of a) if (x.e !== e) at.push(...x.e.poly);
+        if (a?.length > 2) for (const x of a) if (x.e !== e) at.push(...x.e.square);
       }
       return at;
     };

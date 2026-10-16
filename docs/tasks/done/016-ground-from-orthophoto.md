@@ -259,5 +259,9 @@ pavements stroked on top, and grain. In the data, ground areas keep their holes 
     `porfirio-da-silva` and `fujacal-west`; the mound down the middle of the Travessa
     Conselheiro Lobato (`travessa-lobato`, grey now, not lawn); and the Rua do Monte da Forca, setts
     in the photo and paving in the game (`monte-da-forca`), where the map doesn't say setts.
-- **Done** 2026-10-16 (decision 034). braga-map 1.16.0 and party-kart's `task-016` (`8e21b33`) on it;
-  not yet merged into either repository's `main` or deployed.
+- **Done** 2026-10-16 (decision 034).
+- **Live** (2026-10-16): braga-map 1.16.0, and party-kart `d575cc4` on it (the round's `8e21b33` and
+  its docs), deployed and served at https://pedrohenriques15.github.io/party-kart/. Opened there
+  headless at `sao-joao-da-ponte`: the 48 tiles' classes and colours and the six photos all
+  fetched, no errors, the ground drawn as in the round (112 draw calls, 1.37 M triangles, 118 MB
+  of textures on High).

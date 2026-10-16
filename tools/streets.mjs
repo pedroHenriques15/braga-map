@@ -70,6 +70,19 @@ function grow(paths, d) {
   o.Execute(out, d * S);
   return out;
 }
+// Closed by d metres: grown, then shrunk, which fills what's narrower than 2d between them and rounds
+// an inside corner; or opened, shrunk then grown, which takes away what's narrower than 2d. In
+// millimetres, so where nothing changes an edge comes back to the centimetre.
+function twice(paths, d) {
+  const o = new C.ClipperOffset(2, 0.04 * S * 10), a = [], b = [];
+  o.AddPaths(paths.map((p) => p.map((q) => ({ X: q.X * 10, Y: q.Y * 10 }))), C.JoinType.jtRound, C.EndType.etClosedPolygon);
+  o.Execute(a, d * S * 10);
+  o.Clear();
+  o.AddPaths(a, C.JoinType.jtRound, C.EndType.etClosedPolygon);
+  o.Execute(b, -d * S * 10);
+  return b.map((p) => p.map((q) => ({ X: Math.round(q.X / 10), Y: Math.round(q.Y / 10) })));
+}
+const closed = (paths, d) => twice(paths, d), opened = (paths, d) => twice(paths, -d);
 // The band d metres either side of each line, round where it ends, or cut square across it (butt).
 function band(lines, d, butt = false) {
   const o = new C.ClipperOffset(2, 0.04 * S), out = [];
@@ -102,6 +115,91 @@ function shapes(paths, strict = false) {
   };
   walk(tree);
   return out;
+}
+// Snap rounding (task 048): every point of some rings, rounded to the 10 cm grid, makes its 10 cm
+// square hot; and a ring is rounded by running each of its edges through every hot square it passes
+// through, in order along it. Two pieces that meet along an edge pass through the same squares there,
+// so they come out with the same points, and a point a few centimetres wide folds flat on both sides
+// of it alike. So that they do have the same edge, each first takes the points of the others that
+// lie on it, within 2 cm, as Clipper leaves them (in whole centimetres, and a point within 1.4 cm of
+// the line from the one before to the one after taken out). Each stretch is measured from its first
+// end (west, then north), so that the pieces either side of it, which run it opposite ways, find the
+// same points and squares on it to the last bit.
+function snapRounding(rings) {
+  const CELL = 500, NEAR = 2, points = new Map(), squares = new Map(), seen = new Set(), key = (i, j) => (i + 5e5) * 1e6 + j + 5e5;
+  const add = (m, q) => { const k = key(Math.floor(q.X / CELL), Math.floor(q.Y / CELL)); if (!m.has(k)) m.set(k, []); m.get(k).push(q); };
+  for (const r of rings) for (const q of r) {
+    const h = { X: Math.round(q.X / 10) * 10, Y: Math.round(q.Y / 10) * 10 }, id = key(h.X, h.Y);
+    add(points, q);
+    if (!seen.has(id)) { seen.add(id); add(squares, h); }
+  }
+  // What of a map lies in the cells along an edge from p to q and either side of it, as f takes it:
+  // [how far along it, the thing], in order along it, measured from its first end.
+  const along = (m, a, b, f) => {
+    const back = b.X < a.X || (b.X === a.X && b.Y < a.Y), [p, q] = back ? [b, a] : [a, b], dx = q.X - p.X, dy = q.Y - p.Y, L2 = dx * dx + dy * dy, n = Math.ceil(Math.sqrt(L2) / CELL) || 1;
+    const looked = new Set(), got = [];
+    for (let s = 0; s <= n; s++) {
+      const ci = Math.floor((p.X + (dx * s) / n) / CELL), cj = Math.floor((p.Y + (dy * s) / n) / CELL);
+      for (let u = -1; u <= 1; u++) for (let v = -1; v <= 1; v++) {
+        const k = key(ci + u, cj + v);
+        if (looked.has(k)) continue;
+        looked.add(k);
+        for (const h of m.get(k) ?? []) if (f(p, q, h)) got.push([L2 ? ((h.X - p.X) * dx + (h.Y - p.Y) * dy) / L2 : 0, h]);
+      }
+    }
+    got.sort((g, o) => g[0] - o[0] || g[1].X - o[1].X || g[1].Y - o[1].Y);
+    return (back ? got.reverse() : got).map(([, h]) => h);
+  };
+  // A point on the edge, between its ends; a hot square it meets (not all the square's corners on one
+  // side of it, and their boxes meeting).
+  const on = (p, q, h) => {
+    const dx = q.X - p.X, dy = q.Y - p.Y, t = (h.X - p.X) * dx + (h.Y - p.Y) * dy;
+    return t > 0 && t < dx * dx + dy * dy && Math.abs((h.Y - p.Y) * dx - (h.X - p.X) * dy) <= NEAR * Math.hypot(dx, dy);
+  };
+  const meets = (p, q, h) => {
+    if (Math.max(p.X, q.X) < h.X - 5 || Math.min(p.X, q.X) > h.X + 5 || Math.max(p.Y, q.Y) < h.Y - 5 || Math.min(p.Y, q.Y) > h.Y + 5) return false;
+    const side = [[-5, -5], [5, -5], [5, 5], [-5, 5]].map(([u, v]) => Math.sign((q.X - p.X) * (h.Y + v - p.Y) - (q.Y - p.Y) * (h.X + u - p.X)));
+    return !side.every((s) => s > 0) && !side.every((s) => s < 0);
+  };
+  return (r) => {
+    const out = [], put = (h) => { if (!out.length || h.X !== out.at(-1).X || h.Y !== out.at(-1).Y) out.push(h); };
+    for (let i = 0; i < r.length; i++) {
+      const a = r[i], b = r[(i + 1) % r.length], stretch = [a, ...along(points, a, b, on), b];
+      for (let k = 1; k < stretch.length; k++) for (const h of along(squares, stretch[k - 1], stretch[k], meets)) put(h);
+    }
+    while (out.length > 1 && out[0].X === out.at(-1).X && out[0].Y === out.at(-1).Y) out.pop();
+    return out;
+  };
+}
+// Some rings to the nearest 10 cm, as the tiles keep them: as shapes, in decimetres, none of whose
+// rings crosses itself or another. Clipper on the 10 cm grid cuts off a piece's point where it's
+// narrower than 10 cm, and leaves a crack beside it (task 048): in centimetres it leaves every point
+// where it is but where rounding made two edges cross, and puts one there, which is rounded in turn;
+// on the 10 cm grid only if that doesn't settle.
+function rounded(rings) {
+  let dm = rings.map((r) => r.map((q) => ({ X: Math.round(q.X / 10), Y: Math.round(q.Y / 10) })));
+  for (let k = 0; k < 4; k++) {
+    const cm = shapes(dm.map((r) => r.map((q) => ({ X: q.X * 10, Y: q.Y * 10 }))), true).flat();
+    if (!cm.some((r) => r.some((q) => q.X % 10 || q.Y % 10))) return regroup(cm.map((r) => r.map((q) => ({ X: q.X / 10, Y: q.Y / 10 }))));
+    dm = cm.map((r) => r.map((q) => ({ X: Math.round(q.X / 10), Y: Math.round(q.Y / 10) })));
+  }
+  return regroup(shapes(dm, true).flat());
+}
+// Rings as shapes, each outline with the holes in it: a hole in the smallest outline round it.
+// clipper-lib's tree now and then gives a hole to another outline, far off (task 048).
+function regroup(rings) {
+  const boxOf = (r) => ({ x0: Math.min(...r.map((q) => q.X)), x1: Math.max(...r.map((q) => q.X)), y0: Math.min(...r.map((q) => q.Y)), y1: Math.max(...r.map((q) => q.Y)) });
+  const outers = rings.filter((r) => C.Clipper.Orientation(r)).map((r) => ({ r, a: C.Clipper.Area(r), b: boxOf(r), holes: [] }));
+  for (const h of rings.filter((r) => !C.Clipper.Orientation(r))) {
+    const hb = boxOf(h);
+    let best = null;
+    for (const o of outers) {
+      if (hb.x0 < o.b.x0 || hb.x1 > o.b.x1 || hb.y0 < o.b.y0 || hb.y1 > o.b.y1 || (best && o.a >= best.a)) continue;
+      if (h.map((q) => C.Clipper.PointInPolygon(q, o.r)).find((side) => side !== -1) !== 0) best = o;
+    }
+    if (best) best.holes.push(h);
+  }
+  return outers.map((o) => [o.r, ...o.holes]);
 }
 const circle = ([x, z], r, n = 48) => toPath(Array.from({ length: n }, (_, i) => [x + r * Math.cos((2 * Math.PI * i) / n), z + r * Math.sin((2 * Math.PI * i) / n)]));
 const rect = (b) => toPath([[b.x0, b.z0], [b.x1, b.z0], [b.x1, b.z1], [b.x0, b.z1]]);
@@ -287,11 +385,19 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height =
     for (let i = 1; i < l.nodes.length; i++) if (i === l.nodes.length - 1 || isNode(l.nodes[i])) { cut(i0, i); i0 = i; }
   }
   // Each edge's carriageway: its band, cut square across where it meets another (so it ends on the
-  // other's centre line, not in a roundabout's island), round at a dead end.
-  const ends = new Map();
-  for (const e of edges) for (const n of [e.nodes[0], e.nodes.at(-1)]) if (n != null) ends.set(n, (ends.get(n) ?? 0) + 1);
+  // other's centre line, not in a roundabout's island), round at a dead end. Where it goes on into
+  // one other edge at its level, or through a junction into one that runs on within 20° of straight,
+  // round as a way is where it bends, as wide as the narrower: cut square, the two left a wedge open
+  // outside the bend, a sliver or another street's surface in it (task 048).
+  const ends = new Map(), up = (e) => (e.level === 1 || e.level === 2 ? e.level : 0);
+  for (const e of edges) [[e.nodes[0], 0], [e.nodes.at(-1), e.pts.length - 1]].forEach(([n, i]) => { if (n != null) ends.set(n, [...(ends.get(n) ?? []), { e, i, dir: heading(e.pts, i, i > 0) }]); });
   for (const e of edges) {
-    const caps = [[e.nodes[0], e.pts[0]], [e.nodes.at(-1), e.pts.at(-1)]].filter(([n]) => ends.get(n) === 1 || n == null).map(([, p]) => circle(p, e.w / 2, 24));
+    const caps = [[e.nodes[0], 0], [e.nodes.at(-1), e.pts.length - 1]].flatMap(([n, i]) => {
+      const p = e.pts[i], at = ends.get(n) ?? [], me = at.find((a) => a.e === e && a.i === i);
+      if (at.length < 2) return [circle(p, e.w / 2, 24)];
+      const others = at.filter((a) => a !== me && up(a.e) === up(e)), on = at.length === 2 ? others : others.filter((a) => a.dir[0] * me.dir[0] + a.dir[1] * me.dir[1] < -0.94);
+      return on.length ? [circle(p, Math.max(...on.map((a) => Math.min(a.e.w, e.w))) / 2)] : [];
+    });
     e.poly = union(band([toPath(e.pts)], e.w / 2, true), caps);
   }
 
@@ -319,7 +425,7 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height =
   const W = water.filter((r) => r.length > 2 && r.some((p) => near(p, margin + 40))).map((r) => positive(toPath(r)));
   const Q = squares.filter((r) => r.length > 2 && r.some((p) => near(p, margin + 40))).map((r) => positive(toPath(r)));
   const built = wallIndex(buildings.filter((r) => r.some((p) => near(p, margin + 60))));
-  const stats = { edges: edges.length, junctions: 0, islands: 0, reservations: 0, km: { kerb: 0, dropped: 0 }, m2: {}, paths: { m2: {}, flights: 0, treads: 0, steep: 0, lanes: 0, flush: 0 } };
+  const stats = { edges: edges.length, junctions: 0, islands: 0, reservations: 0, slivers: 0, km: { kerb: 0, dropped: 0 }, m2: {}, paths: { m2: {}, flights: 0, treads: 0, steep: 0, lanes: 0, flush: 0 } };
 
   // The carriageways of each group: each edge's band, the corners where they meet rounded.
   const made = new Map();
@@ -358,7 +464,7 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height =
       if (area(fill) > 0.05) fills.push({ paths: fill, surface: a.reduce((m, x) => (x.e.k < m.e.k ? x : m)).e.surface });
       stats.junctions += a.length > 2;
     }
-    const U = union(U0, ...fills.map((f) => f.paths));
+    const U1 = union(U0, ...fills.map((f) => f.paths));
     // Each surface where its streets are, the bigger street's where two meet.
     const order = [...new Set(list.map((e) => e.k + ':' + e.surface))].sort((a, b) => parseInt(a) - parseInt(b));
     let taken = [];
@@ -376,6 +482,25 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height =
       bySurface.set(s, [...(bySurface.get(s) ?? []), ...piece]);
       taken = union(taken, piece);
     }
+    // The slivers (task 048): where the carriageways' outline goes into a notch under a metre wide (a
+    // spike of pavement into the road; a gore's tip, the gore staying from where it's a metre wide),
+    // closed, as the kerb runs across it; and a hole between them under 0.3 m wide all along, too
+    // narrow for a reservation (they touch), filled. An island keeps its shape, however narrow, but
+    // where it's under 10 cm wide: a crack where the carriageways touch, as at a long median's break.
+    // Each sliver the surface of what's round it most.
+    const small = shapes(U1).flatMap(([, ...holes]) => holes.filter((h) => Math.abs(C.Clipper.Area(h)) < ISLAND * S * S).map(positive));
+    const cracks = small.flatMap((h) => (grow([h], -0.15).length ? minus([h], opened([h], 0.05)) : [h]));
+    const slivers = shapes([...minus(closed(U1, 0.5), [...U1, ...small]), ...cracks]);
+    if (slivers.length) {
+      const near = [...bySurface].map(([s, p]) => [s, splitter(p)]);
+      for (const sh of slivers) {
+        const b = boundsOfPaths(sh), rim = minus(grow(sh, 0.3), sh);
+        const [s] = near.map(([s, n]) => [s, area(meet(rim, n(b)))]).reduce((m, x) => (x[1] > m[1] ? x : m));
+        bySurface.set(s, [...bySurface.get(s), ...sh]);
+      }
+    }
+    const U = union(U1, slivers.flat());
+    stats.slivers += area(meet(slivers.flat(), [rect(box)]));
     // Every surface but asphalt kept to the carriageways' outline, and asphalt the rest of it, so
     // together they're exactly what the pavements and islands are cut from.
     const others = [...bySurface].filter(([s]) => s !== 'asphalt').map(([s, p]) => [s, meet(union(p), U)]);
@@ -470,22 +595,24 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height =
     const k = ys.cm ? 100 : 10, y = ([x, z]) => Math.round(ys(x, z) * k) / k;
     return { ...o, ys: key === 'rings' ? pts.map((r) => r.map(y)) : pts.map(y) };
   };
-  const addShapes = (kind, paths, props, ys) => {
-    for (const sh of shapes(paths)) {
-      const b = boundsOf([sh[0]]);
-      for (const c of into) {
-        if (!meets(b, c.box)) continue;
-        // To the nearest 10 cm, as the tiles keep them, by Clipper on a 10 cm grid, so no ring
-        // rounded crosses itself or another; and along a deck's end, where it meets the ground's
-        // streets, a point every 2 m or less, so it follows the street's shape across.
-        for (const piece of within(b, c.box) ? [sh] : shapes(meet(sh, c.path))) for (const snapped of shapes(piece.map((r) => r.map((q) => ({ X: Math.round(q.X / 10), Y: Math.round(q.Y / 10) }))), true)) {
-          const rings = snapped.map((r) => r.map((q) => [q.X / 10, q.Y / 10])).filter((r) => r.length > 2).map((r) => (ys?.join ? dense(r, ys.join) : r));
-          if (!rings.length || Math.abs(C.Clipper.Area(snapped[0])) / 100 < 0.25) continue;
-          c.out[kind].push(withYs({ ...props, rings }, ys, 'rings', rings));
-        }
-      }
+  // Some shapes (shapes(), above) cut to the boxes they meet: [box, pieces] for each.
+  const cutTo = (shs) => shs.flatMap((sh) => {
+    const b = boundsOf([sh[0]]);
+    return into.filter((c) => meets(b, c.box)).map((c) => [c, within(b, c.box) ? [sh] : shapes(meet(sh, c.path))]);
+  });
+  // Some shapes cut to the boxes (cutTo), each piece to the nearest 10 cm, as the tiles keep them
+  // (rounded), but a scrap under 0.25 m²; and along a deck's end, where it meets the ground's streets, a
+  // point every 2 m or less, so it follows the street's shape across. `snap`, for the carriageways
+  // (task 048): their pieces rounded alike (snapRounding), so that where two meet no crack opens
+  // between them; and every one kept, as a scrap of one surface left out of another is a hole.
+  const addCut = (kind, cut, props, ys, snap = null) => {
+    for (const [c, pieces] of cut) for (const piece of pieces) for (const snapped of rounded(snap ? piece.map(snap) : piece)) {
+      const rings = snapped.map((r) => r.map((q) => [q.X / 10, q.Y / 10])).filter((r) => r.length > 2).map((r) => (ys?.join ? dense(r, ys.join) : r));
+      if (!rings.length || (!snap && Math.abs(C.Clipper.Area(snapped[0])) / 100 < 0.25)) continue;
+      c.out[kind].push(withYs({ ...props, rings }, ys, 'rings', rings));
     }
   };
+  const addShapes = (kind, shs, props, ys) => addCut(kind, cutTo(shs), props, ys);
   // Lines thinned to within 3 cm of themselves first: a kerb was looked at every 4 m along it.
   const addLines = (kind, paths, props, ys) => {
     for (const p of paths) {
@@ -540,7 +667,7 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height =
   const addPaths = (list) => {
     for (const pc of list) {
       const ys = pc.y === undefined ? pc.ys ?? null : Object.assign(() => pc.y, { cm: true });
-      addShapes('paths', pc.paths, { kind: pc.kind, surface: pc.surface, level: pc.level, raised: pc.raised }, ys);
+      addShapes('paths', shapes(pc.paths), { kind: pc.kind, surface: pc.surface, level: pc.level, raised: pc.raised }, ys);
       stats.paths.m2[pc.kind] = (stats.paths.m2[pc.kind] ?? 0) + area(meet(pc.paths, boxPath));
     }
   };
@@ -548,8 +675,10 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height =
   for (const [key, g] of made) {
     const level = levelName(key), ys = level === 'ground' ? null : level === 'bridge' ? yOf(g.list, g.ends, g.touches) : yOf(g.list), U = g.U;
     const inU = insideOf(U), owner = lineIndex(g.list);
-    for (const [surface, paths] of g.bySurface) {
-      addShapes('carriageways', paths, { surface, level }, ys);
+    const surfaces = [...g.bySurface].map(([surface, paths]) => [surface, paths, cutTo(shapes(paths))]);
+    const snap = snapRounding(surfaces.flatMap(([, , cut]) => cut.flatMap(([, pieces]) => pieces.flat())));
+    for (const [surface, paths, cut] of surfaces) {
+      addCut('carriageways', cut, { surface, level }, ys, snap);
       stats.m2[surface] = (stats.m2[surface] ?? 0) + area(meet(paths, boxPath));
     }
 
@@ -675,9 +804,9 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height =
       stats.paths.flush += area(meet(flushed, boxPath));
     }
     pave = shapes(pave).filter((sh) => Math.abs(C.Clipper.Area(sh[0])) / (S * S) > 1).flat();
-    addShapes('pavements', pave, { kind: 'pavement', level }, ys);
-    addShapes('pavements', res, { kind: 'reservation', level }, ys);
-    addShapes('pavements', islands, { kind: 'island', level }, ys);
+    addShapes('pavements', shapes(pave), { kind: 'pavement', level }, ys);
+    addShapes('pavements', shapes(res), { kind: 'reservation', level }, ys);
+    addShapes('pavements', shapes(islands), { kind: 'island', level }, ys);
     stats.m2.pavement = (stats.m2.pavement ?? 0) + area(meet(pave, boxPath));
 
     // The kerbs: the edge of the carriageway wherever a pavement, a reservation or an island is
@@ -1108,7 +1237,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     water: world.areas.filter((x) => x.kind === 'water').map((x) => x.pts),
   });
   const got = { ...made.cuts.get('box'), stats: made.stats }, s = got.stats;
-  console.log(`${s.edges} edges, ${s.junctions} junctions, ${s.islands} islands, ${s.reservations} reservations, in ${s.seconds} s`);
+  console.log(`${s.edges} edges, ${s.junctions} junctions, ${s.islands} islands, ${s.reservations} reservations, ${Math.round(s.slivers)} m² of slivers closed, in ${s.seconds} s`);
   console.log(`carriageways ${Object.entries(s.m2).filter(([k]) => k !== 'pavement').map(([k, v]) => `${k} ${Math.round(v)} m²`).join(', ')}; pavements ${Math.round(s.m2.pavement)} m²; kerbs ${s.km.kerb.toFixed(2)} km, ${s.km.dropped.toFixed(2)} km dropped`);
   console.log(`${got.carriageways.length} carriageway pieces, ${got.pavements.length} pavements, ${got.kerbs.length} kerbs, ${got.markings.length} markings (${['lane', 'centre', 'zebra', 'stop'].map((k) => `${got.markings.filter((m) => m.kind === k).length} ${k}`).join(', ')})`);
   const ps = s.paths;

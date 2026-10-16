@@ -241,8 +241,7 @@ Steps:
   - Found in the tests: the found walls lying across the underpass's ramp and across the approach to
     the 47 steps from (-158.9, 1278) stopped karts until the walls opened where ways pass, a fence the
     map draws along a flight was cut, and walls were cut on a deck's or a tunnel's road.
-- **The viewpoints:** in "Done when". The round `2026-10-16-after013` is shot; it goes on the
-  scorecard once the work is committed and live, as task 050's did.
+- **The viewpoints:** in "Done when".
 - **The budget** (task 004, decision 017), every viewpoint at High, Medium and Low,
   `shots/2026-10-16-after013/` against `shots/2026-10-15-after050/` (both on the desktop's RTX 4060
   Ti): 3 to 6 more draw calls (74–233 on High); 131–559 k more triangles on High (the median 305 k:
@@ -256,5 +255,13 @@ Steps:
 - **Found along the way:** the streets don't end at their walls (4.0 km of the map's walls stand on
   a carriageway as drawn, 4.8 km on a pavement): task 052, its questions answered (2026-10-16).
 - **Done** 2026-10-16 (decision 033).
+- **Live** (2026-10-16): braga-map 1.15.0, and party-kart `4f0d075` on it, deployed and served at
+  https://pedrohenriques15.github.io/party-kart/. The round `2026-10-16-after013` ("Muros e sebes"),
+  shot on them, is on the scorecard, open for marks, before 016's. Claude's marks are in it as their
+  own document (`scores/claude`, which the page names "Alguém", each comment starting "(Claude)"),
+  not the owner's: 2.45 on average over the 29 places, the walls' places from 2 to 3 (Couteiro, the
+  Travessa do Fujacal, Bernardo Sequeira and Álvaro Carneiro 3; Monte da Forca, Viriato Amaral Nunes
+  and the Alameda 2). Noticed in it: at `robert-smith-picoto` a wall of the map's measured 4.2 m
+  high, white, where the photo has a brick wall about 2.5 m.
 - Tests: braga-map `npm test`, 80 pass (`test/walls.test.js` new: 6); party-kart `npm test`, 49 pass,
   and `npm run check`.

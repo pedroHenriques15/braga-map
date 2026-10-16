@@ -365,6 +365,63 @@ test('the street on the ground runs into every deck and tunnel on its own slope'
   assert.deepEqual(off, [], "the ground dips or climbs where the street meets a deck or a tunnel");
 });
 
+test("no corner of the ground's streets lies past a deck's or a tunnel's end (task 046)", () => {
+  // Past each end's line, along the bridge's or the tunnel's ways within their width and 3 m either
+  // side (the band round its lines and those that meet them at its level, square at their ends), as
+  // far as 30 m on or a street on the ground that crosses them: the ground's carriageway there, but
+  // for the streets' own bands (half a street's width and 0.9 m round its line, as the tiles keep a
+  // line to within 0.8 m and its points to the decimetre) and the 3 m behind another end's line
+  // within its width and 3 m (where a deck beside it ends further on), is a corner closed round
+  // across the deck or the tunnel. Before task 046 the Avenida Robert Smith's west end had 110 m² of
+  // it, a strip of road in the gap between its two decks and on the embankment under them, and the
+  // Rotunda Santos da Cunha viaduct's north end 42 m². But a junction whose street crosses an end
+  // keeps its corners, as far as they reach (45 m): the João XXI's ways across the Avenida 31 de
+  // Janeiro's deck's ends, its corners over the João XXI's tunnels too.
+  const K = 100, cm = ([x, z]) => ({ X: Math.round(x * K), Y: Math.round(z * K) });
+  const clip = (type, a, b = []) => { const c = new C.Clipper(), out = []; c.AddPaths(a, C.PolyType.ptSubject, true); if (b.length) c.AddPaths(b, C.PolyType.ptClip, true); c.Execute(type, out, NZ, NZ); return out; };
+  const offset = (lines, d, end) => { const o = new C.ClipperOffset(2, 4), out = []; o.AddPaths(lines.map((l) => l.map(cm)), C.JoinType.jtRound, end); o.Execute(out, d * K); return out; };
+  const ahead = (e, from, to, side = 30) => { const [ux, uz] = e.u, [x, z] = e.p, q = (a, s) => cm([x + ux * a - uz * s, z + uz * a + ux * s]), r = [q(from, side), q(to, side), q(to, -side), q(from, -side)]; return [C.Clipper.Orientation(r) ? r : r.reverse()]; };
+  const ground = w.lines.filter((l) => (l.level === 'ground' || l.level === 'under') && l.kind <= 8), key = (p) => p[0] + ',' + p[1];
+  const dot = (a, b) => a[0] * b[0] + a[1] * b[1];
+  // A ground street's arms at a point: the way it runs from there, to its first point 2 m or more off.
+  const armsAt = (p) => ground.flatMap((l) => l.pts.flatMap((q, k) => (key(q) !== key(p) ? [] : [-1, 1].flatMap((s) => {
+    for (let j = k + s; j >= 0 && j < l.pts.length; j += s) { const d = Math.hypot(l.pts[j][0] - p[0], l.pts[j][1] - p[1]); if (d >= 2 || j === 0 || j === l.pts.length - 1) return [[(l.pts[j][0] - p[0]) / d, (l.pts[j][1] - p[1]) / d]]; }
+    return [];
+  }))));
+  const crossed = joins.filter((e) => { const a = armsAt(e.p); return a.some((x) => Math.abs(dot(x, e.u)) < 0.7 && a.some((y) => y !== x && dot(x, y) < -0.7)); });
+  const junctions = crossed.map((e) => { const n = 48, r = Array.from({ length: n }, (_, k) => cm([e.p[0] + 45 * Math.cos((2 * Math.PI * k) / n), e.p[1] + 45 * Math.sin((2 * Math.PI * k) / n)])); return C.Clipper.Orientation(r) ? r : r.reverse(); });
+  const carriageways = clip(C.ClipType.ctUnion, S.carriageways.filter((p) => p.level === 'ground').flatMap((p) => turned(p)));
+  const left = [];
+  let total = 0;
+  for (const e of joins.filter((x) => !crossed.includes(x))) {
+    // The bridge's or the tunnel's lines: its own, and those that meet it at their ends, at its level.
+    const level = w.lines.filter((l) => l.level === e.level && l.kind <= 8), own = new Set(level.filter((l) => key(l.pts[0]) === key(e.p) || key(l.pts.at(-1)) === key(e.p)));
+    for (let grew = true; grew;) {
+      grew = false;
+      const tips = new Set([...own].flatMap((l) => [key(l.pts[0]), key(l.pts.at(-1))]));
+      for (const l of level) if (!own.has(l) && (tips.has(key(l.pts[0])) || tips.has(key(l.pts.at(-1))))) { own.add(l); grew = true; }
+    }
+    const side = e.w / 2 + 3, ends = [...own].flatMap((l) => [l.pts[0], l.pts.at(-1)]);
+    const joints = ends.filter((p, i) => ends.findIndex((q) => key(q) === key(p)) === i && ends.filter((q) => key(q) === key(p)).length > 1);
+    const way = clip(C.ClipType.ctUnion, [...offset([...own].map((l) => l.pts), side, C.EndType.etOpenButt), ...offset(joints.map((p) => [p, p]), side, C.EndType.etOpenRound)]);
+    const near = ground.filter((l) => l.pts.some(([x, z]) => Math.abs(x - e.p[0]) < 80 && Math.abs(z - e.p[1]) < 80));
+    const bands = near.flatMap((l) => offset([l.pts], l.w / 2 + 0.9, C.EndType.etOpenRound));
+    for (const o of joins) if (o !== e && Math.hypot(o.p[0] - e.p[0], o.p[1] - e.p[1]) < 40) bands.push(...ahead(o, -3, 0, o.w / 2 + 3));
+    const open = clip(C.ClipType.ctDifference, clip(C.ClipType.ctIntersection, ahead(e, 0.5, 30), way), bands), mouth = clip(C.ClipType.ctIntersection, ahead(e, 0.5, 1), way);
+    // The pieces of it that reach the end's line.
+    const c = new C.Clipper(), tree = new C.PolyTree(), reach = [];
+    c.AddPaths(open, C.PolyType.ptSubject, true);
+    c.Execute(C.ClipType.ctUnion, tree, NZ, NZ);
+    for (const o of tree.Childs()) { const sh = [o.Contour(), ...o.Childs().map((h) => h.Contour())]; if (clip(C.ClipType.ctIntersection, sh, mouth).length) reach.push(...sh); }
+    const got = clip(C.ClipType.ctDifference, clip(C.ClipType.ctIntersection, carriageways, reach), junctions), m2 = got.reduce((s, q) => s + C.Clipper.Area(q), 0) / K / K;
+    total += m2;
+    if (m2 > 1) left.push(`${e.level} at (${e.p}) ${m2.toFixed(1)} m²`);
+  }
+  console.log(`${joins.length - crossed.length} decks' ends and tunnels' mouths: ${total.toFixed(1)} m² of the ground's carriageway past them that's no street's own; ${crossed.length} ends a street crosses`);
+  assert.ok(crossed.length >= 2, "the João XXI's ways cross the Avenida 31 de Janeiro's deck's ends");
+  assert.deepEqual(left, [], "a corner of the ground's carriageway past a deck's or a tunnel's end");
+});
+
 test("no pavement on one level lies over the other's surfaces where the two are at one height", () => {
   // A pavement on the ground over a carriageway or a pavement off it, or a deck's pavement over the
   // ground's carriageway or pavement, where they're within 1 m of each other's height: where a deck

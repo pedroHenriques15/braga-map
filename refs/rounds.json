@@ -308,6 +308,49 @@
         "travessa-lobato": [960, 720],
         "lobato-east": [960, 720]
       }
+    },
+    {
+      "id": "2026-10-16-after048",
+      "label": "Sem frinchas",
+      "date": "2026-10-16",
+      "tasks": [
+        "048"
+      ],
+      "note": "As faixas de rodagem sem lascas nem frinchas: já não há bicos de passeio a entrar na estrada, como o de 3 m num troço da Volta dos Amigos, nem fendas entre dois pedaços de pavimento, como as da Avenida da Liberdade onde as ruas de cubos a encontram, nem ilhas de 10 cm entre duas faixas que se tocam. As ilhas mais largas ficam como o mapa as desenha. O resto da cidade é o da ronda anterior.",
+      "made": "2026-10-16T15:47:33.990Z",
+      "game": "d2d8be7",
+      "map": "1.17.1",
+      "shots": {
+        "fujacal-start": [960, 720],
+        "imaculada-conceicao": [960, 720],
+        "liberdade": [960, 540],
+        "sao-joao-da-ponte": [960, 540],
+        "devesa": [960, 540],
+        "alvaro-carneiro": [960, 720],
+        "porfirio-da-silva": [960, 720],
+        "31-de-janeiro": [960, 720],
+        "joao-xxi": [960, 720],
+        "bernardo-sequeira": [960, 720],
+        "bom-jesus": [960, 720],
+        "pascoal-fernandes": [960, 720],
+        "egidio-guimaraes": [960, 720],
+        "robert-smith": [960, 720],
+        "robert-smith-picoto": [960, 720],
+        "falperra": [960, 720],
+        "sameiro": [960, 720],
+        "estadio": [960, 720],
+        "viriato-amaral-nunes": [960, 720],
+        "monte-da-forca": [960, 720],
+        "couteiro": [960, 720],
+        "conselheiro-lobato": [960, 720],
+        "fujacal-west": [960, 720],
+        "travessa-fujacal": [960, 720],
+        "alameda-fujacal": [960, 720],
+        "lobato-pavement": [960, 432],
+        "lobato-crossing": [960, 540],
+        "travessa-lobato": [960, 720],
+        "lobato-east": [960, 720]
+      }
     }
   ]
 }

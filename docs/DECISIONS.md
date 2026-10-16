@@ -865,3 +865,27 @@ of ground with a photo of that surface:
 
 The alternatives were B and C, and the ground classed by the orthophoto's colour alone, which can't
 tell sunlit asphalt from paving.
+
+## 035 · The streets' surfaces have no slivers: what's under a metre wide is closed, an island stays
+
+*2026-10-16 · task 048 · how decision 019's surfaces are cut and rounded*
+
+A game draws a sliver of pavement in the road as a spike of calçada with a kerb round it, which a
+kart bumps over, and a crack between two pieces of road as a line of nothing. So the streets'
+surfaces (`tools/streets.mjs`) have none:
+
+- **Where they come from is fixed there:** a street's band is round where it runs on into another,
+  and through a junction within 20° of straight (cut square, the two left a wedge outside the
+  bend); the carriageways' pieces are snap-rounded together onto the tiles' 10 cm grid, so two that
+  meet share their points; no scrap of carriageway is left out.
+- **What the map's lines leave is closed:** a notch into the carriageways under a metre wide (half
+  a metre either side), so a gore's tip is road from where it narrows past a metre; a gap between
+  two carriageways under 0.3 m wide all along, the width under which `streets.mjs` already draws
+  no reservation between them, filled, as they touch.
+- **An island keeps the map's shape, however narrow,** but where it's under 10 cm wide (a crack): a
+  narrow median is real in places (0.49 m at (245, 547), in the orthophoto) and not in others
+  (the Liberdade's south end, drawn as three one-way ways), and nothing in the map tells them
+  apart. Measuring the carriageways (task 026) will.
+
+The alternative was the task's own first plan, closing the carriageways by half a metre
+everywhere, which takes every median under a metre wide with it, the real ones too.

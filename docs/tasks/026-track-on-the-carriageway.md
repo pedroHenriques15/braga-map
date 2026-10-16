@@ -187,3 +187,9 @@ Steps:
   `.cache/dgt/cover/`. Not checked: whether the 50 cm ground covers the whole open world's area
   (`terrain()` falls back to the 2 m model where it doesn't, too coarse for a kerb), and how much of
   the streets' length parked cars and trees leave unmeasured.
+- **From task 048 (2026-10-16):** the world keeps an island between two carriageways as the map's
+  lines leave it, however narrow (but where it's under 10 cm wide), as some are real: the median at
+  (245, 547), 0.49 m at its widest, is in the orthophoto. Others aren't: at the Avenida da
+  Liberdade's south end (49, 304), drawn as three one-way ways, the world has two thin islands
+  (0.3 to 1.5 m) where the orthophoto shows one road. A measured carriageway, from one outside kerb
+  to the other, should leave no island there.

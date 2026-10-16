@@ -4,7 +4,7 @@ priority: medium
 kind: research
 repo: both
 created: 2026-10-16
-depends-on: [014, 016, 017, 018, 019, 020, 021, 022, 026, 041, 042, 044, 045, 046, 048, 049, 051, 052]
+depends-on: [014, 016, 017, 018, 019, 020, 021, 022, 026, 041, 042, 044, 045, 046, 048, 049, 051, 052, 054]
 roadmap: Phase 4 · Street furniture, landmarks and light (last)
 ---
 

@@ -351,6 +351,49 @@
         "travessa-lobato": [960, 720],
         "lobato-east": [960, 720]
       }
+    },
+    {
+      "id": "2026-10-16-after017",
+      "label": "Fachadas",
+      "date": "2026-10-16",
+      "tasks": [
+        "017"
+      ],
+      "note": "Cada prédio com a sua fachada: os onze tipos de Braga (a casa antiga, a casa, os blocos dos anos 50, dos anos 70 a 90 e dos anos 2000, o escritório de vidro, a escola ou edifício público, a igreja, a loja, o armazém e o anexo), cada um nas suas proporções e com a cor e o revestimento que se viram nas fotografias: 370 prédios olhados um a um, na zona do Fujacal e à vista dos pontos de vista; os outros adivinhados a partir desses. O rés-do-chão como é ao longo da rua (lojas, garagens, arcadas), uma porta, varandas, e as tabuletas das lojas com o nome, sem logótipos. As dez fachadas em fotografia agora para todos, na cor do prédio. Por cima das ruas sem frinchas da ronda anterior.",
+      "made": "2026-10-16T16:20:21.911Z",
+      "game": "ad9814e",
+      "map": "1.18.0",
+      "shots": {
+        "fujacal-start": [960, 720],
+        "imaculada-conceicao": [960, 720],
+        "liberdade": [960, 540],
+        "sao-joao-da-ponte": [960, 540],
+        "devesa": [960, 540],
+        "alvaro-carneiro": [960, 720],
+        "porfirio-da-silva": [960, 720],
+        "31-de-janeiro": [960, 720],
+        "joao-xxi": [960, 720],
+        "bernardo-sequeira": [960, 720],
+        "bom-jesus": [960, 720],
+        "pascoal-fernandes": [960, 720],
+        "egidio-guimaraes": [960, 720],
+        "robert-smith": [960, 720],
+        "robert-smith-picoto": [960, 720],
+        "falperra": [960, 720],
+        "sameiro": [960, 720],
+        "estadio": [960, 720],
+        "viriato-amaral-nunes": [960, 720],
+        "monte-da-forca": [960, 720],
+        "couteiro": [960, 720],
+        "conselheiro-lobato": [960, 720],
+        "fujacal-west": [960, 720],
+        "travessa-fujacal": [960, 720],
+        "alameda-fujacal": [960, 720],
+        "lobato-pavement": [960, 432],
+        "lobato-crossing": [960, 540],
+        "travessa-lobato": [960, 720],
+        "lobato-east": [960, 720]
+      }
     }
   ]
 }

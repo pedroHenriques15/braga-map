@@ -40,10 +40,9 @@ Before changing the city, know what the real one looks like, how close the game 
 a phone can draw. Everything after this is checked against it.
 
 Done: the viewpoints (001), the shots (002), the scorecard (003), the budget (004), the sources
-(005), the street audit (006), the reference photos (008), and the photo textures' pipeline (007,
-decision 030).
-
-- **055** The Monte da Forca's viewpoint looks 6° higher than its photo (found by 017).
+(005), the street audit (006), the reference photos (008), the photo textures' pipeline (007,
+decision 030), and two viewpoints aimed as their photos look, not as Mapillary has them (055:
+`monte-da-forca` and `estadio`, decision 009).
 
 ## Phase 2 · The shape: the ground, the streets and the buildings where they really are
 
@@ -128,8 +127,7 @@ files, and in each the foundations first.
      grass and 020's parked cars come from it.
   2. **017** facades: done (decision 036), braga-map 1.18.0 with 048's streets.
   3. **021** landmarks.
-  - **055** the Monte da Forca's camera (found by 017): small, `refs/viewpoints.json` alone, any
-    time before the next round, so its shot frames what its photo does.
+  - **055** the Monte da Forca's camera: done, with `estadio`'s; the next round shoots them so.
 - **Before party-kart's next deploy: 054,** the flying camera (the owner, 2026-10-16). It's
   party-kart's alone (`main.ts`, `input.ts`, `hud.ts`, a new `src/game/flyer.ts`), so it runs
   beside both streams, in a party-kart worktree of its own (`../party-kart-054`). 048, 017 and 046

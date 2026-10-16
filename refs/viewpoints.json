@@ -473,7 +473,7 @@
       "y": 36.2,
       "z": 1387.7,
       "tx": 233.9,
-      "ty": 48.6,
+      "ty": 45.8,
       "tz": 1406.7,
       "fov": 50,
       "photo": {
@@ -489,7 +489,7 @@
         "pitch": 7.1,
         "roll": -4.9
       },
-      "notes": "The stadium is on the left, its stands and floodlights; in the game an invented house hides it (task 011)."
+      "notes": "The stadium is on the left, its stands and floodlights; in the game an invented house hides it (task 011). Aimed 5.5° up, where the photo's zebra, the roundabout and the building on the right are, not Mapillary's 7.1° (task 055)."
     },
     {
       "id": "viriato-amaral-nunes",
@@ -527,7 +527,7 @@
       "y": 44.8,
       "z": 1691.1,
       "tx": -508.3,
-      "ty": 61.5,
+      "ty": 50,
       "tz": 1735.4,
       "fov": 51,
       "photo": {
@@ -543,7 +543,7 @@
         "pitch": 9.5,
         "roll": -1.5
       },
-      "notes": ""
+      "notes": "Aimed 3° up, where the photo's horizon and its buildings are, not Mapillary's 9.5° (task 055)."
     },
     {
       "id": "couteiro",

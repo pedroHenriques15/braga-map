@@ -190,6 +190,11 @@ favourite spots first and finding photos for them.
   within 300 m, checked by `test/viewpoints.test.js`; nowhere says which places that left out.
 - **A photo the owner or a friend takes** from the same place and heading (task 008) may replace
   one later; Google Street View never (decision 006).
+- **But the photo's own pitch where Mapillary's is off** (task 055, 2026-10-16): a phone on a
+  dashboard can be reconstructed tilted several degrees from what it saw. Where the photo's horizon,
+  or its buildings outlined from the camera (`node tools/buildings.mjs mark <id>`), say otherwise,
+  the camera is aimed as the photo looks, and its note says so: `monte-da-forca` 3° up (Mapillary's
+  9.5°), `estadio` 5.5° (7.1°). The other viewpoints over 5° fit as Mapillary has them.
 
 The alternative, the owner's and the friends' favourite spots, would have waited on the photo walk,
 and a spot with no photo can't be judged.

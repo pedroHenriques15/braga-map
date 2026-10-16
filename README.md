@@ -363,7 +363,11 @@ streets; when a track moves enough to change the edge, run the three again until
   ground's place round its end, and a deck's end follows the ground as the tiles hold it, a point
   every 2 m across it, where that's within 0.5 m of the deck; wherever a deck or a tunnel's road is
   within 2 m of the ground, the two are one level, and the ground's pavements give way to it, a
-  deck's pavements to the ground's carriageway. On its own, `node tools/streets.mjs [x0 x1 z0 z1]`
+  deck's pavements to the ground's carriageway. A corner of the ground's streets stops at the end's
+  line (task 046): past it, along the bridge's or the tunnel's ways within their width and 3 m, as
+  far as 30 m or a street on the ground across them, it's cut back, so no road runs on between two
+  decks or down the embankment under one; but a junction under a deck or over a tunnel keeps its
+  corners, and so does one whose street crosses a deck's or a tunnel's end. On its own, `node tools/streets.mjs [x0 x1 z0 z1]`
   makes a box's streets (Fujacal's by default) into `.cache/streets/` with `index.html`, a page that
   sets them over the 2025 orthophoto, each kind on a layer, to check them by eye.
   And the paths (task 050, `groundPaths`): from `lines.mjs`'s `pathsOf` (what the map has) and

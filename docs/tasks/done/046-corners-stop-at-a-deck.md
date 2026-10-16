@@ -1,5 +1,5 @@
 ---
-status: doing
+status: done
 priority: low
 kind: code
 repo: braga-map
@@ -53,9 +53,18 @@ Steps:
 
 ## Done when
 
-- [ ] No corner's fill past a deck's or a tunnel's end line in the area (the strip at the Robert
+- [x] No corner's fill past a deck's or a tunnel's end line in the area (the strip at the Robert
   Smith's west end gone), the test passes, and braga-map's `npm test` passes.
-- [ ] The viewpoint `robert-smith` shot again, no worse.
+  > `test/streets.test.js`'s new test finds 0.2 m² past the area's 32 ends in all, where the tiles
+  > before had 170 m² over 7 (110 at the Robert Smith's west end); the strip is gone from the tiles
+  > and from the game (Notes). `npm test`: 93 pass.
+- [x] The viewpoint `robert-smith` shot again, no worse.
+  > The round `2026-10-16-after046` ("Entre as pontes"), all 29 viewpoints at High, Medium and Low:
+  > `robert-smith` the same as `after017` to the pixel, as it looks west from 145 m past the decks'
+  > east end and doesn't see their west end; none of the others changed but for a lamp's glow at
+  > `lobato-crossing`. Shot from above the west end and from the trunk road under it, before (1.18.0)
+  > and after: the asphalt in the gap between the decks, and the road and kerbed slabs on the
+  > embankment under them, gone; the trunk's pavement along its edge.
 
 ## Out of scope
 
@@ -121,3 +130,22 @@ Steps:
   45 m round an end a street crosses and the 3 m behind another end's line: 170 m² over 7 ends in
   the tiles before (36.7 and 73.0 at the Robert Smith's two, 42.1 at the viaduct's north end, 9.7 at
   the Imaculada Conceição's mouth), 0.2 m² in all after.
+- **The round on the scorecard:** `2026-10-16-after046` ("Entre as pontes"), shot on party-kart
+  `d49612c` with braga-map 1.18.1 installed from its checkout (the commit that pins it to the tag
+  changes only `package.json` and its lock), at High, Medium and Low, published on "Braga real" (its
+  version 10), open for marks, with Claude's marks (`scores/claude`): 2.48 for the 29 places, as for
+  `after017`, each "as in the round before", as no shot changed. Against `after017`, at the median:
+  the same draw calls (126 on High, 95 on Low), textures (132, 80 and 47 MB) and triangles (1.67 M
+  on High, 0.76 M on Low), no viewpoint more than about a thousand off; the city built in 5.3 s on
+  High, 4.8 on Medium, 4.2 on Low. No budget to check beyond that: the task takes surfaces away and
+  puts a few kerbed islands where they were.
+- **Found along the way, not done:** the decks' pavements (1.5 m each side, as party-kart draws
+  them) fill the 2 m gap between the Robert Smith's two decks, from the further end's line on, where
+  the orthophoto shows the gap open; it was so along the decks before, and now reaches their ends.
+  Two decks side by side would want no pavement between them. Not drafted as a task here, as
+  another session is drafting in parallel (021): for the owner to take up.
+- **Done** 2026-10-16. braga-map 1.18.1 (tag `v1.18.1`), party-kart pinned to it (`5e681ee`):
+  `npm test` (49) and `npm run check` pass, and a lap of the Volta dos Amigos with the autopilot and
+  three bots, through the Robert Smith's decks, took 5:00.6 with no error. Not deployed: the roadmap
+  has party-kart's next deploy wait for task 054. No DECISIONS.md entry: how a corner stops at a
+  deck's end is in the README, under `streets.mjs`.

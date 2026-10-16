@@ -213,3 +213,15 @@ pavements stroked on top, and grain. In the data, ground areas keep their holes 
   orthophoto was flown from March to July, its grass drier (São João da Ponte's park is brown soil and
   leaves, grey here). The woods far off keep their green; near, the ground under a crown is its floor
   until task 019 draws the trees (the Sameiro's slope). Setts off the streets are paving (018's).
+- **Merged with task 013** (2026-10-16), in both worktrees: the tiles made again by `npm run world`,
+  `node tools/cover.mjs` making the same ground cover byte for byte; braga-map `npm test` 85 of 85,
+  party-kart `npm test` 49 of 49 and `npm run check`. braga-map 1.16.0 (tag `v1.16.0`), and
+  party-kart's `task-016` on it (`8e21b33`).
+- **The round on the scorecard:** `2026-10-16-after016` ("O chão"), shot after the merge on
+  party-kart `8e21b33` and braga-map 1.16.0, at High, Medium and Low, and published on "Braga real",
+  open for marks; set beside `2026-10-16-after013`, so it shows the ground on top of 013's walls.
+  Against that round, at the median of the 29 viewpoints: draw calls and triangles the same (113
+  calls and 1.37 M triangles on High, 89 and 0.74 M on Low); textures 98 → 118 MB on High, 62 → 68
+  on Medium, 45 → 42 on Low; the city built in 4.20 → 4.22 s on High, 3.33 → 3.76 on Medium, 3.46 →
+  3.89 on Low (not looked into: the build's time moves by a second from one round to the next, and
+  `after013` built a second faster than `after050` did). What it shows is the test round's.

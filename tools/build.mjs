@@ -7,7 +7,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { CACHE, KX, KZ, LAT0, LON0, P, readCache, ROOT } from './geo.mjs';
-import { storeys } from './osm.mjs';
+import { memberRings as rings, storeys } from './osm.mjs';
 import { CORE, EXT, OPEN, SECTIONS, SHOOTER, TILE } from './sections.mjs';
 import { pathsOf, streetLines } from './lines.mjs';
 import { gatesOf } from './open.mjs';
@@ -57,32 +57,6 @@ function pack(pts) {
 
 const touches = (pts, m = 50) => pts.some(([x, z]) => inBox(EXT, x, z, m));
 const area = (pts) => { let a = 0; for (let i = 0, j = pts.length - 1; i < pts.length; j = i++) a += (pts[j][0] + pts[i][0]) * (pts[j][1] - pts[i][1]); return Math.abs(a / 2); };
-
-// Joins a relation's member ways into closed rings.
-function rings(members, role) {
-  const ways = members.filter((m) => m.type === 'way' && m.geometry && (role == null || m.role === role || (role === 'outer' && m.role === ''))).map((m) => m.geometry.filter(Boolean));
-  const key = (g) => g.lat.toFixed(7) + ',' + g.lon.toFixed(7);
-  const used = new Array(ways.length).fill(false);
-  const out = [];
-  for (let i = 0; i < ways.length; i++) {
-    if (used[i]) continue;
-    used[i] = true;
-    const ring = ways[i].slice();
-    for (let guard = 0; guard < ways.length && key(ring[0]) !== key(ring[ring.length - 1]); guard++) {
-      const end = key(ring[ring.length - 1]);
-      let found = false;
-      for (let j = 0; j < ways.length; j++) {
-        if (used[j]) continue;
-        const w = ways[j];
-        if (key(w[0]) === end) { ring.push(...w.slice(1)); used[j] = found = true; break; }
-        if (key(w[w.length - 1]) === end) { ring.push(...w.slice(0, -1).reverse()); used[j] = found = true; break; }
-      }
-      if (!found) break;
-    }
-    out.push(ring.map(P));
-  }
-  return out;
-}
 
 // ---- Roads ----
 // Classes, in drawing order from the least to the most important.

@@ -72,3 +72,10 @@ route. Traffic lights cycle 20 s.
 - From the scorecard's baseline (task 003, 2026-10-13): the owner's comment at `lobato-east`,
   rated 3, is "Edifícios e lugares de estacionamento": the parking along the street, its parked
   cars here and its bays in task 018 (the buildings are task 011's).
+- From task 016 (2026-10-16): the cars DGT's LiDAR saw parked (July 2025) are with each tile's
+  ground cover under the Volta dos Amigos' box (`world.groundCover`'s `cars`, a JSON file a tile,
+  six numbers each: x, z, the angle of its length, its length and width, and 1 along a kerb, 2 in a
+  car park, 0 elsewhere): 41,683 over the box, 18,924 along kerbs, 12,199 in car parks and 10,560
+  elsewhere. A low wall or a hedge along a building's front can come out as cars in a row (one along
+  the Alameda do Fujacal's flats does), and cars under a tree's crown aren't seen. The map's car
+  parks and its bays and lanes along the streets are areas of kind `parking`.

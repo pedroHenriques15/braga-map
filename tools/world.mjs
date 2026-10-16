@@ -24,7 +24,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { CACHE, ELEV0, P, ROOT, readCache, relief } from './geo.mjs';
 import { tileKey, toTM } from './dgt.mjs';
-import { AREA, AREA_OF, blur, bounds, dm, footprints, Grid, half, hash, inside, minRect, openThin, overlaps, Packer, packGrid, packPts, rectAxis, STOREY, STOREY_BASE as BASE, ringArea, ringOf, seeded, segDist, simplify, W_MIN } from './osm.mjs';
+import { AREA, AREA_OF, blur, bounds, dm, footprints, Grid, half, hash, inside, memberRings, minRect, openThin, overlaps, Packer, packGrid, packPts, rectAxis, STOREY, STOREY_BASE as BASE, ringArea, ringOf, seeded, segDist, simplify, W_MIN } from './osm.mjs';
 import { allTiles, EXT, OPEN, OPEN_BOX, OPEN_SEEN, OPEN_TILES, SECTIONS, sectionOf, SHOOTER, SHOOTER_BOX, SHOOTER_ID, SHOOTER_NAME, SHOOTER_SEEN, SHOOTER_TILES, TILE, tileBox, tileId, tileOf } from './sections.mjs';
 import { gatesOf } from './open.mjs';
 import { terrain } from './terrain.mjs';
@@ -35,6 +35,9 @@ import { packPaths, packStreets, streetSurfaces } from './streets.mjs';
 const base = readCache('osm/base.json');
 if (!fs.existsSync(path.join(CACHE, 'osm', 'paths.json'))) throw new Error('No footways yet: node tools/fetch.mjs paths');
 const pathsOsm = readCache('osm/paths.json');
+// The car parks (task 016), if they're fetched: node tools/fetch.mjs parking.
+const parkingOsm = fs.existsSync(path.join(CACHE, 'osm', 'parking.json')) ? readCache('osm/parking.json') : { elements: [] };
+if (!parkingOsm.elements.length) console.log('no car parks: node tools/fetch.mjs parking');
 const buildingsOsm = readCache('osm/buildings.json');
 const treesOsm = readCache('osm/trees.json');
 const pois = readCache('osm/pois.json').elements;
@@ -106,23 +109,32 @@ const { heights, open } = levelHeights(lines, ground, tileGround, held, deck);
 // where the world draws it: a footbridge and a path's tunnel at their heights, each flight of steps
 // with its treads.
 const walks = pathLines(pathsOf(pathsOsm, (x, z, m) => x >= OPEN_BOX.x0 - m && x <= OPEN_BOX.x1 + m && z >= OPEN_BOX.z0 - m && z <= OPEN_BOX.z1 + m), { ground, grid: tileGround, deck, lines, heights, elev0: ELEV0 });
-const areas = []; // [kind, ring]
-for (const e of base.elements) {
+const areas = []; // [kind, ring, holes]
+for (const e of [...base.elements, ...parkingOsm.elements]) {
   const t = e.tags || {};
   if (isLine(e)) {
     const pts = e.geometry.map(P);
-    if (pts.some(([x, z]) => inExt(x, z, 50)) && isSquare(e, pts)) areas.push([AREA.indexOf('plaza'), simplify(pts.slice(0, -1), 0.5)]);
+    if (pts.some(([x, z]) => inExt(x, z, 50)) && isSquare(e, pts)) areas.push([AREA.indexOf('plaza'), simplify(pts.slice(0, -1), 0.5), []]);
     continue;
   }
   const c = AREA_OF(t);
   if (!c) continue;
-  // A relation's member ways are each painted as their own ring: good enough for the ground.
-  const rings = e.type === 'way' ? [e.geometry.map(P)] : e.members.filter((m) => m.type === 'way' && m.geometry).map((m) => m.geometry.map(P));
-  for (const r of rings) if (r.length > 3 && r.some(([x, z]) => inExt(x, z, 200))) areas.push([AREA.indexOf(c), simplify(r, c === 'forest' || c === 'farm' ? 2 : 1)]);
+  // A way is a ring; a relation's outer rings are each an area, with the inner rings in it as its holes
+  // (a clearing in a wood, a pond in a park): task 016.
+  const tol = c === 'forest' || c === 'farm' ? 2 : 1, near = (r) => r.length > 3 && r.some(([x, z]) => inExt(x, z, 200));
+  if (e.type === 'way') {
+    const r = e.geometry.map(P);
+    if (near(r)) areas.push([AREA.indexOf(c), simplify(r, tol), []]);
+    continue;
+  }
+  const inner = memberRings(e.members, 'inner').filter((r) => r.length > 3);
+  for (const r of memberRings(e.members, 'outer')) if (near(r)) areas.push([AREA.indexOf(c), simplify(r, tol), inner.filter((h) => inside(r, ...h[0])).map((h) => simplify(h, tol))]);
 }
 
 // Big areas first, so smaller ones inside them are painted over them; squares last. Each is cut to
-// the tiles it's on (a metre over, so they meet without a seam), and keeps its place in that order.
+// the tiles it's on (a metre over, so they meet without a seam), its holes with it, and keeps its place
+// in that order: [rank / 32768, rank % 32768, kind + 16 × its holes, n, ...points, then each hole's
+// n and points].
 {
   const plaza = AREA.indexOf('plaza');
   areas.sort((a, b) => (a[0] === plaza) - (b[0] === plaza) || ringArea(b[1]) - ringArea(a[1]));
@@ -142,11 +154,13 @@ for (const e of base.elements) {
     }
     return pts;
   };
-  areas.forEach(([kind, ring], rank) => {
+  areas.forEach(([kind, ring, holes], rank) => {
     if (ring.length < 3) return;
     for (const t of tilesOver(bounds(ring))) {
-      const b = t.box, piece = clip(ring, { x0: b.x0 - 1, x1: b.x1 + 1, z0: b.z0 - 1, z1: b.z1 + 1 });
-      if (piece.length >= 3 && ringArea(piece) > 0.5) t.areas.push(Math.floor(rank / 32768), rank % 32768, kind, piece.length, ...packPts(piece));
+      const b = t.box, over = { x0: b.x0 - 1, x1: b.x1 + 1, z0: b.z0 - 1, z1: b.z1 + 1 }, piece = clip(ring, over);
+      if (piece.length < 3 || ringArea(piece) <= 0.5) continue;
+      const hs = holes.map((h) => clip(h, over)).filter((h) => h.length >= 3 && ringArea(h) > 0.5);
+      t.areas.push(Math.floor(rank / 32768), rank % 32768, kind + 16 * hs.length, piece.length, ...packPts(piece), ...hs.flatMap((h) => [h.length, ...packPts(h)]));
     }
   });
 }
@@ -421,7 +435,7 @@ let infill = 0;
   const GREEN = new Set(['farm', 'grass', 'scrub', 'forest', 'park', 'cemetery', 'sport', 'water']);
   const agrid = new Grid(100);
   areas.forEach(([, r], i) => { const b = bounds(r); for (let a = Math.floor(b.x0 / 100); a <= Math.floor(b.x1 / 100); a++) for (let c = Math.floor(b.z0 / 100); c <= Math.floor(b.z1 / 100); c++) agrid.add(a * 100, c * 100, i); });
-  const landAt = (x, z) => { let best = null, ba = Infinity; for (const i of agrid.near(x, z, 0)) { const [k, r] = areas[i]; if (inside(r, x, z)) { const a = ringArea(r); if (a < ba) { ba = a; best = AREA[k]; } } } return best; };
+  const landAt = (x, z) => { let best = null, ba = Infinity; for (const i of agrid.near(x, z, 0)) { const [k, r, hs] = areas[i]; if (inside(r, x, z) && !hs.some((h) => inside(h, x, z))) { const a = ringArea(r); if (a < ba) { ba = a; best = AREA[k]; } } } return best; };
   // Every street's carriageway, for keeping off them: [x0, z0, x1, z1, its half width, its id].
   const sgrid = new Grid(30);
   for (const s of streets) {

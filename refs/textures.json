@@ -1,12 +1,6 @@
 {
-  "about": "Photo textures (task 007): what tools/textures.mjs makes, and from what. A ground texture is the 2025 orthophoto over a tile. A facade is a reference photo (refs/photos.json, by its id) straightened onto a wall: wall is the wall's points on the map, left to right as the photo sees it (along a building's footprint); quad its corners in the photo's own pixels, top left, top right, bottom right, bottom left; s the metres along the wall they span (from its first point, the whole wall if left out); y the metres above the building's ground (its y) at the quad's bottom and top. Read off the photo by eye.",
+  "about": "Photo textures (task 007): what tools/textures.mjs makes, and from what. A ground texture is the 2025 orthophoto over a tile (tile; none is made since task 016 drew the ground from its classes, its option A, over the orthophoto, its option B). A surface is a kind of ground's photo (task 016), the one a game tiles over the ground tools/cover.mjs classes as that kind (ground): a Poly Haven asset (CC0, seamless, its size in metres in its record), by its id. A facade is a reference photo (refs/photos.json, by its id) straightened onto a wall: wall is the wall's points on the map, left to right as the photo sees it (along a building's footprint); quad its corners in the photo's own pixels, top left, top right, bottom right, bottom left; s the metres along the wall they span (from its first point, the whole wall if left out); y the metres above the building's ground (its y) at the quad's bottom and top. Read off the photo by eye.",
   "textures": [
-    {
-      "id": "ground-x-1z1",
-      "kind": "ground",
-      "tile": "x-1z1",
-      "notes": "Fujacal, the shooter's area: seven of the viewpoints."
-    },
     {
       "id": "facade-way-906140272",
       "kind": "facade",
@@ -99,6 +93,48 @@
       "quad": [[178, 333], [823, 322], [823, 503], [178, 518]],
       "y": [0, 10.9],
       "notes": "Seen from across a car park, so 5 cm a pixel at best."
+    },
+    {
+      "id": "surface-asphalt",
+      "kind": "surface",
+      "ground": "asphalt",
+      "asset": "asphalt_04",
+      "notes": "Weathered, pale and fine: most of Braga's asphalt in the orthophoto is a light grey (its median 134 in the sun), not new black."
+    },
+    {
+      "id": "surface-paving",
+      "kind": "surface",
+      "ground": "paving",
+      "asset": "concrete_floor_01",
+      "notes": "Light concrete, for the yards, courtyards and paved plots; the calçada's pattern is task 018's."
+    },
+    {
+      "id": "surface-setts",
+      "kind": "surface",
+      "ground": "setts",
+      "asset": "cobblestone_floor_03",
+      "notes": "Small grey granite setts in rows: only where the map says a street or a path is setts."
+    },
+    {
+      "id": "surface-grass",
+      "kind": "surface",
+      "ground": "grass",
+      "asset": "grass_ground",
+      "notes": "A patchy lawn, green over soil, as Braga's lawns and verges are in summer."
+    },
+    {
+      "id": "surface-soil",
+      "kind": "surface",
+      "ground": "soil",
+      "asset": "dirt_floor",
+      "notes": "Bare, dry soil: the waste ground, the alameda's strip under its trees."
+    },
+    {
+      "id": "surface-gravel",
+      "kind": "surface",
+      "ground": "gravel",
+      "asset": "gravel_floor_02",
+      "notes": "Light grey gravel."
     }
   ]
 }

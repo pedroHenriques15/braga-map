@@ -73,3 +73,15 @@ Steps:
 - Roundabouts' islands: task 014. Signs and furniture: task 020.
 
 ## Notes
+
+- From task 016 (2026-10-16): the cars DGT's LiDAR saw parked (July 2025) are with each tile's
+  ground cover under the Volta dos Amigos' box (`world.groundCover`'s `cars`, a file a tile: where
+  each stands, which way it lies, its size, and whether it's along a kerb, in a car park or
+  elsewhere), and the map's car parks and the bays and lanes along its streets are areas of kind
+  `parking` (`amenity=parking`, fetched with `node tools/fetch.mjs parking`). The rows of cars give
+  the bays' places and which way they lie.
+  Setts off the streets (a car park's, a square's) can't be told from concrete by the LiDAR's echo
+  or the orthophoto at 25 cm, so the ground cover has setts only where the map says a street or a
+  path is setts: at `fujacal-start` the strip between the street and the flats is granite setts in the
+  photo and paving in the game. Where this task finds Braga's pavements from the photos, the ground
+  cover can take them.

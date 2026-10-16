@@ -53,9 +53,11 @@ export const LINE = { trunk: 0, motorway: 0, trunk_link: 1, motorway_link: 1, pr
 // ---- Areas ----
 
 // What the ground is, in the order the games paint it.
-export const AREA = ['urban', 'industrial', 'farm', 'grass', 'scrub', 'forest', 'park', 'cemetery', 'hospital', 'school', 'sport', 'water', 'plaza'];
+export const AREA = ['urban', 'industrial', 'farm', 'grass', 'scrub', 'forest', 'park', 'cemetery', 'hospital', 'school', 'sport', 'water', 'plaza', 'parking'];
 export const AREA_OF = (t) => {
   if (t.natural === 'water') return 'water';
+  // A car park on the ground, or the bays and lanes along a street (task 016): not one in a building.
+  if (t.amenity === 'parking') return ['multi-storey', 'underground', 'rooftop'].includes(t.parking) ? null : 'parking';
   if (t.landuse === 'forest' || t.natural === 'wood') return 'forest';
   if (t.natural === 'scrub' || t.natural === 'heath') return 'scrub';
   if (t.landuse === 'cemetery') return 'cemetery';
@@ -97,6 +99,33 @@ export function footprints(buildingsOsm) {
   });
 }
 export const ringOf = (e) => e.geometry.map(P);
+
+// A relation's rings of one role ('outer', which takes members with no role too, or 'inner'), each
+// joined from the member ways it's mapped in, end to end, in the map's metres.
+export function memberRings(members, role) {
+  const ways = members.filter((m) => m.type === 'way' && m.geometry && (role == null || m.role === role || (role === 'outer' && m.role === ''))).map((m) => m.geometry.filter(Boolean));
+  const key = (g) => g.lat.toFixed(7) + ',' + g.lon.toFixed(7);
+  const used = new Array(ways.length).fill(false);
+  const out = [];
+  for (let i = 0; i < ways.length; i++) {
+    if (used[i]) continue;
+    used[i] = true;
+    const ring = ways[i].slice();
+    for (let guard = 0; guard < ways.length && key(ring[0]) !== key(ring[ring.length - 1]); guard++) {
+      const end = key(ring[ring.length - 1]);
+      let found = false;
+      for (let j = 0; j < ways.length; j++) {
+        if (used[j]) continue;
+        const w = ways[j];
+        if (key(w[0]) === end) { ring.push(...w.slice(1)); used[j] = found = true; break; }
+        if (key(w[w.length - 1]) === end) { ring.push(...w.slice(0, -1).reverse()); used[j] = found = true; break; }
+      }
+      if (!found) break;
+    }
+    out.push(ring.map(P));
+  }
+  return out;
+}
 
 // ---- Geometry ----
 

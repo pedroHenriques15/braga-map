@@ -1,6 +1,7 @@
-// Photo textures for the world (task 007, decision 030): the 2025 orthophoto over a tile, and the
-// reference photos of facades (task 008) straightened onto their walls, made as refs/textures.json
-// says. Each is cut for each graphics level, compressed as KTX2 (Basis Universal's ETC1S, which a
+// Photo textures for the world (task 007, decision 030): the 2025 orthophoto over a tile, the
+// reference photos of facades (task 008) straightened onto their walls, and a photo of each kind of
+// ground (task 016: Poly Haven's, CC0, which a game tiles over the ground cover.mjs classes), made as
+// refs/textures.json says. Each is cut for each graphics level, compressed as KTX2 (Basis Universal's ETC1S, which a
 // phone's graphics card keeps compressed), and written into its tile's index with its credit, for
 // loadWorld to hand a game.
 //
@@ -12,12 +13,14 @@
 //
 // world/textures/<tile>/<id>-<level>.ktx2   the textures, for each level: high, medium, low
 // world/textures/<tile>.js                  the tile's index (index.d.ts's PhotoTexture)
-// world/textures.js                         TEXTURES, a loader of each tile's index, and CREDITS
+// world/textures/surfaces/<id>-<level>.ktx2 each kind of ground's, on no tile
+// world/textures.js                         TEXTURES, a loader of each tile's index; SURFACES, each
+//                                           kind of ground's (index.d.ts's GroundTexture); and CREDITS
 import fs from 'node:fs';
 import path from 'node:path';
 import sharp from 'sharp';
-import { encodeToKTX2 } from 'ktx2-encoder';
 import { CACHE, ROOT } from './geo.mjs';
+import { four, js, ktx2, ktx2Size, resize } from './ktx2.mjs';
 import { DGT, mapToTM, tileBox, tileKey, tilesOver } from './dgt.mjs';
 import { loadWorld, map } from '../index.js';
 
@@ -30,9 +33,8 @@ const GROUND = { high: 2048, medium: 1024, low: 512 };
 // A facade's pixels a metre at each level, as far as its photo has them: 2.5 cm a pixel on High.
 const FACADE = { high: 40, medium: 20, low: 10 };
 const MAX = 2048;
-// ETC1S's quality, 1 to 255: where it stops getting closer to the photo. Over Basis's default, 128,
-// it's 0.9–1.6 dB closer for some 40% more bytes; above 200, 0.2 dB at most (task 007's notes).
-const QUALITY = 200;
+// A kind of ground's side at each level: 1 to 4 mm a pixel on High, as its photo spans 1 to 4 m.
+const SURFACE = { high: 1024, medium: 512, low: 256 };
 const DGT_CREDIT = { source: 'DGT', author: 'Direção-Geral do Território', licence: 'CC BY 4.0', url: 'https://snig.dgterritorio.gov.pt/rndg/srv/por/catalog.search#/metadata/96d83932-f957-40d6-a2ea-3a25751c4b2d', date: '2025' };
 
 // ---- Pixels ----
@@ -73,9 +75,6 @@ function homography(from, to) {
     return [(h[0] * x + h[1] * y + h[2]) / w, (h[3] * x + h[4] * y + h[5]) / w];
   };
 }
-
-// Sizes that Basis's 4 × 4 blocks divide.
-const four = (n) => Math.max(4, Math.round(n / 4) * 4);
 
 // ---- What each texture is made from ----
 
@@ -153,55 +152,44 @@ function wall(t, world) {
   return { wall: t.wall, s, foot: b.y, h: b.h };
 }
 
-// ---- Compressing ----
-
-// A KTX2 file of an RGB image, Basis's ETC1S (or UASTC, with Zstandard), with its mipmaps, sRGB.
-async function ktx2(img, uastc = false) {
-  const rgba = Buffer.alloc(img.w * img.h * 4);
-  for (let i = 0, j = 0; i < img.w * img.h * 3; i += 3, j += 4) { rgba[j] = img.data[i]; rgba[j + 1] = img.data[i + 1]; rgba[j + 2] = img.data[i + 2]; rgba[j + 3] = 255; }
-  // The encoder prints each mipmap it makes; this keeps the console to what's made.
-  const write = process.stdout.write;
-  process.stdout.write = () => true;
-  try {
-    const out = await encodeToKTX2(new Uint8Array(1), {
-      isUASTC: uastc, qualityLevel: QUALITY, compressionLevel: 2, needSupercompression: uastc, uastcLDRQualityLevel: 1,
-      generateMipmap: true, isPerceptual: true, isSetKTX2SRGBTransferFunc: true, isKTX2File: true,
-      imageDecoder: async () => ({ width: img.w, height: img.h, data: new Uint8Array(rgba.buffer, rgba.byteOffset, rgba.length) }),
-    });
-    return Buffer.from(out);
-  } finally {
-    process.stdout.write = write;
+// A kind of ground (task 016): a photo of it from Poly Haven (CC0), seamless, spanning `metres` a side as
+// its record says; and its mean colour, which a game divides it by before tinting it with the ground's
+// own colour (cover.mjs). The record and the photo are kept in .cache/textures/sources/.
+async function surface(t) {
+  const dir = path.join(WORK, 'sources'), info = path.join(dir, t.asset + '.json'), jpg = path.join(dir, t.asset + '.jpg');
+  fs.mkdirSync(dir, { recursive: true });
+  if (!fs.existsSync(info) || !fs.existsSync(jpg)) {
+    const get = async (url) => {
+      const r = await fetch(url);
+      if (!r.ok) throw new Error(`${t.id}: ${url} answered ${r.status}`);
+      return r;
+    };
+    const rec = await (await get(`https://api.polyhaven.com/info/${t.asset}`)).json();
+    const files = await (await get(`https://api.polyhaven.com/files/${t.asset}`)).json();
+    fs.writeFileSync(jpg, Buffer.from(await (await get(files.Diffuse['2k'].jpg.url)).arrayBuffer()));
+    fs.writeFileSync(info, JSON.stringify(rec));
   }
-}
-
-// An RGB image at another size, as sharp's Lanczos has it.
-async function resize(img, w, h) {
-  if (w === img.w && h === img.h) return img;
-  const { data, info } = await sharp(img.data, { raw: { width: img.w, height: img.h, channels: 3 } }).resize(w, h, { fit: 'fill', kernel: 'lanczos3' }).raw().toBuffer({ resolveWithObject: true });
-  return { w: info.width, h: info.height, data };
-}
-
-// A KTX2 file's size in pixels, from its header.
-function ktx2Size(file) {
-  const b = fs.readFileSync(file);
-  return { w: b.readUInt32LE(20), h: b.readUInt32LE(24), bytes: b.length };
+  const rec = JSON.parse(fs.readFileSync(info, 'utf8'));
+  const img = await resize(await readRGB(jpg), SURFACE.high, SURFACE.high);
+  // The mean in linear light, as a graphics card reads the texture, in sRGB's bytes.
+  const lin = (v) => ((v /= 255) <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
+  const srgb = (v) => Math.round(255 * (v <= 0.0031308 ? v * 12.92 : 1.055 * v ** (1 / 2.4) - 0.055));
+  const sum = [0, 0, 0];
+  for (let i = 0; i < img.data.length; i += 3) for (let c = 0; c < 3; c++) sum[c] += lin(img.data[i + c]);
+  const n = img.data.length / 3, metres = +(Math.min(...rec.dimensions) / 1000).toFixed(2);
+  const date = new Date(rec.date_published * 1000).toISOString().slice(0, 10);
+  return {
+    img,
+    place: { ground: t.ground, metres, mean: sum.map((v) => srgb(v / n)) },
+    credit: { source: 'Poly Haven', author: Object.keys(rec.authors).join(', '), licence: 'CC0', url: `https://polyhaven.com/a/${t.asset}`, date },
+  };
 }
 
 // ---- The indexes ----
 
-// A value as JavaScript, as the world's other modules write it: single quotes, no quotes on keys.
-const js = (v) =>
-  typeof v === 'string'
-    ? `'${v.replace(/\\/g, '\\\\').replace(/'/g, "\\'")}'`
-    : Array.isArray(v)
-      ? `[${v.map(js).join(', ')}]`
-      : v && typeof v === 'object'
-        ? `{ ${Object.entries(v).map(([k, x]) => `${k}: ${js(x)}`).join(', ')} }`
-        : String(v);
-
 function writeIndexes(entries) {
   const byTile = new Map();
-  for (const e of entries) {
+  for (const e of entries.filter((e) => e.kind !== 'surface')) {
     if (!byTile.has(e.tile)) byTile.set(e.tile, []);
     byTile.get(e.tile).push(e);
   }
@@ -223,13 +211,21 @@ function writeIndexes(entries) {
   for (const e of entries) {
     const k = e.credit.source;
     if (!sources.has(k)) sources.set(k, { source: k, licence: e.credit.licence, authors: new Set(), kinds: new Set() });
-    sources.get(k).authors.add(e.credit.author);
+    for (const a of e.credit.author.split(", ")) sources.get(k).authors.add(a);
     sources.get(k).kinds.add(e.kind);
   }
   const credits = [...sources.values()].map((s) => ({ source: s.source, licence: s.licence, authors: [...s.authors].sort(), kinds: [...s.kinds].sort() }));
+  // Each kind of ground's photo, by the kind it's of.
+  const surfaces = entries.filter((e) => e.kind === 'surface').map((e) => {
+    const files = LEVELS.map((l) => {
+      const f = `${e.id}-${l}.ktx2`, { w, h, bytes } = ktx2Size(path.join(OUT, 'surfaces', f));
+      return `${l}: { url: new URL('./textures/surfaces/${f}', import.meta.url).href, w: ${w}, h: ${h}, bytes: ${bytes} }`;
+    });
+    return `  ${e.place.ground}: { id: ${js(e.id)}, metres: ${e.place.metres}, mean: ${js(e.place.mean)},\n    files: { ${files.join(',\n      ')} },\n    credit: ${js(e.credit)} },`;
+  });
   fs.writeFileSync(
     path.join(ROOT, 'world', 'textures.js'),
-    `// Made by tools/textures.mjs: a loader for each tile's photo textures (task 007), so a game only\n// downloads the index of those it loads; and every source they're made from, with its authors.\nexport const TEXTURES = {\n${tiles.map((t) => `  ${js(t)}: () => import('./textures/${t}.js'),`).join('\n')}\n};\nexport const CREDITS = [\n${credits.map((c) => `  ${js(c)},`).join('\n')}\n];\n`,
+    `// Made by tools/textures.mjs: a loader for each tile's photo textures (task 007), so a game only\n// downloads the index of those it loads; each kind of ground's photo (task 016); and every source\n// they're made from, with its authors.\nexport const TEXTURES = {\n${tiles.map((t) => `  ${js(t)}: () => import('./textures/${t}.js'),`).join('\n')}\n};\nexport const SURFACES = {\n${surfaces.join('\n')}\n};\nexport const CREDITS = [\n${credits.map((c) => `  ${js(c)},`).join('\n')}\n];\n`,
   );
 }
 
@@ -251,11 +247,14 @@ const m = map();
 const entries = [];
 for (const t of recipes) {
   const t0 = Date.now();
-  const tile = t.kind === 'ground' ? t.tile : m.tileAt((t.wall[0][0] + t.wall.at(-1)[0]) / 2, (t.wall[0][1] + t.wall.at(-1)[1]) / 2);
+  const tile = t.kind === 'ground' ? t.tile : t.kind === 'surface' ? 'surfaces' : m.tileAt((t.wall[0][0] + t.wall.at(-1)[0]) / 2, (t.wall[0][1] + t.wall.at(-1)[1]) / 2);
   const make = !only.length || only.includes(t.id) || LEVELS.some((l) => !fs.existsSync(path.join(OUT, tile, `${t.id}-${l}.ktx2`)));
   if (!make) {
     // Only where it goes and whose it is: the files are already made.
-    if (t.kind === 'ground') {
+    if (t.kind === 'surface') {
+      const { place, credit } = await surface(t);
+      entries.push({ id: t.id, kind: t.kind, tile, place, credit });
+    } else if (t.kind === 'ground') {
       const [i, j] = t.tile.match(/-?\d+/g).map(Number);
       entries.push({ id: t.id, kind: t.kind, tile, place: { box: { x0: i * m.tile, z0: j * m.tile, x1: (i + 1) * m.tile, z1: (j + 1) * m.tile } }, credit: DGT_CREDIT });
     } else {
@@ -265,11 +264,11 @@ for (const t of recipes) {
     continue;
   }
   console.log(t.id);
-  const made = t.kind === 'ground' ? await ground(t, GROUND.high) : await facade(t, world, photos);
+  const made = t.kind === 'ground' ? await ground(t, GROUND.high) : t.kind === 'surface' ? await surface(t) : await facade(t, world, photos);
   fs.mkdirSync(path.join(OUT, tile), { recursive: true });
   const sizes = [];
   for (const l of LEVELS) {
-    const k = t.kind === 'ground' ? GROUND[l] / GROUND.high : FACADE[l] / FACADE.high;
+    const k = t.kind === 'ground' ? GROUND[l] / GROUND.high : t.kind === 'surface' ? SURFACE[l] / SURFACE.high : FACADE[l] / FACADE.high;
     const img = await resize(made.img, four(made.img.w * k), four(made.img.h * k));
     const out = await ktx2(img);
     fs.writeFileSync(path.join(OUT, tile, `${t.id}-${l}.ktx2`), out);

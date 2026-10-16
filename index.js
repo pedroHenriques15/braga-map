@@ -5,7 +5,8 @@
 // roofs: informação geográfica cedida pela Direção-Geral do Território (CC BY 4.0).
 import BASE from './world/base.js';
 import { TILES } from './world/tiles.js';
-import { CREDITS, TEXTURES } from './world/textures.js';
+import { CREDITS, SURFACES, TEXTURES } from './world/textures.js';
+import { COVER, KINDS } from './world/cover.js';
 
 // A packed part of the map: a JSON header (where each part's numbers start, how many, and what
 // else it needs), then 16-bit numbers, in base64.
@@ -172,6 +173,7 @@ export function map() {
   base = {
     credit: m.credit,
     photoCredits: CREDITS,
+    groundKinds: KINDS.map((kind) => ({ kind, texture: SURFACES[kind] ?? null })),
     elev0: m.elev0,
     ext: m.ext,
     tile: m.tile,
@@ -224,10 +226,12 @@ export function tilesFor(area) {
 export async function loadWorld(area) {
   const m = map();
   const ids = tilesFor(area);
-  const [parts, photos] = await Promise.all([
+  const [parts, photos, groundCover] = await Promise.all([
     Promise.all(ids.map((id) => TILES[id]().then((mod) => unpack(mod.default)))),
     // The photo textures' indexes (tools/textures.mjs): where each goes and its files, not the files.
     Promise.all(ids.filter((id) => id in TEXTURES).map((id) => TEXTURES[id]().then((mod) => mod.default))),
+    // What the ground is on each (tools/cover.mjs): its files, not the files.
+    Promise.all(ids.filter((id) => id in COVER).map((id) => COVER[id]().then((mod) => mod.default))),
   ]);
   const near = new Map();
   const areas = [];
@@ -244,10 +248,19 @@ export async function loadWorld(area) {
     box.x1 = Math.max(box.x1, g.x0 + (g.nx - 1) * g.step);
     box.z1 = Math.max(box.z1, g.z0 + (g.nz - 1) * g.step);
     const A = head.areas;
+    // Each area: [rank / 32768, rank % 32768, kind + 16 × its holes, n, ...points, then each hole's n
+    // and points] (tools/world.mjs).
     for (let i = A.at; i < A.at + A.n; ) {
+      const what = nums[i + 2];
       const n = nums[i + 3];
-      areas.push({ rank: nums[i] * 32768 + nums[i + 1], kind: m.areaKinds[nums[i + 2]], pts: points(nums, i + 4, n) });
-      i += 4 + n * 2;
+      const holes = [];
+      let j = i + 4 + n * 2;
+      for (let h = 0; h < what >> 4; h++) {
+        holes.push(points(nums, j + 1, nums[j]));
+        j += 1 + nums[j] * 2;
+      }
+      areas.push({ rank: nums[i] * 32768 + nums[i + 1], kind: m.areaKinds[what & 15], pts: points(nums, i + 4, n), holes });
+      i = j;
     }
     // Each line: [what, width, n, ...points, ...heights]: what is its kind and 16 times its level;
     // a bridge's or a tunnel's has each point's height after them (tools/world.mjs).
@@ -395,11 +408,12 @@ export async function loadWorld(area) {
       const g = near.get(m.tileAt(x, z));
       return heightOn(g ?? m.far, x, z);
     },
-    areas: areas.map(({ kind, pts }) => ({ kind, pts })),
+    areas: areas.map(({ kind, pts, holes }) => ({ kind, pts, holes })),
     lines,
     buildings,
     trees,
     streets,
     photos: photos.flat(),
+    groundCover,
   };
 }

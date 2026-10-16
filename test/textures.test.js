@@ -15,7 +15,8 @@ const LEVELS = ['high', 'medium', 'low'];
 const KTX2 = Buffer.from([0xab, 0x4b, 0x54, 0x58, 0x20, 0x32, 0x30, 0xbb, 0x0d, 0x0a, 0x1a, 0x0a]);
 
 test('every texture asked for is made at every level, and its index says what its files are', () => {
-  assert.deepEqual(index.map((t) => t.id).sort(), textures.map((t) => t.id).sort());
+  // A kind of ground's (task 016) is on no tile: test/cover.test.js has those.
+  assert.deepEqual(index.map((t) => t.id).sort(), textures.filter((t) => t.kind !== 'surface').map((t) => t.id).sort());
   for (const t of index) {
     let last = Infinity;
     for (const l of LEVELS) {
@@ -84,7 +85,7 @@ test("each facade's wall is still along a building's footprint in the world, and
 test('a tile loaded brings its photo textures, and one without brings none', async () => {
   const w = await loadWorld({ x0: -400, x1: -100, z0: 600, z1: 900 });
   assert.deepEqual(w.tiles, ['x-1z1']);
-  assert.ok(w.photos.some((t) => t.kind === 'ground' && t.id === 'ground-x-1z1'));
+  assert.ok(w.photos.some((t) => t.kind === 'facade' && t.id === 'facade-way-440182287'));
   assert.ok(w.photos.every((t) => index.some((q) => q.id === t.id)));
   const bare = await loadWorld({ x0: -2000, x1: -1600, z0: -2000, z1: -1600 });
   assert.equal(bare.photos.length, 0);

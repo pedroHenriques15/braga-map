@@ -134,6 +134,50 @@ export async function ortho(box) {
   };
 }
 
+// The orthophoto and its near-infrared (fetch.mjs's `nir`) on the map's grid over a box, a cell
+// every `step` metres (a multiple of the photo's 25 cm), row 0 to the north: for each cell, the mean
+// of the photo's pixels in it, as rgb (three bytes a cell), nir and red (the near-infrared layer's
+// own red, for NDVI, a byte each), and how much the brightness varies among them (`grain`, the
+// standard deviation of (r + g + b) / 3). Each of DGT's tiles is decoded once and kept while it's
+// asked for (`keep` of them at most); null where either photo wasn't fetched.
+const decoded = new Map();
+function decode(file, keep) {
+  let img = decoded.get(file);
+  if (img) { decoded.delete(file); decoded.set(file, img); return img; }
+  img = fs.existsSync(file) ? jpeg.decode(fs.readFileSync(file), { formatAsRGBA: false, maxMemoryUsageInMB: 1024 }) : null;
+  decoded.set(file, img);
+  while (decoded.size > keep) decoded.delete(decoded.keys().next().value);
+  return img;
+}
+export function orthoGrid(box, step = 0.5, keep = 4) {
+  const nx = Math.round((box.x1 - box.x0) / step), nz = Math.round((box.z1 - box.z0) / step), k = Math.max(1, Math.round(step / 0.25));
+  const rgb = new Uint8Array(nx * nz * 3), nir = new Uint8Array(nx * nz), red = new Uint8Array(nx * nz), grain = new Float32Array(nx * nz), have = new Uint8Array(nx * nz);
+  const tm = mapToTM(box);
+  for (const key of tilesOver(box)) {
+    const c = decode(path.join(DGT, 'ortho', key + '.jpg'), keep), f = decode(path.join(DGT, 'ortho-irg', key + '.jpg'), keep);
+    if (!c || !f) continue;
+    const b = tileBox(key), s = c.width / 1000;
+    for (let j = 0; j < nz; j++) for (let i = 0; i < nx; i++) {
+      const cell = j * nx + i;
+      if (have[cell]) continue;
+      let R = 0, G = 0, B = 0, N = 0, Rd = 0, L = 0, L2 = 0, n = 0;
+      for (let v = 0; v < k; v++) for (let u = 0; u < k; u++) {
+        const [e, nn] = tm(box.x0 + (i + (u + 0.5) / k) * step, box.z0 + (j + (v + 0.5) / k) * step);
+        if (e < b.e0 || e >= b.e1 || nn < b.n0 || nn >= b.n1) continue;
+        const p = (Math.min(c.height - 1, Math.floor((b.n1 - nn) * s)) * c.width + Math.min(c.width - 1, Math.floor((e - b.e0) * s))) * 3;
+        const l = (c.data[p] + c.data[p + 1] + c.data[p + 2]) / 3;
+        R += c.data[p]; G += c.data[p + 1]; B += c.data[p + 2]; N += f.data[p]; Rd += f.data[p + 1]; L += l; L2 += l * l; n++;
+      }
+      if (!n) continue;
+      have[cell] = 1;
+      rgb[cell * 3] = R / n; rgb[cell * 3 + 1] = G / n; rgb[cell * 3 + 2] = B / n;
+      nir[cell] = N / n; red[cell] = Rd / n;
+      grain[cell] = Math.sqrt(Math.max(0, L2 / n - (L / n) ** 2));
+    }
+  }
+  return have.every((h) => h) ? { nx, nz, step, rgb, nir, red, grain } : null;
+}
+
 // ---- The point cloud: LAZ (LAS 1.4, point format 8), a tile at a time ----
 
 // Classes in DGT's point cloud. A bridge's deck is 26, not the LAS standard's 17, which DGT doesn't
@@ -145,8 +189,8 @@ let lazPerf = null;
 
 // Calls fn(pt) for every point of a tile, the same object each time: x and z on the map (or, with
 // `raw`, only e and n in EPSG:3763, which is faster), y the height above the sea, cls its class,
-// r, g, b and nir its colour (16-bit), ret and returns which return of the pulse it is and of how
-// many. Stops early if fn returns false.
+// r, g, b and nir its colour (16-bit), i the strength of its echo (the laser's intensity, 16-bit), ret
+// and returns which return of the pulse it is and of how many. Stops early if fn returns false.
 export async function points(key, fn, raw = false) {
   const file = path.join(DGT, 'LAZ', key + '.laz');
   const buf = fs.readFileSync(file);
@@ -163,7 +207,7 @@ export async function points(key, fn, raw = false) {
   try {
     laz.open(filePtr, buf.length);
     const len = laz.getPointLength(), n = laz.getCount(), ptr = L._malloc(len);
-    const pt = { x: 0, y: 0, z: 0, e: 0, n: 0, cls: 0, r: 0, g: 0, b: 0, nir: 0, ret: 0, returns: 0 };
+    const pt = { x: 0, y: 0, z: 0, e: 0, n: 0, cls: 0, r: 0, g: 0, b: 0, nir: 0, i: 0, ret: 0, returns: 0 };
     try {
       for (let k = 0; k < n; k++) {
         laz.getPoint(ptr);
@@ -171,6 +215,7 @@ export async function points(key, fn, raw = false) {
         pt.e = v.getInt32(0, true) * sx + ox, pt.n = v.getInt32(4, true) * sy + oy;
         if (!raw) [pt.x, pt.z] = toMap(pt.e, pt.n);
         pt.y = v.getInt32(8, true) * sz + oz;
+        pt.i = v.getUint16(12, true);
         const rb = v.getUint8(14);
         pt.ret = rb & 15; pt.returns = rb >> 4;
         pt.cls = v.getUint8(16);

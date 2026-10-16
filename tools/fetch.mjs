@@ -1,8 +1,8 @@
 // Downloads what the map of Braga is made of: OpenStreetMap data through the Overpass API, and
 // elevation tiles (Terrain Tiles, on AWS Open Data). It keeps them in .cache/ for the other scripts.
 // DGT's open data (docs/SOURCES.md) comes only when it's named, into .cache/dgt/: the 2025 LiDAR
-// (`lidar`, about 5.6 GB, with the CDD's free account), the 2025 orthophoto (`ortho`, about 110 MB)
-// and the COS2025 land use (`cos`).
+// (`lidar`, about 5.6 GB, with the CDD's free account), the 2025 orthophoto (`ortho`, about 110 MB),
+// its near-infrared (`nir`, about 110 MB) and the COS2025 land use (`cos`).
 //
 // node tools/fetch.mjs            everything but DGT's
 // node tools/fetch.mjs trees      only what's named (base, paths, buildings, admin, pois, trees,
@@ -50,6 +50,13 @@ out geom;`,
 (
   way["building"];
   relation["building"];
+);
+out geom;`,
+  // The car parks (task 016), which the world paints as ground of their own.
+  parking: `[out:json][timeout:180][bbox:${BOX}];
+(
+  way["amenity"="parking"];
+  relation["amenity"="parking"];
 );
 out geom;`,
   // The parishes, and the municipality round them.
@@ -190,7 +197,7 @@ if (only.includes('microsoft')) {
 
 // ---- DGT's open data, only when named ----
 
-const dgtParts = ['lidar', 'ortho', 'cos'].filter((p) => only.includes(p));
+const dgtParts = ['lidar', 'ortho', 'nir', 'cos'].filter((p) => only.includes(p));
 if (dgtParts.length) {
   const { DGT, ORTHO_PX, fromTM, tileBox, tileKey, tilesOver, toTM } = await import('./dgt.mjs');
   const { EXT } = await import('./sections.mjs');
@@ -238,6 +245,25 @@ if (dgtParts.length) {
     fs.writeFileSync(path.join(dir, 'check-4326.jpg'), await getJPEG(`${WMS}&crs=EPSG:4326&bbox=${LAT0 - dLat},${LON0 - dLon},${LAT0 + dLat},${LON0 + dLon}&width=${px}&height=${px}`, 'the check'));
     fs.writeFileSync(path.join(dir, 'check-4326.json'), JSON.stringify({ lat0: LAT0, lon0: LON0, size: C, px }));
     console.log(`ortho: ${got} tiles, ${(bytes / 1e6).toFixed(0)} MB (${lazTiles.length} over the map)`);
+  }
+
+  // Its near-infrared, for telling plants from paint (task 016): the WMS's IRG layer, the same photo
+  // with the near-infrared as its red, the red as its green and the green as its blue, on the same
+  // tiles.
+  if (dgtParts.includes('nir')) {
+    const dir = path.join(DGT, 'ortho-irg');
+    fs.mkdirSync(dir, { recursive: true });
+    let got = 0, bytes = 0;
+    for (const key of lazTiles) {
+      const file = path.join(dir, key + '.jpg');
+      if (fs.existsSync(file)) continue;
+      const b = tileBox(key);
+      const buf = await getJPEG(`${WMS.replace('Ortos2025-RGB', 'Ortos2025-IRG')}&crs=EPSG:3763&bbox=${b.e0},${b.n0},${b.e1},${b.n1}&width=${ORTHO_PX}&height=${ORTHO_PX}`, `near-infrared ${key}`);
+      fs.writeFileSync(file, buf);
+      got++, bytes += buf.length;
+      await sleep(1000);
+    }
+    console.log(`nir: ${got} tiles, ${(bytes / 1e6).toFixed(0)} MB (${lazTiles.length} over the map)`);
   }
 
   // The land use, COS2025, from DGT's OGC API: every polygon over the map's box, as GeoJSON.

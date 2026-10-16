@@ -45,11 +45,16 @@ export type Sight =
   | { kind: 'makro' | 'altice'; x: number; z: number; y: number; face: number; L: number }
   | { kind: 'stadium'; x: number; z: number; y: number; angle: number; L: number; W: number };
 
-export type AreaKind = 'urban' | 'industrial' | 'farm' | 'grass' | 'scrub' | 'forest' | 'park' | 'cemetery' | 'hospital' | 'school' | 'sport' | 'water' | 'plaza';
+// parking: a car park on the ground, or the bays and lanes along a street (OpenStreetMap's amenity=parking
+// but in a building), task 016.
+export type AreaKind = 'urban' | 'industrial' | 'farm' | 'grass' | 'scrub' | 'forest' | 'park' | 'cemetery' | 'hospital' | 'school' | 'sport' | 'water' | 'plaza' | 'parking';
 
+// What the map says the ground is over an outline, less its holes (a clearing in a wood, a pond in a
+// park: what a multipolygon's inner rings leave out, task 016), each cut to the tile it's on.
 export interface Area {
   kind: AreaKind;
   pts: [number, number][];
+  holes: [number, number][][];
 }
 
 // A street or the railway. kind: 0 the fast roads, 1 their links, 2 primary, 3 secondary,
@@ -319,13 +324,72 @@ export interface PhotoCredit {
   source: string;
   licence: string;
   authors: string[];
-  kinds: ('ground' | 'facade')[];
+  kinds: ('ground' | 'facade' | 'surface')[];
+}
+
+// What the ground is (task 016, tools/cover.mjs), every 50 cm over the Volta dos Amigos' box: asphalt,
+// paving, setts, grass, bare soil, gravel, water, or a building's roof (under its footprint). From DGT's
+// 2025 LiDAR (the laser's echo off the ground tells asphalt from paving or grass, in the sun or a shadow;
+// its points over the ground are the trees and the cars) and orthophoto with its near-infrared (plants,
+// and bare soil and gravel from paving). Where the photo shows a shadow, a car or a tree's crown, the
+// ground there is what's round it of the same echo. Setts are only where the map says a street or a path
+// is setts (concrete echoes as they do); where the world draws the streets, the classes are the
+// streets' own surfaces.
+export type GroundKind = 'asphalt' | 'paving' | 'setts' | 'grass' | 'soil' | 'gravel' | 'water' | 'roof';
+// A kind of ground's photo (tools/textures.mjs, from Poly Haven, CC0), seamless, to tile over the
+// ground: `metres` a side. mean: its mean colour (sRGB, of its mean in linear light), which a game
+// divides it by before tinting it with the ground's own colour (GroundCover's colour), so its detail
+// stays and its colour is the place's.
+export interface GroundTexture {
+  id: string;
+  metres: number;
+  mean: [number, number, number];
+  files: Record<PhotoLevel, PhotoFile>;
+  credit: PhotoCreditOf;
+}
+// Each kind, in the order a GroundCover's cell has them: its photo, or null (water, a roof).
+export interface GroundKindOf {
+  kind: GroundKind;
+  texture: GroundTexture | null;
+}
+// What the ground is on a tile (its box), as files a game fetches at its graphics level:
+// - classes: a lossless WebP, a cell a pixel, its byte as its grey (so read without colour conversion),
+//   row 0 to the north (z0), column 0 to the west (x0): the kind (groundKinds' index) in the low three
+//   bits, and 8 where a tree's crown is over the ground (its shade). 50 cm a cell on High (1000 a
+//   side), 1 m on Medium and 2 m on Low, each the kind most of it is.
+// - colour: each kind's own colour over the tile, as the orthophoto shows it in the sun, without its
+//   cars and shadows: in each square, that kind's median there, filled in where it has none (under the
+//   shadows, the cars and the trees, or where the kind isn't) from the nearest squares that have it. A
+//   WebP (sRGB), a square every 4 m on High (`squares` 125 a side), 5 m on Medium (100), 10 m on Low
+//   (50): each kind's grid padded with its own edge to w a side (a whole number of 16 pixels, so the
+//   compression never mixes two kinds), under the one before in groundKinds' order, row 0 to the north;
+//   and a ninth, the trees' crowns as the photo shows them from above, so h is 9 × w. A game takes a
+//   cell's colour from its own kind's grid, between the squares' middles, so one kind's colour never
+//   runs into the next's; and where it draws fewer trees than stand there (far off, say), a crown's
+//   cells from the crowns' grid, as the hills' woods look from a distance.
+// - cars: the cars DGT's LiDAR saw parked on the tile (July 2025), n of them, in a JSON file a game
+//   fetches when it draws them: an array of six numbers each, x, z, the angle of its length (from x
+//   towards z, 0 to π: which way it faces isn't known), its length and width in metres, and where it is:
+//   0 elsewhere (a drive, a yard), 1 along a street (its middle within 2.5 m of the street's edge, lying
+//   along it, or within 5 m, square to it), 2 in a car park (the map's, or five or more within 8 m of each
+//   other off the streets). For the bays a game paints and the parked cars it draws. Found as what
+//   stands 0.9 to 2.4 m over the ground, not a plant or in a building, split by its size; a low wall or
+//   a hedge along a building's front can come out as a row of cars.
+export interface GroundCover {
+  tile: string;
+  box: { x0: number; z0: number; x1: number; z1: number };
+  classes: Record<PhotoLevel, PhotoFile>;
+  colour: Record<PhotoLevel, PhotoFile & { squares: number }>;
+  cars: { url: string; n: number; bytes: number };
+  credit: PhotoCreditOf;
 }
 
 export interface BragaMap {
   credit: string;
   // The photo textures' sources and authors, over the whole map.
   photoCredits: PhotoCredit[];
+  // The kinds of ground a GroundCover's cells say, each with its photo (task 016).
+  groundKinds: GroundKindOf[];
   elev0: number;
   ext: Box;
   tile: number;
@@ -374,6 +438,8 @@ export interface World extends BragaMap {
   streets: Streets;
   // The photo textures on the tiles loaded (task 007): which, where they go, and their files.
   photos: PhotoTexture[];
+  // What the ground is on the tiles loaded under the Volta dos Amigos' box (task 016).
+  groundCover: GroundCover[];
 }
 
 export function map(): BragaMap;

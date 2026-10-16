@@ -5,7 +5,7 @@
 // its near-infrared (`nir`, about 110 MB) and the COS2025 land use (`cos`).
 //
 // node tools/fetch.mjs            everything but DGT's
-// node tools/fetch.mjs trees      only what's named (base, paths, buildings, admin, pois, trees,
+// node tools/fetch.mjs trees      only what's named (base, paths, barriers, buildings, admin, pois, trees,
 //                                 street, restrictions, dem, horizon, lidar, ortho, cos)
 import fs from 'node:fs';
 import path from 'node:path';
@@ -45,18 +45,23 @@ out geom;`,
   relation["highway"="pedestrian"];
 );
 out geom;`,
+  // What stands between a street and what's beside it (task 013): walls, fences, hedges, railings
+  // and guard rails, as ways, and the gates in them, as nodes (and a gate mapped as a way across a
+  // drive). Bollards and kerbs are left to the street furniture (task 020) and the streets. And the car
+  // parks, where what the LiDAR sees standing in a row is cars, not a wall (tools/walls.mjs), and which
+  // the world paints as ground of their own (task 016).
+  barriers: `[out:json][timeout:180][bbox:${BOX}];
+(
+  way["barrier"]["barrier"!~"^(kerb|bollard|block|cycle_barrier|planter|tree|step)$"];
+  way["amenity"="parking"]; relation["amenity"="parking"];
+  node["barrier"~"^(gate|lift_gate|swing_gate|sliding_gate|wicket_gate|entrance|kissing_gate|turnstile|full-height_turnstile|chain|rope|border_control|toll_booth)$"];
+);
+out geom;`,
   // Buildings, the big ones mapped in parts (a multipolygon, like the Altice Forum) too.
-  buildings: `[out:json][timeout:180][bbox:${BOX}];
+  buildings:`[out:json][timeout:180][bbox:${BOX}];
 (
   way["building"];
   relation["building"];
-);
-out geom;`,
-  // The car parks (task 016), which the world paints as ground of their own.
-  parking: `[out:json][timeout:180][bbox:${BOX}];
-(
-  way["amenity"="parking"];
-  relation["amenity"="parking"];
 );
 out geom;`,
   // The parishes, and the municipality round them.

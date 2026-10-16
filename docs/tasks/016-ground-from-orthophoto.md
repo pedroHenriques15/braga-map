@@ -147,10 +147,15 @@ pavements stroked on top, and grain. In the data, ground areas keep their holes 
 - **Holes (step 4):** a multipolygon's inner rings are its holes now (`world.mjs`, `osm.mjs`'s
   `memberRings`, which `build.mjs` already used; 14 areas round the open world have them, the
   Parque Urbano do Picoto among them); `Area.holes` in the tiles and `index.js`; party-kart paints
-  them even-odd and its ambience skips them. The tiles changed only in their areas.
-- **Car parks and parked cars (step 5):** `node tools/fetch.mjs parking`: OpenStreetMap's 1,182
-  `amenity=parking` in the box (447 car parks on the ground, 729 bays and lanes along streets), the
-  world's areas of kind `parking` (but those in a building). The parked cars are the LiDAR's (July
+  them even-odd and its ambience skips them. The tiles changed in their areas, and on two tiles in
+  their paths and streets: the streets (streets.mjs) keep off the water, and two of the map's water
+  multipolygons by the open world (over x0z1 and x2z0), each mapped in two or three ways, came to it
+  as those ways apart, not as the one whole ring they make (with them whole, x2z0 has two handrails
+  more).
+- **Car parks and parked cars (step 5):** OpenStreetMap's 1,182 `amenity=parking` in the box (447
+  car parks on the ground, 729 bays and lanes along streets), the world's areas of kind `parking`
+  (but those in a building). They were fetched first as `node tools/fetch.mjs parking`; task 013
+  fetches the same car parks with its `barriers`, so after the merge the world reads them there. The parked cars are the LiDAR's (July
   2025): what stands 0.9–2.4 m over the ground and isn't a plant or in a building, in pieces split
   into cars by their size (end to end where a piece is a car wide, side by side where it's a car
   long), each `kerb`, `park` or `other`; a car in a lane's middle was driving and is left out.

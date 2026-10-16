@@ -20,7 +20,8 @@ Wherever the map, or anything drawn from it, is shown (a game, its help, its REA
 ### OpenStreetMap
 
 - **What:** the streets, buildings, land use, trees, rivers, railway, crossings, traffic lights,
-  bus stops, turn restrictions, landmarks and parishes. The world's `osmTime` says when it was
+  bus stops, turn restrictions, landmarks and parishes; the walls, fences, hedges, gates and car
+  parks (task 013). The world's `osmTime` says when it was
   fetched (now 2026-10-13).
 - **Access:** the Overpass API, no account (`node tools/fetch.mjs`).
 - **Licence:** Open Database Licence 1.0. The world, the tracks and the map page's data are
@@ -111,7 +112,10 @@ millimetre (the test).
   the building points' tops, `.cache/dgt/roofs/`, and measures each footprint over them); the
   buildings OpenStreetMap lacks, outlined from those cells (task 011, `tools/footprints.mjs`); and
   the bridges' decks where it saw them, class 26 (task 047: `tools/decks.mjs`, the median in each
-  metre, `.cache/decks.json`).
+  metre, `.cache/decks.json`); and the walls, hedges and retaining walls OpenStreetMap lacks round the
+  open world's area, and the heights of those it has (task 013: `tools/walls.mjs` boils each LAZ tile
+  there down to 50 cm cells of the highest points off the terrain and how green they are, from their
+  near-infrared, `.cache/dgt/walls/`, and finds thin ridges and steps in the terrain in them).
 - **Its sea level:** the Cascais datum, the one DGT publishes its own heights on: the LiDAR is
   within 0.15–0.85 m of DGT's geodetic marks on the Sameiro (whose heights may be the marks', not
   the ground's) and 0.2 m of the one at Pedroso; within 0.3–1.1 m of the old maps' spot heights,

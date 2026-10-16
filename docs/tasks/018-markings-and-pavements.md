@@ -78,7 +78,7 @@ Steps:
   ground cover under the Volta dos Amigos' box (`world.groundCover`'s `cars`, a file a tile: where
   each stands, which way it lies, its size, and whether it's along a kerb, in a car park or
   elsewhere), and the map's car parks and the bays and lanes along its streets are areas of kind
-  `parking` (`amenity=parking`, fetched with `node tools/fetch.mjs parking`). The rows of cars give
+  `parking` (`amenity=parking`, fetched with `node tools/fetch.mjs barriers`). The rows of cars give
   the bays' places and which way they lie.
   Setts off the streets (a car park's, a square's) can't be told from concrete by the LiDAR's echo
   or the orthophoto at 25 cm, so the ground cover has setts only where the map says a street or a

@@ -210,6 +210,49 @@ export interface Streets {
   handrails: Handrail[];
 }
 
+// A wall, a fence, a railing, a hedge or a gate (task 013), round the open world's area, on the tiles
+// as world.streets is: OpenStreetMap's barriers (source 'osm'), and those it lacks where DGT's 2025
+// LiDAR sees them ('lidar'): a thin ridge 0.4 to 4.5 m over the ground and 6 m long or more (a hedge
+// where its points are growing, 5 m), or a retaining wall where the terrain steps a metre or more
+// within a metre, 4 m long or more; laid where the map's buildings round it sit. Cut at the edges of
+// the tiles, where a street or a path passes through it (an opening as wide as the way), at a gate
+// and where it would stand on a carriageway or a path on the ground.
+// - kind: 'wall' (free standing); 'retaining' (holding up the ground on one side: its points run with
+//   the higher ground on their left, (dz, -dx) of each step (dx, dz)); 'fence' (see-through, wire or
+//   mesh); 'railing' (metal bars); 'hedge'; 'guard_rail' (a road's steel barrier); 'gate' (a gate
+//   across a drive, a path or a street, or in a wall's line) or 'bar' (a lift gate or a chain).
+//   A wall of the map's where the terrain steps across it is a retaining wall.
+//   A wall the LiDAR finds on a retaining wall's top, higher than a parapet, is a fence on it.
+// - material: what a wall, a retaining wall or a gate is made of: the map's where it says; else by
+//   what's round it (the owner's answer, checked against the viewpoints' photos): a retaining wall
+//   granite, but concrete where it holds up a street (2 m or more, 20 m long or more); a low wall
+//   under a hedge granite; a wall in front of a house or a block of flats rendered and painted (as the
+//   photos show them), a long one by a tertiary street or a bigger one concrete, any other granite; a
+//   fence, a railing, a guard rail or a gate metal; a hedge null. on: 'railing' where a wall in front
+//   of a house or a block of flats is a low one with a railing on it (up to 3 m in all): its top half
+//   is the railing, up to 1.2 m of it, the wall under it half a metre high at least.
+// - h: its height in metres over the ground under it (a retaining wall's, over its lower side: its
+//   face), as the LiDAR measured it where it saw it, else the map's `height`, else its kind's usual.
+//   w: how thick it is (a hedge's as measured, else its material's usual).
+// - pts and ys: its line, a point where it turns or its top bends by 10 cm, and its top's height at
+//   each above elev0: the terrain under it (for a retaining wall, on its higher side) plus its
+//   height, so a wall on a slope follows it. A game standing it on its own ground can take that plus
+//   h instead.
+// - open: a gate is shut (a kart can't pass); for someone on foot, open where a photo shows it open
+//   into somewhere they may go (none, in the shooter's area: task 013's Notes).
+export interface Wall {
+  kind: 'wall' | 'retaining' | 'fence' | 'railing' | 'hedge' | 'guard_rail' | 'gate' | 'bar';
+  material: 'granite' | 'rendered' | 'concrete' | 'metal' | 'wood' | null;
+  on: 'railing' | null;
+  h: number;
+  w: number;
+  level: 'ground' | 'bridge';
+  source: 'osm' | 'lidar';
+  pts: [number, number][];
+  ys: number[];
+  open?: boolean;
+}
+
 // filled: planted in a wood or a park, where the map has no trees of its own.
 export interface Tree {
   x: number;
@@ -436,6 +479,8 @@ export interface World extends BragaMap {
   trees: Tree[];
   // Every street as surfaces, and every path, on the open world's tiles loaded (empty on the others).
   streets: Streets;
+  // The walls, fences, railings, hedges and gates on the open world's tiles loaded (task 013).
+  walls: Wall[];
   // The photo textures on the tiles loaded (task 007): which, where they go, and their files.
   photos: PhotoTexture[];
   // What the ground is on the tiles loaded under the Volta dos Amigos' box (task 016).

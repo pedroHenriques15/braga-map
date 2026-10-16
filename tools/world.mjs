@@ -13,8 +13,9 @@
 // - world/tiles/<id>.js, one per tile: the relief (every 2 m on the tiles within 60 m of a track
 //   in tracks/, over the shooter's area and under the open world's, every 10 m on the rest), what
 //   the ground is (clipped to the tile), the streets and the railway, the buildings, and the trees;
-//   and round the open world's area, every street as surfaces (streets.mjs), and every footway,
-//   path, cycleway and flight of steps (task 050).
+//   and round the open world's area, every street as surfaces (streets.mjs), every footway, path,
+//   cycleway and flight of steps (task 050), and the walls, fences, railings, hedges and gates
+//   (walls.mjs, task 013).
 // - world/tiles.js, a loader for each tile, for index.js.
 //
 // All in metres from the Praça da República, x east and z south, heights above ELEV0, packed as
@@ -24,20 +25,20 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { CACHE, ELEV0, P, ROOT, readCache, relief } from './geo.mjs';
 import { tileKey, toTM } from './dgt.mjs';
-import { AREA, AREA_OF, blur, bounds, dm, footprints, Grid, half, hash, inside, memberRings, minRect, openThin, overlaps, Packer, packGrid, packPts, rectAxis, STOREY, STOREY_BASE as BASE, ringArea, ringOf, seeded, segDist, simplify, W_MIN } from './osm.mjs';
+import { AREA, AREA_OF, blur, bounds, dm, footprints, Grid, half, hash, Inside, inside, memberRings, minRect, openThin, overlaps, Packer, packGrid, packPts, rectAxis, STOREY, STOREY_BASE as BASE, ringArea, ringOf, seeded, segDist, simplify, W_MIN } from './osm.mjs';
 import { allTiles, EXT, OPEN, OPEN_BOX, OPEN_SEEN, OPEN_TILES, SECTIONS, sectionOf, SHOOTER, SHOOTER_BOX, SHOOTER_ID, SHOOTER_NAME, SHOOTER_SEEN, SHOOTER_TILES, TILE, tileBox, tileId, tileOf } from './sections.mjs';
 import { gatesOf } from './open.mjs';
 import { terrain } from './terrain.mjs';
 import { decks } from './decks.mjs';
 import { heldGround, isLine, isSquare, LEVEL, levelHeights, pathLines, pathsOf, streetsOf } from './lines.mjs';
 import { packPaths, packStreets, streetSurfaces } from './streets.mjs';
+import { cutWalls, packWalls } from './walls.mjs';
 
 const base = readCache('osm/base.json');
 if (!fs.existsSync(path.join(CACHE, 'osm', 'paths.json'))) throw new Error('No footways yet: node tools/fetch.mjs paths');
 const pathsOsm = readCache('osm/paths.json');
-// The car parks (task 016), if they're fetched: node tools/fetch.mjs parking.
-const parkingOsm = fs.existsSync(path.join(CACHE, 'osm', 'parking.json')) ? readCache('osm/parking.json') : { elements: [] };
-if (!parkingOsm.elements.length) console.log('no car parks: node tools/fetch.mjs parking');
+// The car parks (task 016), fetched with the barriers (fetch.mjs's `barriers`, task 013).
+const parkingOsm = readCache('osm/barriers.json').elements.filter((e) => e.tags?.amenity === 'parking');
 const buildingsOsm = readCache('osm/buildings.json');
 const treesOsm = readCache('osm/trees.json');
 const pois = readCache('osm/pois.json').elements;
@@ -47,7 +48,7 @@ const places = fs.existsSync(path.join(CACHE, 'places.json')) ? readCache('place
 const ground = await terrain();
 const inExt = (x, z, m = 0) => x >= EXT.x0 - m && x <= EXT.x1 + m && z >= EXT.z0 - m && z <= EXT.z1 + m;
 
-const tiles = new Map(allTiles().map(([i, j]) => [tileId(i, j), { id: tileId(i, j), box: tileBox(i, j), areas: [], lines: [], buildings: [], trees: [], streets: [], paths: [], rails: [] }]));
+const tiles = new Map(allTiles().map(([i, j]) => [tileId(i, j), { id: tileId(i, j), box: tileBox(i, j), areas: [], lines: [], buildings: [], trees: [], streets: [], paths: [], rails: [], walls: [] }]));
 const tileAt = (x, z) => tiles.get(tileId(...tileOf(x, z)));
 const tilesOver = (b, m = 0) => [...tiles.values()].filter((t) => overlaps(t.box, b, m));
 
@@ -110,7 +111,7 @@ const { heights, open } = levelHeights(lines, ground, tileGround, held, deck);
 // with its treads.
 const walks = pathLines(pathsOf(pathsOsm, (x, z, m) => x >= OPEN_BOX.x0 - m && x <= OPEN_BOX.x1 + m && z >= OPEN_BOX.z0 - m && z <= OPEN_BOX.z1 + m), { ground, grid: tileGround, deck, lines, heights, elev0: ELEV0 });
 const areas = []; // [kind, ring, holes]
-for (const e of [...base.elements, ...parkingOsm.elements]) {
+for (const e of [...base.elements, ...parkingOsm]) {
   const t = e.tags || {};
   if (isLine(e)) {
     const pts = e.geometry.map(P);
@@ -553,8 +554,13 @@ let nTrees = 0;
 // Every street in the open world's area as surfaces (streets.mjs, task 033): the carriageways at
 // their real widths, joined at the junctions, the kerbs, the pavements as wide as the buildings
 // leave room for, and the lines painted on them, at their levels; and the paths (task 050), each
-// flight of steps a tread at a time with its handrails; cut to the tiles.
+// flight of steps a tread at a time with its handrails; cut to the tiles. And the walls, fences,
+// railings, hedges and gates (walls.mjs, task 013), each cut to the tiles and at the edge of a
+// carriageway or a path on the ground it stands on.
 
+const wallList = fs.existsSync(path.join(CACHE, 'walls.json')) ? readCache('walls.json').walls : null;
+if (!wallList) console.log('no .cache/walls.json: no walls (node tools/walls.mjs)');
+let nWalls = 0;
 {
   const nodes = readCache('osm/street.json').elements.filter((e) => e.type === 'node');
   const rings = (kind) => areas.filter(([k]) => k === AREA.indexOf(kind)).map(([, r]) => r);
@@ -564,8 +570,19 @@ let nTrees = 0;
     const t = tiles.get(id);
     t.streets = packStreets(cuts.get(id), t.box.x0, t.box.z0);
     Object.assign(t, packPaths(cuts.get(id), t.box.x0, t.box.z0));
+    if (!wallList) continue;
+    // A wall on a carriageway or a path (a fence the map draws along a flight of steps, a hedge the
+    // map's line for a ramp down to a tunnel runs along) stands at its edge: cut there; on a deck or a
+    // tunnel's road, where it stands within 2 m of it.
+    const c = cuts.get(id), onGround = (p) => p.level === 'ground' || p.level === 'under';
+    const road = new Inside([...c.carriageways, ...c.paths].filter(onGround).flatMap((p) => p.rings));
+    const up = [...c.carriageways, ...c.paths].filter((p) => !onGround(p) && p.ys).map((p) => { const ys = p.ys.flat(); return { inside: new Inside(p.rings), lo: Math.min(...ys) - 2, hi: Math.max(...ys) + 2 }; });
+    const mine = cutWalls(wallList, over.find((o) => o.id === id).box, (x, z, y) => road.has(x, z) || up.some((p) => y >= p.lo && y <= p.hi && p.inside.has(x, z)));
+    t.walls = packWalls(mine, t.box.x0, t.box.z0, ELEV0);
+    nWalls += mine.length;
   }
   const ps = stats.paths;
+  if (wallList) console.log(`walls: ${nWalls} pieces in the open world's tiles, of ${wallList.length}`);
   console.log(`streets: ${stats.edges} stretches in the open world's ${over.length} tiles, ${stats.junctions} junctions, ${stats.islands} islands, ${stats.reservations} reservations, ${Math.round(stats.km.kerb)} km of kerb, in ${Math.round(stats.seconds)} s`);
   console.log(`paths: ${walks.length} ways round the area, ${Object.entries(ps.m2).map(([k, v]) => `${k} ${Math.round(v)} m²`).join(', ')} (cycleways ${Math.round(ps.lanes)} m² beside the road and ${Math.round(ps.flush)} m² flush with a pavement); ${ps.flights} flights of steps in ${ps.treads} treads, ${ps.steep} rising more than 0.3 m`);
 }
@@ -729,6 +746,7 @@ for (const t of tiles.values()) {
   if (t.streets.length) p.part('streets', t.streets);
   if (t.paths.length) p.part('paths', t.paths);
   if (t.rails.length) p.part('rails', t.rails);
+  if (t.walls.length) p.part('walls', t.walls);
   const b64 = p.encode();
   fs.writeFileSync(path.join(dir, 'tiles', t.id + '.js'), `${HEAD}export default '${b64}';\n`);
   bytes += b64.length;

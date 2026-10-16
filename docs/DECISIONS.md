@@ -834,3 +834,34 @@ The alternatives were the LiDAR's 50 cm models (a wall 0.2 m wide is lost in the
 kept (a car park full of walls), the owner's rule as it was (the houses' walls granite where the
 photos show them rendered, with railings), and a wall standing in a street as the world draws it
 (task 052 brings the street back to the wall instead).
+
+## 034 · The ground is what it is every 50 cm, each kind drawn in its own photo and the place's colour
+
+*2026-10-16 · task 016 · how the ground uses decision 002's photos; replaces decision 030's orthophoto
+ground*
+
+The world says what the ground is, not only what the land is used for, and a game draws each kind
+of ground with a photo of that surface:
+
+- **What it is comes from DGT's data:** every 50 cm under the Volta dos Amigos' box (`tools/cover.mjs`,
+  `world.groundCover`), asphalt, paving, setts, grass, bare soil, gravel, water, or a roof, and
+  whether a tree's crown is over it. The hard ground by the LiDAR's echo, in the sun or a shadow
+  (the orthophoto's sunlit asphalt is as pale as its paving); the plants by the orthophoto's
+  near-infrared; setts only where OpenStreetMap says so, as concrete echoes the same. Under a
+  crown, a shadow or a parked car the ground is what's round it; where the world draws the
+  streets, their own surfaces.
+- **How it's drawn is way A, the owner's pick from a test tile** (Fujacal's seven viewpoints, A, B
+  and C beside their photos): each kind in a seamless CC0 photo from Poly Haven, tiled at its real
+  size, its own mean colour divided out and the place's put in. The place's colour is each kind's
+  median over squares of 4 m of the orthophoto in the sun, its cars and shadows left out. Sharp up
+  close, the place's own colour from afar. Far off, a crown's cells take the game's trees' green,
+  as the orthophoto's canopy reads slate-blue under the game's light.
+- **The orthophoto is not draped (B):** its cars, shadows and leaning roofs are in it, and at a
+  kart's height it's a blur; its ground texture over Fujacal (decision 030's) is no longer made.
+  C, A near and B beyond 100 m, kept B's faults where most of the ground is seen.
+- **The map's areas stay** where the classes don't reach (beyond the box), with a multipolygon's
+  holes now holes and the car parks an area of their own; the parked cars the LiDAR saw are kept
+  with the classes, for the bays (task 018) and the cars a game draws (task 020).
+
+The alternatives were B and C, and the ground classed by the orthophoto's colour alone, which can't
+tell sunlit asphalt from paving.

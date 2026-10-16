@@ -72,6 +72,10 @@ From the map as it is (2026-10-15):
   (0.5 km) and 39 gates; the LiDAR finds 33 walls more (0.3 km), 54 retaining walls (0.5 km) and 98
   hedges (0.8 km). The walls are 1.85 m high at the median, the houses' and the flats' along the Rua
   do Fujacal low and rendered with a railing on them, as their photos show them.
+- **The ground** (task 016, 2026-10-16): of its 21.5 ha, 42% roofs, 25% paving, 16% asphalt, 14%
+  grass, 1.5% setts, 1.4% bare soil, and a little gravel and water; 12.5% under a tree's crown. The
+  LiDAR saw 1,028 cars parked in it (July 2025): 670 along the kerbs, 174 in car parks, 184
+  elsewhere.
 - **What OpenStreetMap lacks here:** shops (none mapped, though the photos show corner blocks with
   shops and cafés), doors, street lamps, benches (one bin).
 

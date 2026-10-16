@@ -79,3 +79,6 @@ route. Traffic lights cycle 20 s.
   elsewhere. A low wall or a hedge along a building's front can come out as cars in a row (one along
   the Alameda do Fujacal's flats does), and cars under a tree's crown aren't seen. The map's car
   parks and its bays and lanes along the streets are areas of kind `parking`.
+- From task 016's round `2026-10-16-after016` (2026-10-16): with the lawns gone, the parked cars
+  are what Claude's marks name first at `fujacal-start`, `conselheiro-lobato`, `fujacal-west` and
+  `travessa-lobato`, where the ground they stand on is now the grey of the street.

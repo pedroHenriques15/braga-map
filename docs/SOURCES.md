@@ -115,7 +115,11 @@ millimetre (the test).
   metre, `.cache/decks.json`); and the walls, hedges and retaining walls OpenStreetMap lacks round the
   open world's area, and the heights of those it has (task 013: `tools/walls.mjs` boils each LAZ tile
   there down to 50 cm cells of the highest points off the terrain and how green they are, from their
-  near-infrared, `.cache/dgt/walls/`, and finds thin ridges and steps in the terrain in them).
+  near-infrared, `.cache/dgt/walls/`, and finds thin ridges and steps in the terrain in them); and
+  what the ground is under the Volta dos Amigos' box (task 016: `tools/cover.mjs` boils each LAZ
+  tile down to the ground's echo, its intensity, and the points over it, `.cache/dgt/cover/`: the
+  echo tells asphalt from paving and grass in the sun or a shadow, and the points over the ground
+  are the trees' crowns and the parked cars).
 - **Its sea level:** the Cascais datum, the one DGT publishes its own heights on: the LiDAR is
   within 0.15–0.85 m of DGT's geodetic marks on the Sameiro (whose heights may be the marks', not
   the ground's) and 0.2 m of the one at Pedroso; within 0.3–1.1 m of the old maps' spot heights,
@@ -139,13 +143,16 @@ millimetre (the test).
 - **Fetched:** the LiDAR's own tiles over the whole map since task 010 (42, and the Praça's cut),
   from the WMS as JPEG, 4000 px a side (25 cm), about 2.7 MB each, 106 MB in all. JPEG and not TIFF, because the
   source is JPEG already and TIFF is 18 times the size. Also an 80 m cut round the Praça in
-  latitude and longitude, for the test. Colour only: the near-infrared layer is there when task
-  016 or 019 needs it.
+  latitude and longitude, for the test. And the near-infrared since task 016, by `node
+  tools/fetch.mjs nir`: the layer `Ortos2025-IRG` (near-infrared, red and green) on the same 42
+  tiles, as JPEG at 25 cm, 113 MB, into `.cache/dgt/ortho-irg/`.
 - **Used for:** each roof's colour (task 010: the median of the lighter half of the photo in the
   middle of the roof, one of the map's 127 `roofColors`), checking the street surfaces by
-  (task 033's page), and the first ground texture (task 007, `tools/textures.mjs`): the photo
-  over the tile `x-1z1`, Fujacal, resampled onto the map's grid, in `world/textures/`, with the
-  credit in its index.
+  (task 033's page), the first ground texture (task 007, `tools/textures.mjs`: the photo over the
+  tile `x-1z1`, Fujacal, resampled onto the map's grid; no longer made since decision 034), and
+  what the ground is (task 016, `tools/cover.mjs`: the plants by their near-infrared against their
+  red, bare soil and gravel by their colour, and each kind's own colour in each 4 m square, in
+  `world/cover/`, with the credit in each tile's index).
 
 ### DGT's land use, COS2025
 
@@ -256,6 +263,27 @@ their lists are committed; `node tools/refs.mjs` fetches the photos into `.cache
   again on 2026-10-14).
 - **KartaView** (`https://api.openstreetcam.org/2.0/photo/`): every query near Braga timed out or
   answered "Restricted access" on 2026-10-13.
+
+## For the ground's photos
+
+### Poly Haven
+
+- **What:** seamless photo textures of surfaces, scanned at a known size, by named authors
+  (https://polyhaven.com).
+- **Access:** open, no account: each asset's record at `https://api.polyhaven.com/info/<id>` (its
+  authors, its size in metres, its date) and its files at `https://api.polyhaven.com/files/<id>`.
+- **Licence:** CC0 1.0, every asset (https://polyhaven.com/license).
+- **Credit:** none owed; each is credited to its authors all the same, in `world/textures.js`
+  (`SURFACES`), and `map().photoCredits` lists them.
+- **May be used for:** everything.
+- **Fetched:** by `node tools/textures.mjs`, each asset's record and its 2k diffuse photo, into
+  `.cache/textures/sources/`, checked on 2026-10-16.
+- **Used for:** each kind of ground's photo (task 016, decision 034), tiled at its real size and
+  tinted with the place's colour: `asphalt_04` (Jenelle van Heerden, Sergej Majboroda, 4.04 m),
+  `concrete_floor_01` for paving (Rob Tuytel, 2 m), `cobblestone_floor_03` for setts (Rob Tuytel,
+  2.4 m), `grass_ground` (Charlotte Baglioni, 2.51 m), `dirt_floor` for bare soil (eye-candy.xyz,
+  2.07 m) and `gravel_floor_02` (Jenelle van Heerden, Dimitrios Savva, 2 m), in
+  `world/textures/surfaces/`.
 
 ## Sounds
 

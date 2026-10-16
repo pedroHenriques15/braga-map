@@ -45,6 +45,8 @@ world.open.gates; // where each street or path leaves the area: [{ x, z, heading
 world.inOpen(x, z); // inside its edge?
 world.shooter; // the shooter's area, Fujacal: { id: 'fujacal', name, pts, gates, tiles, seen }, and world.inShooter(x, z)
 world.photos; // the photo textures on the tiles loaded: [{ id, kind, box | wall, s, y, files: { high, medium, low }, credit }]
+world.groundCover; // what the ground is, every 50 cm under the Volta dos Amigos' box: [{ tile, box, classes, colour, cars, credit }]
+map().groundKinds; // the kinds it says, each with its photo: [{ kind, texture: { id, metres, mean, files, credit } | null }]
 ```
 
 - `map()` is what every game needs whichever part of the map it's in: the sections and their
@@ -128,11 +130,26 @@ world.photos; // the photo textures on the tiles loaded: [{ id, kind, box | wall
   itself knows nothing of a road: the trees, and the houses it fills in on empty frontages (where
   the LiDAR wasn't fetched), stand clear of every street taken at least 9 m wide (`W_MIN`), and the
   real buildings stand where they are.
+- **What the ground is** (task 016, decision 034), every 50 cm under the Volta dos Amigos' box (48
+  tiles, the shooter's area and the open world's among them): asphalt, paving, setts, grass, bare
+  soil, gravel, water, or a roof, and where a tree's crown is over it. The hard ground is told apart
+  by DGT's LiDAR's echo, in the sun or a shadow; the plants by the 2025 orthophoto's near-infrared;
+  setts only where the map says a street or a path is setts. Under a shadow, a parked car or a
+  crown, the ground is what's round it; where the world draws the streets, their own surfaces.
+  `world.groundCover` has it for each tile loaded that's classed, as files a game fetches at its
+  graphics level: the classes, a cell a pixel (50 cm on High, 1 m on Medium, 2 m on Low); each
+  kind's own colour there, the orthophoto's in the sun without its cars and shadows; and the cars
+  the LiDAR saw parked (July 2025), each along a kerb, in a car park or elsewhere. `map().groundKinds`
+  gives each kind's seamless photo (from Poly Haven, CC0) and its size in metres, for a game to tile
+  over the ground and tint with the place's colour. `index.d.ts` says how each file is laid out.
+- A multipolygon's inner rings are holes in the world's areas (`holes`: a clearing in a wood, a pond
+  in a park), and the car parks on the ground, and the bays and lanes along the streets, are areas
+  of their own (`parking`, task 016).
 - **Photo textures** (task 007, decision 030) belong to the place, so they're in the world too,
-  in `world/textures/`: for now the 2025 orthophoto over one tile of the ground (Fujacal's,
-  `x-1z1`) and ten facades, until tasks 016 and 017 make more. `world.photos` lists those on
-  the tiles loaded: what each is (`ground`, over its tile's `box`; or `facade`, straightened
-  onto its `wall`), and a file for each graphics level, `files.high`, `.medium` and `.low`,
+  in `world/textures/`: for now ten facades, until task 017 makes more, and the kinds of ground's
+  photos (task 016). `world.photos` lists those on the tiles loaded: what each is (`facade`,
+  straightened onto its `wall`; or `ground`, over its tile's `box`, which `textures.mjs` can still
+  make, though since decision 034 none is), and a file for each graphics level, `files.high`, `.medium` and `.low`,
   each with its `url`, which the game's bundler serves as an asset (Vite does: in its dev server
   and its build), its size in pixels and its bytes. Only the list comes with a tile; the game
   fetches the files it draws. They're KTX2, compressed with Basis Universal's ETC1S, sRGB, with
@@ -153,7 +170,7 @@ change to the map never breaks a game behind its back.
 
 ```sh
 npm run fetch    # the data, into .cache/ (about 20 MB, ignored by git): a few minutes
-node tools/fetch.mjs lidar ortho  # DGT's LiDAR and orthophoto (about 5.7 GB, with a free account)
+node tools/fetch.mjs lidar ortho nir  # DGT's LiDAR, orthophoto and its near-infrared (about 5.8 GB, with a free account)
 node tools/fetch.mjs microsoft    # Microsoft's building footprints over the map (40 MB to download, 2 MB kept)
 node tools/roofs.mjs   # every building's height and roof, and those the map lacks: .cache/roofs.json (10 minutes the first time)
 node tools/decks.mjs   # the bridges' decks DGT's point cloud saw: .cache/decks.json (10 minutes)
@@ -171,6 +188,7 @@ node tools/heights.mjs # the buildings checked against the map's own heights and
 node tools/levels.mjs  # the streets that cross on two levels round the track, and the room between them
 node tools/refs.mjs    # the viewpoints' and the reference photos, into .cache/refs/ (with Mapillary's free token)
 node tools/textures.mjs  # the photo textures refs/textures.json asks for: world/textures/ (about a minute)
+node tools/cover.mjs   # what the ground is every 50 cm under the Volta dos Amigos' box, and the cars parked: world/cover/ (3 minutes, 10 the first time)
 node tools/round.mjs <round> --label "…"  # a round of party-kart's shots, for the scorecard
 ```
 
@@ -190,7 +208,7 @@ streets; when a track moves enough to change the edge, run the three again until
 - `fetch.mjs` gets OpenStreetMap through Overpass (streets and land; the footways, steps, paths
   and cycleways, which the world draws in the open world's area, and the squares mapped in parts,
   which only the street audit reads so far; the walls, fences, hedges, gates and car parks, for
-  `walls.mjs`;
+  `walls.mjs`, and the car parks for the world's areas too;
   buildings, parishes, landmarks, trees, the crossings, traffic lights and bus stops, and the turn
   restrictions) and elevation tiles, plus coarser ones 16 km round for the horizon. The public
   Overpass server is often busy: it waits and tries again. `node tools/fetch.mjs trees` fetches
@@ -202,7 +220,8 @@ streets; when a track moves enough to change the edge, run the three again until
   named.
 - DGT's open data comes only when it's named, into `.cache/dgt/`: `node tools/fetch.mjs ortho cos`
   (the 2025 orthophoto at 25 cm over the whole map, and the COS2025 land use, about 130 MB, no
-  account) and `node tools/fetch.mjs lidar` (the 2025 LiDAR: the ground and surface at 50 cm for
+  account), `node tools/fetch.mjs nir` (the orthophoto's near-infrared, red and green, `Ortos2025-IRG`,
+  on the LiDAR's 42 tiles, about 110 MB, no account) and `node tools/fetch.mjs lidar` (the 2025 LiDAR: the ground and surface at 50 cm for
   the Volta dos Amigos' box, the ground at 2 m over the whole map and 200 m round it, and the point
   cloud over the whole map, about 5.6 GB). The LiDAR needs a free account at DGT's CDD, in
   `.cache/credentials.json` as `{ "cdd": { "username", "password" } }`. `dgt.mjs` reads them all
@@ -376,7 +395,22 @@ streets; when a track moves enough to change the edge, run the three again until
   PNG into `.cache/textures/`, and `--compare` as WebP and Basis's UASTC too, for weighing the
   formats. `test/textures.test.js` checks each is made at every level and credited, and that each
   facade faces the camera its photo was taken from. The orthophoto's shadows and cars stay in it
-  (task 007's notes say why).
+  (task 007's notes say why). A kind of ground's photo (`kind: 'surface'`, task 016) is a seamless
+  one from Poly Haven (CC0), its record and 2k photo fetched once into `.cache/textures/sources/`,
+  made 1024, 512 and 256 pixels a side into `world/textures/surfaces/`, with its size in metres and
+  its mean colour, and listed by kind in `world/textures.js` (`SURFACES`), not with a tile.
+  `tools/ktx2.mjs` has the KTX2 encoding it shares with `cover.mjs`.
+- `cover.mjs` classes the ground (task 016, decision 034) on every tile under the Volta dos Amigos'
+  box, every 50 cm, after `world.mjs` (it reads the world's streets, paths, buildings and areas
+  through `index.js`): from the point cloud, each DGT tile boiled down once to the ground's echo and
+  the points over it (`.cache/dgt/cover/`, about 15 s a tile); from the
+  orthophoto and its near-infrared (`fetch.mjs ortho nir`) on the same grid. It writes each tile's
+  classes (lossless WebP), its kinds' colours (WebP) and its parked cars (JSON) into
+  `world/cover/<tile>/`, each tile's index `world/cover/<tile>.js`, and `world/cover.js`, which
+  loads them. `--check` also writes each tile's photo, classes and colour side by side into
+  `.cache/cover/<tile>.png`.
+  `test/cover.test.js` checks every tile is classed at every level, the shooter's area and the open
+  world's ground mostly what the map says it is, the kinds' photos, the cars, and the areas' holes.
 - `round.mjs` prepares one of those rounds for the scorecard (`scorecard/index.html`): its High
   shots and the photos, 960 pixels wide, and the lists the page reads, in `.cache/scorecard/` as
   they're published beside the page. It records the round in `refs/rounds.json` (committed): its
@@ -514,6 +548,12 @@ doc.
   walls, 59 km of retaining walls, 24 km of hedges and 1 km of fences on retaining walls; 317 gates
   (242 the map's, 6 on driveways, 52 in gaps in found walls). 0.27 MB more gzipped (the open world's
   53 tiles, 2.11 to 2.38 MB).
+- **What the ground is** (task 016), on the 48 tiles under the Volta dos Amigos' box: 33% grass, 26%
+  roofs, 23% paving, 13% asphalt, 3% bare soil, 2% setts, and gravel and water, 17% under a tree's
+  crown; and 41,683 parked cars (18,924 along a kerb, 12,199 in car parks, 10,560 elsewhere). 9.5 MB
+  in `world/cover/` at the three levels: all 48 tiles are 4.5 MB on High (the classes 3.5, the
+  colours 1.0), 2.1 on Medium and 0.8 on Low, already compressed; and the six kinds' photos, 1.9 MB
+  at the three levels.
 - **The Volta dos Amigos**, Party Kart's track: 10.1 km round, through five friends'
   neighbourhoods, the way the traffic goes, and over the Rio Este by a ramp into one of them, a
   dead end (decision 027).
@@ -549,10 +589,13 @@ which `photo` gives. So are most reference photos (`refs/photos.json`); the rest
 Wikimedia Commons, each under its own licence (CC BY, CC BY-SA, CC0 or public domain), whose
 author, licence and link `photo` gives too. A texture made from a CC BY-SA photo is CC BY-SA.
 
-The photo textures in `world/textures/` (task 007) are made from the 2025 orthophoto, which owes
-DGT's credit above, and from Mapillary's photos, © Mapillary contributors, under CC BY-SA 4.0: the
-textures made from them are CC BY-SA 4.0 too. Each texture's index entry gives its author, licence
-and link, and `map().photoCredits` every author, for a game's credits.
+The photo textures in `world/textures/` (task 007) are made from Mapillary's photos, © Mapillary
+contributors, under CC BY-SA 4.0: the textures made from them are CC BY-SA 4.0 too. The kinds of
+ground's photos (`world/textures/surfaces/`, task 016) are from Poly Haven (polyhaven.com), CC0: no
+credit is owed, and each is credited to its authors all the same. What the ground is
+(`world/cover/`) is from DGT's 2025 LiDAR and orthophoto, with its near-infrared, and owes DGT's
+credit above. Each texture's index entry gives its author, licence and link, and
+`map().photoCredits` every author, for a game's credits.
 
 Every source the map uses or may use, with its licence, its exact credit and what it may be used
 for, is in [docs/SOURCES.md](docs/SOURCES.md).

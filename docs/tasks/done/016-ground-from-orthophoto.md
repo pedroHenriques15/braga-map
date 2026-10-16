@@ -1,5 +1,5 @@
 ---
-status: doing
+status: done
 priority: high
 kind: code
 repo: both
@@ -64,10 +64,23 @@ pavements stroked on top, and grain. In the data, ground areas keep their holes 
 
 ## Done when
 
-- [ ] The ground classes are in the tiles for the track's box and the shooter's area.
-- [ ] The way to draw it is chosen from a test, and recorded as a decision.
-- [ ] The route's viewpoints score higher than the round before, and none lower.
-- [ ] What it adds is measured against the budget (task 004) and recorded in Notes (decision 017).
+- [x] The ground classes are in the tiles for the track's box and the shooter's area.
+  > Every 50 cm over the 48 tiles under the Volta dos Amigos' box, which hold the shooter's three
+  > and the open world's 25 (`world/cover/`, `world.groundCover`: beside each tile's own file, a file
+  > a graphics level, so a game fetches only its own). `test/cover.test.js`: every tile classed at
+  > every level, and the shooter's area and the open world mostly what the map says they are.
+- [x] The way to draw it is chosen from a test, and recorded as a decision.
+  > A, the owner's pick from the test tile (Questions, 2026-10-16): decision 034.
+- [x] The route's viewpoints score higher than the round before, and none lower.
+  > Narrowly. The owner took Claude's marks for it (2026-10-16): `2026-10-16-after016` against
+  > `2026-10-16-after013`, both rounds marked by Claude on one scale (`scores/claude` on "Braga
+  > real"). The route's 24 places 2.42 → 2.46: one up (`fujacal-start`, 2 → 3), none down. All 29
+  > places 2.45 → 2.48, Fujacal's 10 2.20 → 2.30. The false lawns are gone at a dozen places, but
+  > what holds each mark down is elsewhere (Notes, "The marks").
+- [x] What it adds is measured against the budget (task 004) and recorded in Notes (decision 017).
+  > Notes, "What it costs" (against `2026-10-15-after050`) and "The round on the scorecard"
+  > (against `2026-10-16-after013`): draw calls and triangles the same, textures 98 → 118 MB on
+  > High, the download on High 2.33 → 6.98 MB gzipped.
 
 ## Out of scope
 
@@ -224,4 +237,27 @@ pavements stroked on top, and grain. In the data, ground areas keep their holes 
   calls and 1.37 M triangles on High, 89 and 0.74 M on Low); textures 98 → 118 MB on High, 62 → 68
   on Medium, 45 → 42 on Low; the city built in 4.20 → 4.22 s on High, 3.33 → 3.76 on Medium, 3.46 →
   3.89 on Low (not looked into: the build's time moves by a second from one round to the next, and
-  `after013` built a second faster than `after050` did). What it shows is the test round's.
+  `after013` built a second faster than `after050` did). The download on High, after the merge:
+  7.24 MB gzipped, 13.25 MB as is (`node scripts/download.mjs` on `8e21b33`), about 4.6 MB more
+  than 013's. What it shows is the test round's.
+- **The marks** (2026-10-16): the owner took Claude's for this round (`scores/claude`, each
+  comment starting "(Claude)"), on the scale Claude's marks for `after013` used, where a place with
+  only its trees missing is a 3. Twelve places changed enough to say so; one moved: `fujacal-start`
+  2 → 3, the lawn on its right now the grey where the photo's cars park, so it reads as a street.
+  The others where a lawn went (`sao-joao-da-ponte` 3, `conselheiro-lobato`, `porfirio-da-silva`,
+  `fujacal-west`, `lobato-east`, `alameda-fujacal`, `viriato-amaral-nunes` and `travessa-lobato`
+  2) are held down by what's still missing or wrong there. Where those go:
+  - the trees: `sao-joao-da-ponte`, `porfirio-da-silva`, `sameiro` and `falperra` (task 019,
+    noted there): with no tree drawn, the ground under a crown shows bare, the Sameiro's slope
+    bare grey earth where the photo has dark trees (3, as before: neither the lawn nor this is
+    right);
+  - the parked cars: `fujacal-start`, `conselheiro-lobato`, `fujacal-west` and `travessa-lobato`
+    (task 020, noted there);
+  - not any open task's, left for task 053's pass: the cameras off the road (`fujacal-start` and
+    `fujacal-west` on the pavement, `conselheiro-lobato` on a corner, `lobato-east` among the trees
+    of a planted strip, `viriato-amaral-nunes` on the embankment); the dark pyramid of a roof at
+    `porfirio-da-silva` and `fujacal-west`; the mound down the middle of the Travessa
+    Conselheiro Lobato (`travessa-lobato`, grey now, not lawn); and the Rua do Monte da Forca, setts
+    in the photo and paving in the game (`monte-da-forca`), where the map doesn't say setts.
+- **Done** 2026-10-16 (decision 034). braga-map 1.16.0 and party-kart's `task-016` (`8e21b33`) on it;
+  not yet merged into either repository's `main` or deployed.

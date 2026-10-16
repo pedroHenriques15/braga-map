@@ -59,3 +59,10 @@ party-kart draws icosahedra or cones with a random colour (`src/render/trees.ts:
 - From task 005: the point cloud (`.cache/dgt/LAZ/`, read by `tools/dgt.mjs`'s `points(key, fn)`)
   classes low, medium and high vegetation (3, 4, 5); it covers the route's corridor and the
   shooter's area. DGT's OGC API also has the trees of public interest (`srup_arvores_point`).
+- From task 016's round `2026-10-16-after016` (2026-10-16): the ground under a tree's crown is now
+  drawn as what's round it, and far off a crown's cells take the green of the game's trees; near,
+  where the game draws no tree, the ground shows bare. The Sameiro's slope (`sameiro`) has dark
+  trees in the photo and bare grey earth in the game; the Falperra's hillside (`falperra`) is
+  mottled green and grey, without its pines. The trees missing hold down `sao-joao-da-ponte`,
+  `porfirio-da-silva` and `31-de-janeiro` too (Claude's marks, 3, 2 and 3). Where the crowns are:
+  `world.groundCover`'s classes, each 50 cm cell under one marked (8), from the LiDAR.

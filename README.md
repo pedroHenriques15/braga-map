@@ -320,7 +320,8 @@ streets; when a track moves enough to change the edge, run the three again until
   section `fujacal`, and a gate where every street and path crosses it.
 - `streets.mjs` makes every street in the open world's area a surface (task 033), for
   `world.mjs`, with Clipper (`clipper-lib`, a dev dependency): each street's band at its width
-  (`carriageway` in `osm.mjs`), cut square across where it meets another and round at a dead end;
+  (`carriageway` in `osm.mjs`), cut square across where it meets another and round at a dead end, and
+  where it runs on into another (or through a junction within 20° of straight), as the narrower;
   those on the ground joined into one, each bridge and each tunnel its own; each corner where
   streets meet, or a street turns, rounded at a kerb's radius (3–10 m, by the smaller street) by
   closing the carriageways round it, which leaves a roundabout's island, or another they enclose,
@@ -332,7 +333,11 @@ streets; when a track moves enough to change the edge, run the three again until
   road, a service road, a track or a pedestrian street. The kerbs wherever a pavement, reservation
   or island is behind the carriageway, 15 cm high, dropped at the crossings; the lines from
   `lanesOf` (each lane at least 2.5 m), stopping at the junctions and short of the zebras; a zebra
-  at every crossing the map has, 4 m deep, but the unmarked ones. Everything to the nearest 10 cm.
+  at every crossing the map has, 4 m deep, but the unmarked ones. Everything to the nearest 10 cm,
+  the carriageways snap-rounded together, so two pieces that meet share their points there and no
+  crack opens between them; and before that, no sliver (task 048, decision 035): a notch into the
+  carriageways under a metre wide closed, a gap between two under 0.3 m wide filled, and an island
+  kept as the map's lines leave it, but where it's under 10 cm wide.
   Where a bridge or a tunnel meets the ground's streets (task 040), its carriageway takes the
   ground's place round its end, and a deck's end follows the ground as the tiles hold it, a point
   every 2 m across it, where that's within 0.5 m of the deck; wherever a deck or a tunnel's road is

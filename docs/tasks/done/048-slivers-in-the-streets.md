@@ -1,5 +1,5 @@
 ---
-status: doing
+status: done
 priority: medium
 kind: code
 repo: braga-map
@@ -49,11 +49,31 @@ the gores where a slip road leaves, some not, like the spike at (504, 980), whos
 
 ## Done when
 
-- [ ] The test passes: no sliver as above in the open world's carriageways, the gores kept.
-- [ ] The spike at (504, 980) and the cracks down the Avenida da Liberdade are gone, seen on the
+- [x] The test passes: no sliver as above in the open world's carriageways, the gores kept.
+  > `test/streets.test.js`, "no sliver in the carriageways": in the open world's tiles, at every
+  > level, nothing that closing them by 0.4 m fills runs over half a metre in from its mouth (184
+  > such notches in 1.16.0's tiles), no hole under 0.3 m wide with nothing in it, and no part of an
+  > island under 4 cm wide over half a metre long (78 such cracks in 1.16.0's). And on made-up
+  > streets: the wedge at a bend filled, two carriageways 0.1 m apart joined, a 0.5 m median kept,
+  > a slip road's gore kept where it's 1.3 m wide and its 0.27 m tip made road. braga-map's
+  > `npm test` 87 of 87.
+- [x] The spike at (504, 980) and the cracks down the Avenida da Liberdade are gone, seen on the
   streets' page (`.cache/streets/index.html`) and in party-kart.
-- [ ] The viewpoints that look down the Avenida da Liberdade (`liberdade`) shot again, and no
+  > On the streets' page, a box over both (`node tools/streets.mjs 100 600 500 1000`), and in
+  > pictures of the tiles before and after: the spike, 3.05 m deep in 1.16.0, gone; along the
+  > Liberdade in the open world, the hairline cracks where its side streets of setts meet it (3) gone,
+  > and its promenade's, outside the open world's edge. In party-kart (`?scenery&view=`, on 1.16.0
+  > and on 1.17.1, side by side): the white point of kerb in the road at (504, 980) is gone, and the
+  > promenade's thin points of concrete at its crossings. Its test of the edges two pieces share point
+  > for point counts 7,254 where it counted 4,104.
+- [x] The viewpoints that look down the Avenida da Liberdade (`liberdade`) shot again, and no
   viewpoint worse.
+  > The round `2026-10-16-after048` ("Sem frinchas"), shot on party-kart `d2d8be7` and braga-map
+  > 1.17.1, against `2026-10-16-after016`: `liberdade` as it was (its cracks are behind the camera);
+  > the most changed shots differ in under 5% of their pixels (a lamp moved with its kerb, a kerb's
+  > face drawn whole at `alvaro-carneiro`, an island's point at `lobato-pavement`), none worse.
+  > Claude's marks on one scale with the round before's: 2.48 for the 29 places, as before, none
+  > up or down.
 
 ## Out of scope
 
@@ -123,3 +143,14 @@ the gores where a slip road leaves, some not, like the spike at (504, 980), whos
   where the avenue's band does, and a junction's corners take the surface of its biggest street.
   Whether they should take the side street's instead can't be told from the orthophoto there (the
   corners are in shadow, a van on one), and the avenue is wider in it than the map's band (task 026).
+- **The round on the scorecard:** `2026-10-16-after048` ("Sem frinchas"), shot on party-kart
+  `d2d8be7` and braga-map 1.17.1, at High, Medium and Low, published on "Braga real" (its version
+  8), open for marks, with Claude's marks (`scores/claude`). Against `after016`, at the median of
+  the 29 viewpoints: the same draw calls (113 on High, 89 on Low) and textures (118, 68 and 42 MB);
+  triangles 1.367 → 1.371 M on High, 0.738 → 0.744 M on Low. The city built in 6.1 s on High where
+  `after016` took 4.2: the desktop was busier, as 1.16.0 and 1.17.0 shot side by side that
+  afternoon both built in 5.9 to 6.5 s, and laying the streets takes 155 ms where it took 149.
+- **The round found a fault 1.17.0 had** (Notes, 1): its lines painted stopped short of every
+  junction a road runs on through. 1.17.1 has them back, and the test holds them.
+- **Done** 2026-10-16 (decision 035). braga-map 1.17.1 (tags `v1.17.0`, `v1.17.1`), party-kart
+  pinned to it (`d2d8be7`), not deployed: the roadmap has party-kart's next deploy wait for task 054.

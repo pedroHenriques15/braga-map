@@ -801,3 +801,36 @@ them all, steps too (the owner's answer):
 The alternatives were the paths drivable and the steps a wall (what the task recommended: a kart
 can't climb stairs), a bollard where each path leaves a street (none drivable), the flights the
 terrain shows no rise for drawn flat or left out, and the passages closed, the buildings whole.
+
+## 033 · The walls are the map's, measured, and those the LiDAR finds; what each is made of, by what's round it
+
+*2026-10-16 · task 013 · adds the walls to decisions 021, 024 and 025*
+
+The world carries every wall, fence, railing, hedge and gate round the open world's area
+(`world.walls`), and a game stands each on its ground and stops a kart at it:
+
+- **OpenStreetMap's barriers, measured:** each as high as DGT's LiDAR saw it, else the map's
+  `height`; a wall of the map's where the terrain steps a metre or more across it is a retaining
+  wall. Nothing on them is moved.
+- **The LiDAR finds the rest, and keeps to what it can tell:** a wall where its point cloud has a
+  thin ridge 6 m long or more, a hedge where the ridge is growing (its near-infrared), a retaining
+  wall where the terrain steps sharply; laid where the map's buildings round them sit. A wall under
+  6 m is left out, as at 10 points a square metre a parked car is as thin, as dense and as even;
+  what the cloud sees through as little as a wall (a fence, a railing) is a wall, but on a retaining
+  wall's top. What neither has (the walls the cars along the Rua do Monte da Forca park against)
+  isn't invented (decision 025).
+- **What each is made of, where the map doesn't say, is by what's round it** (the owner's answer),
+  checked against the photos that show walls, which changed it: a wall in front of a house or a
+  block of flats is rendered and painted, a low one with a railing as its top half, not granite as
+  the answer had it for a house's (the owner agreed); a retaining wall is granite, or concrete where
+  it holds up a street; a low wall under a hedge granite; a long wall by a bigger street concrete.
+- **A wall opens where a street or a path passes through it, and gives way to a carriageway or a
+  path it would stand on**, cut at its edge as a building is (decision 021); a gate where the map
+  has one, where a driveway crosses a wall, and in a door's or a car's gap in a wall the LiDAR found.
+  A gate is shut to a kart; open, for someone on foot, only where a photo shows it open into
+  somewhere they may go.
+
+The alternatives were the LiDAR's 50 cm models (a wall 0.2 m wide is lost in them), every short wall
+kept (a car park full of walls), the owner's rule as it was (the houses' walls granite where the
+photos show them rendered, with railings), and a wall standing in a street as the world draws it
+(task 052 brings the street back to the wall instead).

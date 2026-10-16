@@ -123,6 +123,9 @@ const DASH = [3, 4];
 const PATH = ['footway', 'path', 'cycleway', 'steps'];
 const PATH_SURFACES = ['calcada', 'paving', 'setts', 'asphalt', 'concrete', 'gravel', 'dirt', 'metal', 'wood'];
 const PATH_LEVELS = ['ground', 'bridge', 'tunnel', 'under'];
+// What each wall is, and what it's made of (tools/walls.mjs's WALL_KINDS and WALL_MATERIALS).
+const WALL_KINDS = ['wall', 'retaining', 'fence', 'railing', 'hedge', 'guard_rail', 'gate', 'bar'];
+const WALL_MATERIALS = [null, 'granite', 'rendered', 'concrete', 'metal', 'wood'];
 
 let base = null;
 
@@ -235,6 +238,7 @@ export async function loadWorld(area) {
   const buildings = [];
   const trees = [];
   const streets = { carriageways: [], pavements: [], kerbs: [], markings: [], paths: [], handrails: [] };
+  const walls = [];
   const box = { x0: Infinity, x1: -Infinity, z0: Infinity, z1: -Infinity };
   parts.forEach(({ head, nums }, t) => {
     const g = grid(nums, head.terrain);
@@ -383,6 +387,21 @@ export async function loadWorld(area) {
       streets.handrails.push({ level: PATH_LEVELS[nums[i]], pts: dm(i + 2, n), ys: Array.from(nums.subarray(i + 2 + n * 2, i + 2 + n * 3), (v) => v / 10) });
       i += 2 + n * 3;
     }
+    // The walls (tools/walls.mjs's packWalls): each [what, h, w, n, points, tops]: what its kind and
+    // what it's made of, 64 for a railing on it, 128 found by the LiDAR, 256 open, 512 on a bridge; h
+    // and w in centimetres, its top at each point in centimetres, each the step from the one before.
+    const Wa = head.walls;
+    for (let i = Wa ? Wa.at : 0; Wa && i < Wa.at + Wa.n; ) {
+      const what = nums[i];
+      const n = nums[i + 3];
+      const kind = WALL_KINDS[what & 7];
+      const ys = [];
+      for (let k = 0, y = 0; k < n; k++) ys.push((y += nums[i + 4 + n * 2 + k]) / 100);
+      const wall = { kind, material: WALL_MATERIALS[(what >> 3) & 7], on: what & 64 ? 'railing' : null, h: nums[i + 1] / 100, w: nums[i + 2] / 100, level: what & 512 ? 'bridge' : 'ground', source: what & 128 ? 'lidar' : 'osm', pts: dm(i + 4, n), ys };
+      if (kind === 'gate' || kind === 'bar') wall.open = (what & 256) !== 0;
+      walls.push(wall);
+      i += 4 + n * 3;
+    }
   });
   // Big areas first and squares last, as the map orders them; the small streets, then the big.
   areas.sort((a, b) => a.rank - b.rank);
@@ -400,6 +419,7 @@ export async function loadWorld(area) {
     buildings,
     trees,
     streets,
+    walls,
     photos: photos.flat(),
   };
 }

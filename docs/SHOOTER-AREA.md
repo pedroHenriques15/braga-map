@@ -68,9 +68,12 @@ From the map as it is (2026-10-15):
   (3) at the crossings.
 - **184 trees** OpenStreetMap maps; two parks and a pitch between the blocks, 25 gardens, grass by
   the river.
-- **What OpenStreetMap lacks here:** walls, fences, gates and hedges (none mapped), shops (none
-  mapped, though the photos show corner blocks with shops and cafés), doors, street lamps, benches
-  (one bin).
+- **Walls** (task 013, 2026-10-16): OpenStreetMap maps 87 walls here (1.4 km), 16 retaining walls
+  (0.5 km) and 39 gates; the LiDAR finds 33 walls more (0.3 km), 54 retaining walls (0.5 km) and 98
+  hedges (0.8 km). The walls are 1.85 m high at the median, the houses' and the flats' along the Rua
+  do Fujacal low and rendered with a railing on them, as their photos show them.
+- **What OpenStreetMap lacks here:** shops (none mapped, though the photos show corner blocks with
+  shops and cafés), doors, street lamps, benches (one bin).
 
 ## What walking distance needs
 
@@ -86,7 +89,7 @@ from. The task that does it does this area first.
 | **The ground** | At centimetres, not the tiles' 2 m: each kerb at its own height (`streets.mjs` takes 15 cm for all), dropped at the crossings; each pavement level from its kerb (task 044); each step at its rise, with its handrail; ramps and driveways. | The LiDAR's terrain model at 50 cm (`MDT-50cm`, fetched for the area) and its point cloud, about 10 points a m²; OpenStreetMap's steps and kerbs; the photos. | 044, 050 |
 | | What each surface is: asphalt, calçada, granite slabs, setts, paving stones; drains and manhole covers where they are. | The orthophoto (25 cm), OpenStreetMap's `surface`, the photos and close-ups. | 018, 016 |
 | | What isn't paved: lawns, gardens, the pitch, the waste ground by the river, soil. | The orthophoto and its near-infrared. | 016 |
-| **Walls** | Every wall, fence, gate, railing and hedge, at its height and of its kind: the granite walls round the houses, the railings by the river, the school's fence. Cover and climbing for the player. | The LiDAR's surface model (`MDS-50cm`) for where and how high, the photos for what. | 013 |
+| **Walls** | Every wall, fence, gate, railing and hedge, at its height and of its kind: the walls round the houses, the railings by the river, the school's fence. Cover and climbing for the player. | OpenStreetMap's, and the LiDAR's point cloud for where and how high and those the map lacks; the photos for what. Done (task 013), but the railings the cloud can't tell from a wall. | 013 |
 | **Furniture** | Lamps, signs, bins, benches, bollards, bus shelters, ecopontos, where each stands; the traffic lights and crossings OpenStreetMap maps. | The photos; OpenStreetMap; DGT's topographic mapping when it's published. | 020 |
 | **Trees** | Each one where it stands, at its height and with its crown, of its kind. | The LiDAR's high vegetation; OpenStreetMap's 184; the photos for the species. | 019 |
 | **Parked cars** | Along the kerbs where the photos show them: most of these streets are lined with them, and they're cover. | The photos and the orthophoto. | 020 |
@@ -102,7 +105,9 @@ from. The task that does it does this area first.
 - **Not in:** the inside of any building; private gardens and back yards behind their walls; the
   school's grounds behind their fence. Every building is closed and solid to its roof.
 - **Gates:** a gate into a courtyard is open if the photos show it open or it has none; one that's
-  shut in the photos stays shut. Task 013 records each.
+  shut in the photos stays shut. Task 013 records each: the 39 here are the houses' and the flats'
+  gates onto the streets (and none into a courtyard), all shut, as the photos show them (but one
+  house's drive gate standing open, into its garden, which stays shut: a garden is out of bounds).
 - **No holes:** wherever the player can walk, the ground is closed: no gap between a pavement and a
   wall, a step and its flight, a kerb and the road.
 

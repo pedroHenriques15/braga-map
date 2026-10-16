@@ -40,6 +40,7 @@ const world = await loadWorld({ open: true }); // the open world's area and the 
 world.height(x, z); // the ground: every 2 m or 10 m on the tiles loaded, every 50 m elsewhere
 world.buildings; // [{ kind, roof, ends, dir, pitch, y, h, ridge, floors, roofColor, … pts }], and areas, lines, trees…
 world.streets; // in the open world's area: { carriageways, pavements, kerbs, markings, paths, handrails }, each piece at its level
+world.walls; // in the open world's area: [{ kind, material, on, h, w, level, source, pts, ys, open? }], the walls, fences, railings, hedges and gates
 world.open.gates; // where each street or path leaves the area: [{ x, z, heading, w, k, level, y }]
 world.inOpen(x, z); // inside its edge?
 world.shooter; // the shooter's area, Fujacal: { id: 'fujacal', name, pts, gates, tiles, seen }, and world.inShooter(x, z)
@@ -100,6 +101,16 @@ world.photos; // the photo textures on the tiles loaded: [{ id, kind, box | wall
   16 cm, its ends on DGT's terrain at 50 cm; where the map counts the steps and the terrain shows
   less than 8 cm a step (a landing at a door isn't ground to it), from its foot 16 cm a step (the
   owner's answer). Its handrails are lines at their tops (`world.streets.handrails`).
+- So are its walls, fences, railings, hedges and gates (task 013, `world.walls`): every barrier
+  OpenStreetMap has there, and the walls, hedges and retaining walls it lacks where DGT's LiDAR sees
+  them (`source`), each as high as the LiDAR measured it (else the map's `height`), its top's height
+  at each point; a wall of the map's where the terrain steps across it is a retaining wall. Each opens
+  where a street or a path passes through it and is cut where it would stand on a carriageway or a
+  path; a gate where the map has one, where a driveway crosses a wall, and in a door's or a car's gap
+  in a wall the LiDAR found. What each is made of is the map's where it says, else by what's round it
+  (the owner's answer, checked against the viewpoints' photos): a retaining wall granite, or concrete
+  where it holds up a street; a wall in front of a house or a block of flats rendered and painted, a
+  low one (up to 3 m, its top half a railing) with a railing on it; one under a hedge granite. `index.d.ts` says what each field means.
 - The buildings are as DGT's LiDAR measured them (`measured`), 95% of those on the map: the
   height of the eaves (`h`) and of the ridge, the roof's shape, the way it runs (`dir`), which
   ends are hipped, its pitch, its storeys, and its colour as the 2025 orthophoto sees it (from
@@ -146,6 +157,7 @@ node tools/fetch.mjs lidar ortho  # DGT's LiDAR and orthophoto (about 5.7 GB, wi
 node tools/fetch.mjs microsoft    # Microsoft's building footprints over the map (40 MB to download, 2 MB kept)
 node tools/roofs.mjs   # every building's height and roof, and those the map lacks: .cache/roofs.json (10 minutes the first time)
 node tools/decks.mjs   # the bridges' decks DGT's point cloud saw: .cache/decks.json (10 minutes)
+node tools/walls.mjs   # the walls, fences, railings, hedges and gates round the open world's area: .cache/walls.json (2 minutes, and 3 more the first time)
 npm run page     # the map page's map/braga.json
 npm run tracks   # every track: tracks/<id>.js, and map/tracks.json for the page
 npm run open     # the open world's edge, round the Volta dos Amigos: tools/open.json (seconds)
@@ -169,18 +181,20 @@ draws the edges (run `npm run page` again after `npm run open` or `npm run shoot
 `audit.mjs`, which reads the world's tiles), `textures.mjs` lays each facade on its building in
 the world (after `world.mjs`; `test/textures.test.js` says if a building moved from under one),
 and `build.mjs` and `world.mjs` take the buildings'
-heights and roofs from `roofs.mjs`'s measurements. All of them need the LiDAR. `track.mjs` also reads
+heights and roofs from `roofs.mjs`'s measurements, and `world.mjs` the walls from `walls.mjs` (run it
+after `roofs.mjs`, `npm run open` and `fetch.mjs barriers`). All of them need the LiDAR. `track.mjs` also reads
 the streets the world draws (`world.streets`, which don't depend on a track) for the race's road, so
 a new track's area needs `npm run open` and `npm run world` before `npm run tracks` plans it on the
 streets; when a track moves enough to change the edge, run the three again until it holds.
 
 - `fetch.mjs` gets OpenStreetMap through Overpass (streets and land; the footways, steps, paths
   and cycleways, which the world draws in the open world's area, and the squares mapped in parts,
-  which only the street audit reads so far;
+  which only the street audit reads so far; the walls, fences, hedges, gates and car parks, for
+  `walls.mjs`;
   buildings, parishes, landmarks, trees, the crossings, traffic lights and bus stops, and the turn
   restrictions) and elevation tiles, plus coarser ones 16 km round for the horizon. The public
   Overpass server is often busy: it waits and tries again. `node tools/fetch.mjs trees` fetches
-  only what's named (`base`, `paths`, `buildings`, `admin`, `pois`, `trees`, `street`,
+  only what's named (`base`, `paths`, `barriers`, `buildings`, `admin`, `pois`, `trees`, `street`,
   `restrictions`, `dem`, `horizon`). A
   new fetch brings the map's changes since, so the tracks may come out different: run the games'
   tests after. `node tools/fetch.mjs microsoft` gets Microsoft's building footprints (found by
@@ -236,6 +250,34 @@ streets; when a track moves enough to change the edge, run the three again until
   height where `decks.mjs` has it 30 cm or more over that line (task 047): `decks.mjs` boils DGT's
   point cloud down to its decks (class 26), the median height in each metre, into
   `.cache/decks.json`, once (10 minutes); without it the decks run straight as before.
+- `walls.mjs` makes the walls, fences, railings, hedges and gates round the open world's area (task
+  013), for `world.mjs`. It boils each tile of DGT's point cloud there down once to 50 cm cells on the
+  terrain model's grid (`.cache/dgt/walls/`): the highest point off the terrain, and the highest under
+  5 m, how many points and how green they are (their near-infrared against their red: the cloud's
+  colours are pale, so growing is an NDVI of -0.04 or more), how many are classed building, how many
+  ground points. Over each tile and 50 m round it: a wall is a cell 0.4 to 4.5 m over the terrain, not
+  growing, off the buildings, the carriageways and the car parks, and thin (clear of what stands a
+  third as high a metre either side, and half a metre on one side: a car is three cells wide or
+  more); a hedge the same, growing, clear a metre and a half either side; a retaining wall where the
+  terrain steps a metre or more over a metre, with ground points either side, more than it slopes
+  beyond. Straight runs through each (the line with the most cells near it, every 3°, its cells no
+  more than 1.6 m apart, and half of them not thin along it, as a wall's aren't), each measured along
+  it every half metre: a wall's top (the higher of its cells across it), a hedge's width, a retaining
+  wall's step and parapet; laid where the map's buildings round it sit (roofs.mjs's shifts). Left out:
+  a wall under 6 m long or a hedge under 5 (at 10 points a square metre a parked car is as thin, as
+  dense and as even as a wall, and a car's length long), a row of cars along a kerb that isn't whole
+  and even, a hedge under 0.8 m or over 3.5 (weeds on a verge, a row of trees) or far from any
+  building or street, a retaining wall in a wood or a field far from any building, a wall along a
+  retaining wall's top that's its face or its parapet (taller, a fence on it), a hedge over 1.5 m
+  within 3 m of one (the bank's growth). Then the map's barriers, each measured along its line (where the terrain steps across a
+  wall of the map's, a retaining wall), and what the LiDAR found along one dropped (but a hedge along
+  a wall). The gates: the map's, across the street or the path each is on or along its wall; where a
+  driveway crosses a wall; and in a door's or a car's gap in a wall the LiDAR found. Each wall opens
+  where a street or a path crosses it (a way the map stops 3 m short of a wall goes through it), and
+  gets what it's made of by what's round it (`dress`). `world.mjs` cuts each to the tiles and where
+  it would stand on a carriageway or a path (`cutWalls`, `packWalls`). `test/walls.test.js` checks
+  the tiles carry every barrier the map has but where it opens, every gate, each piece whole and off
+  the carriageways, and a retaining wall's higher ground on its left.
 - `open.mjs` works out the open world's edge (task 032) from the streets and the buildings, on a
   grid of 1 m: near the loop is within 120 m of it and what that closes round (its inside, and a
   pocket between two of its arms), and the Picoto's top; every street that comes near is in, from
@@ -466,6 +508,12 @@ doc.
   footways, 2.1 ha of cycleways (0.19 ha of it lanes beside the road, 0.26 ha flush with a
   pavement), 1.1 ha of paths, and 258 flights of steps in 3,361 treads with 139 handrails; 0.11 MB
   more gzipped (the open world's 53 tiles, 2.00 to 2.11 MB).
+- **The open world's walls** (task 013), over the box round its area: OpenStreetMap's 20 km of walls,
+  23 km of retaining walls (309 of its walls among them, where the LiDAR saw the terrain step), 4.6 km
+  of hedges, 2.2 km of fences and 0.5 km of railings; and those it lacks from the LiDAR: 17 km of
+  walls, 59 km of retaining walls, 24 km of hedges and 1 km of fences on retaining walls; 317 gates
+  (242 the map's, 6 on driveways, 52 in gaps in found walls). 0.27 MB more gzipped (the open world's
+  53 tiles, 2.11 to 2.38 MB).
 - **The Volta dos Amigos**, Party Kart's track: 10.1 km round, through five friends'
   neighbourhoods, the way the traffic goes, and over the Rio Este by a ramp into one of them, a
   dead end (decision 027).

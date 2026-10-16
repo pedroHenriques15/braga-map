@@ -165,8 +165,8 @@ map().groundKinds; // the kinds it says, each with its photo: [{ kind, texture: 
   in a park), and the car parks on the ground, and the bays and lanes along the streets, are areas
   of their own (`parking`, task 016).
 - **Photo textures** (task 007, decision 030) belong to the place, so they're in the world too,
-  in `world/textures/`: for now ten facades, until task 017 makes more, and the kinds of ground's
-  photos (task 016). `world.photos` lists those on the tiles loaded: what each is (`facade`,
+  in `world/textures/`: ten facades, the only photos found good enough (task 017 drew every other
+  building from its kind's kit), and the kinds of ground's photos (task 016). `world.photos` lists those on the tiles loaded: what each is (`facade`,
   straightened onto its `wall`; or `ground`, over its tile's `box`, which `textures.mjs` can still
   make, though since decision 034 none is), and a file for each graphics level, `files.high`, `.medium` and `.low`,
   each with its `url`, which the game's bundler serves as an asset (Vite does: in its dev server
@@ -561,10 +561,15 @@ doc.
   tiles the open world's area touches (the Volta dos Amigos and Fujacal among them), every 10 m on
   the rest; from 56 m in the north-west corner to 573 m on the Sameiro. Before, from EU-DEM, the
   Picoto's top was 34 m too low.
-- **The world**: 140 tiles, 13,000 buildings from the map (12,400 of them measured by the LiDAR,
-  in 18,700 parts) and 11,500 houses filled in, 20,000 trees. 7.6 MB in all (2.6 MB gzipped); a
-  game loads the tiles it needs (the open world's area and round it, 53: 6.6 MB, 2.04 MB gzipped;
-  the Volta dos Amigos' box, 48: 6.4 MB, 1.96 MB gzipped).
+- **The world** (1.18.0): 140 tiles, 13,023 buildings from the map and 7,243 it lacks from the
+  LiDAR (19,643 measured, in 34,233 parts), 20,144 trees. 9.1 MB in all (3.4 MB gzipped); a game
+  loads the tiles it needs (the open world's area and round it, 53: 7.3 MB, 2.45 MB gzipped; the
+  Volta dos Amigos' box, 48: 7.1 MB, 2.36 MB gzipped, gzip at its highest).
+- **The facades** (task 017, decision 036): every building one of Braga's eleven kinds, with its
+  colours, material, ground floor, balconies and shutters; 378 of them seen in their photos (690
+  looked for: every one in the shooter's area and every one a viewpoint sees), the other 27,789
+  guessed from those; 1,360 shops' signs. The open world's 53 tiles 0.15 MB more gzipped (2.30 to
+  2.45 MB).
 - **The open world's area** (task 032): 3.5 km² round the Volta dos Amigos and the Picoto's top,
   its edge 15.1 km round, with 200 gates on 25 tiles: 121 across its streets (118 on the ground, 1
   on a bridge, 2 under something) and 79 across its paths (40 footways, 9 paths, 25 cycleways, 5

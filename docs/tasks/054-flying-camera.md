@@ -160,15 +160,14 @@ texture. The budget's frame rate from the air is the item above.
 
 - Drafted 2026-10-16 at the owner's request ("spectate": a flying camera the player controls, to
   explore the map freely), to be done before party-kart's next deploy.
-- **Where to work:** 048 (braga-map's main folder) and 017 (a braga-map worktree and party-kart's
-  `../party-kart-017`, branch `task-017`) are under way. 048's session may try braga-map's change in
-  party-kart's main folder (`npm install --install-links ../braga-map`, which changes its
-  `package.json`). So this works in a party-kart worktree of its own (`../party-kart-054`, branch
-  `task-054` from `main`, `npm install` in it) and merges into `main` when done.
-  - 017 changes `src/main.ts` too, but only its `?photos` flag near the top, and `CLAUDE.md` and
-    `docs/architecture.md`; whichever merges second takes the other's in.
-  - Whichever of 048 and 017 lands first tags braga-map and pins party-kart as usual, but its
-    `npm run deploy` waits until this is in `main`.
+- **Where to work:** a party-kart worktree of its own (`../party-kart-054`, branch `task-054` from
+  `main`, `npm install` in it), merged into `main` when done, as another session may use party-kart's
+  main folder to try a braga-map change (`npm install --install-links ../braga-map`, which changes
+  its `package.json`).
+  - 048 and 017 have landed (2026-10-16): party-kart's `main` is `ad9814e`, on braga-map 1.18.0,
+    pushed but not deployed. The deploy after this ships the three together; read their notes in
+    party-kart's `docs/architecture.md` ("The city's budget") before measuring the frame from the
+    air, as 017's balconies added 0.3 M triangles on High at the median.
 - Not checked: the frame rate from high up, where the whole area's buildings are in view at once
   (its six meshes a square kilometre all drawn); how the sun's 140 m shadow box reads from 500 m
   (a patch of shadows round the point looked at); and how the built city's edge, 300 m past the

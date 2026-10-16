@@ -1,5 +1,5 @@
 ---
-status: doing
+status: done
 priority: high
 kind: code
 repo: both
@@ -72,12 +72,25 @@ Steps:
 
 ## Done when
 
-- [ ] `docs/BUILDING-TYPES.md` describes Braga's types, each with a photo.
-- [ ] Every building in view of the route's viewpoints and in the shooter's area has an entry in
+- [x] `docs/BUILDING-TYPES.md` describes Braga's types, each with a photo.
+  > Eleven kinds, each with the reference photos it was drawn from (task 008's `type-*`, and the
+  > buildings seen), and a table of each one's storey, ground floor, materials and colours.
+- [x] Every building in view of the route's viewpoints and in the shooter's area has an entry in
   `refs/buildings.json`.
+  > 690 (`node tools/buildings.mjs`: the 346 the world draws in the shooter's area and 344 more a
+  > viewpoint sees): 370 with their kind, 8 more with their colour alone, 312 with why they weren't
+  > seen. `test/facades.test.js` checks every one listed has an entry (braga-map `npm test`, 92 of 92
+  > on 1.18.0).
 - [ ] The route's viewpoints score higher on the scorecard than the round before, and none
   lower.
-- [ ] What it adds is measured against the budget (task 004) and recorded in Notes (decision 017).
+  > Not met on Claude's marks: none lower, and none higher. The round `2026-10-16-after017`
+  > ("Fachadas") against `after048`: the buildings come closer to their photos in about twenty of
+  > the 29 places, each comment saying how, but no mark moves on the scale Claude's marks have kept
+  > since task 013, as what holds each place down is elsewhere: the trees (019), the parked cars
+  > (020), the cameras off the road (026, 053). 2.48 for the 29, as before. The owner's own marks
+  > may differ.
+- [x] What it adds is measured against the budget (task 004) and recorded in Notes (decision 017).
+  > Notes, "The budget" and "The round on the scorecard"; party-kart's `docs/architecture.md`.
 
 ## Out of scope
 
@@ -100,7 +113,7 @@ Steps:
 - **Where it is:** worktrees `../braga-map-017` and `../party-kart-017`, branch `task-017`, as another
   session worked on task 048 in the main checkout; `.cache/` linked into the first (a junction) and
   party-kart's `shots/` into the second. party-kart's `package.json` points at `file:../braga-map-017`
-  while it's tested; it goes back to a tag when braga-map 1.17.0 is cut. Both touch files 048 may
+  while it's tested; it goes back to a tag when braga-map is cut. Both touch files 048 may
   touch (`tools/world.mjs`, `index.js`, `index.d.ts`, every tile): after merging, `npm run world` and
   `node tools/textures.mjs` again, as the tiles are made, not edited.
 - **The kinds** (`docs/BUILDING-TYPES.md`, `tools/facades.mjs`): eleven, from task 008's photos of the
@@ -134,7 +147,7 @@ Steps:
   balconies and shutters as often as the buildings of its kind seen have each, by a hash of its name.
   OSM's `building:colour` (55) and `building:material` (28) where tagged; shops where a named shop is in
   it.
-- **The tiles** (braga-map 1.17.0): a building's record has three more numbers after its points (its
+- **The tiles** (braga-map 1.18.0): a building's record has three more numbers after its points (its
   kind, material, ground floor, balconies and whether it was seen; its colour and its shutters'; its
   base's colour and material and its storeys), `map().facadeTypes` and `map().facadeColours`; and the
   shops' signs in each tile's header, 1,360 over the map: each named shop (`fetch.mjs shops`: 1,678)
@@ -177,8 +190,33 @@ Steps:
 - **Tests:** braga-map `npm test` 90 of 90 (`test/facades.test.js`: every entry in the words, every
   building to look at with an entry, the guess, the tiles' facades and storeys, each sign on its wall
   facing out); party-kart `npm test` 49 of 49, `npm run check` clean.
-- **Left for `/task finish`:** the round "task017" on the scorecard, for the owner's marks against "O
-  chão" (Done when's third); `docs/DECISIONS.md` (each building's facade as a session saw it in its
-  photos, else guessed from those seen; a kit in each kind's proportions; photos only where good
-  enough, in the building's colour); braga-map 1.17.0 tagged and party-kart back on the tag; the
-  README's sizes.
+- **Merged with task 048** (2026-10-16, landed in its own session meanwhile as braga-map 1.17.0 and
+  1.17.1): `main` merged into `task-017` in both repositories; in braga-map only `package.json` and
+  the tiles clashed, and `npm run world` and `node tools/textures.mjs` made them again with both (238
+  m² of slivers closed, 378 facades seen; the textures and `tracks/amigos.js` the same as 048's);
+  `npm test` 92 of 92. braga-map **1.18.0** (tag `v1.18.0`, as 048 had taken 1.17.0 and 1.17.1).
+  party-kart's `task-017` on it, with 048's budget paragraph and 017's both kept (`ad9814e`): `npm
+  test` 49 of 49 (the lap 298.8 and 296.6 s, no respawn), `npm run check` clean. Both `main`s
+  fast-forwarded to it and pushed. The task this drafted as 054 is 055: 054 had been taken, by the
+  flying camera.
+- **The round on the scorecard:** `2026-10-16-after017` ("Fachadas"), shot after the merge on
+  party-kart `ad9814e` and braga-map 1.18.0, at High, Medium and Low, and published on "Braga real"
+  (its version 9), open for marks, set beside `after048`. Against that round, at the median of the 29
+  viewpoints: draw calls 113 → 126 on High and Medium, 89 → 95 on Low; triangles 1.37 → 1.67 M on
+  High (the most at `conselheiro-lobato`, 2.17 → 2.62 M), 1.10 → 1.38 on Medium, 0.74 → 0.76 on
+  Low; textures 118 → 132 MB on High, 68 → 80 on Medium, 42 → 47 on Low, as the round before the
+  merge measured; the city built in 4.7 s on High (048's round 6.1, on a busier desktop), 4.9 on
+  Medium, 4.2 on Low; a frame 0.7–1.1 ms at the median. The open world's 53 tiles 2.30 → 2.45 MB
+  gzipped from 1.17.1 (gzip at its highest; 2.44 → 2.59 above, measured another way).
+- **The marks** (2026-10-16): Claude's (`scores/claude`, each comment starting "(Claude)"), on the
+  scale its marks have kept since task 013: 2.48 for the 29 places, as for `after048`, none up or
+  down. The buildings are nearer their photos in about twenty places: the colours (Álvaro Carneiro's
+  beige, teal and brown; Pascoal Fernandes' two blocks of sand-coloured brick; Devesa's pink), the
+  balconies (`fujacal-start`, `lobato-east`), the tiled fronts (`conselheiro-lobato`), the brick
+  ground floors (`alameda-fujacal`), Egídio Guimarães' tower now of dark glass. What holds each mark
+  down is elsewhere: the trees (019), the parked cars (020), the cameras off the road (026, and 053's
+  pass), the walls of 013's places. Two are further off: `porfirio-da-silva`'s block a brighter teal
+  than the photo's, and a house behind the painted wall at `viriato-amaral-nunes` dark green where the
+  photo shows none; and at `travessa-fujacal` a balcony hangs in the air, and `robert-smith`'s
+  shopping centre is a white block with two windows, still without its curved glass front.
+- **Done** 2026-10-16 (decision 036), the third "Done when" not met on Claude's marks (above).

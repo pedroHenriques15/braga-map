@@ -889,3 +889,41 @@ surfaces (`tools/streets.mjs`) have none:
 
 The alternative was the task's own first plan, closing the carriageways by half a metre
 everywhere, which takes every median under a metre wide with it, the real ones too.
+
+## 036 · A building's facade is its kind's, in its own colours: as a session saw it, else guessed from those seen
+
+*2026-10-16 · task 017 · what a building's walls look like*
+
+Every building was one of eight colours by a hash of its id, with one window pattern a kind. Now each
+is drawn as what it is:
+
+- **Braga's kinds, eleven** ([BUILDING-TYPES.md](BUILDING-TYPES.md)): the old house, the house, the
+  blocks of the 1950s, of the 1970s to the 1990s and of the 2000s, the glass office, the school or
+  public building, the church, the shop of its own, the warehouse, the annex. Each has its real
+  proportions (a storey, the ground floor, a window and its spacing, a balcony's depth), fitted to the
+  LiDAR's eaves over the storeys counted in the photos where enough were counted. A corner block with
+  shops is a block whose ground floor is shops, and a tiled front a material, as both are in every
+  kind.
+- **Seen where the photos show it:** every building in the shooter's area and every one a viewpoint
+  sees has an entry in `refs/buildings.json`, written by a session that looked at it in the photo that
+  shows it best: its kind, its walls' colour and material, its ground floor along the street, its
+  balconies, its shutters and its storeys; the colours judged against what's white nearby, as many
+  photos are tinted. One no photo shows clearly is listed with why.
+- **Guessed from those seen everywhere else:** the kind from OpenStreetMap's tag, else from the
+  footprint and the height; the rest as often as the buildings of that kind that were seen have each,
+  by a hash; OSM's `building:colour` and `building:material` where it has them, and shops where a
+  named shop is in it.
+- **A game draws a kit,** each kind's bay in its proportions over its material in the building's
+  colours, the ground floor as it is along a street, the balconies as geometry. Doors and windows are
+  in a rhythm, not where they really are: that needs a photo of each facade straight on (decision
+  018), and the shooter's area's bar (decision 031) waits for them.
+- **A photo where one is good enough** (straight on, sharp, even light, nothing in front: ten, two in
+  the shooter's area), drawn for everyone in the building's colour: the photo divided by its wall's
+  colour and multiplied by the building's, so a photo taken at dusk or through a windscreen takes the
+  game's light. The owner's answer to the task wanted one on every facade in the shooter's area;
+  task 008 found no other photo good enough, so the rest are the kit until one is taken.
+- **Shops' signs** are the map's named shops (and those a photo showed), plain text on the sign's
+  colour over the ground floor, on the wall facing a street; no logo.
+
+The alternatives were the hash's palette with OSM's few tags (55 colours, 28 materials over 20,000
+buildings), and photos on every facade, which the photos found online can't give.

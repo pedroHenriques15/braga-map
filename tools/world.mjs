@@ -33,6 +33,7 @@ import { decks } from './decks.mjs';
 import { heldGround, isLine, isSquare, LEVEL, levelHeights, pathLines, pathsOf, streetsOf } from './lines.mjs';
 import { packPaths, packStreets, streetSurfaces } from './streets.mjs';
 import { cutWalls, packWalls } from './walls.mjs';
+import { BALCONIES, BALCONY, COLOUR, COLOURS, floorsOf, GROUND, GROUND_OF, guesser, MATERIAL, MATERIALS, TYPE, TYPES } from './facades.mjs';
 
 const base = readCache('osm/base.json');
 if (!fs.existsSync(path.join(CACHE, 'osm', 'paths.json'))) throw new Error('No footways yet: node tools/fetch.mjs paths');
@@ -48,7 +49,7 @@ const places = fs.existsSync(path.join(CACHE, 'places.json')) ? readCache('place
 const ground = await terrain();
 const inExt = (x, z, m = 0) => x >= EXT.x0 - m && x <= EXT.x1 + m && z >= EXT.z0 - m && z <= EXT.z1 + m;
 
-const tiles = new Map(allTiles().map(([i, j]) => [tileId(i, j), { id: tileId(i, j), box: tileBox(i, j), areas: [], lines: [], buildings: [], trees: [], streets: [], paths: [], rails: [], walls: [] }]));
+const tiles = new Map(allTiles().map(([i, j]) => [tileId(i, j), { id: tileId(i, j), box: tileBox(i, j), areas: [], lines: [], buildings: [], trees: [], streets: [], paths: [], rails: [], walls: [], signs: [] }]));
 const tileAt = (x, z) => tiles.get(tileId(...tileOf(x, z)));
 const tilesOver = (b, m = 0) => [...tiles.values()].filter((t) => overlaps(t.box, b, m));
 
@@ -219,8 +220,10 @@ const MAT = { tiles: 0, sheet: 1, flat: 2 };
 // Where each footprint is from: OpenStreetMap, the LiDAR's buildings, Microsoft's outlines (where
 // they lie closer over the LiDAR's), or invented.
 const SOURCE = { osm: 0, lidar: 1, microsoft: 2, invented: 3 };
-const COLORS = 8; // facade colours, picked from each building's id
-const fps = footprints(buildingsOsm);
+const COLORS = 8; // a number from each building's id, for a game's own variety
+// Each footprint with the name the reference photos and refs/buildings.json give its building:
+// way/<id> or relation/<id>.
+const fps = buildingsOsm.elements.flatMap((el) => footprints({ elements: [el] }).map((e) => Object.assign(e, { name: `${el.type}/${el.id}` })));
 if (!fs.existsSync(path.join(CACHE, 'roofs.json'))) throw new Error('No measured roofs in .cache/roofs.json: node tools/roofs.mjs');
 const { buildings: roofs, found = [], seen: lidarTiles = [] } = readCache('roofs.json');
 // Where the point cloud was boiled down, so the LiDAR saw every building there is.
@@ -286,20 +289,56 @@ const dirCode = (ring, dir) => {
   const off = (k) => { const d = dir - axis - [0, Math.PI, Math.PI / 2, -Math.PI / 2][k]; return Math.abs(Math.atan2(Math.sin(d), Math.cos(d))); };
   return [0, 1, 2, 3].reduce((b, k) => (off(k) < off(b) ? k : b), 0);
 };
-// [n, what, roof, h, y, rise, ...points], each a 16-bit number. what: its kind (3 bits), facade
-// colour (3), roof (2), which ends of its ridge are hipped (2), what the roof's covered with (2),
-// measured (1), where its footprint is from (2, SOURCE). roof: its pitch in degrees (6 bits), the way
-// it runs (2) and its colour in PALETTE (7, 127 for none). h, the eaves, from y, the ground, and
-// rise, the ridge over the eaves, in decimetres. In a tile they're in rows 20 m deep, west to east,
-// each one's ground and first point the step from the one before's, and a four-cornered one's last
-// corner less where the other three would put it, as a parallelogram (packBuildings): which packs
-// smaller.
+// Each building's facade (task 017, tools/facades.mjs): as a session saw it in its photos
+// (refs/buildings.json), or guessed from what the map says of it and from the buildings seen.
+const seenFaces = JSON.parse(fs.readFileSync(path.join(ROOT, 'refs', 'buildings.json'), 'utf8')).buildings;
+const guessFace = guesser(seenFaces);
+// What the session couldn't tell of one it saw (its kind, too, when it was far) is guessed as for its
+// kind; one it looked for and didn't see (`seen` null) is guessed whole.
+const faceOf = (name, facts) => {
+  const e = seenFaces[name];
+  if (!e?.seen) return { ...guessFace(name, facts), floors: null, seen: false };
+  const g = guessFace(name, { ...facts, type: e.type ?? undefined });
+  return { type: e.type ?? g.type, colour: e.colour ?? g.colour, material: e.material ?? g.material, ground: e.ground ?? g.ground, base: e.base ?? null, balconies: e.balconies ?? g.balconies, shutters: e.shutters ?? g.shutters, floors: e.floors ?? null, seen: true };
+};
+// The shops, cafés, banks and offices with a name (fetch.mjs's `shops`), for their buildings' ground
+// floors and signs.
+const shopsOsm = fs.existsSync(path.join(CACHE, 'osm', 'shops.json')) ? readCache('osm/shops.json').elements.filter((e) => e.tags?.name && (e.lat ?? e.center?.lat)) : [];
+if (!shopsOsm.length) console.log('no .cache/osm/shops.json: no shops on the ground floors (node tools/fetch.mjs shops)');
+const shopGrid = new Grid(40);
+for (const e of shopsOsm) { const [x, z] = P(e.center ?? e); shopGrid.add(x, z, { x, z, name: e.tags.name, e }); }
+// The shops in a footprint, or within 3 m of it.
+const shopsIn = (ring) => {
+  const b = bounds(ring), out = [];
+  for (const s of new Set(shopGrid.near((b.x0 + b.x1) / 2, (b.z0 + b.z1) / 2, Math.ceil(Math.hypot(b.x1 - b.x0, b.z1 - b.z0) / 80) + 1))) {
+    if (s.x < b.x0 - 3 || s.x > b.x1 + 3 || s.z < b.z0 - 3 || s.z > b.z1 + 3) continue;
+    if (inside(ring, s.x, s.z) || ring.some((p, i) => segDist(s.x, s.z, { x: p[0], z: p[1] }, { x: ring[(i + 1) % ring.length][0], z: ring[(i + 1) % ring.length][1] }) < 3)) out.push(s);
+  }
+  return out;
+};
+const signed = []; // [building's ring, its face, its ground's lowest, its shops]: their signs, once the streets are known
+const NONE = 63;
+// [n, what, roof, h, y, rise, ...points, face, colours, base], each a 16-bit number. what: its kind (3
+// bits), a number 0–7 from its id (3), roof (2), which ends of its ridge are hipped (2), what the
+// roof's covered with (2), measured (1), where its footprint is from (2, SOURCE). roof: its pitch in
+// degrees (6 bits), the way it runs (2) and its colour in PALETTE (7, 127 for none). h, the eaves,
+// from y, the ground, and rise, the ridge over the eaves, in decimetres. face: its facade's kind (4
+// bits, TYPES), its walls' material (4), its ground floor (3), its balconies (3), and 1 if a session
+// saw it. colours: its walls' colour (6, COLOURS) and its shutters' (6, NONE for none). base: its
+// ground floor's colour (6, NONE where it's the walls'), its material (4), and its storeys (5). In a
+// tile they're in rows 20 m deep, west to east, each one's ground and first point the step from the
+// one before's, and a four-cornered one's last corner less where the other three would put it, as a
+// parallelogram (packBuildings): which packs smaller.
 const outlines = []; // every building's (or part's) outline, for the streets' pavements
 const putBuilding = (ring, cx, cz, b) => {
   outlines.push(ring);
   const what = b.kind | (b.color << 3) | (b.roof << 6) | (b.ends << 8) | (b.mat << 10) | (b.measured ? 1 << 12 : 0) | (SOURCE[b.source] << 13);
   const roof = Math.min(63, Math.round(b.pitch)) | (dirCode(ring, b.dir) << 6) | (paletteOf(b.rgb) << 8);
-  tileAt(cx, cz).buildings.push([ring.length, what, roof, dm(b.h), b.y, Math.max(0, dm(b.ridge - b.h)), ...packPts(ring)]);
+  const f = b.face, floors = Math.min(31, b.floors ?? floorsOf(f.type, dm(b.h) / 10));
+  const face = TYPE[f.type] | (MATERIAL[f.material] << 4) | (GROUND_OF[f.ground] << 8) | (BALCONY[f.balconies] << 11) | (f.seen ? 1 << 14 : 0);
+  const colours = COLOUR[f.colour] | ((f.shutters === 'none' ? NONE : COLOUR[f.shutters]) << 6);
+  const baseOf = f.base ? COLOUR[f.base.colour] | (MATERIAL[f.base.material] << 6) : NONE;
+  tileAt(cx, cz).buildings.push([ring.length, what, roof, dm(b.h), b.y, Math.max(0, dm(b.ridge - b.h)), ...packPts(ring), face, colours, baseOf | (floors << 10)]);
 };
 const packBuildings = (list) => {
   let x = 0, z = 0, y = 0;
@@ -338,10 +377,22 @@ let real = 0, lidar = 0, stands = 0, measured = 0, parts = 0;
     return eaves >= 9.5 ? KIND.flats : a < 400 ? KIND.house : eaves >= 6 ? KIND.flats : KIND.shop;
   };
   const ROOFS = { flat: ROOF.flat, hipped: ROOF.hipped, gabled: ROOF.gabled, skillion: ROOF.skillion };
+  // A building's facade, one for all its parts: as seen, or guessed from its kind as a whole (from
+  // its tags, its footprint and its eaves over its lowest ground); its storeys counted, if they were,
+  // for its tallest part. And its shops, for their signs.
+  const facadeOf = (name, pts, t, eaves) => {
+    const shops = shopsIn(pts), face = faceOf(name, { kind: kindOf(t, ringArea(pts), eaves), tags: t, area: ringArea(pts), eaves, shop: shops.length > 0 });
+    signed.push([pts, face, shops, name]);
+    return face;
+  };
   // A building as the LiDAR measured it: each part on its own ground, its eaves and ridge from there.
-  // Its facade colour is `color`, or with `color` a function, each part's own from where it is.
-  const putMeasured = (pts, t, m, color, source) => {
+  // Its `color` number is its own, or with `color` a function, each part's own from where it is.
+  const putMeasured = (pts, t, m, color, source, name) => {
     const a = ringArea(pts), seen = m.parts.filter((p) => p.roof), top = Math.max(...seen.map((p) => p.eaves));
+    const low = ELEV0 + Math.min(...m.parts.map((p) => footY(p.pts ?? pts))) / 10;
+    // One the map lacks, nobody has looked at, is a building to each part, as its kind is.
+    const whole = source === 'osm' || seenFaces[name] ? facadeOf(name, pts, t, top - low) : null;
+    let k = 0;
     for (const p of m.parts) {
       const ring = simplify(p.pts ?? pts, 0.3);
       if (ring.length < 3) continue;
@@ -359,7 +410,9 @@ let real = 0, lidar = 0, stands = 0, measured = 0, parts = 0;
         // A piece of it the LiDAR saw nothing over: low, and flat (a passage, a yard roofed over).
         b = { kind: KIND.shop, roof: ROOF.flat, h: 3, ridge: 3, dir: minRect(ring).angle, pitch: 0, ends: 0, rgb: null, mat: MAT.flat, measured: false };
       }
-      putBuilding(ring, px, pz, { ...b, color: typeof color === 'function' ? color(px, pz) : color, y, source });
+      const face = whole ?? facadeOf(`${name}#${k++}`, ring, t, b.h);
+      const floors = face.floors && p.roof && p.eaves >= top - 1 ? face.floors : null;
+      putBuilding(ring, px, pz, { ...b, color: typeof color === 'function' ? color(px, pz) : color, y, source, face, floors });
       parts++;
     }
     measured++;
@@ -376,7 +429,7 @@ let real = 0, lidar = 0, stands = 0, measured = 0, parts = 0;
     const color = Math.floor(rnd(e.id, 7) * COLORS), levels = Number(t['building:levels']);
     const m = roofs[e.id];
     if (isMeasured(m)) {
-      putMeasured(pts, t, m, color, 'osm');
+      putMeasured(pts, t, m, color, 'osm', e.name);
       real++;
       continue;
     }
@@ -394,8 +447,8 @@ let real = 0, lidar = 0, stands = 0, measured = 0, parts = 0;
     if (low.has(t.building)) roof = ROOF.flat;
     const ring = simplify(pts, 0.3);
     if (ring.length < 3) continue;
-    const g = guessRoof(ring, roof), rgb = parseColour(t['roof:colour']);
-    putBuilding(ring, cx, cz, { kind, roof, color, h, ridge: h + g.rise, dir: g.dir, pitch: g.pitch, ends: g.ends, rgb, mat: matOf(roof, rgb, t['roof:material']), y: footY(ring), measured: false, source: 'osm' });
+    const g = guessRoof(ring, roof), rgb = parseColour(t['roof:colour']), face = facadeOf(e.name, pts, t, h);
+    putBuilding(ring, cx, cz, { kind, roof, color, h, ridge: h + g.rise, dir: g.dir, pitch: g.pitch, ends: g.ends, rgb, mat: matOf(roof, rgb, t['roof:material']), y: footY(ring), measured: false, source: 'osm', face, floors: face.floors });
     real++;
   }
   // The buildings the map lacks, as the LiDAR saw them: a block of them as one, in parts where the
@@ -409,7 +462,7 @@ let real = 0, lidar = 0, stands = 0, measured = 0, parts = 0;
     const cx = f.pts.reduce((s, p) => s + p[0], 0) / f.pts.length, cz = f.pts.reduce((s, p) => s + p[1], 0) / f.pts.length;
     if (!inExt(cx, cz) || !isMeasured(f)) continue;
     if (grounds.some((r) => inside(r, cx, cz))) { stands++; continue; }
-    putMeasured(f.pts, { building: 'yes' }, f, colorAt, f.src);
+    putMeasured(f.pts, { building: 'yes' }, f, colorAt, f.src, `lidar/x${Math.round(cx)}z${Math.round(cz)}`);
     lidar++;
   }
 }
@@ -498,8 +551,8 @@ let infill = 0;
           // Where the LiDAR saw, it keeps its turn, so no house beyond moves, but nothing is built.
           if (quad.concat([mid]).some(([qx, qz]) => lidarAt(qx, qz))) why.lidar++;
           else {
-            const g = guessRoof(quad, roof);
-            putBuilding(quad, mid[0], mid[1], { kind, roof, color, h, ridge: h + g.rise, dir: g.dir, pitch: g.pitch, ends: g.ends, rgb: null, mat: matOf(roof, null), y: footY(quad), measured: false, source: 'invented' });
+            const g = guessRoof(quad, roof), face = { ...guessFace(`invented/x${Math.round(mid[0])}z${Math.round(mid[1])}`, { kind, area: ringArea(quad), eaves: h }), seen: false };
+            putBuilding(quad, mid[0], mid[1], { kind, roof, color, h, ridge: h + g.rise, dir: g.dir, pitch: g.pitch, ends: g.ends, rgb: null, mat: matOf(roof, null), y: footY(quad), measured: false, source: 'invented', face });
             infill++;
           }
           addB(quad);
@@ -509,6 +562,100 @@ let infill = 0;
     }
   }
   console.log(`buildings: ${real} from the map and ${lidar} it lacks from the LiDAR (${stands} left to the stadium; ${measured} measured, in ${parts} parts; guessed roofs at ${PITCH}°), ${infill} filled in (${rowNames.size} streets in rows); frontage skipped for ${JSON.stringify(why)}`);
+  const faces = signed.filter(([, f]) => f.seen).length;
+  console.log(`facades: ${faces} seen, ${signed.length - faces} guessed; ${Object.entries(Object.groupBy(signed, ([, f]) => f.type)).map(([k, v]) => `${v.length} ${k}`).join(', ')}`);
+}
+
+// ---------------------------------------------------------------------------------------------
+// The shops' signs (task 017): each shop, café, bank or office the map names, over its building's
+// ground floor, on the wall nearest it that faces a street; and where a photo shows a sign the map
+// has no shop for (refs/buildings.json's `signs`), on the wall that faced the camera. Its colour is
+// the photo's where a sign seen has its name, else a dark grey. Each [x0, z0, x1, z1, y, h, colour,
+// text]: its ends along the wall, 5 cm out from it, the way round that it faces (z1 - z0, x0 - x1), out;
+// its bottom over elev0 and its height, in metres; and its colour in COLOURS. No logos: the name, as
+// plain text.
+let signs = 0;
+{
+  const photos = new Map(JSON.parse(fs.readFileSync(path.join(ROOT, 'refs', 'photos.json'), 'utf8')).photos.map((p) => [p.id, p]));
+  const views = new Map(JSON.parse(fs.readFileSync(path.join(ROOT, 'refs', 'viewpoints.json'), 'utf8')).viewpoints.map((v) => [v.id, v]));
+  const sgrid = new Grid(30);
+  for (const s of streets) {
+    for (let i = 1; i < s.pts.length; i++) {
+      const [ax, az] = s.pts[i - 1], [bx, bz] = s.pts[i], n = Math.max(1, Math.ceil(Math.hypot(bx - ax, bz - az) / 15));
+      for (let f = 0; f <= n; f++) sgrid.add(ax + ((bx - ax) * f) / n, az + ((bz - az) * f) / n, [ax, az, bx, bz, s.w / 2]);
+    }
+  }
+  // How far a point is from a street's edge.
+  const offStreet = (x, z) => Math.min(Infinity, ...sgrid.near(x, z, 1).map(([ax, az, bx, bz, hw]) => segDist(x, z, { x: ax, z: az }, { x: bx, z: bz }) - hw));
+  const built = new Inside(outlines);
+  const norm = (s) => s.toLowerCase().normalize('NFD').replace(/[^a-z0-9]/g, '');
+  // Each shop to one building: the smallest it's in, else the one whose wall is nearest, within 3 m.
+  const owners = new Grid(40);
+  signed.forEach(([pts], k) => {
+    const b = bounds(pts);
+    for (let i = Math.floor((b.x0 - 3) / 40); i <= Math.floor((b.x1 + 3) / 40); i++) for (let j = Math.floor((b.z0 - 3) / 40); j <= Math.floor((b.z1 + 3) / 40); j++) owners.add(i * 40, j * 40, k);
+  });
+  const shopsOf = new Map();
+  for (const s of shopGrid.m.values()) for (const shop of s) {
+    let best = -1, bd = 3, ba = Infinity;
+    for (const k of new Set(owners.near(shop.x, shop.z, 0))) {
+      const pts = signed[k][0];
+      if (inside(pts, shop.x, shop.z)) { const a = ringArea(pts); if (bd > 0 || a < ba) { best = k; bd = 0; ba = a; } continue; }
+      if (bd === 0) continue;
+      const d = Math.min(...pts.map((p, i) => segDist(shop.x, shop.z, { x: p[0], z: p[1] }, { x: pts[(i + 1) % pts.length][0], z: pts[(i + 1) % pts.length][1] })));
+      if (d < bd) { bd = d; best = k; }
+    }
+    if (best >= 0) shopsOf.set(best, [...(shopsOf.get(best) ?? []), shop]);
+  }
+  signed.forEach(([pts, face, , name], k) => {
+    const shops = shopsOf.get(k) ?? [], seen = seenFaces[name]?.signs ?? [];
+    if (!shops.length && !seen.length) return;
+    // Its walls, each with its outward side and whether a street is in front of it, and not another
+    // building (a wall it shares with the next one in a row).
+    const walls = pts.map((a, i) => {
+      const b = pts[(i + 1) % pts.length], l = Math.hypot(b[0] - a[0], b[1] - a[1]), ux = (b[0] - a[0]) / l, uz = (b[1] - a[1]) / l;
+      const mx = (a[0] + b[0]) / 2, mz = (a[1] + b[1]) / 2, out = inside(pts, mx + uz * 0.1, mz - ux * 0.1) ? -1 : 1;
+      const nx = uz * out, nz = -ux * out;
+      const open = !built.has(mx + nx, mz + nz) && !built.has(mx + nx * 3, mz + nz * 3);
+      return { a, b, l, ux, uz, nx, nz, mx, mz, open, front: open && offStreet(mx + nx * 4, mz + nz * 4) < 8 };
+    }).filter((w) => w.l >= 2);
+    if (!walls.length) return;
+    const T = TYPES[TYPE[face.type]], put = (w, at, text, colour) => {
+      const width = Math.min(w.l - 0.4, Math.max(2.4, Math.min(8, 0.3 * text.length + 1.2)));
+      const s = Math.max(0.2 + width / 2, Math.min(w.l - 0.2 - width / 2, at));
+      // Its ends the way round that it faces (dz, -dx), out from the wall.
+      const flip = w.nx * w.uz - w.nz * w.ux < 0 ? -1 : 1;
+      const x0 = w.a[0] + w.ux * (s - (flip * width) / 2) + w.nx * 0.05, z0 = w.a[1] + w.uz * (s - (flip * width) / 2) + w.nz * 0.05;
+      const x1 = w.a[0] + w.ux * (s + (flip * width) / 2) + w.nx * 0.05, z1 = w.a[1] + w.uz * (s + (flip * width) / 2) + w.nz * 0.05;
+      const y = tileGround((x0 + x1) / 2, (z0 + z1) / 2) - ELEV0 + Math.max(2.2, T.ground - 0.95);
+      const r2 = (v) => Math.round(v * 100) / 100;
+      tileAt((x0 + x1) / 2, (z0 + z1) / 2).signs.push([r2(x0), r2(z0), r2(x1), r2(z1), r2(y), 0.7, COLOUR[colour] ?? COLOUR['dark-grey'], text]);
+      signs++;
+    };
+    const left = [...seen];
+    const toWall = (s, w) => segDist(s.x, s.z, { x: w.a[0], z: w.a[1] }, { x: w.b[0], z: w.b[1] });
+    for (const s of shops) {
+      const match = left.findIndex((g) => norm(g.text).includes(norm(s.name)) || norm(s.name).includes(norm(g.text)));
+      const colour = match >= 0 ? left.splice(match, 1)[0].colour : 'dark-grey';
+      // None for a shop in a shopping centre, more than 12 m in from every wall onto the open.
+      const outside = walls.filter((w) => w.open);
+      if (match < 0 && (!outside.length || Math.min(...outside.map((w) => toWall(s, w))) > 12)) continue;
+      const w = (outside.length ? outside : walls).reduce((best, w) => {
+        const d = toWall(s, w) + (w.front ? 0 : 30);
+        return d < best.d ? { w, d } : best;
+      }, { w: null, d: Infinity }).w;
+      put(w, (s.x - w.a[0]) * w.ux + (s.z - w.a[1]) * w.uz, s.name, colour);
+    }
+    // The signs a photo showed that the map has no shop for: along the wall that faced its camera.
+    if (left.length) {
+      const by = seenFaces[name].seen ?? '', v = by.startsWith('viewpoint:') ? views.get(by.slice(10)) : null, p = photos.get(by);
+      const [cx, cz] = v ? [v.x, v.z] : p ? P(p.photo) : [walls[0].mx + walls[0].nx, walls[0].mz + walls[0].nz];
+      const facing = walls.filter((w) => (cx - w.mx) * w.nx + (cz - w.mz) * w.nz > 0 && w.open), fronts = facing.filter((w) => w.front);
+      const w = (fronts.length ? fronts : facing.length ? facing : walls).reduce((a, b) => (Math.hypot(a.mx - cx, a.mz - cz) / a.l < Math.hypot(b.mx - cx, b.mz - cz) / b.l ? a : b));
+      left.forEach((g, k) => put(w, (w.l * (k + 0.5)) / left.length, g.text, g.colour));
+    }
+  });
+  console.log(`signs: ${signs}, from ${shopsOsm.length} named shops and the photos`);
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -747,6 +894,7 @@ for (const t of tiles.values()) {
   if (t.paths.length) p.part('paths', t.paths);
   if (t.rails.length) p.part('rails', t.rails);
   if (t.walls.length) p.part('walls', t.walls);
+  if (t.signs.length) p.part('signs', [], { list: t.signs });
   const b64 = p.encode();
   fs.writeFileSync(path.join(dir, 'tiles', t.id + '.js'), `${HEAD}export default '${b64}';\n`);
   bytes += b64.length;
@@ -770,6 +918,7 @@ out.header.meta = {
   areas: AREA,
   roofColors: PALETTE,
   storey: [STOREY, BASE],
+  facades: { types: TYPES, colours: COLOURS, materials: MATERIALS, ground: GROUND, balconies: BALCONIES },
   landmarks,
   sights,
   open: { pts: OPEN, gates, tiles: OPEN_TILES, seen: OPEN_SEEN },

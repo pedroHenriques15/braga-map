@@ -76,6 +76,12 @@ From the map as it is (2026-10-15):
   grass, 1.5% setts, 1.4% bare soil, and a little gravel and water; 12.5% under a tree's crown. The
   LiDAR saw 1,028 cars parked in it (July 2025): 670 along the kerbs, 174 in car parks, 184
   elsewhere.
+- **The facades** (task 017, 2026-10-16, [BUILDING-TYPES.md](BUILDING-TYPES.md)): each of the 346
+  buildings the world draws here was looked for in its photos and the viewpoints'
+  (`refs/buildings.json`); those seen have their kind, colour, material, ground floor, balconies and
+  shutters as the photos show them, and the shops' signs the photos show, as OpenStreetMap maps none
+  here. The rest, behind others, in back yards, round the courtyards, are guessed from those seen.
+  Two have a photo good enough to be their texture.
 - **What OpenStreetMap lacks here:** shops (none mapped, though the photos show corner blocks with
   shops and cafés), doors, street lamps, benches (one bin).
 
@@ -87,7 +93,7 @@ from. The task that does it does this area first.
 | What | Here | From | Task |
 |---|---|---|---|
 | **Buildings** | Footprint and height, every part. | The LiDAR: done (decision 025). | 010, 011 |
-| | Each facade its own: its colour, material and face, doors and windows where they are, balconies, roller shutters, the ground floor's shops and cafés with their signs and awnings, house numbers. Every facade a photo texture (the owner's answer to 017). | The reference photos (task 008); OpenStreetMap has no shops here, so the photos say where they are. | 017 |
+| | Each facade its own: its colour, material and face, doors and windows where they are, balconies, roller shutters, the ground floor's shops and cafés with their signs and awnings, house numbers. Every facade a photo texture (the owner's answer to 017). | The reference photos (task 008); OpenStreetMap has no shops here, so the photos say where they are. Done as data (task 017): each building's kind, colour, material, ground floor, balconies, shutters and signs as its photos show them, drawn by a game from its kind's kit; a photo texture on the two photographed well enough. The rest want a photo straight on, sharp and clear (decision 018: when one turns up online). Doors and windows are where the kit puts them, not where they are. | 017 |
 | | Closed: no gap between two buildings a player can see through or fall into, doors and shop windows drawn shut. | The footprints, and the photos where two meet. | 017 |
 | | Roofs seen from above, from the higher streets: tiles, terraces, chimneys, aerials. | The LiDAR's parts (task 010), the orthophoto's colour. | 010, 017 |
 | **The ground** | At centimetres, not the tiles' 2 m: each kerb at its own height (`streets.mjs` takes 15 cm for all), dropped at the crossings; each pavement level from its kerb (task 044); each step at its rise, with its handrail; ramps and driveways. | The LiDAR's terrain model at 50 cm (`MDT-50cm`, fetched for the area) and its point cloud, about 10 points a m²; OpenStreetMap's steps and kerbs; the photos. | 044, 050 |

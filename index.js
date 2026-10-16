@@ -113,6 +113,8 @@ function rectAxis(pts) {
 const DIRS = [0, Math.PI, Math.PI / 2, -Math.PI / 2];
 // Where a building's footprint is from (tools/world.mjs's SOURCE).
 const SOURCES = ['osm', 'lidar', 'microsoft', 'invented'];
+// A facade's colour, shutters or base that isn't there (tools/world.mjs's NONE).
+const NONE = 63;
 // A street's level (tools/world.mjs's LEVEL).
 const LEVELS = ['ground', 'bridge', 'tunnel', 'under'];
 // What each piece of a street's surfaces is (tools/streets.mjs's STREET): the carriageways' surfaces,
@@ -129,6 +131,8 @@ const WALL_KINDS = ['wall', 'retaining', 'fence', 'railing', 'hedge', 'guard_rai
 const WALL_MATERIALS = [null, 'granite', 'rendered', 'concrete', 'metal', 'wood'];
 
 let base = null;
+// The facades' lists (tools/facades.mjs), as the base has them, for reading the tiles' buildings.
+let facades = null;
 
 // The box round the ring `pts`.
 function boxOf(pts) {
@@ -169,6 +173,7 @@ export function map() {
     i += n * 3;
   }
   const { open, shooter } = m;
+  facades = m.facades;
   const ob = boxOf(open.pts);
   const sb = boxOf(shooter.pts);
   const sectionOfTile = new Map();
@@ -187,6 +192,8 @@ export function map() {
     areaKinds: m.areas,
     roofColors: m.roofColors,
     storey: m.storey,
+    facadeTypes: Object.fromEntries(m.facades.types.map(({ id, ...t }) => [id, t])),
+    facadeColours: Object.fromEntries(m.facades.colours),
     far: grid(nums, head.far),
     cover: Uint8Array.from(nums.subarray(head.cover.at, head.cover.at + head.cover.n)),
     horizon: grid(nums, head.horizon),
@@ -240,6 +247,7 @@ export async function loadWorld(area) {
   const areas = [];
   const lines = [];
   const buildings = [];
+  const signs = [];
   const trees = [];
   const streets = { carriageways: [], pavements: [], kerbs: [], markings: [], paths: [], handrails: [] };
   const walls = [];
@@ -280,10 +288,11 @@ export async function loadWorld(area) {
       }
       lines.push(line);
     }
-    // Each building: [n, what, roof, h, y, rise, ...points] (tools/world.mjs's putBuilding), its
-    // ground and first point the step from the one before's, and with four corners, its last less
-    // where the other three would put it.
+    // Each building: [n, what, roof, h, y, rise, ...points, face, colours, base] (tools/world.mjs's
+    // putBuilding), its ground and first point the step from the one before's, and with four corners,
+    // its last less where the other three would put it.
     const B = head.buildings;
+    const F = facades;
     let y = 0;
     let x0 = 0;
     let z0 = 0;
@@ -304,6 +313,10 @@ export async function loadWorld(area) {
         pts[3][1] -= pts[1][1] - pts[0][1];
       }
       const colour = roof >> 8;
+      const j = i + 6 + n * 2;
+      const face = nums[j];
+      const colours = nums[j + 1];
+      const base = nums[j + 2];
       buildings.push({
         kind: what & 7,
         color: (what >> 3) & 7,
@@ -319,11 +332,23 @@ export async function loadWorld(area) {
         dir: rectAxis(pts) + DIRS[(roof >> 6) & 3],
         pitch: roof & 63,
         roofColor: colour === 127 ? null : m.roofColors[colour],
-        floors: Math.max(1, Math.round((h - m.storey[1]) / m.storey[0])),
+        floors: (base >> 10) & 31,
+        facade: {
+          type: F.types[face & 15].id,
+          colour: F.colours[colours & 63][0],
+          material: F.materials[(face >> 4) & 15],
+          ground: F.ground[(face >> 8) & 7],
+          base: (base & 63) === NONE ? null : { colour: F.colours[base & 63][0], material: F.materials[(base >> 6) & 15] },
+          balconies: F.balconies[(face >> 11) & 7],
+          shutters: ((colours >> 6) & 63) === NONE ? null : F.colours[(colours >> 6) & 63][0],
+          seen: (face & (1 << 14)) !== 0,
+        },
         pts,
       });
-      i += 6 + n * 2;
+      i = j + 3;
     }
+    // The shops' signs: [x0, z0, x1, z1, y, h, colour, text] each, in the header.
+    for (const [x0, z0, x1, z1, sy, sh, c, text] of head.signs?.list ?? []) signs.push({ text, colour: F.colours[c][0], from: [x0, z0], to: [x1, z1], y: sy, h: sh });
     const T = head.trees;
     for (let i = T.at; i < T.at + T.n; i += 3) trees.push({ x: nums[i] / 2, z: nums[i + 1] / 2, pine: (nums[i + 2] & 1) === 1, filled: (nums[i + 2] & 2) === 2 });
     // The streets as surfaces, in the open world's tiles: each piece [what, ...] (tools/streets.mjs's
@@ -430,6 +455,7 @@ export async function loadWorld(area) {
     areas: areas.map(({ kind, pts, holes }) => ({ kind, pts, holes })),
     lines,
     buildings,
+    signs,
     trees,
     streets,
     walls,

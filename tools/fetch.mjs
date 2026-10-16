@@ -5,7 +5,7 @@
 // its near-infrared (`nir`, about 110 MB) and the COS2025 land use (`cos`).
 //
 // node tools/fetch.mjs            everything but DGT's
-// node tools/fetch.mjs trees      only what's named (base, paths, barriers, buildings, admin, pois, trees,
+// node tools/fetch.mjs trees      only what's named (base, paths, barriers, buildings, admin, pois, shops, trees,
 //                                 street, restrictions, dem, horizon, lidar, ortho, cos)
 import fs from 'node:fs';
 import path from 'node:path';
@@ -87,6 +87,17 @@ out;`,
   restrictions: `[out:json][timeout:120][bbox:${BOX}];
 relation["type"="restriction"];
 out body;`,
+  // The shops, cafés, banks, offices and workshops with a name, for the signs over their ground
+  // floors (task 017).
+  shops: `[out:json][timeout:120][bbox:${BOX}];
+(
+  nwr["shop"]["name"];
+  nwr["amenity"~"^(cafe|restaurant|bar|pub|fast_food|ice_cream|bank|pharmacy|clinic|dentist|doctors|veterinary|post_office|fuel|car_wash|driving_school|bureau_de_change|cinema|nightclub)$"]["name"];
+  nwr["office"]["name"];
+  nwr["craft"]["name"];
+  nwr["healthcare"]["name"];
+);
+out center tags;`,
   // Places with a name that might be landmarks. build.mjs picks its list from these by name.
   pois: `[out:json][timeout:120][bbox:${BOX}];
 (

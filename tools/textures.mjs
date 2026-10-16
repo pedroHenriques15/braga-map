@@ -140,8 +140,8 @@ async function facade(t, world, photos) {
 }
 
 // Where a facade goes: its wall's points, checked against a building's footprint in the world (each
-// step along it one of the footprint's edges, to 0.75 m), the metres along the wall it spans and the
-// building's ground.
+// step along it one of the footprint's edges, to 0.75 m), the metres along the wall it spans, the
+// building's ground, and its facade's colour (task 017).
 function wall(t, world) {
   const near = (a, b) => Math.hypot(a[0] - b[0], a[1] - b[1]) < 0.75;
   const b = world.buildings.find((b) => t.wall.every((p) => b.pts.some((q) => near(p, q))));
@@ -149,7 +149,32 @@ function wall(t, world) {
   const [a, z] = [t.wall[0], t.wall[t.wall.length - 1]], L = Math.hypot(z[0] - a[0], z[1] - a[1]);
   const s = t.s ?? [0, +L.toFixed(2)];
   if (t.y[1] > b.h + 1) console.warn(`  ${t.id}: its top, ${t.y[1]} m, is over the building's ${b.h} m`);
-  return { wall: t.wall, s, foot: b.y, h: b.h };
+  return { wall: t.wall, s, foot: b.y, h: b.h, colour: b.facade.colour };
+}
+
+// What colour a facade's wall is in its photo (task 017): the median of the patch of plain wall the
+// session that looked at its building marked in this photo (refs/buildings.json's `patch`), or without
+// one, the texture's pixels' median, of those between the 40th and the 85th in brightness, which leaves
+// out the windows, the shadows and the sky's glare. A game takes it out and puts the building's own
+// colour in, so the photo's light and white balance (dusk, a low sun, a phone's) are the game's.
+const seenFaces = JSON.parse(fs.readFileSync(path.join(ROOT, 'refs', 'buildings.json'), 'utf8')).buildings;
+async function wallColourOf(t, img, photos) {
+  const ref = photos.find((p) => p.id === t.photo), e = seenFaces[ref.what.replace(/^facade:/, '')];
+  if (e?.seen === t.photo && e.patch) {
+    const file = ['.jpg', '.png'].map((x) => path.join(CACHE, 'refs', 'photos', t.photo + x)).find((f) => fs.existsSync(f));
+    const photo = await readRGB(file), [x0, y0, x1, y1] = e.patch.map(Math.round), ch = [[], [], []];
+    for (let y = Math.max(0, y0); y < Math.min(photo.h, y1); y++) for (let x = Math.max(0, x0); x < Math.min(photo.w, x1); x++) for (let c = 0; c < 3; c++) ch[c].push(photo.data[(y * photo.w + x) * 3 + c]);
+    if (ch[0].length >= 50) return ch.map((v) => v.sort((a, b) => a - b)[v.length >> 1]);
+  }
+  return wallColour(img);
+}
+function wallColour(img) {
+  const n = img.w * img.h, lum = new Float32Array(n);
+  for (let i = 0; i < n; i++) lum[i] = 0.2126 * img.data[i * 3] + 0.7152 * img.data[i * 3 + 1] + 0.0722 * img.data[i * 3 + 2];
+  const sorted = Float32Array.from(lum).sort(), lo = sorted[Math.floor(n * 0.4)], hi = sorted[Math.floor(n * 0.85)];
+  const ch = [[], [], []];
+  for (let i = 0; i < n; i++) if (lum[i] >= lo && lum[i] <= hi) for (let c = 0; c < 3; c++) ch[c].push(img.data[i * 3 + c]);
+  return ch.map((v) => v.sort((a, b) => a - b)[v.length >> 1]);
 }
 
 // A kind of ground (task 016): a photo of it from Poly Haven (CC0), seamless, spanning `metres` a side as
@@ -201,7 +226,7 @@ function writeIndexes(entries) {
         const f = `${e.id}-${l}.ktx2`, { w, h, bytes } = ktx2Size(path.join(OUT, tile, f));
         return `${l}: { url: new URL('./${tile}/${f}', import.meta.url).href, w: ${w}, h: ${h}, bytes: ${bytes} }`;
       });
-      const where = e.kind === 'ground' ? `box: ${js(e.place.box)}` : `wall: ${js(e.place.wall)}, s: ${js(e.place.s)}, y: ${js(e.place.y)}`;
+      const where = e.kind === 'ground' ? `box: ${js(e.place.box)}` : `wall: ${js(e.place.wall)}, s: ${js(e.place.s)}, y: ${js(e.place.y)}, colour: ${js(e.place.colour)}, wallColour: ${js(e.place.wallColour)}`;
       return `  { id: ${js(e.id)}, kind: ${js(e.kind)}, ${where},\n    files: { ${files.join(',\n      ')} },\n    credit: ${js(e.credit)} },`;
     });
     fs.writeFileSync(path.join(OUT, tile + '.js'), `// Made by tools/textures.mjs: the photo textures on tile ${tile}, each at every graphics level.\nexport default [\n${lines.join('\n')}\n];\n`);
@@ -258,8 +283,9 @@ for (const t of recipes) {
       const [i, j] = t.tile.match(/-?\d+/g).map(Number);
       entries.push({ id: t.id, kind: t.kind, tile, place: { box: { x0: i * m.tile, z0: j * m.tile, x1: (i + 1) * m.tile, z1: (j + 1) * m.tile } }, credit: DGT_CREDIT });
     } else {
-      const place = wall(t, world), p = photos.find((p) => p.id === t.photo).photo;
-      entries.push({ id: t.id, kind: t.kind, tile, place: { ...place, y: [+(place.foot + t.y[0]).toFixed(2), +(place.foot + t.y[1]).toFixed(2)] }, credit: { source: p.source === 'mapillary' ? 'Mapillary' : 'Wikimedia Commons', author: p.author, licence: p.licence, url: p.url, date: p.date } });
+      // Straightened again for its wall's colour in the photo; its files stay as they are.
+      const { img, place, credit } = await facade(t, world, photos);
+      entries.push({ id: t.id, kind: t.kind, tile, place: { ...place, wallColour: await wallColourOf(t, img, photos) }, credit });
     }
     continue;
   }
@@ -280,7 +306,7 @@ for (const t of recipes) {
   }
   if (check) await sharp(made.img.data, { raw: { width: made.img.w, height: made.img.h, channels: 3 } }).png().toFile(path.join(WORK, t.id + '.png'));
   console.log(`  ${sizes.join(', ')}${made.own ? `; its photo has ${made.own} px a metre` : ''} (${((Date.now() - t0) / 1000).toFixed(1)} s)`);
-  entries.push({ id: t.id, kind: t.kind, tile, place: made.place, credit: made.credit });
+  entries.push({ id: t.id, kind: t.kind, tile, place: t.kind === 'facade' ? { ...made.place, wallColour: await wallColourOf(t, made.img, photos) } : made.place, credit: made.credit });
 }
 writeIndexes(entries);
 console.log(`${entries.length} textures → ${path.relative(ROOT, OUT)}/`);

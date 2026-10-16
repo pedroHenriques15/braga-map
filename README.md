@@ -38,7 +38,9 @@ import amigos from 'braga-map/tracks/amigos.js';
 const world = await loadWorld({ open: true }); // the open world's area and the city round it
 // or loadWorld(amigos.box), loadWorld({ sections: ['centro'] }), loadWorld({ sections: ['fujacal'] })
 world.height(x, z); // the ground: every 2 m or 10 m on the tiles loaded, every 50 m elsewhere
-world.buildings; // [{ kind, roof, ends, dir, pitch, y, h, ridge, floors, roofColor, … pts }], and areas, lines, trees…
+world.buildings; // [{ kind, roof, ends, dir, pitch, y, h, ridge, floors, roofColor, facade, … pts }], and areas, lines, trees…
+world.signs; // the shops' signs: [{ text, colour, from, to, y, h }], on their buildings' walls
+map().facadeTypes; // each kind of facade's proportions; map().facadeColours its colours
 world.streets; // in the open world's area: { carriageways, pavements, kerbs, markings, paths, handrails }, each piece at its level
 world.walls; // in the open world's area: [{ kind, material, on, h, w, level, source, pts, ys, open? }], the walls, fences, railings, hedges and gates
 world.open.gates; // where each street or path leaves the area: [{ x, z, heading, w, k, level, y }]
@@ -123,6 +125,23 @@ map().groundKinds; // the kinds it says, each with its photo: [{ kind, texture: 
   from (`source`: OpenStreetMap, the LiDAR, Microsoft's, or invented). Nothing is invented where
   the LiDAR was fetched, which is the whole map; elsewhere houses are filled in on empty frontages
   (`filled`). `index.d.ts` says what each field means.
+- Each building's **facade** (task 017, [docs/BUILDING-TYPES.md](docs/BUILDING-TYPES.md)): its kind,
+  one of Braga's eleven (the old house, the house, the blocks of the 1950s, of the 1970s to the 1990s
+  and of the 2000s, the glass office, the school or public building, the church, the shop or
+  showroom, the warehouse, the annex), each with its real proportions (`map().facadeTypes`: a
+  storey's height, the ground floor's, a window's size and spacing, a balcony's depth); its walls'
+  colour, from thirty that Braga's facades are (`map().facadeColours`), and what they're covered
+  with (render, small tiles, mosaic, azulejos, granite, stone slabs, brick, concrete, blocks, glass,
+  metal, panels); its ground floor along a street (homes, shops, garages, an arcade, a blank wall,
+  glass) and its colour where it isn't the walls'; its balconies; its shutters' colour; and its
+  storeys, as counted in its photo or from its height and its kind. Every building in the shooter's
+  area and in view of a viewpoint was looked at in its photos by a session (`refs/buildings.json`,
+  `seen`); the rest are guessed from the map's tags, their size and their height, and from the
+  buildings seen, as often as those of their kind are each colour, material and ground floor.
+- The shops' **signs** (task 017): each shop, café, bank or office OpenStreetMap names, as plain text
+  (no logos) on its sign's colour (the photo's, where a photo showed it), over its building's ground
+  floor on the wall nearest it that faces a street; and the signs the photos show where the map has
+  no shop. None for a shop in a shopping centre, more than 12 m in from every outside wall.
 - A track brings its race's road (`road`, decision 019): the route's own streets at their real
   widths, as `world.streets` draws them, and its jump's flight. Its outline is the race's walls, and
   where the street drawn goes on past it (across a side street's mouth, between a road's two
@@ -187,6 +206,7 @@ node tools/relief.mjs  # the ground checked: known places, bridges, and each tra
 node tools/heights.mjs # the buildings checked against the map's own heights and floors, and the outliers
 node tools/levels.mjs  # the streets that cross on two levels round the track, and the room between them
 node tools/refs.mjs    # the viewpoints' and the reference photos, into .cache/refs/ (with Mapillary's free token)
+node tools/buildings.mjs  # the buildings whose facades to look at (refs/buildings.json), and with `mark` their photos marked (2 minutes)
 node tools/textures.mjs  # the photo textures refs/textures.json asks for: world/textures/ (about a minute)
 node tools/cover.mjs   # what the ground is every 50 cm under the Volta dos Amigos' box, and the cars parked: world/cover/ (3 minutes, 10 the first time)
 node tools/round.mjs <round> --label "…"  # a round of party-kart's shots, for the scorecard
@@ -197,10 +217,10 @@ landmarks from `map/braga.json`, `open.mjs` the Volta dos Amigos, `world.mjs` ma
 on the tiles the tracks in `tracks/` run through and the open world's edge touches, the map page
 draws the edges (run `npm run page` again after `npm run open` or `npm run shooter`) and the street audit (again after
 `audit.mjs`, which reads the world's tiles), `textures.mjs` lays each facade on its building in
-the world (after `world.mjs`; `test/textures.test.js` says if a building moved from under one),
+the world and takes its colour (after `world.mjs`; `test/textures.test.js` says if a building moved from under one),
 and `build.mjs` and `world.mjs` take the buildings'
 heights and roofs from `roofs.mjs`'s measurements, and `world.mjs` the walls from `walls.mjs` (run it
-after `roofs.mjs`, `npm run open` and `fetch.mjs barriers`). All of them need the LiDAR. `track.mjs` also reads
+after `roofs.mjs`, `npm run open` and `fetch.mjs barriers`), and the facades from `refs/buildings.json` and the shops from `fetch.mjs shops`. All of them need the LiDAR. `track.mjs` also reads
 the streets the world draws (`world.streets`, which don't depend on a track) for the race's road, so
 a new track's area needs `npm run open` and `npm run world` before `npm run tracks` plans it on the
 streets; when a track moves enough to change the edge, run the three again until it holds.
@@ -209,10 +229,11 @@ streets; when a track moves enough to change the edge, run the three again until
   and cycleways, which the world draws in the open world's area, and the squares mapped in parts,
   which only the street audit reads so far; the walls, fences, hedges, gates and car parks, for
   `walls.mjs`, and the car parks for the world's areas too;
-  buildings, parishes, landmarks, trees, the crossings, traffic lights and bus stops, and the turn
+  buildings, parishes, landmarks, the shops, cafés, banks and offices with a name (for their signs),
+  trees, the crossings, traffic lights and bus stops, and the turn
   restrictions) and elevation tiles, plus coarser ones 16 km round for the horizon. The public
   Overpass server is often busy: it waits and tries again. `node tools/fetch.mjs trees` fetches
-  only what's named (`base`, `paths`, `barriers`, `buildings`, `admin`, `pois`, `trees`, `street`,
+  only what's named (`base`, `paths`, `barriers`, `buildings`, `admin`, `pois`, `shops`, `trees`, `street`,
   `restrictions`, `dem`, `horizon`). A
   new fetch brings the map's changes since, so the tracks may come out different: run the games'
   tests after. `node tools/fetch.mjs microsoft` gets Microsoft's building footprints (found by
@@ -379,7 +400,13 @@ streets; when a track moves enough to change the edge, run the three again until
   Mapillary or Wikimedia Commons with its credit, marked as a reference or good enough for a
   texture. `refs.mjs` fetches them into `.cache/refs/photos/<id>.jpg`, a panorama cut to what it
   shows; `test/photos.test.js` checks each one's credit, and that none was taken within 150 m of
-  a waypoint or an egg or looks towards one. party-kart's
+  a waypoint or an egg or looks towards one. `refs/buildings.json` says what each building's facade
+  is, as a session saw it in its photos (task 017): `node tools/buildings.mjs` lists the buildings
+  to look at (every one in the shooter's area, and every one a viewpoint sees: rays across its view
+  against the buildings and the ground) with their photos, into `.cache/buildings/todo.json`, and
+  `node tools/buildings.mjs mark` outlines and numbers them on each photo, from where its camera was,
+  for looking at. `test/facades.test.js` checks every one listed has an entry, in the words
+  `tools/facades.mjs` lists. party-kart's
   `node scripts/shots.mjs <label>` shoots its city from every viewpoint, at the photo's field of
   view and shape, into a round beside the photos and the round before (task 002, decision 011).
 - `textures.mjs` makes the photo textures (task 007) that `refs/textures.json` asks for, into
@@ -394,7 +421,10 @@ streets; when a track moves enough to change the edge, run the three again until
   (`fetch.mjs ortho`) and the photos (`refs.mjs`). `--check` also writes each one at High as a
   PNG into `.cache/textures/`, and `--compare` as WebP and Basis's UASTC too, for weighing the
   formats. `test/textures.test.js` checks each is made at every level and credited, and that each
-  facade faces the camera its photo was taken from. The orthophoto's shadows and cars stay in it
+  facade faces the camera its photo was taken from. A facade's index says its building's colour and
+  what colour its wall is in the photo (from the patch of plain wall the session that looked at it
+  marked, else the photo's middling pixels), for a game to put the photo in the game's light (task
+  017). The orthophoto's shadows and cars stay in it
   (task 007's notes say why). A kind of ground's photo (`kind: 'surface'`, task 016) is a seamless
   one from Poly Haven (CC0), its record and 2k photo fetched once into `.cache/textures/sources/`,
   made 1024, 512 and 256 pixels a side into `world/textures/surfaces/`, with its size in metres and

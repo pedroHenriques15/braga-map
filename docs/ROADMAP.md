@@ -45,6 +45,8 @@ Done: the viewpoints (001), the shots (002), the scorecard (003), the budget (00
 (005), the street audit (006), the reference photos (008), and the photo textures' pipeline (007,
 decision 030).
 
+- **055** The Monte da Forca's viewpoint looks 6° higher than its photo (found by 017).
+
 ## Phase 2 · The shape: the ground, the streets and the buildings where they really are
 
 Done: the buildings' heights and roofs (010), the buildings the map lacks (011), the bridges and

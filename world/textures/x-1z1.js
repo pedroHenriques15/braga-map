@@ -1,11 +1,11 @@
 // Made by tools/textures.mjs: the photo textures on tile x-1z1, each at every graphics level.
 export default [
-  { id: 'facade-way-440182287', kind: 'facade', wall: [[-85.5, 693], [-91.5, 695]], s: [0, 6.32], y: [9.6, 19.6],
+  { id: 'facade-way-440182287', kind: 'facade', wall: [[-85.5, 693], [-91.5, 695]], s: [0, 6.32], y: [9.6, 19.6], colour: 'cream', wallColour: [133, 135, 127],
     files: { high: { url: new URL('./x-1z1/facade-way-440182287-high.ktx2', import.meta.url).href, w: 252, h: 400, bytes: 30414 },
       medium: { url: new URL('./x-1z1/facade-way-440182287-medium.ktx2', import.meta.url).href, w: 128, h: 200, bytes: 8943 },
       low: { url: new URL('./x-1z1/facade-way-440182287-low.ktx2', import.meta.url).href, w: 64, h: 100, bytes: 2998 } },
     credit: { source: 'Mapillary', author: 'waldyrious', licence: 'CC BY-SA 4.0', url: 'https://www.mapillary.com/app/?pKey=375719327094032', date: '2018-03-18' } },
-  { id: 'facade-way-440314428', kind: 'facade', wall: [[-165, 771], [-159.5, 769]], s: [0, 5.85], y: [8.1, 20.9],
+  { id: 'facade-way-440314428', kind: 'facade', wall: [[-165, 771], [-159.5, 769]], s: [0, 5.85], y: [8.1, 20.9], colour: 'beige', wallColour: [132, 170, 192],
     files: { high: { url: new URL('./x-1z1/facade-way-440314428-high.ktx2', import.meta.url).href, w: 236, h: 512, bytes: 39508 },
       medium: { url: new URL('./x-1z1/facade-way-440314428-medium.ktx2', import.meta.url).href, w: 120, h: 256, bytes: 11569 },
       low: { url: new URL('./x-1z1/facade-way-440314428-low.ktx2', import.meta.url).href, w: 60, h: 128, bytes: 3759 } },

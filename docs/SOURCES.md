@@ -21,7 +21,9 @@ Wherever the map, or anything drawn from it, is shown (a game, its help, its REA
 
 - **What:** the streets, buildings, land use, trees, rivers, railway, crossings, traffic lights,
   bus stops, turn restrictions, landmarks and parishes; the walls, fences, hedges, gates and car
-  parks (task 013). The world's `osmTime` says when it was
+  parks (task 013); the shops, cafés, banks and offices with a name, for their signs, and the
+  buildings' `building:colour` and `building:material` where they're tagged (task 017). The
+  world's `osmTime` says when it was
   fetched (now 2026-10-13).
 - **Access:** the Overpass API, no account (`node tools/fetch.mjs`).
 - **Licence:** Open Database Licence 1.0. The world, the tracks and the map page's data are

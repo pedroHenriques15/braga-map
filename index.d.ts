@@ -77,10 +77,12 @@ export interface Line {
 // with its own outline, height and roof. Measured from DGT's 2025 LiDAR (`measured`), or guessed
 // from what the map says where the LiDAR didn't see it, and for the houses filled in.
 //
-// kind: 0 house, 1 flats, 2 shop, 3 church, 4 civic, from its tag and its height. color: one of 8
-// facade colours. y: the ground it stands on, at its lowest corner. h: the height of its eaves (the
-// top of its walls) in metres from there, and ridge: of its roof's top. floors: its storeys up to
-// the eaves, so windows line up with them.
+// kind: 0 house, 1 flats, 2 shop, 3 church, 4 civic, from its tag and its height. color: a number 0–7
+// from its id, for a game's own variety (its colour is its facade's). y: the ground it stands on, at
+// its lowest corner. h: the height of its eaves (the top of its walls) in metres from there, and
+// ridge: of its roof's top. floors: its storeys up to the eaves, the ground floor's among them, as
+// counted in its photo or from its height and its facade's kind, so windows line up with them.
+// facade: what its walls look like (task 017).
 // roof: 0 flat, 1 hipped, 2 gabled, 3 skillion (one slope). dir: the way its ridge runs, in radians
 // (x east, z south: (cos dir, sin dir)), from its first end to its second; for a skillion, the way
 // it slopes down; for a flat roof, its long side. ends: which ends of the ridge are hipped (1 the
@@ -105,10 +107,57 @@ export interface Building {
   roofColor: [number, number, number] | null;
   material: number;
   floors: number;
+  facade: Facade;
   source: 'osm' | 'lidar' | 'microsoft' | 'invented';
   filled: boolean;
   measured: boolean;
   pts: [number, number][];
+}
+
+// A building's facade (task 017, docs/BUILDING-TYPES.md): as a session saw it in its photos (`seen`:
+// every building in the shooter's area and in view of a viewpoint, refs/buildings.json), or guessed
+// from its tags, its size and its height, and from the buildings seen. All of a building's parts have
+// its facade. type: its kind, whose proportions are map().facadeTypes'. colour: its walls' colour above
+// the ground floor, a name in map().facadeColours. material: what its walls are covered with. ground:
+// what its ground floor is along a street (a game decides which walls face one). base: the ground
+// floor's colour and material where they aren't the walls'. balconies: what they are. shutters: the
+// roller shutters' colour, null for none.
+export type FacadeType = 'old-house' | 'house' | 'block-1950s' | 'block-1970s-90s' | 'block-2000s' | 'glass-office' | 'civic' | 'church' | 'commercial' | 'warehouse' | 'annex';
+export type FacadeMaterial = 'render' | 'tiles' | 'mosaic' | 'azulejo' | 'granite' | 'stone' | 'brick' | 'concrete' | 'block' | 'glass' | 'metal' | 'panels';
+export interface Facade {
+  type: FacadeType;
+  colour: string;
+  material: FacadeMaterial;
+  ground: 'housing' | 'shops' | 'garages' | 'arcade' | 'blank' | 'glazed';
+  base: { colour: string; material: FacadeMaterial } | null;
+  balconies: 'none' | 'french' | 'projecting' | 'continuous' | 'enclosed' | 'recessed';
+  shutters: string | null;
+  seen: boolean;
+}
+// A kind of building's real proportions, in metres: a storey's height, the ground floor's, a window's
+// width and height, its sill over its floor, a window's spacing along a wall (middle to middle), and
+// how far a balcony stands out.
+export interface FacadeProportions {
+  storey: number;
+  ground: number;
+  win: [number, number];
+  sill: number;
+  bay: number;
+  balcony: number;
+}
+
+// A shop's, a café's, a bank's or an office's sign over its ground floor (task 017): its name as plain
+// text, no logo, on its colour (a name in map().facadeColours: the photo's, or dark-grey where no photo
+// showed it), from `from` to `to` along its wall, 5 cm out from it, facing out (to - from = (dx, dz):
+// it faces (dz, -dx)), its bottom y over elev0 and h high.
+// From OpenStreetMap's named shops, and the signs the photos show where the map has none.
+export interface Sign {
+  text: string;
+  colour: string;
+  from: [number, number];
+  to: [number, number];
+  y: number;
+  h: number;
 }
 
 // Every street as surfaces, in the open world's area (task 033, tools/streets.mjs), each piece cut to
@@ -353,12 +402,17 @@ export interface GroundPhoto extends PhotoBase {
 // s = (p - wall[0]) · the chord's direction along it; the texture spans s from s[0] (its left) to
 // s[1] (its right), and heights y[0] (its bottom) to y[1] (its top), above elev0. A wall's front,
 // where the photo was taken from, is (-dz, dx) of its chord (dx, dz); each step of the wall facing
-// that way, as its own (-dz, dx) says, gets its part of the texture.
+// that way, as its own (-dz, dx) says, gets its part of the texture. colour: its building's facade
+// colour (a name in map().facadeColours); wallColour: what colour the wall is in the photo (sRGB, the
+// median of its middling pixels, the windows and the glare left out). A game divides the photo by the
+// one and multiplies it by the other, so the photo's light and white balance are the game's (task 017).
 export interface FacadePhoto extends PhotoBase {
   kind: 'facade';
   wall: [number, number][];
   s: [number, number];
   y: [number, number];
+  colour: string;
+  wallColour: [number, number, number];
 }
 export type PhotoTexture = GroundPhoto | FacadePhoto;
 // Every source the photo textures are made from, with the authors of those used and what they
@@ -444,8 +498,13 @@ export interface BragaMap {
   // The roofs' colours, 127 standing for all those measured: a building's roofColor is one of them.
   roofColors: [number, number, number][];
   // How tall a storey is, and what a building has besides its storeys (the ground floor's extra,
-  // the slab on top), in metres: a building's floors are (h - storey[1]) / storey[0], rounded.
+  // the slab on top), in metres, over the whole map (OpenStreetMap's floors against the LiDAR's eaves).
+  // A building's own floors are its `floors`.
   storey: [number, number];
+  // Each kind of facade's proportions, and each facade colour's [r, g, b] (sRGB, as it looks in even
+  // daylight) by its name.
+  facadeTypes: Record<FacadeType, FacadeProportions>;
+  facadeColours: Record<string, [number, number, number]>;
   // The relief over the whole map every 50 m, and 15 km round it every 250 m. The ground, from DGT's
   // LiDAR on the map and the Terrain Tiles (EU-DEM) beyond it.
   far: Grid;
@@ -476,6 +535,8 @@ export interface World extends BragaMap {
   areas: Area[];
   lines: Line[];
   buildings: Building[];
+  // The shops' signs on the tiles loaded (task 017).
+  signs: Sign[];
   trees: Tree[];
   // Every street as surfaces, and every path, on the open world's tiles loaded (empty on the others).
   streets: Streets;

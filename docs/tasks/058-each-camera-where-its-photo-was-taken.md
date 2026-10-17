@@ -1,5 +1,5 @@
 ---
-status: blocked
+status: todo
 priority: medium
 kind: code
 repo: braga-map
@@ -48,7 +48,7 @@ Steps:
 1. For each viewpoint, find which surface the photo was taken from (a lane, a pavement, a path), and
    which surface the camera stands on in the tiles (`world.streets`, the paths). List those that
    differ, with how far the camera is from the nearest point of the right surface.
-2. Move each of those, as the owner answers (Questions), keeping its heading and pitch: the camera
+2. Move each of those (Questions), keeping its heading and pitch: the camera
    to the nearest point on the right surface (in a lane, the middle of the lane the photo shows),
    its height from that surface, and its target moved with it. Say so in its `notes`.
 3. A test: every viewpoint's camera stands on the surface its photo was taken from (a `surface`
@@ -57,11 +57,13 @@ Steps:
 
 ## Questions
 
-- [ ] Where Mapillary's position puts a camera off the surface its photo was taken from, is the
+- [x] Where Mapillary's position puts a camera off the surface its photo was taken from, is the
   camera moved there? Options: yes, the shortest way onto the surface the photo shows, its heading
   and pitch kept (recommended: it is still the photo's place, within the GPS's error, as task 055
   aimed two cameras as their photos look); or no, Mapillary's position stands, and a camera off its
   surface is a fault of the photo, not the game.
+  > Yes: the shortest way onto the surface the photo shows, its heading and pitch kept (the owner,
+  > 2026-10-17).
 
 ## Read first
 
@@ -83,3 +85,5 @@ Steps:
 
 - Found by task 026 (2026-10-17), in its round: the streets moved, these four cameras did not.
   Blocked on the question.
+- Unblocked 2026-10-17: the owner chose the recommendation. It changes decision 009's "exactly
+  where Mapillary's reconstruction puts its photo", so its finish writes that down as a decision.

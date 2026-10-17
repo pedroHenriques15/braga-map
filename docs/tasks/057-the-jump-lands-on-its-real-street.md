@@ -1,5 +1,5 @@
 ---
-status: blocked
+status: todo
 priority: medium
 kind: code
 repo: both
@@ -44,19 +44,23 @@ Today (2026-10-17):
 Steps:
 
 1. Drop the jump's streets from `kept`, so they're measured and moved like any other.
-2. The race lands as the owner chooses (Questions), and party-kart's tests pass: the autopilot laps
-   with no respawn, the Volta dos Amigos' jump lands on the race's road from braga-map's speed to
-   flat out.
+2. The race's road (`tools/track.mjs`'s `road`) takes in the corner between the flight and the
+   landing street, the ground there, as it takes in the flight past the landing, so a kart coming
+   down can run wide into the street; the street stays at its measured width, and the race's walls
+   stand round the corner it takes in (Questions). party-kart's tests pass: the autopilot laps with
+   no respawn, the Volta dos Amigos' jump lands on the race's road from braga-map's speed to flat
+   out.
 3. Shoot `couteiro` and look at the jump from above, before and after.
 
 ## Questions
 
-- [ ] How does the race land on the real street? Options: the race's road takes in the corner
+- [x] How does the race land on the real street? Options: the race's road takes in the corner
   between the flight and the landing street (the ground there, as it takes in the flight past the
   landing), so a kart can run wide into it (recommended: the street stays as it is, the race's
   walls give a kart room); party-kart's autopilot and bots take the landing slower and wider; or
   another jump, jump 2 above, straight on off the flight onto its street (the owner would see it
   first, as decision 027 has it).
+  > The race's road takes in the corner, the street as it really is (the owner, 2026-10-17).
 
 ## Read first
 
@@ -80,3 +84,4 @@ Steps:
 
 - Found by task 026 (2026-10-17), when party-kart's lap test stopped at the landing on braga-map
   1.20.0. Blocked on the question.
+- Unblocked 2026-10-17: the owner chose the recommendation, the race's road taking in the corner.

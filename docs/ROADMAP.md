@@ -14,7 +14,7 @@ holds ideas with no task yet. Settled decisions go to [DECISIONS.md](DECISIONS.m
 | The kart race's city | Real-width streets, the race's at their real widths too (task 037, decision 029), granite kerbs, calçada, lane lines, zebra crossings, traffic lights and bus stops from OSM, buildings at their place with their measured heights, roofs and roof colours (tasks 010 and 011), each one's facade its kind's in its own colours, with balconies and the shops' signs (task 017), streets crossing on two levels with their decks and tunnels' mouths (task 012), trees, the Rio Este and its bridges, the hills 15 km round, Bom Jesus and the Sameiro (twice their size), the Tourigalo as it is (task 029: the black bull with a rooster's head, on its lawn), Makro's sign; and since task 021 (decision 038) the landmarks the race sees, at their real size: São João da Ponte's chapel in its park and the Avenida da Liberdade's granite arch over the Este, the Estádio 1.º de Maio's stands as the LiDAR measured them with its outer wall and four floodlights, the Picoto's white steel cross and the miradouro's boardwalk, and the Altice Forum's α. Every street in the open world's area where the LiDAR measured it since task 026 (decision 039): the map's ways moved onto the middle of their carriageways, kerb to kerb, at their measured widths, but the jump's. The ground as it is (task 009): the streets tip sideways, the pavements meet the ground, retaining walls where it's higher, buildings stepped on their slopes. The race the way the traffic goes (task 027, decision 010): one-way streets the right way, no banned turns, 10.1 km, on the map's streets but for one jump: over the Rio Este into a waypoint's dead end, from a ramp of planks on rubble the city's road works seem to have left, up only in a race (task 039, decision 027). The first four-point plan (skyline, street level, real widths, landmarks) was done on 2026-10-13: "Braga as it is", braga-map `017bdd4` and party-kart `1d7a921`. The friends drive it, each in a car that's a joke about them, and each one's easter egg stands on their house (tasks 028 and 030, decision 014) |
 | The sound | Synthesized, through one mix since task 023: buses for the engines, the effects, the jingles and the ambience, into a limiter; the countdown, checkpoints, laps and finish one family of jingles; others' items, hits and the eggs heard from where they are. Judged by ear on two recorded takes, party-kart's `scripts/listen.mjs`, the baseline `2026-10-14-baseline`. Every kart's engine a race car's V8 through six gears, the nearest three others' heard from where they are with their Doppler shift, and your tyres and the wind (024, the owner's choice of engine after hearing a recording and a two-stroke, decision 016). Braga round the track (025): traffic, the town's hum, birds in the parks and insects in the woods, by what's within 150 m, the Rio Este, the bells, the buses and the stadium's crowd, from eight CC0 recordings, 10 dB under the engines |
 | The open world | Decided on 2026-10-14 (decision 019): Party Kart opens driving in Braga, anywhere in the Volta dos Amigos' area, every street at its real width with its junctions, kerbs, pavements, bridges and tunnels; the race is a game mode in it, at the streets' real widths. Every street in the area is a surface in the tiles since task 033 (`world.streets`): its carriageway at its real width, joined at junctions with their kerbs rounded, roundabouts' islands, central reservations, pavements, kerbs dropped at the crossings, and the markings OSM gives, at their levels on bridges and in tunnels, a deck at the LiDAR's height where it saw one (task 047, decision 028). The area has its edge since task 032 (decision 020): 3.5 km² round the loop and the Picoto's top since task 039 took the loop by Ponte Pedrinha (3.1 before), worked out from the streets (`tools/open.mjs`), with 122 gates where its streets leave it for a game's barriers, and the ground every 2 m under it. party-kart's karts can drive on them since task 034 (decision 021): the world's ground, the land, the streets at their levels and what stands on them, in its simulation and tests. party-kart draws them since task 035 (decision 024): every street in the area at its real width, on the ground the karts drive on, with its kerbs, pavements, islands, markings, lamps, traffic lights, decks and tunnels, buildings cut at the kerb, and road-works barriers at the gates; plates and bus stops along the route only (every street's are task 042's). The game opens driving on them since task 036, live since 2026-10-15 (decision 026): anywhere in the area, on a keyboard or a touch screen, friends joining from a link or a code, the minimap, the city's sound everywhere; the race from its menu, on the route's own streets at their real widths since task 037 (decision 029): walled at their kerbs, a row of barriers across every side street it passes and between a road's two carriageways where they're drawn as one, the ramp into the dead end put out with them, and everyone back where they were when it's over |
-| **In flight** | 056, the route's chapels and shrines, in its own worktree (`../braga-map-056`): tagged 1.21.0 from braga-map 1.20.0, not on `main` yet, so it merges 1.20.1 first. Live since 2026-10-17: party-kart `c318ec1` on braga-map 1.18.1, with 048, 017, 046, 054 (the flying camera) and 022 (the light). 021, the landmarks, and 026, every street on its real carriageway, are done (2026-10-17) and in party-kart's `main`, pinned to braga-map 1.20.1, not deployed yet. Before them, the party-kart session listed here since task 009, on Braga's own pavement pattern and a pale patch near São João da Ponte, landed no commit (checked 2026-10-15): the calçada drawn is still the 2.5 m tile of white and pale grey setts, Lisbon's look. Braga's pattern is task 018's. The pale patch was never described, and isn't checked: the ground's colour, which task 016 has drawn anew since (2026-10-16) from what the ground is |
+| **In flight** | 056, the route's chapels and shrines, in its own worktree (`../braga-map-056`): tagged 1.21.0 from braga-map 1.20.0, not on `main` yet, so it merges 1.20.1 first. Live since 2026-10-17: party-kart `c318ec1` on braga-map 1.18.1, with 048, 017, 046, 054 (the flying camera) and 022 (the light). 021, the landmarks, and 026, every street on its real carriageway, are done (2026-10-17) and in party-kart's `main`, pinned to braga-map 1.20.1, not deployed yet: the owner deploys them with 056, once it lands. Next: 057 (stream 1), and 058 then 049 alongside. Before them, the party-kart session listed here since task 009, on Braga's own pavement pattern and a pale patch near São João da Ponte, landed no commit (checked 2026-10-15): the calçada drawn is still the 2.5 m tile of white and pale grey setts, Lisbon's look. Braga's pattern is task 018's. The pale patch was never described, and isn't checked: the ground's colour, which task 016 has drawn anew since (2026-10-16) from what the ground is |
 | Realism, measured | 32 viewpoints, each set where a real photo was taken (task 001, `refs/viewpoints.json`, decision 009): along the Volta dos Amigos, on foot in Fujacal, of Bom Jesus and the Sameiro, and since task 021 of São João da Ponte's chapel, the Altice Forum and the Picoto's top. Shot in the game at High and Low by party-kart's `scripts/shots.mjs` (task 002, decision 011), the same every time, beside their photos: the baseline round is `2026-10-13-baseline`, the second `2026-10-14-friends` ("Os amigos", tasks 028–030), the third `2026-10-15-task035` ("Todas as ruas", every street drawn and tasks 010–012's buildings and bridges), the fourth `2026-10-15-mundo-aberto` ("Mundo aberto", free roam's streets without the race's barriers, and tasks 040 and 043's decks' ends), the fifth `2026-10-15-after050` ("Caminhos e escadas", task 050's footways, cycleways and steps), the sixth `2026-10-16-after013` ("Muros e sebes", task 013's walls, fences, hedges and gates), the seventh `2026-10-16-after016` ("O chão", task 016's ground, on top of 013's walls), the eighth `2026-10-16-after048` ("Sem frinchas", task 048's streets without slivers), the ninth `2026-10-16-after017` ("Fachadas", task 017's facades), the tenth `2026-10-16-after046` ("Entre as pontes", task 046's corners stopped at the decks' and tunnels' ends), the eleventh `2026-10-17-after022` ("A luz", task 022's light), the twelfth `2026-10-17-after021` ("Os marcos", task 021's landmarks, with 055's cameras, without 022's light), and the thirteenth, `2026-10-17-after026` ("As ruas no sítio", task 026's streets, with 021's landmarks and 022's light), is the one open for marks. Rated on the scorecard "Braga real" (task 003, decision 012, https://claude.ai/artifact/MsA5VZHSqxfD3e4BDYrYPs) by the owner: the baseline averages 2.6 of 5, "Os amigos" 2.9, "Todas as ruas" 3.7; and since task 013 by Claude, in a document of its own and on a harder scale: "Muros e sebes" 2.45, "O chão" 2.48, whose marks the owner took for task 016, "Sem frinchas" 2.48, "Fachadas" 2.48 (the buildings nearer their photos in about twenty places, no mark moved) "Entre as pontes" 2.48 (no shot changed) "A luz" 2.48 (the light nearer the photos' on their 11 clear days, no mark moved) "Os marcos" 2.50 over its 32 places (the stadium up from 2 to 3; the chapel's new place 3, where the grey box before would have had 1) and "As ruas no sítio" 2.53 (`robert-smith-picoto` and `fujacal-west` up from 2 to 3, and four cameras off the pavement onto the road; `imaculada-conceicao` down from 3 to 2, its camera now on the median: task 058). The budget (task 004, decision 013): today's city, rounded up, in party-kart's `docs/architecture.md`; `?stats` measures a phone. A guide, not a limit (decision 017): realism first, and the games move to a stack that scales, or the owner's homelab, when they outgrow it. The reference photos (task 008, `refs/photos.json`, decision 018): 424 found online, from Mapillary and Commons, for the facades in the shooter's area and those a local knows along the route, the landmarks, bridges, roundabouts, kinds of building and wall, and close-ups; 26 good enough for a texture; the gaps listed in the task, about half the shooter's area's buildings among them |
 
 ## Now · The open world
@@ -101,12 +101,13 @@ race car's engine for every kart, and Braga round the track. More of Braga's sou
 Phase 1 is done (007 the last of it, 2026-10-15), and the open world is live: 032 to 037, 039,
 040, 043, 047 and 050 are done, the race on the streets at their real widths (037, decision 029).
 Every question in the tasks is answered: 044's on 2026-10-16 (the pavements' heights are
-braga-map's, level from the kerb at 2% across at most); but 057's and 058's, found by 026 on
-2026-10-17. Each task is checked on the scorecard when
-it lands.
+braga-map's, level from the kerb at 2% across at most), and 057's and 058's, found by 026, on
+2026-10-17 (the race's road takes in the corner off the jump; the cameras go onto the surfaces
+their photos were taken from). Each task is checked on the scorecard when it lands.
 
-The order, set with the owner on 2026-10-16: two streams side by side, as they touch different
-files, and in each the foundations first.
+The order, set with the owner on 2026-10-16 and kept since by the planning session: two streams
+side by side, as they touch different files, and in each the foundations first; small tasks
+alongside them in worktrees of their own.
 
 - **Stream 1, the streets' shape, one task at a time.** Each changes `tools/streets.mjs`,
   `lines.mjs` or `world.mjs`, or party-kart's `streets.ts` and `ground.ts`, and ends with a tag
@@ -119,32 +120,41 @@ files, and in each the foundations first.
      markings, 042's corners. Half of `bom-jesus`'s fall in "Todas as ruas" is its (the camera on
      the map's pavement). Rewritten for every street on 2026-10-16, after 016, whose LiDAR echo
      tells the road from the pavement.
-  5. **052** the streets end at their walls (found by 013): the carriageways' edges and the
+  5. **057** the jump lands on its real street (found by 026): the three streets 026 kept as the
+     map has them, measured like the rest, the race's road taking in the corner off the jump (the
+     owner, 2026-10-17). First, as it finishes 026.
+  6. **052** the streets end at their walls (found by 013): the carriageways' edges and the
      pavements' backs where they stop at a wall, before 045 holds the ground under them and 044
      gives them heights.
-  6. **045** the ground under a street beside a wall: held to where the carriageway now is; 044's
+  7. **045** the ground under a street beside a wall: held to where the carriageway now is; 044's
      kerbs stand on it.
-  7. **044** pavements level from the kerb.
-  8. **051** steps meet what they lead to: a flight's foot at the kerb 044 sets.
-  9. **014** roundabouts and **041** squares, either, any time after 026.
+  8. **044** pavements level from the kerb.
+  9. **051** steps meet what they lead to: a flight's foot at the kerb 044 sets.
+  10. **014** roundabouts and **041** squares, either, any time after 026.
 - **Stream 2, the look.** The high ones, on 007's photo textures' pipeline, party-kart's
   `city.ts` and `refs/`.
   1. **016** the ground from the aerial photos: done (decision 034). 018's parking bays, 019's
      grass and 020's parked cars come from it.
   2. **017** facades: done (decision 036), braga-map 1.18.0 with 048's streets.
   3. **021** landmarks: done (decision 038), braga-map 1.19.0 with 046's corners.
+  4. **056** the route's chapels and wayside shrines (found by 021): in flight.
+  5. **019** trees (016's grass, 013's hedges), then **042** names and stops (on 026's
+     carriageways' corners): neither waits for stream 1 any more, now 026 is done.
   - **055** the Monte da Forca's camera: done, with `estadio`'s, shot so in 021's round.
+- **Alongside, small, each in worktrees of its own:** **058** each camera on the surface its photo
+  was taken from (found by 026; `refs/viewpoints.json`, no world to make again), then **049** the
+  stadium's bowl (party-kart's `land.ts` alone, free since 021; the street beside it measured where
+  026 moved it).
 - **054** the flying camera: done and live (2026-10-17), with 048, 017, 046 and 022. A phone's
   frame rate from the air isn't measured yet.
 - **022** the light: done and live (2026-10-17, decision 037). Its round, "A luz", was open for
   marks until 021's went up after it. The clear afternoon stays in the game and in every round,
   though 18 of the 29 photos are grey days (the owner).
-- **When both are done:** **018** markings and pavements (on 026's carriageways, 044's pavements
-  and 016's parking; its "What" also describes the track before 033); **019** trees (016's grass,
-  013's hedges); **042** names and stops, then **020** furniture (013's gates, 016's parked cars,
-  018's bays).
-- **Last:** **049** the stadium's bowl, whenever party-kart's `land.ts` is free; then **053**, every
-  task's notes read for what they left, after every task open on 2026-10-16 but 038. **038** when
+- **Once stream 1 has done 044:** **018** markings and pavements (on 026's carriageways, 044's
+  pavements and 016's parking; its "What" also describes the track before 033), then **020**
+  furniture (013's gates, 016's parked cars, 018's bays).
+- **Last:** **053**, every task's notes read for what they left, after every task open on
+  2026-10-16 but 038. **038** when
   the area grows, and not before: load time doesn't matter to the owner (2026-10-16), so 016's
   bigger download (2.3 to 7.0 MB on High) doesn't bring it forward.
 - **Two sessions at once:** `npm run world` rewrites every tile, so a second session in braga-map

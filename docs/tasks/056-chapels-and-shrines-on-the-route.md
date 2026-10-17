@@ -1,5 +1,5 @@
 ---
-status: todo
+status: doing
 priority: medium
 kind: code
 repo: both
@@ -44,6 +44,14 @@ in the way.
 3. **The shrines** (alminhas or a niche on a pillar): a small model each, where OSM puts it, facing
    the street as the photo shows.
 4. Shoot the viewpoints that see them, and post the round.
+
+## Questions
+
+- [x] None of the scorecard's 32 viewpoints frames any of the six (the nearest 181 m off, behind
+  buildings). Add viewpoints where Mapillary's photos were taken from the race's own line (decision
+  009), shot before the work? Options: Santa Justa, Santo Adrião, Santa Tecla; Santa Justa alone;
+  none, each checked with `?view` shots. Recommended: Santa Justa and Santo Adrião.
+  > Two: `capela-santa-justa` and `capela-santo-adriao` (the owner, 2026-10-17).
 
 ## Read first
 

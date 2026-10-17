@@ -194,7 +194,7 @@ node tools/fetch.mjs microsoft    # Microsoft's building footprints over the map
 node tools/roofs.mjs   # every building's height and roof, and those the map lacks: .cache/roofs.json (10 minutes the first time)
 node tools/decks.mjs   # the bridges' decks DGT's point cloud saw: .cache/decks.json (10 minutes)
 node tools/walls.mjs   # the walls, fences, railings, hedges and gates round the open world's area: .cache/walls.json (2 minutes, and 3 more the first time)
-node tools/sights.mjs  # the Estádio 1.º de Maio's stands and floodlights, from the point cloud: .cache/sights.json (a minute)
+node tools/sights.mjs  # the Estádio 1.º de Maio's stands and floodlights, the chapels' and shrines' tops, from the point cloud: .cache/sights.json (two minutes)
 npm run page     # the map page's map/braga.json
 npm run tracks   # every track: tracks/<id>.js, and map/tracks.json for the page
 npm run open     # the open world's edge, round the Volta dos Amigos: tools/open.json (seconds)
@@ -280,13 +280,16 @@ streets; when a track moves enough to change the edge, run the three again until
   in where the map has none on a built-up street and the LiDAR wasn't fetched, the trees (woods and
   parks filled in), the rivers with their water level (the lowest ground within 4 m of their
   course), and the sights (Bom Jesus, the Sameiro, the cross on the Picoto, the stadium, the Altice
-  Forum's α, Makro, the Tourigalo with the way its head points and its restaurant's front, and São
-  João da Ponte's chapel and bridge), picked out of the map by their OpenStreetMap ids, with what
-  the LiDAR measured of them (task 021): the chapel's heights from its building's parts, which a
-  game draws it in place of (`covers`); the bridge's arch where its road's middle crosses the river;
+  Forum's α, Makro, the Tourigalo with the way its head points and its restaurant's front, São
+  João da Ponte's chapel and bridge, and since task 056 the route's chapels of Santa Justa, Santo
+  Adrião and Santa Tecla, São Lázaro's bell tower and the wayside shrines of the Senhor do Bonfim
+  and the Senhor da Boa Morte), picked out of the map by their OpenStreetMap ids, with what the
+  LiDAR measured of them (task 021): the chapels' heights from their buildings' parts, which a game
+  draws them in place of (`covers`); the bridge's arch where its road's middle crosses the river;
   and from `sights.mjs` the stadium's stands, along spokes square to its track's oval, every metre
   out from the track to the top of the outer wall (the highest point that isn't vegetation in each
-  half metre), and its four floodlights' masts. `levels.mjs` checks the streets that cross on two levels
+  half metre), its four floodlights' masts, and the chapels' and shrines' tops (a bell gable's, a
+  cross's) and the ground round them. `levels.mjs` checks the streets that cross on two levels
   (`test/levels.test.js`): under a deck there's room for what passes, over a tunnel its roof; a
   bridge that meets a street at its end, or that the LiDAR took for the ground, meets it at grade.
   `lines.mjs` is how it reads the streets: each way's kind, width, level, and the heights of a

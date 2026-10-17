@@ -53,6 +53,20 @@ export type Sight =
   // eaves, the bell block's top, and the nave's eaves and ridge. `covers` is its outline: a game draws
   // it there in place of the tiles' building.
   | { kind: 'saojoao'; x: number; z: number; y: number; face: number; L: number; W: number; porch: number; top: number; eaves: number; ridge: number; covers: [number, number][] }
+  // The route's other chapels (task 056), each a model of its own by `id`: the middle of its outline,
+  // the way its front looks, its half-length (along the way it looks) and half-width, and over y (the
+  // ground at its front) its roof's eaves and ridge as the LiDAR measured them, and its top, its bell
+  // gable's or its cross's. `porch` is how far out from its front its porch reaches, where the map has
+  // that as a building of its own (Santo Adrião's), else 0. `covers` is its outline, its porch's
+  // with it: a game draws it there in place of the tiles' buildings.
+  | { kind: 'chapel'; id: 'santa-justa' | 'santo-adriao' | 'santa-tecla'; x: number; z: number; y: number; face: number; L: number; W: number; eaves: number; ridge: number; top: number; porch: number; covers: [number, number][] }
+  // São Lázaro's bell tower (task 056), two slabs of granite with its bells between them: the middle
+  // of the LiDAR's outline of it, the way its broad faces look (to the street), its half-sizes, and
+  // its top over y. `covers`: as the chapels'.
+  | { kind: 'saolazaro'; x: number; z: number; y: number; face: number; L: number; W: number; top: number; covers: [number, number][] }
+  // A wayside shrine the race passes (task 056), by `id`: its outline's middle, the way it looks, its
+  // half-sizes, and its top over y. The tiles leave it out, as too small.
+  | { kind: 'shrine'; id: 'bonfim' | 'boa-morte'; x: number; z: number; y: number; face: number; L: number; W: number; top: number }
   // São João da Ponte's bridge, an arch of dressed granite: where the road's middle crosses the river,
   // and how far its decks reach from there. A game draws the decks within r of (x, z) as the arch.
   | { kind: 'arch'; x: number; z: number; r: number; y: number };

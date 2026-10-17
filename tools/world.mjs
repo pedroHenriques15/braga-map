@@ -736,10 +736,11 @@ let nWalls = 0;
 
 // ---------------------------------------------------------------------------------------------
 // The sights a Bracarense steers by: Bom Jesus and the Sameiro on the hills to the east, the cross
-// on the Picoto, the stadium, the Altice Forum, Makro and the Tourigalo's bull; and São João da
-// Ponte's chapel and bridge, which the route passes (task 021). Footprints and positions from the
-// map, heights from the ground and the LiDAR: the stadium's stands and floodlights as tools/sights.mjs
-// measured them.
+// on the Picoto, the stadium, the Altice Forum, Makro and the Tourigalo's bull; São João da Ponte's
+// chapel and bridge, which the route passes (task 021); and the route's other chapels, São Lázaro's
+// bell tower and two wayside shrines (task 056). Footprints and positions from the map, heights from
+// the ground and the LiDAR: the stadium's stands and floodlights, and the chapels' and shrines' tops,
+// as tools/sights.mjs measured them.
 
 const sights = [];
 const sightsMeasured = fs.existsSync(path.join(CACHE, 'sights.json')) ? readCache('sights.json') : null;
@@ -811,6 +812,67 @@ let standsDm = null; // the stadium's stands' heights, in decimetres, for the ba
     const [porch, , nave] = [...parts].sort((a, b) => ahead(a) - ahead(b));
     const y = yAt(r.x + ux * r.L, r.z + uz * r.L), h = (v) => r1(v - ELEV0 - y);
     sights.push({ kind: 'saojoao', x: r1(r.x), z: r1(r.z), y, face: r1(Math.atan2(uz, ux) * 100) / 100, L: r1(r.L), W: r1(r.W), porch: h(porch.eaves), top: h(Math.max(...parts.map((p) => p.ridge))), eaves: h(nave.eaves), ridge: h(nave.ridge), covers: ring.slice(0, -1).map(([x, z]) => [r1(x), r1(z)]) });
+  }
+  // The route's chapels (task 056), each drawn in its building's place as São João da Ponte's is:
+  // its outline's rectangle, the way its front looks (to the street or the square before it, where its
+  // photos were taken from: a point it looks towards), the eaves and the ridge of its roof as the
+  // LiDAR measured them, and its top, its bell gable's or its cross's (tools/sights.mjs). Santo
+  // Adrião's porch is a building of its own on the map, before its front: how far out it reaches, and
+  // the chapel covers it too.
+  const CHAPELS = [
+    ['santa-justa', 383764627, [-300, 1013]], // the Rua Monsenhor Airosa, to the west
+    ['santo-adriao', 159203541, [880, 1268], 897195634], // the square before its porch, to the west
+    ['santa-tecla', 234261710, [1190, 430]], // the lane by the Quinta's gate, to the north-west
+  ];
+  // The convex hull of points, its corners in order round it.
+  const hull = (pts) => {
+    const p = [...pts].sort((a, b) => a[0] - b[0] || a[1] - b[1]), cross = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+    const half = (list) => list.reduce((h, q) => { while (h.length >= 2 && cross(h[h.length - 2], h[h.length - 1], q) <= 0) h.pop(); h.push(q); return h; }, []);
+    const lo = half(p), hi = half([...p].reverse());
+    return [...lo.slice(0, -1), ...hi.slice(0, -1)];
+  };
+  for (const [id, way, toward, porchWay] of CHAPELS) {
+    const e = find(fps, 'way', way), part = roofs[way]?.parts?.find((p) => p.roof);
+    if (!e || !part) continue;
+    const ring = ringOf(e).slice(0, -1), r = minRect(ring);
+    // Of its rectangle's four sides, the one that looks most towards `toward`: its way, and its
+    // half-length along it and its half-width across.
+    const [ux, uz] = [Math.cos(r.angle), Math.sin(r.angle)], at = (s) => (toward[0] - r.x) * s[0] + (toward[1] - r.z) * s[1];
+    const [fx, fz, L, W] = [[ux, uz, r.L, r.W], [-ux, -uz, r.L, r.W], [-uz, ux, r.W, r.L], [uz, -ux, r.W, r.L]].reduce((a, s) => (at(s) > at(a) ? s : a));
+    const porch = porchWay ? ringOf(find(fps, 'way', porchWay)).slice(0, -1) : [];
+    const out = Math.max(0, ...porch.map(([x, z]) => (x - r.x) * fx + (z - r.z) * fz - L));
+    const y = yAt(r.x + fx * L, r.z + fz * L), h = (v) => r1(v - ELEV0 - y), top = sightsMeasured?.small?.[id]?.top;
+    sights.push({ kind: 'chapel', id, x: r1(r.x), z: r1(r.z), y, face: r1(Math.atan2(fz, fx) * 100) / 100, L: r1(L), W: r1(W), eaves: h(part.eaves), ridge: h(part.ridge), top: top == null ? h(part.ridge) : r1(top - y), porch: r1(out), covers: (porch.length ? hull([...ring, ...porch]) : ring).map(([x, z]) => [r1(x), r1(z)]) });
+  }
+  // São Lázaro's bell tower (1969), on its church's north side: two slabs of granite with the bells
+  // between them, the highest of its building's parts as the LiDAR measured them, drawn in that part's
+  // place, its broad faces to the street before it. The rest of the church is its parts.
+  {
+    const tower = roofs[108323630]?.parts?.filter((p) => p.pts).sort((a, b) => b.ridge - a.ridge)[0];
+    if (tower) {
+      const r = minRect(tower.pts), street = [38, 470];
+      const [ux, uz] = [Math.cos(r.angle), Math.sin(r.angle)], at = (s) => (street[0] - r.x) * s[0] + (street[1] - r.z) * s[1];
+      const [fx, fz, L, W] = [[ux, uz, r.L, r.W], [-ux, -uz, r.L, r.W], [-uz, ux, r.W, r.L], [uz, -ux, r.W, r.L]].reduce((a, s) => (at(s) > at(a) ? s : a));
+      const y = yAt(r.x + fx * L, r.z + fz * L);
+      sights.push({ kind: 'saolazaro', x: r1(r.x), z: r1(r.z), y, face: r1(Math.atan2(fz, fx) * 100) / 100, L: r1(L), W: r1(W), top: r1(tower.ridge - ELEV0 - y), covers: tower.pts.map(([x, z]) => [r1(x), r1(z)]) });
+    }
+  }
+  // The wayside shrines the race passes (task 056), where the map has them, which the tiles leave out
+  // as too small: each one's outline's rectangle, the way it looks (to the street, as its photos show
+  // it), and its top as the LiDAR measured it; Boa Morte's, under a cedar whose leaves the LiDAR took
+  // its roof for, as its photo shows it, 3.3 m.
+  const SHRINES = [
+    ['bonfim', 407006302, [549.6, 980.4]], // the Travessa do Bonfim, to the west
+    ['boa-morte', 383792816, [110, 702]], // the corner before it, to the south-west
+  ];
+  for (const [id, way, toward] of SHRINES) {
+    const e = find(fps, 'way', way) ?? find(buildingsOsm.elements, 'way', way);
+    if (!e) continue;
+    const ring = ringOf(e).slice(0, -1), r = minRect(ring), m = sightsMeasured?.small?.[id];
+    const [ux, uz] = [Math.cos(r.angle), Math.sin(r.angle)], at = (s) => (toward[0] - r.x) * s[0] + (toward[1] - r.z) * s[1];
+    const [fx, fz, L, W] = [[ux, uz, r.L, r.W], [-ux, -uz, r.L, r.W], [-uz, ux, r.W, r.L], [uz, -ux, r.W, r.L]].reduce((a, s) => (at(s) > at(a) ? s : a));
+    const y = yAt(r.x + fx * L, r.z + fz * L);
+    sights.push({ kind: 'shrine', id, x: r1(r.x), z: r1(r.z), y, face: r1(Math.atan2(fz, fx) * 100) / 100, L: r1(L), W: r1(W), top: m?.top == null ? 3.3 : r1(m.top - y) });
   }
   // São João da Ponte's bridge, the Avenida da Liberdade's over the Este: an arch of dressed granite
   // (task 008's photos of it, from the path by the river). Where the road's middle crosses the river,

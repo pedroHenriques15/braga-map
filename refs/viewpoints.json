@@ -871,6 +871,60 @@
         "roll": -1.9
       },
       "notes": "From a car, 109 m from the route: the miradouro is the railing on the top, left of centre."
+    },
+    {
+      "id": "capela-santa-justa",
+      "name": "The Capela de Santa Justa, up the Rua Monsenhor Airosa",
+      "nome": "A Capela de Santa Justa, a subir a Rua Monsenhor Airosa",
+      "kind": "kart",
+      "x": -274.1,
+      "y": 1.1,
+      "z": 1031.8,
+      "tx": -278.6,
+      "ty": 8.3,
+      "tz": 931.9,
+      "fov": 51,
+      "photo": {
+        "source": "mapillary",
+        "id": "1086469605212323",
+        "url": "https://www.mapillary.com/app/?pKey=1086469605212323",
+        "author": "apires",
+        "licence": "CC BY-SA 4.0",
+        "date": "2019-03-13",
+        "lat": 41.54191,
+        "lon": -8.425286,
+        "heading": 357.4,
+        "pitch": 4.1,
+        "roll": -3
+      },
+      "notes": "The chapel is on the right, 21 m ahead: its bell gable over the white houses, the granite front beyond it, where the race turns right."
+    },
+    {
+      "id": "capela-santo-adriao",
+      "name": "The Capela de Santo Adrião, up its bank from the road",
+      "nome": "A Capela de Santo Adrião, no alto do talude, da estrada",
+      "kind": "foot",
+      "x": 929.3,
+      "y": 37.7,
+      "z": 1235.3,
+      "tx": 885.5,
+      "ty": 46.4,
+      "tz": 1325.2,
+      "fov": 51,
+      "photo": {
+        "source": "mapillary",
+        "id": "4047367548666345",
+        "url": "https://www.mapillary.com/app/?pKey=4047367548666345",
+        "author": "apires",
+        "licence": "CC BY-SA 4.0",
+        "date": "2018-01-14",
+        "lat": 41.540055,
+        "lon": -8.410861,
+        "heading": 186.8,
+        "pitch": 0,
+        "roll": 0
+      },
+      "notes": "From a car on the route, looking up the bank at the chapel above the road: its north side, and its porch on the right. Aimed at 206° and 5° up, where the photo frames the chapel and the road, not at Mapillary's 186.8°, the phone's compass; 2.5 m north of where Mapillary puts it, in the road as the photo is."
     }
   ]
 }

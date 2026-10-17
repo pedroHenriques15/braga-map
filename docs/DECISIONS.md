@@ -1039,3 +1039,33 @@ finishes within 3.3 s, with 2 respawns (10.8 s and 2).
 The alternatives were the task's other answers: the offsets measured and listed only, the map's
 lines kept (decision 022 as it was); and the map's `width` tag where it has one, the measured width
 replacing only the guesses.
+
+## 040 · The route's chapels and shrines are landmarks too: from their photos, where the map has them, in place of what stands for them
+
+*2026-10-17 · task 056 · the small landmarks the race passes that aren't among the 32*
+
+Decision 038 for the route's small landmarks: the Capela de Santa Justa, the Capela de Santo Adrião,
+the Capela de Santa Tecla, the Igreja de São Lázaro's bell tower, and the wayside shrines of the
+Senhor do Bonfim and the Senhor da Boa Morte. Each is a sight of its own, built from its photos at
+the size and heights braga-map gives it, and drawn by a game in place of what the tiles had there.
+
+- **Where the map has it, as the map has it** (decision 022): each stands on its outline's rectangle,
+  its front to the street or the square its photos were taken from. Where the outline is off the
+  LiDAR's walls (Santa Tecla's, by 2–3 m) it's listed, not moved; where the photo shows a front
+  narrower than the outline, the model takes the photo's width on the outline's front.
+- **Measured where the LiDAR can say**: the eaves and ridge from `roofs.mjs`'s parts, the top (a
+  bell gable's, a cross's) from the point cloud (`tools/sights.mjs`). Where it can't, under a tree
+  whose leaves it took for a roof (Boa Morte's) or for a bell gable too thin for it (Santo Adrião's),
+  as the photo shows it, said in its comment.
+- **In place of what stands for it:** a chapel covers its building and a porch the map has as a
+  building of its own (`covers`); a church's tower covers only the part that is the tower, the rest
+  stays the church's parts. A shrine the tiles leave out as too small is the sight alone, not a wall
+  to the karts.
+- **Judged where the race passes it:** a viewpoint at a chapel only where a photo was taken from the
+  race's line and the friends' houses' rule (decisions 009 and 018) allows it; the owner chose two
+  (2026-10-17), Santa Justa's and Santo Adrião's.
+- **Small, so baked together:** a game draws them as one mesh a material, a draw call each wherever
+  any is in view.
+
+The alternatives were leaving them to task 017's church facade and kit (the shrines not drawn at
+all), and boxes in their photos, which the photos found online, one front each at most, can't give.

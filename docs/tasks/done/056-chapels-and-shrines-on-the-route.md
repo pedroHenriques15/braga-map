@@ -1,5 +1,5 @@
 ---
-status: doing
+status: done
 priority: medium
 kind: code
 repo: both
@@ -61,9 +61,21 @@ in the way.
 
 ## Done when
 
-- [ ] Each of the six built at its real size, checked against its photo.
-- [ ] The viewpoints that see them shot again, no worse.
-- [ ] What it adds is measured against the budget (task 004) and recorded in Notes (decision 017).
+- [x] Each of the six built at its real size, checked against its photo.
+  > Each at the size and heights the map and the LiDAR give it (Notes, "What was built"), and set
+  > beside its photos in `?view` shots from where they were taken: Santa Justa's front against
+  > Commons' straight-on photo, Santa Tecla's against its own, Santo Adrião's porch and south side
+  > against its two, the Senhor do Bonfim and the Senhor da Boa Morte against Mapillary's from the
+  > street, São Lázaro's tower against what the LiDAR measured of it; and the two chapels in their
+  > viewpoints' shots, beside the viewpoints' photos.
+- [x] The viewpoints that see them shot again, no worse.
+  > In "Capelas e nichos" (`2026-10-17-after056`): the two new places, 2 each on Claude's marks,
+  > where the before (`before056`, on 1.19.0) would have had 2 (`capela-santa-justa`, without its
+  > bell gable and granite) and 1 (`capela-santo-adriao`, a grey box up the bank). None of the other
+  > 32 sees them: their shots are the same as "As ruas no sítio"'s (under 0.2% of the pixels changed
+  > but `estadio`'s 1.1%, where no change shows), their marks too. 2.50 over the 34.
+- [x] What it adds is measured against the budget (task 004) and recorded in Notes (decision 017).
+  > Notes, "The budget"; party-kart's `docs/architecture.md`.
 
 ## Out of scope
 
@@ -73,7 +85,7 @@ in the way.
 ## Notes
 
 - Drafted 2026-10-16 from task 021's check of its table.
-- **What was built** (braga-map 1.21.0; party-kart `chapels.ts`, `sights.ts`, `city.ts`):
+- **What was built** (braga-map 1.21.1; party-kart `chapels.ts`, `sights.ts`, `city.ts`):
   - **The chapels** (`chapel` sights, by `id`): each its outline's rectangle, its front to the
     street or the square its photos were taken from, its eaves and ridge from `roofs.json`, its top
     (a bell gable's, a cross's) from the point cloud (`tools/sights.mjs`, `.cache/sights.json`'s
@@ -113,21 +125,44 @@ in the way.
   `-santa-tecla`, `igreja-de-sao-lazaro`), Santa Justa's front from Commons straight on enough for a
   texture (a sight doesn't take one yet: 053's note on São João's). Commons gives no camera for
   most: where each stood and looked is as its photo frames it, said in its notes.
-- **What it costs, so far** (`party-kart-056/shots/2026-10-17-try056/`, on 1.19.0 with 056's map,
-  before the merge): High 122 → 137 draw calls at `capela-santa-justa` and 107 → 121 at
-  `capela-santo-adriao`, triangles 1.73 and 1.51 M as they were; to measure on the round.
-- **Tests:** braga-map `npm test` 110 of 110 after the merge with 1.20.0 (`test/sights.test.js`:
-  the chapels on their buildings with their heights in order, Santa Justa to its street, the tower
-  on the church's highest part, the shrines' sizes). party-kart `npm run check` clean; `npm test` 62
-  of 62 on 056's map before the merge, 58 of 62 on 1.21.0: the autopilot's lap, the bots' race, the
-  lap's timing and the kerb fail the same on 1.20.0 alone, waiting for 026's party-kart side.
-- **Where it stopped** (2026-10-17, the owner): braga-map's `task-056` merged with main (026's 1.20.0)
-  and tagged **1.21.0** (`v1.21.0`, pushed), its world made from main's carriageways and walls (the
-  shared `.cache` held 026's later work: made again in a private copy of them); party-kart's
-  `task-056` pinned to it. 026's party-kart side isn't on its main yet. Left: merge it into
-  party-kart's `task-056`, the tests and a lap; shoot the round (`--medium`, for the budget) and post
-  it on "Braga real" with Claude's marks; `/task finish 056` (a decision, the ROADMAP's item, these
-  notes' "Done when"); merge both branches into main and push. Not deployed.
-- **Found along the way,** for the finish: the shrines aren't walls to the karts; São Lázaro's other
-  parts are the church kit's tall windows where its photo shows white render over granite slabs and
-  a row of windows (no entry in `refs/buildings.json`).
+- **Tests:** braga-map `npm test` 110 of 110 on 1.21.1 (`test/sights.test.js`: the chapels on their
+  buildings with their heights in order, Santa Justa to its street, the tower on the church's
+  highest part, the shrines' sizes). party-kart (`09d0f7c`, on 1.21.1 with 026's fix in `ground.ts`)
+  `npm test` 62 of 62, its lap "laps 302.0, 299.8 s; respawns 0; longest air 2.02 s; top 217 km/h;
+  wall hits 52" (1.20.1's: "laps 302.1, 300.0 s; … wall hits 51"); `npm run check` clean; and a lap
+  in the browser with the autopilot and three bots from the start back to free roam in 5:22, no error
+  on the page.
+- **The budget** (party-kart's `shots/2026-10-17-after056/`, `09d0f7c` on 1.21.1, against 026's
+  `after026` on 1.20.1, the 32 viewpoints both shot, at the median): draw calls 143 → 155 on High,
+  142.5 → 154.5 on Medium, 103.5 → 110 on Low (the six baked into 13 materials, drawn wherever any
+  is in view: up to 19 more on High, at `conselheiro-lobato` and `alameda-fujacal`, and 3 to 4 where
+  none is); triangles 1.802 → 1.809 M on High, 1.507 → 1.515 on Medium, 0.826 → 0.830 on Low (7
+  to 9 k more); textures 133 → 134 MB on High and 48 → 49 on Low, the two canvases (`ashlar`,
+  `rubble`), the same 81 on Medium. The city built in 4.7–5.2 s on High, 3.7–4.0 on Low, a frame
+  0.4–2.2 ms. The two new places: `capela-santa-justa` 137 calls and 1.75 M triangles on High (97,
+  0.76 M on Low), `capela-santo-adriao` 121 and 1.52 M (83, 0.71 M). The download on High 8.04 MB
+  gzipped (14.43 as is, 0.01 MB more): the base's sights.
+- **Landed** (2026-10-17): braga-map's `task-056` merged with main twice, 026's 1.20.0 and then its
+  1.20.1, tagged **1.21.0** on the first and **1.21.1** on the second (`v1.21.1`, the one pinned;
+  `v1.21.0` left where it is, as 1.20.0 was). The whole remake on 1.20.1: `carriageways.mjs` and
+  `walls.mjs` made again from main's code, the same as the shared `.cache`'s; then `npm run open`,
+  `npm run shooter`, `npm run world`, `npm run tracks`, `cover.mjs`, `textures.mjs` and the page.
+  Beside 056's own (the sights; the facades of the five buildings it gave entries, and the guesses
+  that follow them in about thirty tiles), main's own code moves 16 of the race's points by up to
+  0.9 m near (−558, 1158) and the streets, paths and walls a little in four tiles (x-2z2, x-1z2,
+  x1z2, x2z2) from what 1.20.1's tiles have: two runs make the same. party-kart's `task-056` pinned
+  to `v1.21.1`, with main (026's fix) merged in. Not deployed: the planning session deploys 021, 026
+  and 056 together.
+- **The round:** `2026-10-17-after056` ("Capelas e nichos"), shot on party-kart `09d0f7c` and
+  braga-map 1.21.1 with Medium for the budget, published on "Braga real" (its version 14), open for
+  marks, closing "As ruas no sítio". Claude's marks (`scores/claude`, each comment starting
+  "(Claude)"): 2.50 over the 34, the 32 of before as they were (2.53), the new places 2 and 2.
+- **São Lázaro's church** got its entry in `refs/buildings.json` at the finish, from its listed photo:
+  white render over a base of big pale granite slabs, as a civic building's rows of windows, not the
+  church kit's tall ones.
+- **Left, for 053's pass:** the shrines aren't walls to the karts (the tiles leave them out); Santa
+  Justa's front has a Commons photo good enough for a texture, unused, as São João's side is (a sight
+  doesn't take one); the Igreja de São Lázaro's tower is the LiDAR's outline with its slot where the
+  outline dips, and no listed photo shows its face to the street; the sights are drawn whole
+  wherever any is in view.
+- **Done** 2026-10-17 (decision 040).

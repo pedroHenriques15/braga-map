@@ -193,6 +193,7 @@ node tools/fetch.mjs lidar ortho nir  # DGT's LiDAR, orthophoto and its near-inf
 node tools/fetch.mjs microsoft    # Microsoft's building footprints over the map (40 MB to download, 2 MB kept)
 node tools/roofs.mjs   # every building's height and roof, and those the map lacks: .cache/roofs.json (10 minutes the first time)
 node tools/decks.mjs   # the bridges' decks DGT's point cloud saw: .cache/decks.json (10 minutes)
+node tools/carriageways.mjs  # where each street's carriageway really is, and the moves that put the map's lines there: .cache/carriageways.json (20 s, 4 minutes the first time)
 node tools/walls.mjs   # the walls, fences, railings, hedges and gates round the open world's area: .cache/walls.json (2 minutes, and 3 more the first time)
 node tools/sights.mjs  # the Estádio 1.º de Maio's stands and floodlights, the chapels' and shrines' tops, from the point cloud: .cache/sights.json (two minutes)
 npm run page     # the map page's map/braga.json
@@ -221,7 +222,9 @@ draws the edges (run `npm run page` again after `npm run open` or `npm run shoot
 the world and takes its colour (after `world.mjs`; `test/textures.test.js` says if a building moved from under one),
 and `build.mjs` and `world.mjs` take the buildings'
 heights and roofs from `roofs.mjs`'s measurements, and `world.mjs` the walls from `walls.mjs` (run it
-after `roofs.mjs`, `npm run open` and `fetch.mjs barriers`), and the facades from `refs/buildings.json` and the shops from `fetch.mjs shops`. All of them need the LiDAR. `track.mjs` also reads
+after `roofs.mjs`, `npm run open` and `fetch.mjs barriers`), and the streets on their carriageways from `carriageways.mjs`
+(run it before `walls.mjs`, `npm run open`, `npm run shooter`, `npm run world` and `npm run tracks`, which
+all take the streets moved, and `cover.mjs` again after `world.mjs`), and the facades from `refs/buildings.json` and the shops from `fetch.mjs shops`. All of them need the LiDAR. `track.mjs` also reads
 the streets the world draws (`world.streets`, which don't depend on a track) for the race's road, so
 a new track's area needs `npm run open` and `npm run world` before `npm run tracks` plans it on the
 streets; when a track moves enough to change the edge, run the three again until it holds.
@@ -299,6 +302,34 @@ streets; when a track moves enough to change the edge, run the three again until
   height where `decks.mjs` has it 30 cm or more over that line (task 047): `decks.mjs` boils DGT's
   point cloud down to its decks (class 26), the median height in each metre, into
   `.cache/decks.json`, once (10 minutes); without it the decks run straight as before.
+- `carriageways.mjs` measures where each street's carriageway really is in the open world's area
+  (task 026, decision 039), from DGT's LiDAR: every 2 m along each street on the ground, across it
+  from its line out to half the map's width and 10 m more, the 50 cm terrain and the laser's echo
+  off the ground (the point cloud as `cover.mjs` boils it down), each the mean over 2 m along the
+  street. From the road nearest the line out either way to its edge: a step of 8 cm or more over a
+  metre (a kerb, a wall's foot, a bank, a drop), from where a quarter metre of it rises or falls 3 cm
+  more than the road; or 1.5 m that echoes as what isn't road (over 7.5 thousand, or 2 more than the
+  road round the line up to 8.5; 9 on a street the map says is setts); or a car park the map has. An
+  edge isn't seen behind a parked car or under a crown, nor where the road runs on as far as it
+  looks; and no station is taken at a junction, a sharp turn or a dead end, where another street's
+  line runs in or by the band, nor in a car park or along its aisles. A street's middle every 2 m is
+  the median of the stations within 15 m (one that saw one edge counts, half the width from it,
+  where the width is clear); its width, the median of those measured both sides, where half are
+  within 0.75 m of it. A street moves where its middle is a quarter metre or more off its line for
+  30 m or more, and off any edge seen with a drop, a wall or a bank behind it (half a metre within
+  3 m, seen twice within 6 m) that its band would reach past; eased in and out over 20 m, turning
+  no more than a metre in 5. A junction moves once, to where its streets' middles meet (least
+  squares); a bridge's or a tunnel's ways, the railway and the nodes they share don't move, and a
+  street that runs on into a deck keeps the map's width. The map's way stays the street: its nodes
+  move, and where its middle bends between two of them points are put in, with node ids below zero.
+  `lines.mjs`'s `onCarriageways` applies it all to OpenStreetMap's data for every reader of the
+  streets (and moves a footway that ends on a street with it); a street's width measured is its
+  `width:lidar`, which `osm.mjs`'s `carriageway` takes first. It prints how much it measured, the
+  spread, the streets furthest off, the places task 026 names, and how often a carriageway is drawn
+  past an edge it saw, over a drop; `--check x,z[,r] …` draws the orthophoto there with the map's
+  lines (red, their edges dashed), the edges measured (cyan to a way's left, yellow to its right)
+  and the lines moved (green), into `.cache/carriageways/`. `test/carriageways.test.js` checks it
+  on made-up cross-sections and streets, and on the open world's streets where they were measured.
 - `walls.mjs` makes the walls, fences, railings, hedges and gates round the open world's area (task
   013), for `world.mjs`. It boils each tile of DGT's point cloud there down once to 50 cm cells on the
   terrain model's grid (`.cache/dgt/walls/`): the highest point off the terrain, and the highest under
@@ -335,7 +366,9 @@ streets; when a track moves enough to change the edge, run the three again until
   in. A street leaving is in for a few metres past its junction, past where its kerbs turn the
   corner. The area is what's nearer a street in than a street out (within 60 m of one out in the
   open), and always 105 m round the loop; a building it would cut goes in or out whole, as most of
-  it is. Then its outline is drawn round, straightened, and made to cross each street square.
+  it is. Then its outline is drawn round, straightened, and made to cross each street square, with
+  no spike where it runs along a street and crosses it at a bend. The streets are on their
+  carriageways (task 026), at the map's widths, which its rules were agreed on (decision 020).
   `gatesOf` finds the gates, for `world.mjs` (with each one's height) and `build.mjs`, where the
   streets cross it and the paths (the edge isn't moved for them: a path crosses it as it comes).
   `test/open.test.js` checks the ring is simple, the loop at least 100 m inside it, a gate where
@@ -367,7 +400,7 @@ streets; when a track moves enough to change the edge, run the three again until
   the carriageways snap-rounded together, so two pieces that meet share their points there and no
   crack opens between them; and before that, no sliver (task 048, decision 035): a notch into the
   carriageways under a metre wide closed, a gap between two under 0.3 m wide filled, and an island
-  kept as the map's lines leave it, but where it's under 10 cm wide.
+  kept as the map's lines leave it, but where it's under 20 cm wide (10 until task 026).
   Where a bridge or a tunnel meets the ground's streets (task 040), its carriageway takes the
   ground's place round its end, and a deck's end follows the ground as the tiles hold it, a point
   every 2 m across it, where that's within 0.5 m of the deck; wherever a deck or a tunnel's road is
@@ -482,8 +515,9 @@ streets; when a track moves enough to change the edge, run the three again until
    a street outside, taken nearly straight on after 40 m of straight run-up, a flight at a kart's
    gravity over whatever's really there (clear of DGT's surface model under the slowest flight that
    lands, the gentlest ramp of 10–20° that does), and a landing on a street in the pocket heading
-   for the waypoint. It prints each one and the loop it gives, takes the cheapest (or `JUMP=<n>`),
-   and goes out by the pocket's own mouth. It tries
+   for the waypoint. It prints each one and the loop it gives, takes the one the owner approved
+   (the track's `jump`, its lip's place: it fails if that isn't kept any more), else the cheapest (or
+   `JUMP=<n>`), and goes out by the pocket's own mouth. It tries
    every order of the waypoints unless the track gives one (`order`): then only that order, round
    one way and the other, and the direction through each. To add a waypoint without reshuffling
    the loop, put it in the order between the two it falls between. A track with `sections` only

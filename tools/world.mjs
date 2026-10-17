@@ -30,14 +30,17 @@ import { allTiles, EXT, OPEN, OPEN_BOX, OPEN_SEEN, OPEN_TILES, SECTIONS, section
 import { gatesOf } from './open.mjs';
 import { terrain } from './terrain.mjs';
 import { decks } from './decks.mjs';
-import { heldGround, isLine, isSquare, LEVEL, levelHeights, pathLines, pathsOf, streetsOf } from './lines.mjs';
+import { carriagewayMoves, heldGround, isLine, isSquare, LEVEL, levelHeights, onCarriageways, pathLines, pathsOf, streetsOf } from './lines.mjs';
 import { packPaths, packStreets, streetSurfaces } from './streets.mjs';
 import { cutWalls, packWalls } from './walls.mjs';
 import { BALCONIES, BALCONY, COLOUR, COLOURS, floorsOf, GROUND, GROUND_OF, guesser, MATERIAL, MATERIALS, TYPE, TYPES } from './facades.mjs';
 
-const base = readCache('osm/base.json');
+// The streets on their carriageways where the LiDAR measured them (lines.mjs's onCarriageways, task 026),
+// and the paths that end on them with them.
+const base = onCarriageways(readCache('osm/base.json'));
+if (!carriagewayMoves()) console.log('no .cache/carriageways.json: the streets as the map has them (node tools/carriageways.mjs)');
 if (!fs.existsSync(path.join(CACHE, 'osm', 'paths.json'))) throw new Error('No footways yet: node tools/fetch.mjs paths');
-const pathsOsm = readCache('osm/paths.json');
+const pathsOsm = onCarriageways(readCache('osm/paths.json'));
 // The car parks (task 016), fetched with the barriers (fetch.mjs's `barriers`, task 013).
 const parkingOsm = readCache('osm/barriers.json').elements.filter((e) => e.tags?.amenity === 'parking');
 const buildingsOsm = readCache('osm/buildings.json');
@@ -709,7 +712,7 @@ const wallList = fs.existsSync(path.join(CACHE, 'walls.json')) ? readCache('wall
 if (!wallList) console.log('no .cache/walls.json: no walls (node tools/walls.mjs)');
 let nWalls = 0;
 {
-  const nodes = readCache('osm/street.json').elements.filter((e) => e.type === 'node');
+  const nodes = onCarriageways(readCache('osm/street.json')).elements.filter((e) => e.type === 'node');
   const rings = (kind) => areas.filter(([k]) => k === AREA.indexOf(kind)).map(([, r]) => r);
   const B = OPEN_BOX, over = tilesOver(B).map((t) => ({ id: t.id, box: { x0: Math.max(t.box.x0, B.x0), x1: Math.min(t.box.x1, B.x1), z0: Math.max(t.box.z0, B.z0), z1: Math.min(t.box.z1, B.z1) } }));
   const { cuts, stats } = streetSurfaces({ lines, heights, elev0: ELEV0, height: tileGround, nodes, buildings: outlines, squares: rings('plaza'), water: rings('water'), paths: walks, box: B, cuts: over });

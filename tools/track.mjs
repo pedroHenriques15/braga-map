@@ -20,6 +20,7 @@ import { CACHE, ELEV0, P, readCache, ROOT } from './geo.mjs';
 import { heights } from './dgt.mjs';
 import { blur, carriageway, carsMay, COBBLE, driven, footprints, Inside, isOneway, lanesOf, LINE, openThin, segDist, simplify } from './osm.mjs';
 import { loadWorld } from '../index.js';
+import { onCarriageways } from './lines.mjs';
 import { EXT, sectionOf } from './sections.mjs';
 import { band, grow, meet, positive, shapes, toPath, toPts, union } from './streets.mjs';
 import { terrain } from './terrain.mjs';
@@ -32,7 +33,8 @@ if (!process.argv[2]) {
 const cfg = TRACKS.find((t) => t.id === process.argv[2]);
 if (!cfg) throw new Error(`No track ${process.argv[2]} in tracks.mjs.`);
 console.log(`\n${cfg.name}`);
-const base = readCache('osm/base.json');
+// The streets on their carriageways where the LiDAR measured them (task 026), as the world draws them.
+const base = onCarriageways(readCache('osm/base.json'));
 let places = cfg.waypoints, fixed = cfg.order;
 if (places === 'private') {
   if (!fs.existsSync(path.join(CACHE, 'places.json'))) throw new Error('No waypoints: .cache/places.json holds the houses, from the shared map.');
@@ -504,10 +506,14 @@ for (const c of kept) {
   console.log(`\njump ${c.n}: ${describe(c)}`);
   console.log(c.loop ? `  the loop: ${Math.round(loopLength(c.loop.path))} m, ${streetsOf(c.loop.path)}` : '  no loop through the waypoints with it');
 }
-const chosen = process.env.JUMP ? kept.find((c) => c.n === Number(process.env.JUMP)) : kept.filter((c) => c.loop).sort((a, b) => a.loop.cost - b.loop.cost)[0];
+// The jump the owner approved (the track's `jump`, decision 027): the kept one whose lip is nearest it,
+// within 15 m; or the one JUMP=<n> names; or, for a track with none approved, the cheapest loop's.
+const approved = cfg.jump && kept.filter((c) => c.loop).map((c) => [c, Math.hypot(c.t.x - cfg.jump[0], c.t.z - cfg.jump[1])]).filter(([, d]) => d <= 15).sort((a, b) => a[1] - b[1])[0]?.[0];
+if (cfg.jump && !process.env.JUMP && !approved) throw new Error(`The jump the owner approved, its lip at (${cfg.jump}), isn't kept any more: show them the jumps above (decision 027).`);
+const chosen = process.env.JUMP ? kept.find((c) => c.n === Number(process.env.JUMP)) : approved ?? kept.filter((c) => c.loop).sort((a, b) => a.loop.cost - b.loop.cost)[0];
 if (process.env.JUMP && !chosen) throw new Error(`No kept jump ${process.env.JUMP}.`);
 for (const c of kept) c.disabled = c !== chosen;
-if (chosen) console.log(`\nthe pick: jump ${chosen.n}${process.env.JUMP ? ' (JUMP)' : ', the cheapest loop'}`);
+if (chosen) console.log(`\nthe pick: jump ${chosen.n}${process.env.JUMP ? ' (JUMP)' : approved ? ', the one the owner approved' : ', the cheapest loop'}`);
 
 const bestLoop = search(false);
 if (!bestLoop) throw new Error('No loop through the waypoints.');
@@ -1081,7 +1087,7 @@ const landmarks = braga.landmarks.filter((l) => roadDist(l.x, l.z, 8).d < 220).m
 //    and the bus stops beside it.
 const crossings = [], signals = [], stops = [];
 {
-  const streetOsm = readCache('osm/street.json');
+  const streetOsm = onCarriageways(readCache('osm/street.json'));
   const loopNodes = new Set(loop.map((n) => n.id));
   const near = (list, x, z, r) => list.some((q) => Math.hypot(q[0] - x, q[1] - z) < r);
   for (const e of streetOsm.elements) {

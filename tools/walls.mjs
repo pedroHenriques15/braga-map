@@ -21,7 +21,7 @@ import zlib from 'node:zlib';
 import { CACHE, P, readCache } from './geo.mjs';
 import { CLASS, DGT, mapToTM, points, readModel, tileKey, tileToMap, tilesOver } from './dgt.mjs';
 import { fillCells } from './footprints.mjs';
-import { LEVEL, pathsOf, streetsOf } from './lines.mjs';
+import { LEVEL, onCarriageways, pathsOf, streetsOf } from './lines.mjs';
 import { AREA_OF, bounds, footprints, Grid, inside, ringArea, ringOf } from './osm.mjs';
 import { terrain } from './terrain.mjs';
 import { OPEN_BOX } from './sections.mjs';
@@ -618,12 +618,12 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   const hgrid = new Grid(20);
   houses.forEach((h, i) => { for (const [x, z] of h.pts) hgrid.add(x, z, i); });
   // The streets: where nothing is found (cars park on them), and what's round a wall; and the paths.
-  const lines = streetsOf(readCache('osm/base.json'), (x, z, mg) => inBox(x, z, mg + 60)).filter((l) => l.k <= 8);
+  const lines = streetsOf(onCarriageways(readCache('osm/base.json')), (x, z, mg) => inBox(x, z, mg + 60)).filter((l) => l.k <= 8);
   const segs = [];
   for (const l of lines) if (l.k <= 7 && l.level !== LEVEL.tunnel) for (let i = 1; i < l.pts.length; i++) segs.push([...l.pts[i - 1], ...l.pts[i], l.w / 2 + (l.k === 6 ? 0 : 0.5)]);
   const sgrid = new Grid(20);
   lines.forEach((l, i) => { for (let k = 1; k < l.pts.length; k++) { const n = Math.ceil(Math.hypot(l.pts[k][0] - l.pts[k - 1][0], l.pts[k][1] - l.pts[k - 1][1]) / 10); for (let f = 0; f <= n; f++) sgrid.add(l.pts[k - 1][0] + ((l.pts[k][0] - l.pts[k - 1][0]) * f) / n, l.pts[k - 1][1] + ((l.pts[k][1] - l.pts[k - 1][1]) * f) / n, i); } });
-  const ways = pathsOf(readCache('osm/paths.json'), (x, z, mg) => inBox(x, z, mg));
+  const ways = pathsOf(onCarriageways(readCache('osm/paths.json')), (x, z, mg) => inBox(x, z, mg));
   const barriersOsm = readCache('osm/barriers.json');
   const osm = barriersOf(barriersOsm, (x, z, mg) => inBox(x, z, mg));
   // The car parks, but those under the ground or in a building.

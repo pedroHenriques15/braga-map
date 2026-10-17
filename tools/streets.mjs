@@ -538,10 +538,11 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height =
     // spike of pavement into the road; a gore's tip, the gore staying from where it's a metre wide),
     // closed, as the kerb runs across it; and a hole between them under 0.3 m wide all along, too
     // narrow for a reservation (they touch), filled. An island keeps its shape, however narrow, but
-    // where it's under 10 cm wide: a crack where the carriageways touch, as at a long median's break.
+    // where it's under 20 cm wide: a crack where the carriageways touch, as at a long median's break
+    // (10 cm until task 026, which the tiles' 10 cm could narrow to a crack again).
     // Each sliver the surface of what's round it most.
     const small = shapes(U1).flatMap(([, ...holes]) => holes.filter((h) => Math.abs(C.Clipper.Area(h)) < ISLAND * S * S).map(positive));
-    const cracks = small.flatMap((h) => (grow([h], -0.15).length ? minus([h], opened([h], 0.05)) : [h]));
+    const cracks = small.flatMap((h) => (grow([h], -0.15).length ? minus([h], opened([h], 0.1)) : [h]));
     const slivers = shapes([...minus(closed(U1, 0.5), [...U1, ...small]), ...cracks]);
     if (slivers.length) {
       const near = [...bySurface].map(([s, p]) => [s, splitter(p)]);
@@ -1270,7 +1271,7 @@ function rectAcross(p, d, across, ahead) {
 // ---- On its own: the streets in a box, and a page to look at them over the orthophoto ----
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
-  const [{ CACHE, ELEV0, readCache }, { terrain }, { heldGround, levelHeights, pathLines, pathsOf, streetsOf }, { ortho }, { loadWorld }, { decks }, jpeg] = await Promise.all([import('./geo.mjs'), import('./terrain.mjs'), import('./lines.mjs'), import('./dgt.mjs'), import('../index.js'), import('./decks.mjs'), import('jpeg-js')]);
+  const [{ CACHE, ELEV0, readCache }, { terrain }, { heldGround, levelHeights, onCarriageways, pathLines, pathsOf, streetsOf }, { ortho }, { loadWorld }, { decks }, jpeg] = await Promise.all([import('./geo.mjs'), import('./terrain.mjs'), import('./lines.mjs'), import('./dgt.mjs'), import('../index.js'), import('./decks.mjs'), import('jpeg-js')]);
   const a = process.argv.slice(2).map(Number);
   const box = a.length === 4 ? { x0: a[0], x1: a[1], z0: a[2], z1: a[3] } : { x0: -450, x1: 450, z0: 500, z1: 1150 };
   const ground = await terrain();
@@ -1278,10 +1279,10 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   // street there, as world.mjs holds it).
   const world = await loadWorld({ x0: box.x0 - 200, x1: box.x1 + 200, z0: box.z0 - 200, z1: box.z1 + 200 });
   const height = (x, z) => world.height(x, z) + ELEV0;
-  const lines = streetsOf(readCache('osm/base.json'), (x, z, m) => x >= box.x0 - 300 - m && x <= box.x1 + 300 + m && z >= box.z0 - 300 - m && z <= box.z1 + 300 + m);
+  const lines = streetsOf(onCarriageways(readCache('osm/base.json')), (x, z, m) => x >= box.x0 - 300 - m && x <= box.x1 + 300 + m && z >= box.z0 - 300 - m && z <= box.z1 + 300 + m);
   const deck = decks(), { heights } = levelHeights(lines, ground, height, heldGround(lines, ground, undefined, deck), deck);
-  const nodes = readCache('osm/street.json').elements.filter((e) => e.type === 'node');
-  const paths = pathLines(pathsOf(readCache('osm/paths.json'), (x, z, m) => x >= box.x0 - m && x <= box.x1 + m && z >= box.z0 - m && z <= box.z1 + m), { ground, grid: height, deck, lines, heights, elev0: ELEV0 });
+  const nodes = onCarriageways(readCache('osm/street.json')).elements.filter((e) => e.type === 'node');
+  const paths = pathLines(pathsOf(onCarriageways(readCache('osm/paths.json')), (x, z, m) => x >= box.x0 - m && x <= box.x1 + m && z >= box.z0 - m && z <= box.z1 + m), { ground, grid: height, deck, lines, heights, elev0: ELEV0 });
   const made = streetSurfaces({
     lines, heights, elev0: ELEV0, height, nodes, box, paths,
     buildings: world.buildings.map((b) => b.pts),

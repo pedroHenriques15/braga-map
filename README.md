@@ -446,7 +446,9 @@ streets; when a track moves enough to change the edge, run the three again until
   panorama to the viewpoint's own view, level; they're not committed. It needs Mapillary's free
   client token, in `.cache/credentials.json` as `{ "mapillary": { "token": "MLY|…" } }` or in
   `MAPILLARY_TOKEN`. `test/viewpoints.test.js` checks each viewpoint stands where its photo was
-  taken, at eye level, and at least 150 m from every waypoint and egg. `refs/photos.json` lists
+  taken, at eye level, on the surface its photo was taken from (`surface`: a lane, a pavement, a
+  path or the ground; where Mapillary's position is off it, the camera is moved the shortest way
+  onto it, task 058, decision 041), and at least 150 m from every waypoint and egg. `refs/photos.json` lists
   the reference photos (task 008): for each building in the shooter's area and the ones a local
   knows along the route, the landmarks, bridges and roundabouts, the kinds of building, wall and
   gate, and close-ups of pavements, kerbs, azulejos and street furniture, a real photo from

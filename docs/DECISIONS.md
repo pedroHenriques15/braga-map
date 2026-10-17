@@ -195,6 +195,9 @@ favourite spots first and finding photos for them.
   or its buildings outlined from the camera (`node tools/buildings.mjs mark <id>`), say otherwise,
   the camera is aimed as the photo looks, and its note says so: `monte-da-forca` 3° up (Mapillary's
   9.5°), `estadio` 5.5° (7.1°). The other viewpoints over 5° fit as Mapillary has them.
+- **And on the surface its photo was taken from** (task 058, decision 041): where Mapillary's
+  position is off the lane, the pavement or the path the photo shows, the camera is moved the
+  shortest way onto it, its heading and pitch kept.
 
 The alternative, the owner's and the friends' favourite spots, would have waited on the photo walk,
 and a spot with no photo can't be judged.
@@ -1069,3 +1072,46 @@ the size and heights braga-map gives it, and drawn by a game in place of what th
 
 The alternatives were leaving them to task 017's church facade and kit (the shrines not drawn at
 all), and boxes in their photos, which the photos found online, one front each at most, can't give.
+
+## 041 · A viewpoint's camera stands on the surface its photo was taken from
+
+*2026-10-17 · task 058 · narrows decision 009's "exactly where Mapillary's reconstruction puts its photo"*
+
+Decision 009 stood each viewpoint's camera exactly where Mapillary's reconstruction puts its photo,
+and Mapillary's position is a phone's GPS: a few metres off, a dozen in a street of tall buildings.
+While the map's streets were off too, some cameras stood in the road by luck; once task 026 put the
+streets where the LiDAR measured them (decision 039), cameras whose photos were taken from a car
+stood on the median, on the pavement or on the verge. The owner chose to move them the shortest way
+onto the surface their photos show, their headings and pitches kept (task 058's answer,
+2026-10-17), over letting Mapillary's position stand and taking a camera off its surface as the
+photo's fault: it's still the photo's place, within the GPS's error, as task 055 aimed two cameras as
+their photos look.
+
+- **Each viewpoint says what its photo was taken from** (`surface` in `refs/viewpoints.json`): a
+  lane (a carriageway), a pavement (or a central reservation or an island beside the carriageway),
+  a path, or the ground where none of those is (a square, a park). `test/viewpoints.test.js` holds
+  each camera on it in the tiles, and a car's half a car's width (0.9 m) in from the carriageway's
+  edge.
+- **Where Mapillary's position is off it, the camera moves across its street,** square to its
+  heading: in a lane, to the middle of the lane the photo shows, between the lines the tiles paint
+  (where they paint none, the half of the carriageway the photo drives on, or its middle if it's a
+  lane wide), and 2 m clear of the kerb where the photo shows cars parked along it; on a pavement or a path, to where across it the photo stands, half a metre
+  in at least. Its target moves with it, so its heading and pitch stay, and its height is the eye's
+  over the ground there. Its notes say how far; the test lets a moved camera be up to 15 m from where
+  Mapillary puts its photo, and any other 5 m.
+- **The heading and the pitch stay Mapillary's,** but where task 055 aimed a camera as its photo
+  looks.
+
+What it moved, 2026-10-17: 15 of the 34 cameras, from 1.7 m to 11.3 m. Twelve stood off their
+photo's surface or on another street: on the median against its hedge (`imaculada-conceicao`), on
+the pavement across the road (`bom-jesus`), on the carriageway where the photo is from the
+Avenida da Liberdade's wide pavement (`liberdade`, `lobato-crossing`), on the cycleway beside the
+pavement (`sao-joao-da-ponte`), on the verge (`alameda-fujacal`, `altice-forum`), on the pavement
+where the photo is from the road (`porfirio-da-silva`, `travessa-fujacal`), in a car park or a
+junction beside the street (`conselheiro-lobato`, `lobato-pavement`, `lobato-east`). Three were in
+the road but not in the photo's lane: against the kerb (`fujacal-start`, `falperra`) or over the
+centre line (`capela-santa-justa`). The Avenida da Liberdade's pavement is an island in the tiles,
+grass in party-kart (task 059).
+
+The alternative was the task's other answer: Mapillary's position stands, and a camera off its
+surface is the photo's fault, not the game's.

@@ -12,6 +12,7 @@
 // shows, a note, and the commits it was shot on. Preparing a round again replaces its entry.
 //
 // node tools/round.mjs 2026-10-13-baseline --label "Ponto de partida" --tasks 002 --note "…"
+// node tools/round.mjs <round> --shots ../party-kart-021/shots …   shot in another party-kart checkout
 import fs from 'node:fs';
 import path from 'node:path';
 import zlib from 'node:zlib';
@@ -21,7 +22,6 @@ import { inShooter } from './sections.mjs';
 
 const W = 960;
 const QUALITY = 82;
-const SHOTS = path.resolve(ROOT, '../party-kart/shots');
 const OUT = path.join(CACHE, 'scorecard');
 const LOG = path.join(ROOT, 'refs', 'rounds.json');
 
@@ -30,6 +30,7 @@ const opt = (k) => {
   const i = args.indexOf(`--${k}`);
   return i >= 0 ? args[i + 1] : undefined;
 };
+const SHOTS = path.resolve(ROOT, opt('shots') ?? '../party-kart/shots');
 const id = args.find((a, i) => !a.startsWith('--') && !args[i - 1]?.startsWith('--'));
 if (!id) {
   console.error('node tools/round.mjs <round> --label "…" [--tasks 002,009] [--note "…"]   a folder of ../party-kart/shots/');

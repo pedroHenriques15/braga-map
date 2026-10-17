@@ -730,7 +730,7 @@ let nWalls = 0;
   }
   const ps = stats.paths;
   if (wallList) console.log(`walls: ${nWalls} pieces in the open world's tiles, of ${wallList.length}`);
-  console.log(`streets: ${stats.edges} stretches in the open world's ${over.length} tiles, ${stats.junctions} junctions, ${stats.islands} islands, ${stats.reservations} reservations, ${Math.round(stats.slivers)} m² of slivers closed, ${Math.round(stats.km.kerb)} km of kerb, in ${Math.round(stats.seconds)} s`);
+  console.log(`streets: ${stats.edges} stretches in the open world's ${over.length} tiles, ${stats.junctions} junctions, ${stats.islands} islands, ${stats.reservations} reservations, ${Math.round(stats.slivers)} m² of slivers closed, ${Math.round(stats.past)} m² of corners cut back past a deck's or a tunnel's end, ${Math.round(stats.km.kerb)} km of kerb, in ${Math.round(stats.seconds)} s`);
   console.log(`paths: ${walks.length} ways round the area, ${Object.entries(ps.m2).map(([k, v]) => `${k} ${Math.round(v)} m²`).join(', ')} (cycleways ${Math.round(ps.lanes)} m² beside the road and ${Math.round(ps.flush)} m² flush with a pavement); ${ps.flights} flights of steps in ${ps.treads} treads, ${ps.steep} rising more than 0.3 m`);
 }
 

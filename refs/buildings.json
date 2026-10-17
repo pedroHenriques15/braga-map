@@ -413,6 +413,14 @@
    "seen": null,
    "notes": "a speck in every photo it is in (under 0.05% of it)."
   },
+  "lidar/x-734z1656": {
+   "seen": null,
+   "notes": "far down the valley at the right edge of monte-da-forca, as 055 aimed it, its outline over the cypresses and the roofs beyond; too small to say."
+  },
+  "lidar/x-76z1590": {
+   "seen": null,
+   "notes": "a speck behind the trees on the left of estadio, as 055 aimed it (under 0.05% of it); nothing of it shows."
+  },
   "lidar/x-790z1681": {
    "type": null,
    "colour": "white",
@@ -3224,6 +3232,10 @@
    "seen": null,
    "notes": "In no photo found online (task 008), nor in a viewpoint's."
   },
+  "way/259938084": {
+   "seen": null,
+   "notes": "a speck at the right edge of estadio, as 055 aimed it, behind the stadium's white hoarding; nothing of it shows."
+  },
   "way/259938154": {
    "type": "block-1970s-90s",
    "colour": "pale-green",
@@ -5686,6 +5698,10 @@
    "seen": null,
    "notes": "In no photo found online (task 008), nor in a viewpoint's."
   },
+  "way/596677555": {
+   "seen": null,
+   "notes": "a speck far down the valley in monte-da-forca, as 055 aimed it (under 0.05% of it)."
+  },
   "way/596677556": {
    "seen": null,
    "notes": "a speck in every photo it is in (under 0.05% of it)."
@@ -5693,6 +5709,10 @@
   "way/596677567": {
    "seen": null,
    "notes": "a speck in every photo it is in (under 0.05% of it)."
+  },
+  "way/596677578": {
+   "seen": null,
+   "notes": "a speck far down the valley in monte-da-forca, as 055 aimed it, among the roofs at the right edge."
   },
   "way/596682372": {
    "seen": null,

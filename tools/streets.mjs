@@ -35,6 +35,9 @@ const ISLAND = 600;
 // A deck or a tunnel's road within this of the ground is at its level: nothing passes under it, so
 // nothing on the ground lies over it, nor its pavements on the ground's road (task 040).
 const GRADE = 2;
+// How far past a deck's or a tunnel's end a corner of the ground's streets is cut back (task 046):
+// this far on from its end's line, within its width and PAST_SIDE either side of its ways.
+const PAST = 30, PAST_SIDE = 3;
 // How far a deck's end follows the ground across it, from its own height: farther off, the ground
 // there is an embankment's side, not the street it meets.
 const TWIST = 0.5;
@@ -424,11 +427,28 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height =
   }
   for (const e of edges) if (e.level !== 1 && e.level !== 2) groups.get('ground').push(e);
 
+  // Where a bridge or a tunnel meets the ground's streets (task 046): each node where a way off the
+  // ground ends at one on it, the ways into the bridge or the tunnel from it, half the widest one's
+  // width, whether a street on the ground crosses there (two of its arms run on, one into the other,
+  // across those ways), as the João XXI's ways cross the Avenida 31 de Janeiro's deck's ends; and
+  // what lies within its width and PAST_SIDE of the bridge's or the tunnel's ways, to their ends.
+  const decksEnds = [], groupOf = new Map();
+  for (const list of groups.values()) for (const e of list) groupOf.set(e, list);
+  for (const [n, at] of ends) {
+    const off = at.filter((a) => up(a.e)), on = at.filter((a) => !up(a.e)), dot = (a, b) => a[0] * b[0] + a[1] * b[1];
+    if (!off.length || !on.length) continue;
+    const us = off.map((a) => a.dir), across = (a) => us.every((u) => Math.abs(dot(a.dir, u)) < 0.7), hw = Math.max(...off.map((a) => a.e.w)) / 2;
+    const list = [...new Set(off.flatMap((a) => groupOf.get(a.e)))], seen = new Map();
+    for (const p of list.flatMap((e) => [e.pts[0], e.pts.at(-1)])) seen.set(p + '', [p, (seen.get(p + '')?.[1] ?? 0) + 1]);
+    const way = union(band(list.map((e) => toPath(e.pts)), hw + PAST_SIDE, true), [...seen.values()].filter(([, k]) => k > 1).map(([p]) => circle(p, hw + PAST_SIDE)));
+    decksEnds.push({ n, p: off[0].e.pts[off[0].i], us, hw, way, crossed: on.some((a) => across(a) && on.some((b) => b !== a && dot(a.dir, b.dir) < -0.7)) });
+  }
+
   const B = buildings.filter((r) => r.length > 2 && r.some((p) => near(p, margin + 40))).map((r) => positive(toPath(r)));
   const W = water.filter((r) => r.length > 2 && r.some((p) => near(p, margin + 40))).map((r) => positive(toPath(r)));
   const Q = squares.filter((r) => r.length > 2 && r.some((p) => near(p, margin + 40))).map((r) => positive(toPath(r)));
   const built = wallIndex(buildings.filter((r) => r.some((p) => near(p, margin + 60))));
-  const stats = { edges: edges.length, junctions: 0, islands: 0, reservations: 0, slivers: 0, km: { kerb: 0, dropped: 0 }, m2: {}, paths: { m2: {}, flights: 0, treads: 0, steep: 0, lanes: 0, flush: 0 } };
+  const stats = { edges: edges.length, junctions: 0, islands: 0, reservations: 0, slivers: 0, past: 0, km: { kerb: 0, dropped: 0 }, m2: {}, paths: { m2: {}, flights: 0, treads: 0, steep: 0, lanes: 0, flush: 0 } };
 
   // The carriageways of each group: each edge's band, the corners where they meet rounded.
   const made = new Map();
@@ -464,10 +484,39 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height =
       const R = Math.min(45, hw + 3 * r + 2), disc = [circle(p, R)], local = meet(union(...around(p, R).map((e) => e.poly)), disc);
       const enclosed = shapes(local).flatMap(([, ...holes]) => holes.filter((h) => Math.abs(C.Clipper.Area(h)) > 25 * S * S).map(positive));
       const fill = minus(meet(grow(grow(local, r), -r), disc), [...local, ...enclosed]);
-      if (area(fill) > 0.05) fills.push({ paths: fill, surface: a.reduce((m, x) => (x.e.k < m.e.k ? x : m)).e.surface });
+      if (area(fill) > 0.05) fills.push({ n, p, paths: fill, surface: a.reduce((m, x) => (x.e.k < m.e.k ? x : m)).e.surface });
       stats.junctions += a.length > 2;
     }
+    // A corner stops where a deck or a tunnel's road begins (task 046). Past its end's line, along its
+    // ways within their width and PAST_SIDE (decksEnds' `way`), as far on as PAST or a street on the
+    // ground that crosses them, is the deck's or the tunnel's, or the ground under it or over it: a
+    // corner whose carriageways close round across it (between two decks side by side, or a deck's end
+    // and a road it passes over) stops at that line, as the ground's carriageways do. But a junction
+    // under a deck or over a tunnel (its node in that stretch) keeps its corners there, and so does one
+    // whose street crosses a deck's or a tunnel's end: none is cut back past that end, and its own
+    // corners nowhere.
+    const gone = [];
+    if (key === 'ground') {
+      const crossed = new Set(decksEnds.filter((d) => d.crossed).map((d) => d.n));
+      // The 3 m behind each end's line, within its width and PAST_SIDE: still the ground's where a
+      // deck beside it ends further on, as the Robert Smith's two do, 1.5 m apart.
+      const behind = decksEnds.map((d) => union(d.us.map((u) => positive(toPath(rectAcross([d.p[0] - u[0] * 1.5, d.p[1] - u[1] * 1.5], u, d.hw + PAST_SIDE, 1.5))))));
+      const past = decksEnds.map((d, i) => [d, i]).filter(([d]) => !d.crossed).map(([d, i]) => {
+        const ahead = (from, to) => meet(union(d.us.map((u) => positive(toPath(rectAcross([d.p[0] + (u[0] * (from + to)) / 2, d.p[1] + (u[1] * (from + to)) / 2], u, PAST, (to - from) / 2))))), d.way);
+        const others = decksEnds.flatMap((o, j) => (j !== i && dist(o.p, d.p) < PAST + 10 ? behind[j] : []));
+        const open = shapes(minus(ahead(0, PAST), [...U0, ...others])).filter((sh) => meet(sh, ahead(0, 0.5)).length).flat();
+        return { open, b: boundsOfPaths(open), under: insideOf(ahead(0.5, PAST)) };
+      }).filter((c) => c.open.length);
+      for (const f of fills) {
+        if (crossed.has(f.n)) continue;
+        const b = boundsOfPaths(f.paths), cut = past.filter((c) => boxesMeet(c.b, b) && !c.under(...f.p)).flatMap((c) => c.open);
+        if (!cut.length) continue;
+        gone.push(...meet(f.paths, cut));
+        f.paths = minus(f.paths, cut);
+      }
+    }
     const U1 = union(U0, ...fills.map((f) => f.paths));
+    if (gone.length) stats.past += area(meet(minus(union(gone), U1), [rect(box)]));
     // Each surface where its streets are, the bigger street's where two meet.
     const order = [...new Set(list.map((e) => e.k + ':' + e.surface))].sort((a, b) => parseInt(a) - parseInt(b));
     let taken = [];
@@ -1240,7 +1289,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     water: world.areas.filter((x) => x.kind === 'water').map((x) => x.pts),
   });
   const got = { ...made.cuts.get('box'), stats: made.stats }, s = got.stats;
-  console.log(`${s.edges} edges, ${s.junctions} junctions, ${s.islands} islands, ${s.reservations} reservations, ${Math.round(s.slivers)} m² of slivers closed, in ${s.seconds} s`);
+  console.log(`${s.edges} edges, ${s.junctions} junctions, ${s.islands} islands, ${s.reservations} reservations, ${Math.round(s.slivers)} m² of slivers closed, ${Math.round(s.past)} m² of corners cut back past a deck's or a tunnel's end, in ${s.seconds} s`);
   console.log(`carriageways ${Object.entries(s.m2).filter(([k]) => k !== 'pavement').map(([k, v]) => `${k} ${Math.round(v)} m²`).join(', ')}; pavements ${Math.round(s.m2.pavement)} m²; kerbs ${s.km.kerb.toFixed(2)} km, ${s.km.dropped.toFixed(2)} km dropped`);
   console.log(`${got.carriageways.length} carriageway pieces, ${got.pavements.length} pavements, ${got.kerbs.length} kerbs, ${got.markings.length} markings (${['lane', 'centre', 'zebra', 'stop'].map((k) => `${got.markings.filter((m) => m.kind === k).length} ${k}`).join(', ')})`);
   const ps = s.paths;

@@ -177,3 +177,4 @@ Steps:
     (not asked).
   - The facades test failed in this checkout while 056 was landing: its run of `tools/buildings.mjs`
     had written its viewpoints' buildings into the shared `.cache`; it passes with 056 merged.
+- **Deployed** 2026-10-18 from party-kart `96b3ebb` (braga-map 1.22.0), with 021, 026, 056, 057 and 049 together, at the owner's word: the live page serves the build (`index-CM6aZCpG.js`), and on it a race with the autopilot and three bots went over the jump, landed on the street and drove on, with no page error.

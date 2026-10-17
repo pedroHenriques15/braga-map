@@ -207,3 +207,4 @@ Steps, landmark by landmark:
   shows the park's trees; it may be a kiosk under them. The race's view of the arch from the road: its
   faces are under the deck, seen from the river and its paths.
 - **Done** 2026-10-17 (decision 038), the second "Done when" half met on Claude's marks (above).
+- **Deployed** 2026-10-18 from party-kart `96b3ebb` (braga-map 1.22.0), with 021, 026, 056, 057 and 049 together, at the owner's word: the live page serves the build (`index-CM6aZCpG.js`), and on it a race with the autopilot and three bots went over the jump, landed on the street and drove on, with no page error.

@@ -256,3 +256,4 @@ Steps:
   were taken from, and `imaculada-conceicao`'s is now on the median.
 - **While landing it:** task 056's session tagged 1.21.0 from 1.20.0, before 1.20.1 went up: 056 has
   main (1.20.1) to merge before it lands.
+- **Deployed** 2026-10-18 from party-kart `96b3ebb` (braga-map 1.22.0), with 021, 026, 056, 057 and 049 together, at the owner's word: the live page serves the build (`index-CM6aZCpG.js`), and on it a race with the autopilot and three bots went over the jump, landed on the street and drove on, with no page error.

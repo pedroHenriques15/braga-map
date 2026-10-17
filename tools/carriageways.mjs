@@ -323,22 +323,21 @@ function targetOf(runs, L) {
 // The moves, from `lines` (streetsOf's round the area, every street and the railway, at every level)
 // and `measured` ({ [id]: stations }): `nodes`, each node that moves, { [id]: [dx, dz] }; `inserts`,
 // the points put in between two nodes of a street where its middle bends between them, { ["id:a-b"]:
-// [[x, z], …] }; `widths`, each street's width where it was measured clearly, { [id]: w }; `kept`, the
-// ids of those kept as the map has them; and `runs`, each stretch moved, for the report.
+// [[x, z], …] }; `widths`, each street's width where it was measured clearly, { [id]: w }; and `runs`,
+// each stretch moved, for the report.
 //
 // A node at a junction (where streets meet, or a street ends) moves once for every street through
 // it: to where its arms' middles meet (least squares, each arm's offset along its normal; where two
 // arms run within 30° of each other, along the way they agree on). One on a bridge or a tunnel, or
 // the railway, doesn't move: those keep their lines (task 028's decks, 012's levels), and the streets
-// on the ground ease their moves out before them; and so do `kept`'s ways (ids), the streets a race's
-// jump takes off from and lands on, as the owner approved it (decision 027). Between two junctions a
-// street's nodes move onto its middle as targetOf has it, and what's left to reach the junction's move at
-// either end eases in over EASE (over the whole stretch, where it's shorter than 2·EASE).
-export function movesOf(lines, measured, kept = new Set()) {
+// on the ground ease their moves out before them. Between two junctions a street's nodes move onto its
+// middle as targetOf has it, and what's left to reach the junction's move at either end eases in over
+// EASE (over the whole stretch, where it's shorter than 2·EASE).
+export function movesOf(lines, measured) {
   const all = lines.filter((l) => l.k <= 9 && l.nodes?.length === l.pts.length), streets = all.filter((l) => l.k <= 8);
   const at = new Map();
   for (const l of all) l.nodes.forEach((n, i) => at.set(n, [...(at.get(n) ?? []), [l, i]]));
-  const fixed = (n) => at.get(n).some(([l]) => l.k > 8 || (l.level !== LEVEL.ground && l.level !== LEVEL.under) || kept.has(l.id));
+  const fixed = (n) => at.get(n).some(([l]) => l.k > 8 || (l.level !== LEVEL.ground && l.level !== LEVEL.under));
   const nrm = (a, b) => { const dx = b[0] - a[0], dz = b[1] - a[1], d = Math.hypot(dx, dz) || 1; return [-dz / d, dx / d]; };
   // Each street's own: how far along each node is, its offset there, and its normal there (mitred
   // between two stretches, as streets.mjs's shift, but no more than half as far again).
@@ -346,7 +345,7 @@ export function movesOf(lines, measured, kept = new Set()) {
   for (const l of streets) {
     const s = [0];
     for (let i = 1; i < l.pts.length; i++) s.push(s[i - 1] + Math.hypot(l.pts[i][0] - l.pts[i - 1][0], l.pts[i][1] - l.pts[i - 1][1]));
-    const p = measured[l.id] && l.level === LEVEL.ground && !kept.has(l.id) ? profile(measured[l.id], s.at(-1), l.w) : { runs: [], width: null };
+    const p = measured[l.id] && l.level === LEVEL.ground ? profile(measured[l.id], s.at(-1), l.w) : { runs: [], width: null };
     // But one that runs on into a deck (its end where the deck's begins, the two within 30° of straight)
     // keeps the map's width, which the deck has, so the two still meet edge to edge there and none of the
     // deck stands past the street on the ground. One that crosses a deck's end, as the Avenida João
@@ -428,7 +427,7 @@ export function movesOf(lines, measured, kept = new Set()) {
       }
     }
   }
-  return { nodes, inserts, widths, kept: [...kept], runs };
+  return { nodes, inserts, widths, runs };
 }
 const segDist = ([x, z], [ax, az], [bx, bz]) => { const dx = bx - ax, dz = bz - az, f = Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / (dx * dx + dz * dz || 1))); return Math.hypot(x - ax - dx * f, z - az - dz * f); };
 // Douglas-Peucker on an open line.
@@ -590,7 +589,7 @@ export async function sampler(box) {
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const t0 = Date.now();
-  const [{ readCache, ROOT }, { OPEN, OPEN_BOX }] = await Promise.all([import('./geo.mjs'), import('./sections.mjs')]);
+  const [{ readCache }, { OPEN, OPEN_BOX }] = await Promise.all([import('./geo.mjs'), import('./sections.mjs')]);
   const B = OPEN_BOX, M = 60;
   const { section, inPark, tiles, ground } = await sampler({ x0: B.x0 - M, x1: B.x1 + M, z0: B.z0 - M, z1: B.z1 + M });
   console.log(`the point cloud's ${tiles} tiles under the area read (${((Date.now() - t0) / 1000).toFixed(0)} s)`);
@@ -598,12 +597,6 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   // The map's own lines (never the moved ones, which onCarriageways makes from this file).
   const lines = streetsOf(readCache('osm/base.json'), (x, z, m) => x >= B.x0 - M - m && x <= B.x1 + M + m && z >= B.z0 - M - m && z <= B.z1 + M + m);
   const name = (l) => l.t.name ?? `(${l.t.highway})`;
-  // The streets each track's jump takes off from and lands on (its ramp's lip and landing, within 2 m):
-  // the race's jump stays as the owner approved it (decision 027).
-  const ramps = [];
-  for (const f of fs.readdirSync(path.join(ROOT, 'tracks')).filter((q) => q.endsWith('.js'))) for (const r of (await import(pathToFileURL(path.join(ROOT, 'tracks', f)).href)).default.ramps ?? []) ramps.push([r.lip[0], r.lip[2]], [r.land[0], r.land[2]]);
-  const kept = new Set(lines.filter((l) => l.k <= 8 && ramps.some((p) => l.pts.some((q, i) => i && segDist(p, l.pts[i - 1], q) < 2))).map((l) => l.id));
-  console.log(`the jumps' streets, kept as the map has them: ${[...kept].map((id) => name(lines.find((l) => l.id === id))).join(', ')}`);
   const args = process.argv.slice(2), check = args.indexOf('--check');
   if (check >= 0) {
     // Each place given as x,z or x,z,r.
@@ -611,7 +604,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
       const [cx, cz, r = 40] = at.split(',').map(Number);
       const near = (x, z, m = 0) => Math.abs(x - cx) <= r + m && Math.abs(z - cz) <= r + m;
       // The measuring 60 m round the picture, so the moves in it are as the whole run's.
-      const measured = measure(lines, (x, z) => near(x, z, 60), section, inPark), moves = movesOf(lines, measured, kept);
+      const measured = measure(lines, (x, z) => near(x, z, 60), section, inPark), moves = movesOf(lines, measured);
       console.log(`\n(${cx}, ${cz}):`);
       await picture({ x0: cx - r, x1: cx + r, z0: cz - r, z1: cz + r }, lines, measured, moves, path.join(CACHE, 'carriageways', `${Math.round(cx)}_${Math.round(cz)}.png`));
       for (const l of lines.filter((q) => measured[q.id] && q.pts.some(([x, z]) => near(x, z)))) {
@@ -621,7 +614,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
       }
     }
   } else {
-    const measured = measure(lines, (x, z) => ring.has(x, z), section, inPark), moves = movesOf(lines, measured, kept);
+    const measured = measure(lines, (x, z) => ring.has(x, z), section, inPark), moves = movesOf(lines, measured);
     const { runs, ...saved } = moves;
     fs.writeFileSync(FILE, JSON.stringify({ about: "Where each street's carriageway is, as DGT's 2025 LiDAR sees it, by tools/carriageways.mjs (task 026): informação geográfica cedida pela Direção-Geral do Território (CC BY 4.0). © OpenStreetMap contributors (ODbL).", ways: measured, moves: saved }));
     report(lines, measured, moves, (x, z) => ring.has(x, z), name);

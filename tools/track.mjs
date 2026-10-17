@@ -22,7 +22,7 @@ import { blur, carriageway, carsMay, COBBLE, driven, footprints, Inside, isOnewa
 import { loadWorld } from '../index.js';
 import { onCarriageways } from './lines.mjs';
 import { EXT, sectionOf } from './sections.mjs';
-import { band, grow, meet, positive, shapes, toPath, toPts, union } from './streets.mjs';
+import { band, grow, meet, minus, positive, shapes, toPath, toPts, union } from './streets.mjs';
 import { terrain } from './terrain.mjs';
 import { TRACKS } from './tracks.mjs';
 
@@ -572,9 +572,21 @@ const drawnRoad = (x, z) => paved[0].has(x, z) || paved[1].has(x, z);
 // (each a band round the map's line, the corners between them rounded as a kerb turns them, at most
 // KERB_R), where the streets drawn have carriageway; a sliver of pavement into it under 2 × SLIVER
 // wide taken as road (task 037 found the tiles have a few). And in a ramp's flight, the flight, as
-// wide as the ramp and 2 m either side. Its outline is the race's walls: the kerbs, and rows of
-// barriers across the side streets it passes, wherever the carriageway goes on past it.
-const KERB_R = 10, SLIVER = 0.6;
+// wide as the ramp and 2 m either side, and the corner between it and the landing street, within
+// CORNER of the landing. Its outline is the race's walls: the kerbs, and rows of barriers across the
+// side streets it passes, wherever the carriageway goes on past it.
+const KERB_R = 10, SLIVER = 0.6, CORNER = 20;
+// Where a race takes the world's walls down while it runs (task 057): its road within CORNER of a
+// jump's landing, where it takes in the corner and the walls there stand in a kart's way. And the
+// corner it takes in, whose edge the race marks with the road works' boards.
+let cleared = [], cornered = [];
+// The convex hull of some points [x, z], anticlockwise (Andrew's monotone chain).
+function hull(pts) {
+  const s = [...pts].sort((a, b) => a[0] - b[0] || a[1] - b[1]), turn = (o, a, b) => (a[0] - o[0]) * (b[1] - o[1]) - (a[1] - o[1]) * (b[0] - o[0]);
+  const half = (list) => list.reduce((h, p) => { while (h.length > 1 && turn(h.at(-2), h.at(-1), p) <= 0) h.pop(); h.push(p); return h; }, []);
+  const lower = half(s), upper = half(s.reverse());
+  return [...lower.slice(0, -1), ...upper.slice(0, -1)];
+}
 const road = (() => {
   // The route's streets, a run of the loop's stretches of one width at a time.
   const N = loop.length, w = loopEdges.map((e) => (e.jump ? 0 : carriageway(e.tags)));
@@ -607,6 +619,39 @@ const road = (() => {
     console.log(`the race's road takes in the jump's flight to ${Math.round(past)} m past its landing, where a kart flat out comes down`);
     const ends = [[t.x - fx * foot, t.z - fz * foot], [l.x + fx * past, l.z + fz * past]];
     R = union(R, [positive(toPath([[ends[0][0] - fz * h, ends[0][1] + fx * h], [ends[1][0] - fz * h, ends[1][1] + fx * h], [ends[1][0] + fz * h, ends[1][1] - fx * h], [ends[0][0] + fz * h, ends[0][1] - fx * h]]))]);
+    // And the corner between the flight and the landing street, on the side the street turns to (the
+    // owner's answer in task 057): a kart heading into the turn comes down on that side of the line,
+    // where the flight's edge met the street's kerb in a wall, and the street is only as wide as it
+    // really is. The ground there within CORNER of the landing point is taken in as the flight is: the
+    // hull of the road's outline on that side of both the flight and the street, less the buildings,
+    // so the race's walls stand round it.
+    const turn = -Math.sign(fx * l.hz - fz * l.hx), nu = [turn * fz, -turn * fx], nv = [turn * l.hz, -turn * l.hx];
+    const inCorner = ([x, z]) => Math.hypot(x - l.x, z - l.z) <= CORNER && (x - l.x) * nu[0] + (z - l.z) * nu[1] >= 0 && (x - l.x) * nv[0] + (z - l.z) * nv[1] >= 0;
+    const pts = [[l.x, l.z]];
+    for (const r of R.map(toPts)) {
+      for (let k = 0; k < r.length; k++) {
+        const a = r[k], b = r[(k + 1) % r.length], n = Math.ceil(Math.hypot(b[0] - a[0], b[1] - a[1]) / 0.5);
+        for (let m = 0; m < n; m++) { const p = [a[0] + ((b[0] - a[0]) * m) / n, a[1] + ((b[1] - a[1]) * m) / n]; if (inCorner(p)) pts.push(p); }
+      }
+    }
+    const houses = world.buildings.filter((b) => b.pts.some(([x, z]) => Math.hypot(x - l.x, z - l.z) < CORNER + 50)).map((b) => positive(toPath(b.pts)));
+    const corner = minus([positive(toPath(hull(pts)))], houses);
+    cornered = corner.map(toPts);
+    const area = corner.map(toPts).reduce((s, r) => s + r.reduce((t, q, i) => t + q[0] * r[(i + 1) % r.length][1] - r[(i + 1) % r.length][0] * q[1], 0) / 2, 0);
+    console.log(`and the corner between the flight and the landing street, ${Math.round(Math.abs(area))} m² within ${CORNER} m of the landing`);
+    R = union(R, corner);
+    cleared = shapes(meet(R, [positive(toPath(Array.from({ length: 64 }, (_, i) => [l.x + CORNER * Math.cos((i * Math.PI) / 32), l.z + CORNER * Math.sin((i * Math.PI) / 32)])))])).map((rings) => rings.map(toPts));
+    // The walls a race takes down there, for the log.
+    const inside = new Inside(cleared.flat()), down = new Map();
+    for (const w of world.walls) {
+      let m = 0;
+      for (let i = 1; i < w.pts.length; i++) {
+        const [a, b] = [w.pts[i - 1], w.pts[i]], L = Math.hypot(b[0] - a[0], b[1] - a[1]), n = Math.max(1, Math.ceil(L / 0.25));
+        for (let k = 0; k < n; k++) if (inside.has(a[0] + ((b[0] - a[0]) * (k + 0.5)) / n, a[1] + ((b[1] - a[1]) * (k + 0.5)) / n)) m += L / n;
+      }
+      if (m > 0.05) down.set(w, m);
+    }
+    console.log(`a race takes down the world's walls there: ${[...down].map(([w, m]) => `${m.toFixed(1)} m of a ${w.kind} ${w.h} m high`).join(', ') || 'none'}`);
   }
   return shapes(R).map((rings) => rings.map(toPts));
 })();
@@ -1148,6 +1193,37 @@ const closures = [];
   console.log(`the race's road: ${road.length} pieces, ${road.reduce((s, r) => s + r.length - 1, 0)} holes, ${road.flat().reduce((s, r) => s + r.length, 0)} points round them`);
 }
 
+// -- The road works' boards round the corner the race's road takes in at a jump's landing (task 057,
+//    the owner's answer): along its edge wherever that's the corner's own, across ground that's no
+//    street, so a kart sees where the race's wall is. Each a row along its points, [x, y, z], as the
+//    closures, y the ground's height there (the line's, in the flight, is over it).
+const boards = [];
+{
+  const edges = cornered.flatMap((r) => r.map((p, k) => [p, r[(k + 1) % r.length]]));
+  const onCorner = (x, z) => edges.some(([a, b]) => segDist(x, z, { x: a[0], z: a[1] }, { x: b[0], z: b[1] }) < 0.15);
+  const yAt = (x, z) => r2(ground.at(x, z) - ELEV0);
+  for (const rings of road) for (const ring of rings) {
+    const marks = [];
+    ring.forEach(([ax, az], k) => {
+      const [bx, bz] = ring[(k + 1) % ring.length], L = Math.hypot(bx - ax, bz - az);
+      for (let m = Math.ceil(L / 0.5), f = 0; f < m; f++) marks.push({ p: [ax + ((bx - ax) * f) / m, az + ((bz - az) * f) / m], on: onCorner(ax + ((bx - ax) * (f + 0.5)) / m, az + ((bz - az) * (f + 0.5)) / m) });
+    });
+    const n = marks.length, k0 = marks.findIndex((q) => !q.on);
+    if (k0 < 0) continue;
+    for (let k = 1; k <= n; k++) {
+      const i = (k0 + k) % n;
+      if (!marks[i].on || marks[(i - 1 + n) % n].on) continue;
+      const pts = [];
+      for (let q = i; marks[q].on; q = (q + 1) % n) pts.push(marks[q].p);
+      pts.push(marks[(i + pts.length) % n].p);
+      const len = pts.reduce((s, p, q) => (q ? s + Math.hypot(p[0] - pts[q - 1][0], p[1] - pts[q - 1][1]) : 0), 0);
+      if (len >= 1) boards.push(openThin(pts, 0.15).map(([x, z]) => [r1(x), yAt(x, z), r1(z)]));
+    }
+  }
+  const len = boards.reduce((s, c) => s + c.reduce((t, p, k) => (k ? t + Math.hypot(p[0] - c[k - 1][0], p[2] - c[k - 1][2]) : 0), 0), 0);
+  if (boards.length) console.log(`the road works' boards round the corner at the landing: ${boards.length} rows, ${Math.round(len)} m`);
+}
+
 // The box the games draw round it: the track and 500 m round it, inside the map. And the sections
 // it runs through, from the start.
 let bx0 = Infinity, bx1 = -Infinity, bz0 = Infinity, bz1 = -Infinity;
@@ -1194,6 +1270,8 @@ export default {
   ramps: ${J(ramps)},
   road: ${J(road)},
   closures: ${J(closures)},
+  cleared: ${J(cleared)},
+  boards: ${J(boards)},
   points: [
 ${pointsOut.map(fmtPoint).join('\n')}
   ],

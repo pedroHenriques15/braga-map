@@ -56,7 +56,9 @@ export interface Track {
   // The race's road (decision 019): the route's own streets at their real widths, each a band round
   // the map's line as the streets are drawn (world.streets), the corners between them rounded as a
   // kerb turns them, where the streets drawn have carriageway; and a ramp's flight, as wide as the
-  // ramp and 2 m either side, on past the landing as far as a kart flat out comes down, and 6 m more. Its outline is the race's walls: the kerbs, and the closures. Its pieces,
+  // ramp and 2 m either side, on past the landing as far as a kart flat out comes down, and 6 m more,
+  // with the corner between the flight and the landing street within 20 m of the landing, whatever
+  // is there (task 057). Its outline is the race's walls: the kerbs, and the closures. Its pieces,
   // each an outline and its holes, rings of [x, z] (closed: the last joins the first).
   road: [number, number][][][];
   // Where the carriageway drawn goes on past the race's road: rows of barriers a game stands only for
@@ -64,6 +66,15 @@ export interface Track {
   // other carriageway where the two are drawn as one. Each a row along its points, [x, y, z], y the
   // road's height there above elev0.
   closures: [number, number, number][][];
+  // Where a race takes the world's walls down while it runs (task 057): its road within 20 m of a
+  // ramp's landing, where it takes in the corner between the flight and the landing street. Every
+  // piece of the world's walls (`world.walls`) inside it is gone in a race, and stands in free roam.
+  // Its pieces, as `road`'s; none for a track without a ramp.
+  cleared: [number, number][][][];
+  // The road works' boards a game stands for a race along its road's edge round the corner it takes in
+  // at a ramp's landing (task 057), across ground that's no street, where the race's wall is. Each a row
+  // along its points, [x, y, z], y the ground's height there above elev0.
+  boards: [number, number, number][][];
   points: TrackPoint[];
 }
 

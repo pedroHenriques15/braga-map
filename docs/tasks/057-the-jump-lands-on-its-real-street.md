@@ -1,5 +1,5 @@
 ---
-status: todo
+status: doing
 priority: medium
 kind: code
 repo: both
@@ -41,16 +41,26 @@ Today (2026-10-17):
   the flight, the loop 9.77 km instead of 10.25). `tools/tracks.mjs` names the approved one's lip
   (`jump`), so the planner keeps it.
 
+Found on starting (2026-10-17, Notes): at 5 m the landing street no longer cuts back the walls
+`tools/walls.mjs` finds beside it, and the corner between the flight and the street is a walled lot.
+A 3.2 m wall runs along the street's north kerb, and the 2.75 m wall the flight crosses runs on to
+the kerb at the landing, with a 1 m gate between them. Karts leave the lip 4–6° left of the flight
+(the run-up turns 8° onto the ramp at its foot), come down about 4 m left of the line and hit that
+wall in the air; the autopilot stops at (-557, 1154).
+
 Steps:
 
 1. Drop the jump's streets from `kept`, so they're measured and moved like any other.
 2. The race's road (`tools/track.mjs`'s `road`) takes in the corner between the flight and the
    landing street, the ground there, as it takes in the flight past the landing, so a kart coming
    down can run wide into the street; the street stays at its measured width, and the race's walls
-   stand round the corner it takes in (Questions). party-kart's tests pass: the autopilot laps with
-   no respawn, the Volta dos Amigos' jump lands on the race's road from braga-map's speed to flat
-   out.
-3. Shoot `couteiro` and look at the jump from above, before and after.
+   stand round the corner it takes in (Questions).
+3. While a race runs, the world's walls inside the race's road near the landing are taken down: the
+   lot's corner, where the race takes it in (Questions). The track says where (braga-map), and
+   party-kart leaves them out of the race's ground and doesn't draw them in a race; free roam keeps
+   them. party-kart's tests pass: the autopilot laps with no respawn, the Volta dos Amigos' jump
+   lands on the race's road from braga-map's speed to flat out.
+4. Shoot `couteiro` and look at the jump from above, before and after.
 
 ## Questions
 
@@ -61,6 +71,14 @@ Steps:
   another jump, jump 2 above, straight on off the flight onto its street (the owner would see it
   first, as decision 027 has it).
   > The race's road takes in the corner, the street as it really is (the owner, 2026-10-17).
+- [x] The corner is a walled lot, and the approved jump lands beside its 3 m wall (Notes). How
+  should the race land on the real street? Options: the race takes down the lot's corner while it
+  runs (the walls inside its road there, about 30 m and the gate; free roam keeps them; recommended:
+  measured, no kart stuck and the bots' respawns down to about one a race); party-kart's karts fly
+  the flight's line exactly, so they clear the wall (not shown to work, and a player 2 m off still
+  hits it); keep the jump's streets as the map has them (drop 057); or another jump, the planner
+  checking the walls the LiDAR found (jump 2 lands beside a wall too).
+  > The race takes down the lot's corner (the owner, 2026-10-17).
 
 ## Read first
 
@@ -72,6 +90,8 @@ Steps:
 
 - [ ] The jump's streets are on their carriageways, at their measured widths, as every other street
   in the area (`kept` empty).
+- [ ] The race's road takes in the corner between the flight and the landing street, and the world's
+  walls inside it near the landing are down in a race (drawn and driven), up in free roam.
 - [ ] party-kart's `npm test` and `npm run check` pass on the new tag, and a lap with the autopilot
   and three bots goes over the jump with no error.
 - [ ] The owner has seen the landing (from above and from the kart) and approved it.
@@ -85,3 +105,31 @@ Steps:
 - Found by task 026 (2026-10-17), when party-kart's lap test stopped at the landing on braga-map
   1.20.0. Blocked on the question.
 - Unblocked 2026-10-17: the owner chose the recommendation, the race's road taking in the corner.
+- **Started 2026-10-17. Two assumptions were false**, measured with scratch probes in party-kart
+  (the autopilot from the run-up at three lines and two cautions, and eight bots racing a lap, twice;
+  the hits within 60 m of the landing and what each was against: the race's edge, a wall, a building):
+  - **The street's width alone doesn't stop the autopilot.** With `kept` dropped and 1.20.1's walls,
+    all 62 of party-kart's tests pass (laps 302.0 and 299.8 s). The landing street is 5.0 m, moved
+    0.25 m; the run-up's middle 3.4 m off at (-639, 985), 5.9 m wide.
+  - **The walls are what stops it.** `walls.mjs` cuts a wall where a carriageway runs, and the map's
+    6.5 m street had cut back the lot's walls north of the landing. At 5 m they're there: the 2.75 m
+    wall the flight crosses, (-576, 1142) to (-556.3, 1156.1), now to the kerb; a 3.18 m wall along
+    the street's north kerb, (-554.6, 1157.2) to (-542.9, 1165.9); a 1 m gate between them. DGT's
+    surface model has them 2–3 m over the ground, 2.0–3.0 m north of the street's line, 2 to 17 m
+    along it. On the line, the slowest flight clears the wall where it crosses (5.9 m before the
+    landing) by about 1.6 m.
+  - **Karts leave the lip off the flight.** The run-up turns 8° onto the ramp at its foot, 7.5 m
+    before the lip, and the autopilot is still turning there: its velocity 4–6° left of the flight
+    at the lip, 4.4 m left of the line at the landing, in the air into the wall; it stops at
+    (-557.1, 1153.9), the point above. More than about 1.5° off at the lip meets the wall.
+  - **The corner taken in is the lot,** behind those walls: with the 20 m corner (164 m²) and the
+    walls, the autopilot sticks at (-548, 1161) and the bots respawn 8–9 times a race; without the
+    corner it sticks at (-557, 1154) and they respawn 10–14 times.
+  - Tried and left: the line onto the ramp's axis further up the run-up (only 8 m more fits in the
+    street; still 5° off at the lip); the autopilot aiming at the landing over its last 10–60 m
+    (about 3 m left still, or it misses the ramp and falls in the river); jump 2 (JUMP=2: it lands
+    beside a wall the LiDAR found at (-661, 1401), and the lap test fails).
+  - **The corner taken in, the walls inside the race's road within 20 m of the landing left out:**
+    the autopilot never sticks, one kerb hit a run (the outside of the turn, 13 m on, as on 1.20.1);
+    the bots respawn once a race, short of the landing, with 1–4 hits near it (1.20.1: 6–7 hits,
+    1–3 respawns). The owner chose this (Questions).

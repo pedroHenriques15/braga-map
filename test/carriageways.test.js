@@ -145,15 +145,14 @@ test('every street measured off its line for HOLD or more is drawn on its middle
   // within BIN of it (the quarter metre the edges are measured to), but within EASE of a junction
   // (where it eases to the junction's move) and of the stretch's ends, and within the street's width of
   // a corner sharper than 45° (where its offset square to one side isn't its move); and its width is
-  // the one measured, where that's clear (but where it runs on into a deck, the deck's, the map's). But
-  // the streets a race's jump takes off from and lands on, kept as the map has them (decision 027).
+  // the one measured, where that's clear (but where it runs on into a deck, the deck's, the map's).
   const junction = new Map();
   for (const l of lines) l.nodes?.forEach((n) => junction.set(n, (junction.get(n) ?? 0) + 1));
   let n = 0;
   const off = [], wide = [];
   for (const l of lines) {
     const st = measured.ways[l.id], m = moved.get(l.id);
-    if (!st || !m || measured.moves.kept?.includes(l.id)) continue;
+    if (!st || !m) continue;
     const s = [0];
     for (let i = 1; i < l.pts.length; i++) s.push(s[i - 1] + Math.hypot(l.pts[i][0] - l.pts[i - 1][0], l.pts[i][1] - l.pts[i - 1][1]));
     const p = profile(st, s.at(-1), l.w), ends = l.nodes.map((q, i) => (junction.get(q) > 1 || i === 0 || i === l.nodes.length - 1 ? s[i] : null)).filter((v) => v !== null);

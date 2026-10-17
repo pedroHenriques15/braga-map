@@ -529,4 +529,12 @@ test("the race's road takes in the whole line, and its barriers stand on its edg
   assert.deepEqual(loose.map((c) => c[0]), [], "closures off the race's edge");
   const over = amigos.closures.flat().filter(([x, , z]) => carriageway(x, z)).length / amigos.closures.flat().length;
   assert.ok(over > 0.8, `only ${(over * 100).toFixed(0)}% of the closures' points over a carriageway`);
+  // Round the jump's landing the road takes in the corner between the flight and the landing street
+  // (task 057): the road works' boards stand on its edge there, and where a race takes the world's
+  // walls down is within 20 m of the landing.
+  assert.ok(amigos.boards.length >= 1, 'no road works boards round the corner at the landing');
+  assert.deepEqual(amigos.boards.filter((c) => !c.every(([x, , z]) => near(x, z))).map((c) => c[0]), [], "boards off the race's edge");
+  const [land] = amigos.ramps.map((r) => r.land);
+  const far = amigos.cleared.flat(2).filter(([x, z]) => Math.hypot(x - land[0], z - land[2]) > 20.5);
+  assert.ok(amigos.cleared.length >= 1 && !far.length, `cleared reaches ${far.length} points more than 20 m from the landing`);
 });

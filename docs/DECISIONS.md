@@ -1115,3 +1115,45 @@ grass in party-kart (task 059).
 
 The alternative was the task's other answer: Mapillary's position stands, and a camera off its
 surface is the photo's fault, not the game's.
+
+## 042 · The jump lands on its real street, and a race takes the walled corner at its landing
+
+*2026-10-17 · task 057 · replaces decision 039's "the jump stays as the owner approved it", and adds to decisions 027 and 029*
+
+Decision 039 kept the streets the Volta dos Amigos' jump takes off from and lands on as the map has
+them (`kept`), as the landing street is 5 m by the LiDAR, the map's 6.5, and party-kart's autopilot
+stopped at its corner. At 5 m it wasn't the street that stopped it: the map's wider carriageway had cut
+back the walls of the lot north of the landing, which `walls.mjs` keeps once the street is its real
+width, a 2.75 m wall the flight crosses 6 m short of the landing, running on to the kerb, a 3.18 m
+wall along the street's north kerb and a gate between them, 2 to 3 m over the ground in DGT's surface
+model. Karts leave the lip 4–6° left of the flight (the run-up turns 8° onto the ramp at its foot, 7.5
+m before the lip), come down 4 m left of the line, and met that wall in the air: the autopilot stuck
+at (-557, 1154), the bots respawning 10–14 times a race. On the line, the slowest flight clears it by
+1.6 m; 1.5° off at the lip doesn't.
+
+- **The jump's streets are measured like any other** (decision 039): nothing is kept as the map has
+  it, the run-up 5.9 m and the landing street 5 m.
+- **The race's road takes in the corner between the flight and the landing street** (the owner's
+  answer, task 057): within 20 m of the landing (`CORNER` in `tools/track.mjs`), on the side the
+  street turns to, the hull of the road's outline there, less the buildings: 164 m², whatever is on
+  it, as the flight is taken in past the landing (decision 029).
+- **The corner is a walled lot, so a race takes the world's walls down there while it runs** (the
+  owner's choice, over karts flying the flight's line exactly, keeping the streets as the map has
+  them, or another jump; jump 2 lands beside a wall too): a track's `cleared`, its road within 20 m
+  of the landing, where a game leaves the world's walls, fences, hedges and gates out of the race's
+  ground and doesn't draw them while a race is on (party-kart: 18 m of the 2.75 m wall, 13 m of the
+  3.18 m wall and the gate, 32 m). Free roam keeps them, and no building is taken down.
+- **The road works' boards stand round the corner** (`boards`, the owner's answer): along the race's
+  edge where it's the corner's own, across the lot, where the race's wall is, as the ramp's boards
+  are (decision 027's joke: the city's works took the lot's corner for the race).
+
+What it did, braga-map 1.22.0: the loop 10,253 m, the line 10,178 m, as before. In party-kart, the
+autopilot's laps 301.7 and 299.9 s with no respawn, the eight bots' finishes within 5.1 s with none,
+a lap in the browser with the autopilot and three bots over the jump with no page error (310.6 s).
+Over six races of eight bots, 24 wall hits and 7 respawns within 60 m of the landing, where 1.20.1,
+the jump's streets kept, had 42 and 18; the hit left is the outside of the turn 13 m on, as on 1.20.1.
+
+The alternatives were the task's: the street as it is with nothing taken in (the autopilot stuck, the
+bots respawning 10–14 times a race); party-kart's autopilot and bots lining up with the flight (two
+tries didn't: from the run-up they miss the ramp, from its foot they still fly 3 m left); the jump's
+streets kept as the map has them; another jump, which the owner would see first.

@@ -1,5 +1,5 @@
 ---
-status: doing
+status: done
 priority: medium
 kind: code
 repo: both
@@ -88,13 +88,30 @@ Steps:
 
 ## Done when
 
-- [ ] The jump's streets are on their carriageways, at their measured widths, as every other street
+- [x] The jump's streets are on their carriageways, at their measured widths, as every other street
   in the area (`kept` empty).
-- [ ] The race's road takes in the corner between the flight and the landing street, and the world's
+  > `kept` is gone from `tools/carriageways.mjs`: the landing street (way 184815719) 5.0 m wide, moved
+  > 0.25 m; the Rua Professor Mota Leite's middle 3.4 m off at (-639, 985), 5.9 m wide; 245 streets
+  > moved (244 before), 161 widths measured clearly (158). `test/carriageways.test.js` holds them to
+  > their middles like the rest; braga-map's 111 tests pass.
+- [x] The race's road takes in the corner between the flight and the landing street, and the world's
   walls inside it near the landing are down in a race (drawn and driven), up in free roam.
-- [ ] party-kart's `npm test` and `npm run check` pass on the new tag, and a lap with the autopilot
+  > The corner 164 m² (`npm run tracks`); `cleared` takes down 18.1 m of the 2.75 m wall, 12.9 m of the
+  > 3.18 m wall and the 1 m gate. party-kart's test "the race takes the lot's walls down at the
+  > landing, and round the city they stand": 18 pieces of wall down, 32.2 m drawn apart, none in free
+  > roam's ground, no building's. Shot round the city and in a race from the lot and on the flight's
+  > line: the walls up, then down with the road works' boards along the corner's edge.
+- [x] party-kart's `npm test` and `npm run check` pass on the new tag, and a lap with the autopilot
   and three bots goes over the jump with no error.
-- [ ] The owner has seen the landing (from above and from the kart) and approved it.
+  > On braga-map v1.22.0: `npm run check` clean, 63 tests pass (the autopilot's laps 301.7 and 299.9 s,
+  > no respawn; eight bots within 5.1 s, no respawn; the jump lands on the race's road from 121 to 158
+  > km/h). A lap in the browser (`?autodrive`, three bots, Playwright): 310.6 s, over the jump, no page
+  > error.
+- [x] The owner has seen the landing (from above and from the kart) and approved it.
+  > Shown from above (the orthophoto with the race's road and the karts' paths, and the game from the
+  > lot) and from the kart (the chase camera over the jump, and on the flight's line), and on the dev
+  > server with `--host`: approved 2026-10-17, with the road works' boards added round the corner
+  > first.
 
 ## Out of scope
 
@@ -133,3 +150,30 @@ Steps:
     the autopilot never sticks, one kerb hit a run (the outside of the turn, 13 m on, as on 1.20.1);
     the bots respawn once a race, short of the landing, with 1–4 hits near it (1.20.1: 6–7 hits,
     1–3 respawns). The owner chose this (Questions).
+- **Landed 2026-10-17, braga-map 1.22.0 and party-kart 9256881 pinned to it** (the owner's answers in
+  Questions, decision 042). After 056, 058 and 049 landed, main was merged and the whole remake run
+  again (carriageways, walls, open, shooter, world, tracks, cover, textures, the page; the edge
+  again on the new track: it holds). The remake's own changes: the track and one tile, x-2z2.
+  - **The road works' boards** (the owner's answer when approving): `boards`, one row of 35 m along
+    the corner's chord across the lot, on the ground's height; party-kart draws two red-and-white
+    boards on trestles every 2 m with the race's marks.
+  - **Six races of eight bots each** (a scratch probe): 24 wall hits and 7 respawns within 60 m of
+    the landing, against 42 and 18 on 1.20.1. The hit left is on the outside of the turn, the street's
+    south kerb 13 m on, as on 1.20.1, and bots that come down furthest left meet the corner of the
+    building at the corner's far end.
+  - **party-kart's peer id prefix is pk36:** the race's road changed.
+  - **The budget:** `couteiro` 3 draw calls more (the walls drawn apart), 294 triangles more at High
+    and 142 at Low, the same textures.
+  - **`couteiro` before (1.21.1) and after (1.22.0)**, both shot in party-kart's main: the same within
+    0.57% of its pixels, none by more than 24 levels. The landing is about 440 m on, behind the
+    buildings.
+  - **The round "A aterragem"** (`2026-10-17-after057`), on "Braga real": no place shows the landing,
+    and Claude's marks are the last round's, 2.65 over the 34. Its shots differ from "Onde a foto foi
+    tirada" (shot in 058's checkout) only in the grain of the walls and the asphalt, by 1 to 4 levels
+    on average. The page held 488 of the 511 files a version can, so `tools/round.mjs` now takes a
+    shot the same, byte for byte, as an earlier round's for that round's ([w, h, round]), and the
+    page reads it from there: 61 were, and the page holds 461.
+  - **Not checked:** the owner's marks for the round; the race with friends in a room; the deploy
+    (not asked).
+  - The facades test failed in this checkout while 056 was landing: its run of `tools/buildings.mjs`
+    had written its viewpoints' buildings into the shared `.cache`; it passes with 056 merged.

@@ -145,9 +145,12 @@ map().groundKinds; // the kinds it says, each with its photo: [{ kind, texture: 
   floor on the wall nearest it that faces a street; and the signs the photos show where the map has
   no shop. None for a shop in a shopping centre, more than 12 m in from every outside wall.
 - A track brings its race's road (`road`, decision 019): the route's own streets at their real
-  widths, as `world.streets` draws them, and its jump's flight. Its outline is the race's walls, and
-  where the street drawn goes on past it (across a side street's mouth, between a road's two
-  carriageways drawn as one) a game stands a row of barriers for a race (`closures`). The world
+  widths, as `world.streets` draws them, and its jump's flight, with the corner between the flight
+  and the landing street (task 057). Its outline is the race's walls, and where the street drawn
+  goes on past it (across a side street's mouth, between a road's two carriageways drawn as one) a
+  game stands a row of barriers for a race (`closures`); round that corner, across ground that's no
+  street, the road works' boards (`boards`). Within 20 m of the landing (`cleared`) a race takes
+  the world's walls down while it runs: there, the corner of a walled lot (decision 042). The world
   itself knows nothing of a road: the trees, and the houses it fills in on empty frontages (where
   the LiDAR wasn't fetched), stand clear of every street taken at least 9 m wide (`W_MIN`), and the
   real buildings stand where they are.
@@ -502,7 +505,9 @@ streets; when a track moves enough to change the edge, run the three again until
   label, the tasks it shows, a note, and the commits it was shot on. The page keeps each person's
   ratings and comments in the artifact's database, one document each (`scores/<their id>`). A
   round goes up by publishing the page again with the round's files and `data/rounds.json`
-  beside it; the files already up stay.
+  beside it; the files already up stay. A version holds 511 files at most, so a shot the same, byte
+  for byte, as an earlier round's of its place is that round's (its entry `[w, h, round]`, task
+  057): its file isn't kept twice, and those it finds print as the files to take off the page.
 
 ### How a track is planned
 
@@ -532,7 +537,11 @@ streets; when a track moves enough to change the edge, run the three again until
    kerb turns them (up to `KERB_R`, 10 m), where the streets drawn have carriageway (a sliver of
    pavement into it under 1.2 m wide taken as road), and the jump's flight, as wide as the ramp and
    2 m either side, on past the landing as far as a kart flat out comes down (`JUMP.flat`) and 6 m
-   more, so it lands there and drives back onto the street. The centre line is each street's own line from the map, which its carriageway
+   more, so it lands there and drives back onto the street. And the corner between the flight and
+   the landing street, on the side the street turns to, within `CORNER` (20 m) of the landing: the
+   hull of the road's outline there, less the buildings, whatever else is on it (task 057: a kart
+   heading into the turn comes down on that side of the line). It prints the corner's area and the
+   world's walls in the race's road within 20 m of the landing, which a race takes down (`cleared`). The centre line is each street's own line from the map, which its carriageway
    is drawn round, thinned only of points within 0.25 m of it. A short jog at a junction (two corners
    turning opposite ways, under 14 m apart) is folded into one corner, and corners are rounded to
    `R_MIN` (12 m, a street corner) where the streets allow, both only as far as the line stays
@@ -559,15 +568,17 @@ streets; when a track moves enough to change the edge, run the three again until
 5. **What's along it.** The street names as it turns into each, the landmarks within 220 m, and
    from the map the zebra crossings and traffic lights on its streets and the bus stops beside it;
    the rows of barriers across the side streets it passes (`closures`: the race's road's edge
-   wherever the street drawn goes on past it, looked at half a metre beyond it); the sections it
-   runs through, and the box round it a game draws (500 m round the track).
+   wherever the street drawn goes on past it, looked at half a metre beyond it); the road works'
+   boards along the corner's own edge at the landing (`boards`, on the ground's height); the
+   sections it runs through, and the box round it a game draws (500 m round the track).
 
 The layout is a point every 8 m from the start line (every 2 m round a ramp and its landing), each
 with its options for the stretch to the next (`tracks/track.d.ts`); a jump's flight is `air`, and
 its ramp is in `ramps` (where it stands, its angle and width, and the slowest speed that clears it),
 for a game to put up during a race. Nothing else goes near it: no start, checkpoint, item boxes or
-boost pad. With it come the race's road (`road`, its pieces' outlines and holes) and its closures
-(`closures`, rows of points). A track that changes is a different race for the games: Party Kart
+boost pad. With it come the race's road (`road`, its pieces' outlines and holes), its closures
+(`closures`, rows of points), where a race takes the world's walls down (`cleared`, as `road`) and
+the road works' boards round the corner at the landing (`boards`, rows of points). A track that changes is a different race for the games: Party Kart
 needs a new peer id prefix for it, and its tests must still pass.
 
 ### A new track

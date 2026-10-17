@@ -288,8 +288,10 @@ footer p { margin: 0; max-width: 90ch; }
 
   function card(v, r, before) {
     const size = r.shots[v.id] || [v.photo.w, v.photo.h];
-    const shot = r.shots[v.id] ? `rounds/${r.id}/${v.id}.jpg` : null;
-    const prev = before?.shots[v.id] ? `rounds/${before.id}/${v.id}.jpg` : null;
+    // A shot the same as an earlier round's is that round's file: its entry names it third.
+    const file = (q) => (q.shots[v.id] ? `rounds/${q.shots[v.id][2] ?? q.id}/${v.id}.jpg` : null);
+    const shot = file(r);
+    const prev = before ? file(before) : null;
     const game = shot ? h('img', { class: 'shot', src: shot, alt: `O jogo: ${v.nome}`, loading: 'lazy', decoding: 'async' }) : h('div', { class: 'missing' }, 'Sem imagem do jogo nesta ronda');
     const right = h('span', { class: 'lab r' }, 'Jogo');
     const slider = h('input', { type: 'range', min: 0, max: 100, value: 50, step: 1, 'aria-label': 'Mostrar mais da foto ou mais do jogo', id: `slide-${v.id}` });
@@ -302,7 +304,7 @@ footer p { margin: 0; max-width: 90ch; }
     for (const img of frame.querySelectorAll('img')) img.addEventListener('error', () => { img.hidden = true; });
 
     let back = null;
-    if (prev && shot) {
+    if (prev && shot && prev !== shot) {
       back = h('button', { class: 'link', type: 'button', 'aria-pressed': 'false' }, `Ver a ronda anterior (${before.label})`);
       back.addEventListener('click', () => {
         const on = back.getAttribute('aria-pressed') !== 'true';

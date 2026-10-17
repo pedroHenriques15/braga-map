@@ -13,6 +13,7 @@
 //
 // node tools/round.mjs 2026-10-13-baseline --label "Ponto de partida" --tasks 002 --note "…"
 // node tools/round.mjs <round> --shots ../party-kart-021/shots …   shot in another party-kart checkout
+import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import zlib from 'node:zlib';
@@ -187,12 +188,34 @@ const round = {
   shots,
 };
 log.rounds = [...log.rounds.filter((r) => r.id !== id), round].sort((a, b) => (a.made < b.made ? -1 : 1));
-fs.writeFileSync(LOG, JSON.stringify(log, null, 2).replace(/\[\s+(\d+),\s+(\d+)\s+\]/g, '[$1, $2]') + '\n');
+// A shot the same, byte for byte, as an earlier round's of its viewpoint is that round's: its entry
+// says which, [w, h, round], and its file isn't kept twice (the page holds 511 files at most; task
+// 057 found 61 of the 451 the same as an earlier one). Those it finds print as the files to take off
+// the page.
+const holder = new Map(), shared = [];
+for (const r of log.rounds) {
+  for (const [v, size] of Object.entries(r.shots)) {
+    if (size[2]) continue;
+    const file = path.join(OUT, 'rounds', r.id, `${v}.jpg`);
+    if (!fs.existsSync(file)) continue;
+    const key = `${v}:${crypto.createHash('sha1').update(fs.readFileSync(file)).digest('hex')}`;
+    if (!holder.has(key)) {
+      holder.set(key, r.id);
+      continue;
+    }
+    r.shots[v] = [size[0], size[1], holder.get(key)];
+    fs.rmSync(file);
+    shared.push(`rounds/${r.id}/${v}.jpg`);
+  }
+}
+fs.writeFileSync(LOG, JSON.stringify(log, null, 2).replace(/\[\s+(\d+),\s+(\d+)(?:,\s+("[^"]+"))?\s+\]/g, (_, w, h, r) => `[${w}, ${h}${r ? `, ${r}` : ''}]`) + '\n');
 
 fs.mkdirSync(path.join(OUT, 'data'), { recursive: true });
 fs.writeFileSync(path.join(OUT, 'data', 'viewpoints.json'), JSON.stringify({ credit, viewpoints: list }));
 fs.writeFileSync(path.join(OUT, 'data', 'rounds.json'), JSON.stringify({ rounds: log.rounds }));
 
 const kb = (d) => Math.round(fs.readdirSync(d).reduce((s, f) => s + fs.statSync(path.join(d, f)).size, 0) / 1024);
-console.log(`${id}: ${Object.keys(shots).length} shots (${kb(path.join(OUT, 'rounds', id))} kB) and ${list.length} photos (${kb(path.join(OUT, 'photos'))} kB) in ${path.relative(ROOT, OUT)}`);
+const own = Object.values(round.shots).filter((q) => !q[2]).length;
+console.log(`${id}: ${own} shots of its own (${kb(path.join(OUT, 'rounds', id))} kB), ${Object.keys(shots).length - own} the same as an earlier round's, and ${list.length} photos (${kb(path.join(OUT, 'photos'))} kB) in ${path.relative(ROOT, OUT)}`);
 console.log(`publish beside the page: rounds/${id}/*.jpg, data/rounds.json${log.rounds.length === 1 ? ', photos/*.jpg, data/viewpoints.json' : ''}`);
+if (shared.length) console.log(`and take off the page, each now an earlier round's: ${shared.join(' ')}`);

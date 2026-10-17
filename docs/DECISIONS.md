@@ -959,3 +959,28 @@ sun's, so the game was about twice as bright as the photos and its shadows hardl
 The alternatives were a grey day as the game's default, which matches those 18 photos and loses the
 11 clear ones, and each viewpoint shot at its photo's time and in its weather while the game stays
 sunny.
+
+## 038 · A landmark the race sees is a model of its own, at its real size: measured by the LiDAR, drawn from its photos
+
+*2026-10-17 · task 021 · which landmarks are built, and how*
+
+- **The ones the race sees.** Of the map's 32 landmarks, a game builds those the race sees: from 2 m
+  over its line, within 45° of the way it goes, past the tiles' buildings and trees. Today São João
+  da Ponte's chapel and bridge, the Altice Forum, the Estádio 1.º de Maio and the Picoto's top. The
+  rest (the old town's, the Theatro Circo, the Congregados, the Igreja de Lamaçães) wait for a track
+  or the shooter that goes there. The owner chose so on 2026-10-16, and to give the route's chapels
+  and shrines that aren't among the 32 a task of their own (056).
+- **Measured where the LiDAR can say.** braga-map's sight carries what DGT's 2025 LiDAR measured:
+  the chapel's heights from its building's parts, the stadium's stands along spokes round its track
+  and its floodlights from the point cloud (`tools/sights.mjs`). The game draws what the photos show
+  on top of that (the bell gable, the porch, the cross, the wall's windows, the α), from shapes and
+  canvas textures, at the real size: only decision 004's and 015's exaggerations stand.
+- **In its building's place.** A landmark the tiles have as a building says so (`covers`), and a game
+  draws the model there instead; the building stays a wall to the karts. One the tiles left out (the
+  stadium's stands, task 011) is the sight alone. A bridge keeps its decks where the streets have
+  them; its arch (`arch`) is drawn on their edges, on no pillars.
+- **Judged at a viewpoint of its own,** where one of task 008's photos of it was taken (decision 009):
+  `capela-sao-joao`, `altice-forum` and `picoto-top`, beside `estadio`.
+
+The alternatives were the first track's cartoon models (not to scale), and photo-textured boxes: the
+photos found online give one wall straight on, the chapel's side, and none of the rest.

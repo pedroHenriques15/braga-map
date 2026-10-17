@@ -739,10 +739,15 @@ let nWalls = 0;
 
 // ---------------------------------------------------------------------------------------------
 // The sights a Bracarense steers by: Bom Jesus and the Sameiro on the hills to the east, the cross
-// on the Picoto, the stadium, the Altice Forum, Makro and the Tourigalo's bull. Footprints and
-// positions from the map, heights from the ground.
+// on the Picoto, the stadium, the Altice Forum, Makro and the Tourigalo's bull; and São João da
+// Ponte's chapel and bridge, which the route passes (task 021). Footprints and positions from the
+// map, heights from the ground and the LiDAR: the stadium's stands and floodlights as tools/sights.mjs
+// measured them.
 
 const sights = [];
+const sightsMeasured = fs.existsSync(path.join(CACHE, 'sights.json')) ? readCache('sights.json') : null;
+if (!sightsMeasured) console.log('no .cache/sights.json: the stadium without its stands and floodlights (node tools/sights.mjs)');
+let standsDm = null; // the stadium's stands' heights, in decimetres, for the base
 {
   // The main roads, for which way a building looks.
   const mgrid = new Grid(50);
@@ -796,6 +801,39 @@ const sights = [];
     const r = minRect(ringOf(sameiro)), [sx, sz] = P(statue);
     sights.push({ kind: 'sameiro', x: r1(r.x), z: r1(r.z), y: yAt(r.x, r.z), angle: r1(r.angle * 100) / 100, L: r1(r.L), W: r1(r.W), face: facing(r.x, r.z, sx, sz), statue: [r1(sx), r1(sz)], statueY: yAt(sx, sz) });
   }
+  // São João da Ponte's chapel (1616), in the park by the Largo: its outline, which a game draws it
+  // in place of (`covers`), its long axis and the way its front looks (to the square before it,
+  // where its photos were taken from), and its heights as the LiDAR measured its parts, from the front
+  // back: the porch's eaves, the bell block's top, and the nave's eaves and ridge.
+  const chapel = find(fps, 'way', 121590142), parts = roofs[121590142]?.parts?.filter((p) => p.roof);
+  if (chapel && parts?.length >= 3) {
+    const ring = ringOf(chapel), r = minRect(ring), square = [272, 990];
+    let [ux, uz] = [Math.cos(r.angle), Math.sin(r.angle)];
+    if ((square[0] - r.x) * ux + (square[1] - r.z) * uz < 0) [ux, uz] = [-ux, -uz];
+    const ahead = (p) => -p.pts.reduce((a, [x, z]) => a + (x - r.x) * ux + (z - r.z) * uz, 0) / p.pts.length;
+    const [porch, , nave] = [...parts].sort((a, b) => ahead(a) - ahead(b));
+    const y = yAt(r.x + ux * r.L, r.z + uz * r.L), h = (v) => r1(v - ELEV0 - y);
+    sights.push({ kind: 'saojoao', x: r1(r.x), z: r1(r.z), y, face: r1(Math.atan2(uz, ux) * 100) / 100, L: r1(r.L), W: r1(r.W), porch: h(porch.eaves), top: h(Math.max(...parts.map((p) => p.ridge))), eaves: h(nave.eaves), ridge: h(nave.ridge), covers: ring.slice(0, -1).map(([x, z]) => [r1(x), r1(z)]) });
+  }
+  // São João da Ponte's bridge, the Avenida da Liberdade's over the Este: an arch of dressed granite
+  // (task 008's photos of it, from the path by the river). Where the road's middle crosses the river,
+  // and how far its decks reach from there: a game draws the decks there as the arch.
+  {
+    const ways = [298882886, 510031084].map((id) => base.elements.find((e) => e.type === 'way' && e.id === id && e.geometry)).filter(Boolean);
+    const river = base.elements.filter((e) => e.type === 'way' && e.tags?.waterway === 'river' && e.geometry).map((e) => e.geometry.map(P));
+    const cross = (a, b, c, d) => {
+      const den = (b[0] - a[0]) * (d[1] - c[1]) - (b[1] - a[1]) * (d[0] - c[0]);
+      if (!den) return null;
+      const t = ((c[0] - a[0]) * (d[1] - c[1]) - (c[1] - a[1]) * (d[0] - c[0])) / den, u = ((c[0] - a[0]) * (b[1] - a[1]) - (c[1] - a[1]) * (b[0] - a[0])) / den;
+      return t >= 0 && t <= 1 && u >= 0 && u <= 1 ? [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t] : null;
+    };
+    const at = ways.flatMap((w) => w.geometry.map(P).flatMap((p, k, ps) => (k ? river.flatMap((rv) => rv.slice(1).map((q, j) => cross(ps[k - 1], p, rv[j], q)).filter(Boolean)) : [])));
+    if (at.length) {
+      const x = at.reduce((a, p) => a + p[0], 0) / at.length, z = at.reduce((a, p) => a + p[1], 0) / at.length;
+      const reach = Math.max(...ways.flatMap((w) => w.geometry.map(P).map(([px, pz]) => Math.hypot(px - x, pz - z))));
+      sights.push({ kind: 'arch', x: r1(x), z: r1(z), r: r1(reach + 2), y: yAt(x, z) });
+    }
+  }
   const cross = find(pois, 'node', 3917613795);
   if (cross) { const [x, z] = P(cross); sights.push({ kind: 'cruzeiro', x: r1(x), z: r1(z), y: yAt(x, z) }); }
   // The Tourigalo: a bull with a rooster's head, on the lawn by the Avenida Doutor António Alves
@@ -806,12 +844,27 @@ const sights = [];
   if (bull) { const [x, z] = P(bull); sights.push({ kind: 'tourigalo', x: r1(x), z: r1(z), y: yAt(x, z), face: r1(Math.PI * 100) / 100, ...(restaurant && { sign: front(ringOf(restaurant), [1625, 320]) }) }); }
   const makro = find(fps, 'way', 41677157);
   if (makro) sights.push({ kind: 'makro', ...front(ringOf(makro)), y: yAt(...P(makro.geometry[0])) });
-  const altice = fps.filter((e) => Math.floor(e.id / 16) === 19915703).map(ringOf).sort((a, b) => ringArea(b) - ringArea(a))[0];
-  if (altice) sights.push({ kind: 'altice', ...front(altice), y: yAt(altice[0][0], altice[0][1]) });
+  // The Altice Forum: the α high on its hall's west face, 9 m from its north end, as the viewpoint
+  // altice-forum's photo shows it, over its top row of windows: its middle 2.8 m under the wall's top
+  // as the LiDAR measured it.
+  const hall = fps.filter((e) => Math.floor(e.id / 16) === 19915703).sort((a, b) => ringArea(ringOf(b)) - ringArea(ringOf(a)))[0];
+  if (hall) {
+    const f = front(ringOf(hall)), north = Math.cos(f.face) < 0 ? 1 : -1;
+    // Along the wall, towards its north end: the wall runs square to the way it looks.
+    const [wx, wz] = [-Math.sin(f.face) * north, Math.cos(f.face) * north];
+    const x = f.x + wx * (f.L - 9), z = f.z + wz * (f.L - 9), y = yAt(x, z), top = roofs[hall.id]?.parts?.length ? Math.max(...roofs[hall.id].parts.map((p) => p.eaves)) - ELEV0 - y : 20;
+    sights.push({ kind: 'altice', x: r1(x), z: r1(z), y, face: f.face, h: r1(top - 2.8) });
+  }
   const pitch = find(base.elements, 'way', 22660434);
   if (pitch) {
-    const r = minRect(ringOf(pitch));
-    sights.push({ kind: 'stadium', x: r1(r.x), z: r1(r.z), y: yAt(r.x, r.z), angle: r1(r.angle * 100) / 100, L: r1(r.L), W: r1(r.W) });
+    const r = minRect(ringOf(pitch)), st = sightsMeasured?.stadium;
+    const stadium = { kind: 'stadium', x: r1(r.x), z: r1(r.z), y: yAt(r.x, r.z), angle: r1(r.angle * 100) / 100, L: r1(r.L), W: r1(r.W) };
+    if (st) {
+      stadium.stands = { S: st.S, R0: st.R0, dr: st.dr, from: st.spokes.map((q) => q.from), n: st.spokes.map((q) => q.h.length) };
+      stadium.lights = st.lights;
+      standsDm = st.spokes.flatMap((q) => q.h.map(dm));
+    }
+    sights.push(stadium);
   }
   console.log(`sights: ${sights.map((q) => q.kind).join(', ')}`);
 }
@@ -869,6 +922,8 @@ const out = new Packer();
     R.push(pts.length, ...pts.flatMap(([x, z], i) => [half(x), half(z), dm(lv[i] - ELEV0 - 0.3)]));
   }
   out.part('rivers', R, { halfWidth: 6 });
+  // The stadium's stands, each spoke's heights after the one before's (its sight says how many).
+  if (standsDm) out.part('stands', standsDm);
 }
 
 // ---------------------------------------------------------------------------------------------

@@ -480,6 +480,52 @@
         "travessa-lobato": [960, 720],
         "lobato-east": [960, 720]
       }
+    },
+    {
+      "id": "2026-10-17-after021",
+      "label": "Os marcos",
+      "date": "2026-10-17",
+      "tasks": [
+        "021"
+      ],
+      "note": "Os marcos do percurso, a partir das suas fotografias: a capela de São João da Ponte (1616) no seu parque, branca com o granito, a sineira de dois sinos, o alpendre e a cruz, e a ponte da Avenida da Liberdade sobre o Este em arco de granito; o Estádio 1.º de Maio com as bancadas como o LiDAR as mediu, degrau a degrau à volta da pista, o muro exterior, a cobertura da bancada principal e os quatro projetores no seu sítio e à sua altura; no alto do Picoto a cruz branca de aço com o anel, e o passadiço de madeira do miradouro; o α do Altice Forum no lugar do letreiro. Três sítios novos: a capela, o Altice Forum e o alto do Picoto, cada um onde foi tirada uma fotografia dele. Por cima das esquinas da tarefa 046 e das câmaras da 055, que apontam o Monte da Forca e o estádio como as fotografias. A luz da ronda anterior (tarefa 022) ainda não está no jogo desta: a cidade tem a luz de antes dela.",
+      "made": "2026-10-17T11:26:36.352Z",
+      "game": "a86355b",
+      "map": "1.19.0",
+      "shots": {
+        "fujacal-start": [960, 720],
+        "imaculada-conceicao": [960, 720],
+        "liberdade": [960, 540],
+        "sao-joao-da-ponte": [960, 540],
+        "devesa": [960, 540],
+        "alvaro-carneiro": [960, 720],
+        "porfirio-da-silva": [960, 720],
+        "31-de-janeiro": [960, 720],
+        "joao-xxi": [960, 720],
+        "bernardo-sequeira": [960, 720],
+        "bom-jesus": [960, 720],
+        "pascoal-fernandes": [960, 720],
+        "egidio-guimaraes": [960, 720],
+        "robert-smith": [960, 720],
+        "robert-smith-picoto": [960, 720],
+        "falperra": [960, 720],
+        "sameiro": [960, 720],
+        "estadio": [960, 720],
+        "viriato-amaral-nunes": [960, 720],
+        "monte-da-forca": [960, 720],
+        "couteiro": [960, 720],
+        "conselheiro-lobato": [960, 720],
+        "fujacal-west": [960, 720],
+        "travessa-fujacal": [960, 720],
+        "alameda-fujacal": [960, 720],
+        "lobato-pavement": [960, 432],
+        "lobato-crossing": [960, 540],
+        "travessa-lobato": [960, 720],
+        "lobato-east": [960, 720],
+        "capela-sao-joao": [960, 540],
+        "altice-forum": [960, 720],
+        "picoto-top": [960, 720]
+      }
     }
   ]
 }

@@ -227,7 +227,7 @@ their lists are committed; `node tools/refs.mjs` fetches the photos into `.cache
   positions to place the viewpoints. As textures too, which the licence allows: a texture made
   from one is CC BY-SA. The detected features never get copied into this repository; they may
   guide someone mapping those things in OpenStreetMap, which then brings them here.
-- **Used:** all 29 viewpoints' photos, and 399 of the reference photos (task 008), 19 of them
+- **Used:** all 32 viewpoints' photos (three of them reference photos of the landmarks, task 021), and 399 of the reference photos (task 008), 19 of them
   marked good enough for a texture. Ten of those are facade textures since task 007
   (`refs/textures.json`, `world/textures/`), so CC BY-SA 4.0, each with its author and link in
   its tile's index; `map().photoCredits` gathers the authors for a game's credits.

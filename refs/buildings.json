@@ -33,6 +33,10 @@
    "sure": true,
    "notes": "The corner block across the street: pale straw-beige brick-pattern tiles, paired windows with white roller shutters and iron rails across them, projecting balconies round its left side, a top floor set back behind a dark green-grey parapet. Shops behind blue and glass fronts under a dark fascia; the shop sign is half hidden ('… informática')."
   },
+  "lidar/x-171z1609": {
+   "seen": null,
+   "notes": "behind the Parque da Ponte's trees in capela-sao-joao: nothing of it shows."
+  },
   "lidar/x-193z966": {
    "type": "block-1970s-90s",
    "colour": "off-white",
@@ -82,6 +86,10 @@
    "sure": false,
    "notes": "The near block on the left of the street: pale grey render (perhaps white under the photo's cyan cast), windows with white reveals and no balconies on this face, the Talho Amores butcher's on the ground floor; its top is cut by the frame. The outline spans the whole left side of the street, so which part of the row this small footprint is cannot be told."
   },
+  "lidar/x-259z1620": {
+   "seen": null,
+   "notes": "behind the Parque da Ponte's trees in capela-sao-joao: nothing of it shows."
+  },
   "lidar/x-261z604": {
    "seen": null,
    "notes": "In no photo found online (task 008), nor in a viewpoint's."
@@ -99,6 +107,10 @@
    "patch": null,
    "sure": false,
    "notes": "Not seen here: its outline covers the old granite-framed corner house on the left, which hides it. In facade-way-473734202 (#3) and -383764627 (#5) it is the narrow terraced pair down the side street: a mauve-lilac front with a wide garage door and an iron balcony beside a salmon-pink one, white frames and a bracketed cornice."
+  },
+  "lidar/x-284z1615": {
+   "seen": null,
+   "notes": "behind the Parque da Ponte's trees in capela-sao-joao: nothing of it shows."
   },
   "lidar/x-284z552": {
    "seen": null,
@@ -401,6 +413,14 @@
    "seen": null,
    "notes": "a speck in every photo it is in (under 0.05% of it)."
   },
+  "lidar/x-734z1656": {
+   "seen": null,
+   "notes": "far down the valley at the right edge of monte-da-forca, as 055 aimed it, its outline over the cypresses and the roofs beyond; too small to say."
+  },
+  "lidar/x-76z1590": {
+   "seen": null,
+   "notes": "a speck behind the trees on the left of estadio, as 055 aimed it (under 0.05% of it); nothing of it shows."
+  },
   "lidar/x-790z1681": {
    "type": null,
    "colour": "white",
@@ -554,6 +574,10 @@
    "patch": null,
    "sure": false,
    "notes": "The side wing of the block 1 names, in deep shade behind bare trees: long balconies with solid grey parapets wrapping the front, under a band of brown cladding at the roof's edge; at least six storeys, the lower ones lost in the trees and the slope. facade-way-252795885 (#3) shows it in sun, grey."
+  },
+  "lidar/x140z1083": {
+   "seen": null,
+   "notes": "behind the Parque da Ponte's trees in capela-sao-joao, right of the chapel, where it takes the most of the shot of any but the chapel: nothing of it shows."
   },
   "lidar/x1415z1053": {
    "type": "commercial",
@@ -812,6 +836,10 @@
    "sure": true,
    "notes": "A narrow block in soft dusty pink render (between pale-pink and pink), every window in a broad frame of dressed granite, a granite border up its right edge and a low granite plinth; on its left a stack of curved concrete balconies with ornate iron railings. White PVC windows and roller shutters. Seen steeply from below, so the top floor may be cut off."
   },
+  "lidar/x241z1071": {
+   "seen": null,
+   "notes": "right behind the chapel's porch in capela-sao-joao: nothing of it shows."
+  },
   "lidar/x258z798": {
    "type": "block-1950s",
    "colour": "off-white",
@@ -832,6 +860,10 @@
    "sure": false,
    "notes": "The LiDAR's outline is a long thin strip over the whole terrace: the star's block is a weathered grey-beige concrete one with bands of windows and pale blue-grey panels between them, a top floor set back with plants, the shoe shop's red fascia below. The same outline also covers a narrow white block, a white block with continuous balconies and a salmon one to its right. As viewpoint:lobato-crossing shows it: A modernist corner block of grimy off-white render: long ribbon windows in grey frames, a concrete planter ledge along the first floor, a tall blank column at the corner; the ground floor glazed all round the corner in frosted panels over a half-sunk dark base, a canopy on the side street. Its top is out of frame; block-1950s by its age and form (its ribbon windows are unlike the kind's)."
   },
+  "lidar/x269z1657": {
+   "seen": null,
+   "notes": "behind the Parque da Ponte's trees in capela-sao-joao: nothing of it shows."
+  },
   "lidar/x280z889": {
    "seen": null,
    "notes": "its outline covers only an empty pavement in front of a granite wall; nothing stands there in this 2018 photo (later photos show site cabins and a portable toilet near there)."
@@ -839,6 +871,10 @@
   "lidar/x284z1003": {
    "seen": null,
    "notes": "hidden behind the parked vans and a motorhome, in the trees' shade."
+  },
+  "lidar/x293z1589": {
+   "seen": null,
+   "notes": "behind the Parque da Ponte's trees in capela-sao-joao: nothing of it shows."
   },
   "lidar/x302z819": {
    "type": "annex",
@@ -871,6 +907,10 @@
    "patch": [420, 185, 500, 205],
    "sure": true,
    "notes": "A weathered, greyish beige rendered block with small projecting balconies on iron railings at its ends and a slightly raised middle bay, ochre panels along the parapet, a strip of glass blocks up the right-hand stair and phone masts on the roof; a long row of shop windows covered in posters. The outline also takes in a lower beige wing on the left with a red-framed showroom."
+  },
+  "lidar/x325z1622": {
+   "seen": null,
+   "notes": "behind the Parque da Ponte's trees in capela-sao-joao: nothing of it shows."
   },
   "lidar/x332z1694": {
    "seen": null,
@@ -1137,6 +1177,23 @@
    "seen": null,
    "notes": "hidden behind the park's trees at the photo's right edge."
   },
+  "relation/19915703": {
+   "type": "civic",
+   "colour": "white",
+   "material": "render",
+   "floors": 4,
+   "ground": "blank",
+   "base": {
+    "colour": "brown",
+    "material": "panels"
+   },
+   "balconies": "none",
+   "shutters": "none",
+   "seen": "viewpoint:altice-forum",
+   "patch": null,
+   "sure": false,
+   "notes": "The Altice Forum, behind its car park's red fence: on the right the hall's west face, four storeys of small square windows in white render, the α high at its north end and a band of brown slatted wood along its foot; on the left the buildings north of it, white and nearly blank, a few rows of small square windows and a long concave wall. One facade for all its parts, so the hall's blank walls elsewhere have its windows too."
+  },
   "relation/20033899": {
    "type": "block-1950s",
    "colour": "salmon",
@@ -1211,6 +1268,10 @@
    "patch": null,
    "sure": false,
    "notes": "Far down the street: a tall front on a grid of grey concrete frames, each bay a recessed balcony glazed floor to ceiling; the hotel's name runs down a burgundy sign on its left side. Hazy and partly hidden by the nearer blocks."
+  },
+  "way/108153353": {
+   "seen": null,
+   "notes": "behind the Parque da Ponte's trees in capela-sao-joao: nothing of it shows."
   },
   "way/108153354": {
    "type": "commercial",
@@ -1383,6 +1444,24 @@
    "seen": null,
    "notes": "a speck in every photo it is in (under 0.05% of it)."
   },
+  "way/1203031779": {
+   "seen": null,
+   "notes": "behind the Parque da Ponte's trees in capela-sao-joao: nothing of it shows."
+  },
+  "way/121590142": {
+   "type": "church",
+   "colour": "white",
+   "material": "render",
+   "floors": 2,
+   "ground": "blank",
+   "base": null,
+   "balconies": "none",
+   "shutters": "none",
+   "seen": "viewpoint:capela-sao-joao",
+   "patch": null,
+   "sure": true,
+   "notes": "São João da Ponte's chapel, its front from the Largo: white render framed in dressed granite (the corners' pilasters, the cornices, the windows' and doors' frames, a plinth), a two-storey bell block on the left under its bell gable with two bells, the nave's gable on the right with a stone cross, and before its door a porch of granite columns on a low wall under a hipped tile roof. Drawn by the games as a model of its own (task 021)."
+  },
   "way/121590164": {
    "type": "commercial",
    "colour": "pale-grey",
@@ -1546,6 +1625,10 @@
    "patch": null,
    "sure": false,
    "notes": "Only a low old house with a terracotta roof and a dull ochre wall shows, behind the hedge and the big sign, just under its outline (which sits on the trees above it). Its other photo shows the same: a long ochre house with small windows, its lower part hidden by the hedge."
+  },
+  "way/1373885837": {
+   "seen": null,
+   "notes": "a roof behind the car park's fence and its cars in altice-forum: nothing of it shows."
   },
   "way/1459400946": {
    "type": "old-house",
@@ -1988,9 +2071,17 @@
    "seen": null,
    "notes": "behind trees; only a dim flat-topped wall shows, likely a farther building's."
   },
+  "way/159208687": {
+   "seen": null,
+   "notes": "behind the Parque da Ponte's trees in capela-sao-joao, right of the chapel, where it takes the most of the shot of any but the chapel: nothing of it shows."
+  },
   "way/159209216": {
    "seen": null,
    "notes": "the sports hall is hidden behind the park's trees."
+  },
+  "way/159859573": {
+   "seen": null,
+   "notes": "behind the Parque da Ponte's trees in capela-sao-joao, right of the chapel, where it takes the most of the shot of any but the chapel: nothing of it shows."
   },
   "way/162945716": {
    "seen": null,
@@ -3081,6 +3172,10 @@
    "seen": null,
    "notes": "a speck in every photo it is in (under 0.05% of it)."
   },
+  "way/259925905": {
+   "seen": null,
+   "notes": "behind the Parque da Ponte's trees in capela-sao-joao: nothing of it shows."
+  },
   "way/259926190": {
    "type": "block-1970s-90s",
    "colour": "cream",
@@ -3136,6 +3231,10 @@
   "way/259935498": {
    "seen": null,
    "notes": "In no photo found online (task 008), nor in a viewpoint's."
+  },
+  "way/259938084": {
+   "seen": null,
+   "notes": "a speck at the right edge of estadio, as 055 aimed it, behind the stadium's white hoarding; nothing of it shows."
   },
   "way/259938154": {
    "type": "block-1970s-90s",
@@ -5552,6 +5651,10 @@
    "seen": null,
    "notes": "hidden behind the white boundary wall, the graffiti-mural wall and the trees; only flagpoles show over the wall."
   },
+  "way/591805535": {
+   "seen": null,
+   "notes": "behind the Parque da Ponte's trees in capela-sao-joao: nothing of it shows."
+  },
   "way/592131918": {
    "type": "annex",
    "colour": "pale-grey",
@@ -5595,6 +5698,10 @@
    "seen": null,
    "notes": "In no photo found online (task 008), nor in a viewpoint's."
   },
+  "way/596677555": {
+   "seen": null,
+   "notes": "a speck far down the valley in monte-da-forca, as 055 aimed it (under 0.05% of it)."
+  },
   "way/596677556": {
    "seen": null,
    "notes": "a speck in every photo it is in (under 0.05% of it)."
@@ -5602,6 +5709,10 @@
   "way/596677567": {
    "seen": null,
    "notes": "a speck in every photo it is in (under 0.05% of it)."
+  },
+  "way/596677578": {
+   "seen": null,
+   "notes": "a speck far down the valley in monte-da-forca, as 055 aimed it, among the roofs at the right edge."
   },
   "way/596682372": {
    "seen": null,

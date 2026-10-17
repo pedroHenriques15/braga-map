@@ -789,6 +789,88 @@
         "roll": -1.3
       },
       "notes": "The photo is from a car. In the game an invented house stands in the street, 6 m ahead (task 011)."
+    },
+    {
+      "id": "capela-sao-joao",
+      "name": "São João da Ponte's chapel, from the Largo",
+      "nome": "A capela de São João da Ponte, do largo",
+      "kind": "foot",
+      "x": 275.7,
+      "y": 10.1,
+      "z": 989.9,
+      "tx": 250.8,
+      "ty": 24.2,
+      "tz": 1086.8,
+      "fov": 60,
+      "photo": {
+        "source": "mapillary",
+        "id": "832014945694011",
+        "url": "https://www.mapillary.com/app/?pKey=832014945694011",
+        "author": "stuckstick",
+        "licence": "CC BY-SA 4.0",
+        "date": "2024-07-20",
+        "lat": 41.542287,
+        "lon": -8.418696,
+        "heading": 47,
+        "pitch": 1.2,
+        "roll": 0,
+        "pano": true
+      },
+      "notes": "In the Parque da Ponte, 72 m from the route. From the pavement: the photo is a panorama taken on foot."
+    },
+    {
+      "id": "altice-forum",
+      "name": "The Altice Forum, from the west",
+      "nome": "O Altice Forum, de oeste",
+      "kind": "foot",
+      "x": -135.3,
+      "y": 1,
+      "z": 1098.7,
+      "tx": -36.8,
+      "ty": 7.1,
+      "tz": 1116.1,
+      "fov": 52,
+      "photo": {
+        "source": "mapillary",
+        "id": "4541369425891502",
+        "url": "https://www.mapillary.com/app/?pKey=4541369425891502",
+        "author": "waldyrious",
+        "licence": "CC BY-SA 4.0",
+        "date": "2019-07-06",
+        "lat": 41.541308,
+        "lon": -8.423622,
+        "heading": 139.4,
+        "pitch": 3.5,
+        "roll": -6
+      },
+      "notes": "From the path along its fence, 133 m from the route, which sees it from further west. Mapillary says the camera looked at 139°; the game frames what the photo shows at 100° (the buildings outlined from it with tools/buildings.mjs mark): the hall's west face with the α on the right, the buildings north of it on the left."
+    },
+    {
+      "id": "picoto-top",
+      "name": "The Picoto's top, from the east",
+      "nome": "O alto do Picoto, de leste",
+      "kind": "skyline",
+      "x": 947.8,
+      "y": 45.1,
+      "z": 1347.4,
+      "tx": 847.8,
+      "ty": 56.7,
+      "tz": 1345,
+      "fov": 49,
+      "photo": {
+        "source": "mapillary",
+        "id": "498906697923294",
+        "url": "https://www.mapillary.com/app/?pKey=498906697923294",
+        "author": "apires",
+        "licence": "CC BY-SA 4.0",
+        "date": "2018-02-17",
+        "lat": 41.539068,
+        "lon": -8.41064,
+        "heading": 271.4,
+        "pitch": 6.6,
+        "roll": -1.9
+      },
+      "notes": "From a car, 109 m from the route: the miradouro is the railing on the top, left of centre."
     }
   ]
 }

@@ -984,3 +984,58 @@ sunny.
 
 The alternatives were the first track's cartoon models (not to scale), and photo-textured boxes: the
 photos found online give one wall straight on, the chapel's side, and none of the rest.
+
+## 039 · The streets are where the LiDAR measured them: the map's ways, moved onto their carriageways
+
+*2026-10-17 · task 026 · narrows decision 022's "no street is moved"*
+
+Every street was a band round OpenStreetMap's line for it, at the width the map gives or guesses
+(decision 019), and the map's lines sit a metre or two off the middle of the real street in many
+places (the Avenida João XXI's slip road at (586, 230) drew its carriageway over a 5 m drop). The
+owner chose to move them by measurement, as the buildings' heights are the LiDAR's (decision 025),
+over listing the offsets and keeping the map's lines; and the width measured over the map's `width`
+where it was measured clearly (task 026's answers, 2026-10-16).
+
+- **Nothing is moved by hand:** the map's ways stay the streets, with their names, kinds,
+  junctions and directions, and nothing is added or turned round (decision 022 still holds for
+  that). Where they are and how wide is the LiDAR's: `tools/carriageways.mjs` measures each street
+  on the ground in the open world's area every 2 m (its kerbs, walls, banks and drops in the 50 cm
+  terrain, the road by the laser's echo off it), and `lines.mjs`'s `onCarriageways` moves the map's
+  nodes onto the middle measured, for every reader of the streets.
+- **Kerb to kerb:** the carriageway is everything at the road's level between its kerbs, bays along
+  it included; a car park the map has beside it is not. Where nothing tells the edge (a parked car
+  on it, a tree's crown, setts from house to house, a junction), nothing is measured, and the map's
+  line stays.
+- **What moves:** a street whose middle is a quarter metre or more off its line for 30 m or more
+  (the task had "about half a metre": the edges are measured to a quarter metre, and a third of a
+  metre already took the João XXI's slip road over its drop); and wherever its band, at its width,
+  would reach past a drop, a wall or a bank the LiDAR saw at its edge. It eases in and out over 20 m.
+  A junction moves once, to where its streets' middles meet. A bridge's deck, a tunnel's road and the
+  railway keep their lines (tasks 028 and 012), and a street that runs on into a deck keeps the map's
+  width, the deck's.
+- **The jump stays as the owner approved it** (decision 027): the streets its ramp takes off from and
+  lands on keep the map's lines and widths (`kept`: the landing street is 5 m by the LiDAR, the map's
+  6.5, and party-kart's autopilot can't turn into it off the flight; task 057 asks how the race should
+  land on the real one). Moving the streets made another jump the cheapest, so a track now names its
+  approved jump (`jump` in `tools/tracks.mjs`) and the planner fails rather than take another.
+- **The open world's edge stays where it was agreed:** `open.mjs` takes the moved lines at the map's
+  widths, as its rules for the edge were set on them (the area 3.486 km² before, 3.489 after).
+- **What the LiDAR took for ground over a street isn't:** a carriageway is held at the street's
+  height where the ground under it stands more than a metre over it, and a tree's crown or a roof
+  more than 5 m over it is taken off beside it too, if it ends within 20 m (`streetBumps`): the
+  Avenida Doutor Porfírio da Silva's plane trees at (760, 659), 19 m, which the street's measured
+  width now took in and which threw the race's karts off it, and two roofs over service ways.
+
+What it did, 2026-10-17: 85.4 km of streets measured, both edges seen over 12.9 km (15%) and one
+over 17.9 (21%); where both were, the middle within 0.63 m of the map's line for half of them and 2
+m for 90%; widths clear on 158 streets, 53 narrower than the map's by over half a metre and 67
+wider. 244 streets moved, 342 stretches over 24.2 km, 310 nodes by over a metre and 3.89 m at most.
+Carriageways past an edge the LiDAR saw, over a drop of more than a metre, 269 places every 2 m
+before and 48 after; over any drop, seen or not, 681 and 411 (the rest under trees and parked cars,
+where no edge was seen). The Volta dos Amigos' line 10,178 m (10,168 before), over the same jump. In
+party-kart, the autopilot's laps 302.1 and 300.0 s (298.8 and 296.9 on 1.19.0), the eight bots'
+finishes within 3.3 s, with 2 respawns (10.8 s and 2).
+
+The alternatives were the task's other answers: the offsets measured and listed only, the map's
+lines kept (decision 022 as it was); and the map's `width` tag where it has one, the measured width
+replacing only the guesses.

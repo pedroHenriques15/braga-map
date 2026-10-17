@@ -437,6 +437,49 @@
         "travessa-lobato": [960, 720],
         "lobato-east": [960, 720]
       }
+    },
+    {
+      "id": "2026-10-17-after022",
+      "label": "A luz",
+      "date": "2026-10-17",
+      "tasks": [
+        "022"
+      ],
+      "note": "A luz de Braga a uma hora certa: por defeito uma tarde clara de março, como nas fotos da Rua do Fujacal e do Conselheiro Lobato (13 de março de 2019, às 15h), com o céu azul-fundo e cúmulos, o asfalto escuro, sombras marcadas e uma neblina azulada nos montes ao longe. Os candeeiros só se acendem depois do pôr do sol. O jogo também sabe fazer um dia cinzento e chuva, mas a ronda mostra a tarde de sol, a luz que tem por defeito. A cidade é a da ronda anterior.",
+      "made": "2026-10-17T11:12:24.768Z",
+      "game": "909539b",
+      "map": "1.18.1",
+      "shots": {
+        "fujacal-start": [960, 720],
+        "imaculada-conceicao": [960, 720],
+        "liberdade": [960, 540],
+        "sao-joao-da-ponte": [960, 540],
+        "devesa": [960, 540],
+        "alvaro-carneiro": [960, 720],
+        "porfirio-da-silva": [960, 720],
+        "31-de-janeiro": [960, 720],
+        "joao-xxi": [960, 720],
+        "bernardo-sequeira": [960, 720],
+        "bom-jesus": [960, 720],
+        "pascoal-fernandes": [960, 720],
+        "egidio-guimaraes": [960, 720],
+        "robert-smith": [960, 720],
+        "robert-smith-picoto": [960, 720],
+        "falperra": [960, 720],
+        "sameiro": [960, 720],
+        "estadio": [960, 720],
+        "viriato-amaral-nunes": [960, 720],
+        "monte-da-forca": [960, 720],
+        "couteiro": [960, 720],
+        "conselheiro-lobato": [960, 720],
+        "fujacal-west": [960, 720],
+        "travessa-fujacal": [960, 720],
+        "alameda-fujacal": [960, 720],
+        "lobato-pavement": [960, 432],
+        "lobato-crossing": [960, 540],
+        "travessa-lobato": [960, 720],
+        "lobato-east": [960, 720]
+      }
     }
   ]
 }

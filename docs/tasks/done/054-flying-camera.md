@@ -242,3 +242,6 @@ changed 157 of a view's 518,400 pixels by one level in 255: Notes.)
     there, `watchSpeed` steps its graphics down, for the driving after too.
   - party-kart's main folder still has `main` at `a62d73a` (another session's): it fast-forwards
     to `5abc39b` with `git pull`.
+- **Deployed** 2026-10-17 with 022 (the light), from party-kart `c318ec1` on braga-map 1.18.1, at
+  the owner's word. On the live page (headless, `?autodrive`): V flew, E took the camera from 12 to
+  54 m, V landed it, and no errors.

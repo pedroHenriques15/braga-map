@@ -126,9 +126,9 @@ knobs are `?exp ?sun ?hemi ?env ?fog`; none sets the sun's direction or the time
 - **Not decided here, for the owner:** 18 of the 29 photos are grey days, so the scorecard sets a
   sunny afternoon beside grey photos more often than not. The default stays the clear afternoon
   "What" asks for; a grey default, or each round shot in its photo's weather, would be the owner's call.
-  A lasting entry in `docs/DECISIONS.md` (the light: a clear March afternoon by default, matched to the
-  photos; the grey day and the rain off) is still to write: this session was asked to change nothing in
-  braga-map but this file, its roadmap lines and the round's record.
+  > Leave it as it is: the clear afternoon in the game and in every round, grey photos included (the
+  > owner, 2026-10-17). Written as decision 037 by the planning session, as this one was asked to
+  > change nothing in braga-map but this file, its roadmap lines and the round's record.
 - **The round** `2026-10-17-after022` ("A luz"), shot on party-kart `909539b` (braga-map 1.18.1) after
   the merge with `main` (`5abc39b`, which hadn't moved: neither 021 nor 026 landed while it was shot),
   at High, Medium and Low, prepared with a copy of `tools/round.mjs` reading `../party-kart-022/shots/`
@@ -144,3 +144,5 @@ knobs are `?exp ?sun ?hemi ?env ?fog`; none sets the sun's direction or the time
   `909539b`, the budget's note), pushed, not deployed. party-kart's `CLAUDE.md` ("Trying it in a
   browser" and the simulation's files) and `docs/architecture.md` (the code table, `Look`, the budget)
   say what changed.
+- **Deployed** 2026-10-17 from `c318ec1` with 054 (the flying camera) and braga-map 1.18.1 (048, 017
+  and 046), at the owner's word; the live page serves the build (`index-Dp3Xgjwj.js`).

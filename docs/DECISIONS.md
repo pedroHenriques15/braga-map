@@ -932,3 +932,30 @@ is drawn as what it is:
 
 The alternatives were the hash's palette with OSM's few tags (55 colours, 28 materials over 20,000
 buildings), and photos on every facade, which the photos found online can't give.
+
+## 037 · Braga's light is a clear March afternoon, matched to the photos, in the game and in every round
+
+*2026-10-17 · task 022 · the sun, the sky, the haze and the weather*
+
+The sun stood still, about 25° up, the haze was one beige colour, and the sky's light was nearly the
+sun's, so the game was about twice as bright as the photos and its shadows hardly showed. Now:
+
+- **The real sun:** where it is over Braga (41.55° N, 8.42° W) at a moment, which `?time=` sets in
+  Braga's clock. By default it's 13 March at 15:15, the clear afternoon when five of the photos in
+  Fujacal and by the Conselheiro Lobato were taken.
+- **Matched to the photos of clear days,** by their pixels: the sky their deep blue with a fair day's
+  cumulus drifting, the sun strong against the sky's light (in a photo a shadow is about a quarter as
+  bright as the sunlit ground beside it), the asphalt a mid grey. The haze hides with the distance, as
+  air does, not with its square: half of a hill 4 km off, in a blue-grey a little greyer than the
+  horizon's sky. Bom Jesus and the Sameiro, at twice their size (decision 004), take it as the hills
+  round them do.
+- **The street lamps** light only once the sun is under 4°.
+- **A grey day and rain** (`?weather=grey`, `?weather=rain`) are only for whoever asks for them in the
+  address: not in the menu, and the rain has no sound yet.
+- **Every round is shot on the same clear afternoon** (`?scenery` draws the clouds at time 0, so a
+  round is the same every time), grey photos included (the owner, 2026-10-17): 18 of the 29 are grey
+  days, so in 18 places the scorecard sets a sunny shot beside a grey photo.
+
+The alternatives were a grey day as the game's default, which matches those 18 photos and loses the
+11 clear ones, and each viewpoint shot at its photo's time and in its weather while the game stays
+sunny.

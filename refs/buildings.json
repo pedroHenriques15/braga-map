@@ -1177,6 +1177,10 @@
    "seen": null,
    "notes": "hidden behind the park's trees at the photo's right edge."
   },
+  "relation/10537692": {
+   "seen": null,
+   "notes": "Far up the Rua Monsenhor Airosa past the chapel in capela-santa-justa, a speck over the roofs."
+  },
   "relation/19915703": {
    "type": "civic",
    "colour": "white",
@@ -1303,6 +1307,23 @@
    "patch": [262, 225, 290, 248],
    "sure": false,
    "notes": "A big vacant shopping building, half behind trees in a small dim photo: weathered, streaked pale grey concrete walls with pilasters, a blank top band and rows of small windows. Its ground floor (seen in facade-lidar-x302z819 #1) is cream render with granite window surrounds under a canopy on dark red columns."
+  },
+  "way/108323630": {
+   "type": "civic",
+   "colour": "white",
+   "material": "render",
+   "floors": 2,
+   "ground": "blank",
+   "base": {
+    "colour": "pale-grey",
+    "material": "granite"
+   },
+   "balconies": "none",
+   "shutters": "none",
+   "seen": "landmark-igreja-de-sao-lazaro-1",
+   "patch": null,
+   "sure": false,
+   "notes": "The Igreja de São Lázaro (1969), its south-west corner from the street: white render over a base of big pale granite slabs, a row of windows high up, and a darker wall of rough granite further along. Its bell tower is drawn by the games as a model of its own (task 056)."
   },
   "way/108323632": {
    "seen": null,
@@ -2070,6 +2091,20 @@
   "way/1558153155": {
    "seen": null,
    "notes": "behind trees; only a dim flat-topped wall shows, likely a farther building's."
+  },
+  "way/159203541": {
+   "type": "church",
+   "colour": "granite",
+   "material": "stone",
+   "floors": 1,
+   "ground": "blank",
+   "base": null,
+   "balconies": "none",
+   "shutters": "none",
+   "seen": "landmark-capela-de-santo-adriao-2",
+   "patch": null,
+   "sure": true,
+   "notes": "The Capela de Santo Adrião (1576): rubble granite under a terracotta roof, a small window in its south side, its porch at the west end (way/897195634), the bell gable on the front's apex. Drawn by the games as a model of its own (task 056)."
   },
   "way/159208687": {
    "seen": null,
@@ -5754,6 +5789,20 @@
    "seen": null,
    "notes": "hidden behind the trees; only its outline's top shows over them."
   },
+  "way/897195634": {
+   "type": "church",
+   "colour": "granite",
+   "material": "stone",
+   "floors": 1,
+   "ground": "blank",
+   "base": null,
+   "balconies": "none",
+   "shutters": "none",
+   "seen": "landmark-capela-de-santo-adriao-1",
+   "patch": null,
+   "sure": true,
+   "notes": "Santo Adrião's porch before its door: granite columns on low rubble walls under a hipped tile roof on timber. Drawn with the chapel (task 056)."
+  },
   "way/906112164": {
    "type": "old-house",
    "colour": "beige",
@@ -5796,6 +5845,10 @@
   "way/907338526": {
    "seen": null,
    "notes": "a small shed hidden behind trees and a hedge."
+  },
+  "way/910748044": {
+   "seen": null,
+   "notes": "The parish's offices up the bank behind Santo Adrião: in capela-santo-adriao only a corner of it, behind the chapel's wall at the photo's top left."
   },
   "way/928169453": {
    "seen": null,

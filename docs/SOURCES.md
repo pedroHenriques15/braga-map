@@ -227,7 +227,7 @@ their lists are committed; `node tools/refs.mjs` fetches the photos into `.cache
   positions to place the viewpoints. As textures too, which the licence allows: a texture made
   from one is CC BY-SA. The detected features never get copied into this repository; they may
   guide someone mapping those things in OpenStreetMap, which then brings them here.
-- **Used:** all 32 viewpoints' photos (three of them reference photos of the landmarks, task 021), and 399 of the reference photos (task 008), 19 of them
+- **Used:** all 34 viewpoints' photos (three of them reference photos of the landmarks, task 021, and two of the route's chapels, task 056), and 403 of the reference photos (task 008, and four of task 056's), 19 of them
   marked good enough for a texture. Ten of those are facade textures since task 007
   (`refs/textures.json`, `world/textures/`), so CC BY-SA 4.0, each with its author and link in
   its tile's index; `map().photoCredits` gathers the authors for a game's credits.
@@ -247,9 +247,10 @@ their lists are committed; `node tools/refs.mjs` fetches the photos into `.cache
 - **Credit:** each photo's author, licence and link (`photo` in `refs/photos.json`).
 - **May be used for:** reference, always. Textures, with the credit; a CC BY-SA photo makes the
   texture CC BY-SA.
-- **Used:** 25 of the reference photos (task 008): the landmarks (the chapel of São João da
-  Ponte, the Parque da Ponte, the Altice Forum, the Estádio 1.º de Maio, the Picoto's cross, the
-  Igreja de Lamaçães, Bom Jesus, the Sameiro), the skyline from Bom Jesus and from the Picoto,
+- **Used:** 30 of the reference photos (task 008, and five of task 056's): the landmarks (the
+  chapel of São João da Ponte, the Parque da Ponte, the Altice Forum, the Estádio 1.º de Maio, the
+  Picoto's cross, the Igreja de Lamaçães, Bom Jesus, the Sameiro; and the route's chapels of Santa
+  Justa, Santo Adrião and Santa Tecla, Santa Justa's front good enough for a texture), the skyline from Bom Jesus and from the Picoto,
   azulejos, manhole covers, an old lamp, a granite bench, an old bus shelter, and Portugal's
   drawing of the give-way sign (`Portugal road sign B1.svg`, public domain), the one generic
   stand-in.

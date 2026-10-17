@@ -1,5 +1,5 @@
 {
-  "about": "Viewpoints: where the game is set against the real Braga (task 001). Metres from the Praça da República, x east, z south, y above elev0 (154 m). name is in English and nome in Portuguese, for the scorecard (task 003). The camera at (x, y, z) looks at (tx, ty, tz); fov is its vertical field of view in degrees. route: false marks a kart's view the race no longer passes, on a street of the open world (task 047). photo is the real one from the same place: its source, author, licence and link, and the camera that took it (lat, lon, heading, pitch and roll in degrees). Fetch the photos with node tools/refs.mjs.",
+  "about": "Viewpoints: where the game is set against the real Braga (task 001). Metres from the Praça da República, x east, z south, y above elev0 (154 m). name is in English and nome in Portuguese, for the scorecard (task 003). The camera at (x, y, z) looks at (tx, ty, tz); fov is its vertical field of view in degrees. surface is what the photo was taken from, and what the camera stands on in the tiles (task 058): lane (a carriageway, half a car's width in from its edge at least), pavement (a pavement, or a central reservation or an island beside the carriageway), path (a footway, a path or a cycleway) or ground (none of those: a square, a park). Where Mapillary's position puts it off that surface, the camera is moved the shortest way onto it, in a lane to the middle of the lane the photo shows, its target with it so its heading and pitch stay, and its notes say how far. route: false marks a kart's view the race no longer passes, on a street of the open world (task 047). photo is the real one from the same place: its source, author, licence and link, and the camera that took it (lat, lon, heading, pitch and roll in degrees). Fetch the photos with node tools/refs.mjs.",
   "credit": "Photos © Mapillary contributors, CC BY-SA 4.0: the author and link of each are under photo.",
   "viewpoints": [
     {
@@ -7,13 +7,14 @@
       "name": "The start, on the Rua do Fujacal",
       "nome": "A partida, na Rua do Fujacal",
       "kind": "kart",
-      "x": -184.9,
-      "y": 9.3,
-      "z": 784.6,
-      "tx": -283.3,
-      "ty": 11.4,
-      "tz": 802.7,
+      "x": -184.4,
+      "y": 9.4,
+      "z": 787.5,
+      "tx": -282.8,
+      "ty": 11.5,
+      "tz": 805.6,
       "fov": 51,
+      "surface": "lane",
       "photo": {
         "source": "mapillary",
         "id": "154051336736870",
@@ -27,20 +28,21 @@
         "pitch": 1.2,
         "roll": 0.8
       },
-      "notes": ""
+      "notes": "The photo is from a car in the right lane, cars parked along the kerb. Moved 2.9 m onto that lane, 2 m clear of the kerb for them, off the kerb where Mapillary puts it (task 058)."
     },
     {
       "id": "imaculada-conceicao",
       "name": "Avenida Imaculada Conceição, under its trees",
       "nome": "Avenida Imaculada Conceição, debaixo das árvores",
       "kind": "kart",
-      "x": -260.7,
+      "x": -260.1,
       "y": 13.1,
-      "z": 726.4,
-      "tx": -163.3,
+      "z": 729,
+      "tx": -162.7,
       "ty": 19.6,
-      "tz": 704.1,
+      "tz": 706.7,
       "fov": 48,
+      "surface": "lane",
       "photo": {
         "source": "mapillary",
         "id": "554959132156395",
@@ -54,20 +56,21 @@
         "pitch": 3.7,
         "roll": 0
       },
-      "notes": ""
+      "notes": "The photo is from a car in the eastbound carriageway's left lane, the median's hedge beside it. Moved 2.7 m onto that lane's middle, off the median where Mapillary puts it (task 058)."
     },
     {
       "id": "liberdade",
       "name": "Avenida da Liberdade, towards São João da Ponte",
       "nome": "Avenida da Liberdade, para São João da Ponte",
       "kind": "foot",
-      "x": 278,
-      "y": 10.6,
-      "z": 832.7,
-      "tx": 314.1,
-      "ty": 10.6,
-      "tz": 925.9,
+      "x": 274.1,
+      "y": 10.4,
+      "z": 834.2,
+      "tx": 310.2,
+      "ty": 10.4,
+      "tz": 927.4,
       "fov": 60,
+      "surface": "pavement",
       "photo": {
         "source": "mapillary",
         "id": "798758062408961",
@@ -82,20 +85,21 @@
         "roll": 3.5,
         "pano": true
       },
-      "notes": "From the pavement: the photo is a panorama taken on foot."
+      "notes": "From the pavement: the photo is a panorama taken on foot, on the wide pavement west of the cycle lane. Moved 4.2 m onto it, the cycleway on its left as in the photo, off the carriageway where Mapillary puts it; the tiles have that pavement as an island (task 058)."
     },
     {
       "id": "sao-joao-da-ponte",
       "name": "Largo de São João da Ponte",
       "nome": "Largo de São João da Ponte",
       "kind": "foot",
-      "x": 345.3,
-      "y": 12.1,
-      "z": 1001.3,
-      "tx": 372.7,
-      "ty": 12.1,
-      "tz": 1097.4,
+      "x": 347.1,
+      "y": 12.2,
+      "z": 1001.4,
+      "tx": 374.5,
+      "ty": 12.2,
+      "tz": 1097.5,
       "fov": 60,
+      "surface": "pavement",
       "photo": {
         "source": "mapillary",
         "id": "1008294480612333",
@@ -110,7 +114,7 @@
         "roll": -5.4,
         "pano": true
       },
-      "notes": "From the pavement: the photo is a panorama taken on foot. In the game the camera stands inside an invented house, on the roundabout (task 011)."
+      "notes": "From the pavement: the photo is a panorama taken on foot. Moved 1.8 m onto the pavement, half a metre in, off the cycleway the tiles have beside it, where Mapillary puts it (task 058)."
     },
     {
       "id": "devesa",
@@ -124,6 +128,7 @@
       "ty": 13.8,
       "tz": 1019.7,
       "fov": 60,
+      "surface": "lane",
       "photo": {
         "source": "mapillary",
         "id": "1702537297230509",
@@ -138,7 +143,7 @@
         "roll": 1.9,
         "pano": true
       },
-      "notes": "From the pavement: the photo is a panorama taken on foot."
+      "notes": "From the road at the crossing: the photo is a panorama taken on foot."
     },
     {
       "id": "alvaro-carneiro",
@@ -152,6 +157,7 @@
       "ty": 24.8,
       "tz": 686.8,
       "fov": 51,
+      "surface": "lane",
       "photo": {
         "source": "mapillary",
         "id": "2199691426834548",
@@ -172,13 +178,14 @@
       "name": "Avenida Doutor Porfírio da Silva",
       "nome": "Avenida Doutor Porfírio da Silva",
       "kind": "kart",
-      "x": 782.3,
-      "y": 18.3,
-      "z": 674.8,
-      "tx": 755.5,
-      "ty": 25.3,
-      "tz": 578.4,
+      "x": 777.9,
+      "y": 18.2,
+      "z": 676,
+      "tx": 751.1,
+      "ty": 25.2,
+      "tz": 579.6,
       "fov": 38,
+      "surface": "lane",
       "photo": {
         "source": "mapillary",
         "id": "1092698087889307",
@@ -192,7 +199,7 @@
         "pitch": 4,
         "roll": 1
       },
-      "notes": ""
+      "notes": "The photo is from a car in the right lane. Moved 4.6 m onto that lane's middle, off the pavement where Mapillary puts it (task 058)."
     },
     {
       "id": "31-de-janeiro",
@@ -206,6 +213,7 @@
       "ty": 29,
       "tz": 368.3,
       "fov": 53,
+      "surface": "lane",
       "photo": {
         "source": "mapillary",
         "id": "124735286325335",
@@ -233,6 +241,7 @@
       "ty": 47.3,
       "tz": 113.6,
       "fov": 52,
+      "surface": "lane",
       "photo": {
         "source": "mapillary",
         "id": "206830544387598",
@@ -260,6 +269,7 @@
       "ty": 26.3,
       "tz": 477.4,
       "fov": 50,
+      "surface": "lane",
       "photo": {
         "source": "mapillary",
         "id": "399017917850009",
@@ -280,13 +290,14 @@
       "name": "Bom Jesus's hill, at the end of the Rua Jaime Sotto Mayor",
       "nome": "O monte do Bom Jesus, ao fundo da Rua Jaime Sotto Mayor",
       "kind": "skyline",
-      "x": 1262.6,
-      "y": 25.6,
-      "z": 382.1,
-      "tx": 1356.7,
-      "ty": 29.8,
-      "tz": 348.2,
+      "x": 1264.5,
+      "y": 25.5,
+      "z": 387.5,
+      "tx": 1358.6,
+      "ty": 29.7,
+      "tz": 353.6,
       "fov": 50,
+      "surface": "lane",
       "photo": {
         "source": "mapillary",
         "id": "2880575998883810",
@@ -300,7 +311,7 @@
         "pitch": 2.4,
         "roll": 1
       },
-      "notes": "Bom Jesus's hill is the ridge right of centre, at the end of the street."
+      "notes": "Bom Jesus's hill is the ridge right of centre, at the end of the street. The photo is from a car in the road's right lane. Moved 5.7 m onto that lane's middle, off the pavement on the road's other side where Mapillary puts it (task 058)."
     },
     {
       "id": "pascoal-fernandes",
@@ -314,6 +325,7 @@
       "ty": 37.6,
       "tz": 763.3,
       "fov": 50,
+      "surface": "lane",
       "photo": {
         "source": "mapillary",
         "id": "214907156917367",
@@ -341,6 +353,7 @@
       "ty": 42.9,
       "tz": 1047.1,
       "fov": 50,
+      "surface": "lane",
       "photo": {
         "source": "mapillary",
         "id": "1231269170635145",
@@ -368,6 +381,7 @@
       "ty": 46.7,
       "tz": 1031,
       "fov": 51,
+      "surface": "lane",
       "photo": {
         "source": "mapillary",
         "id": "182929647076766",
@@ -395,6 +409,7 @@
       "ty": 46.8,
       "tz": 1215.8,
       "fov": 51,
+      "surface": "lane",
       "photo": {
         "source": "mapillary",
         "id": "406754730300680",
@@ -415,13 +430,14 @@
       "name": "The Via da Falperra's roundabout, from the Rua do Espadanido",
       "nome": "A rotunda da Via da Falperra, vista da Rua do Espadanido",
       "kind": "kart",
-      "x": 880.5,
-      "y": 36.2,
-      "z": 1235.5,
-      "tx": 780.6,
-      "ty": 37.6,
-      "tz": 1230.3,
+      "x": 880.4,
+      "y": 36.1,
+      "z": 1237.2,
+      "tx": 780.5,
+      "ty": 37.5,
+      "tz": 1232,
       "fov": 52,
+      "surface": "lane",
       "photo": {
         "source": "mapillary",
         "id": "1645915412261982",
@@ -435,7 +451,7 @@
         "pitch": 0.8,
         "roll": -0.4
       },
-      "notes": ""
+      "notes": "The photo is from a car in the right lane. Moved 1.7 m onto that lane's middle, off the kerb where Mapillary puts it (task 058)."
     },
     {
       "id": "sameiro",
@@ -449,6 +465,7 @@
       "ty": 58.9,
       "tz": 1102.3,
       "fov": 51,
+      "surface": "lane",
       "photo": {
         "source": "mapillary",
         "id": "153449063325135",
@@ -476,6 +493,7 @@
       "ty": 45.8,
       "tz": 1406.7,
       "fov": 50,
+      "surface": "lane",
       "photo": {
         "source": "mapillary",
         "id": "468513977543519",
@@ -503,6 +521,7 @@
       "ty": 53.4,
       "tz": 1402.1,
       "fov": 51,
+      "surface": "lane",
       "photo": {
         "source": "mapillary",
         "id": "312829160247774",
@@ -530,6 +549,7 @@
       "ty": 50,
       "tz": 1735.4,
       "fov": 51,
+      "surface": "lane",
       "photo": {
         "source": "mapillary",
         "id": "1886416761514234",
@@ -558,6 +578,7 @@
       "ty": 22.3,
       "tz": 1502.1,
       "fov": 46,
+      "surface": "lane",
       "photo": {
         "source": "mapillary",
         "id": "509675270387679",
@@ -578,13 +599,14 @@
       "name": "Rua Conselheiro Lobato",
       "nome": "Rua Conselheiro Lobato",
       "kind": "kart",
-      "x": -227.9,
-      "y": 2.5,
-      "z": 979.5,
-      "tx": -129.9,
-      "ty": 1.5,
-      "tz": 959.6,
+      "x": -226,
+      "y": 2.4,
+      "z": 988.7,
+      "tx": -128,
+      "ty": 1.4,
+      "tz": 968.8,
       "fov": 51,
+      "surface": "lane",
       "photo": {
         "source": "mapillary",
         "id": "4282452571804977",
@@ -598,7 +620,7 @@
         "pitch": -0.6,
         "roll": -2.3
       },
-      "notes": ""
+      "notes": "The photo is from a car in the right lane, cars parked along the kerb. Moved 9.4 m onto that lane, 2 m clear of the kerb for them, off the car park beside the street where Mapillary puts it (task 058)."
     },
     {
       "id": "fujacal-west",
@@ -612,6 +634,7 @@
       "ty": 12.8,
       "tz": 825.4,
       "fov": 51,
+      "surface": "lane",
       "photo": {
         "source": "mapillary",
         "id": "914302345803057",
@@ -632,13 +655,14 @@
       "name": "Travessa do Fujacal, at the steps",
       "nome": "Travessa do Fujacal, nas escadas",
       "kind": "foot",
-      "x": -261,
+      "x": -262.7,
       "y": 10.2,
-      "z": 804.3,
-      "tx": -314.1,
+      "z": 805.4,
+      "tx": -315.8,
       "ty": 16.4,
-      "tz": 719.5,
+      "tz": 720.6,
       "fov": 51,
+      "surface": "lane",
       "photo": {
         "source": "mapillary",
         "id": "166109062082759",
@@ -652,20 +676,21 @@
         "pitch": 3.5,
         "roll": -2.2
       },
-      "notes": "The photo is from a car."
+      "notes": "The photo is from a car. Moved 2 m onto the street's middle, off the pavement at the corner where Mapillary puts it (task 058)."
     },
     {
       "id": "alameda-fujacal",
       "name": "Alameda do Fujacal",
       "nome": "Alameda do Fujacal",
       "kind": "foot",
-      "x": -217.2,
-      "y": 6.8,
-      "z": 906.1,
-      "tx": -119.8,
-      "ty": 13.7,
-      "tz": 883.8,
+      "x": -215.5,
+      "y": 6.7,
+      "z": 913.7,
+      "tx": -118.1,
+      "ty": 13.6,
+      "tz": 891.4,
       "fov": 49,
+      "surface": "lane",
       "photo": {
         "source": "mapillary",
         "id": "763737157639553",
@@ -679,20 +704,21 @@
         "pitch": 4,
         "roll": -2.8
       },
-      "notes": "The photo is from a car. In the game the camera stands inside an invented house, in the street (task 011)."
+      "notes": "The photo is from a car, cars parked on its right. Moved 7.8 m onto the Alameda, 2 m clear of the kerb for the parked cars, off the verge by the wall where Mapillary puts it (task 058)."
     },
     {
       "id": "lobato-pavement",
       "name": "Rua Conselheiro Lobato, on the pavement",
       "nome": "Rua Conselheiro Lobato, no passeio",
       "kind": "foot",
-      "x": 167.1,
+      "x": 169.6,
       "y": 7.6,
-      "z": 856.1,
-      "tx": 263.8,
+      "z": 865.6,
+      "tx": 266.3,
       "ty": 16.4,
-      "tz": 830.8,
+      "tz": 840.3,
       "fov": 33,
+      "surface": "pavement",
       "photo": {
         "source": "mapillary",
         "id": "1114251853055592",
@@ -706,20 +732,21 @@
         "pitch": 5,
         "roll": -2
       },
-      "notes": "Its east end, at the Rua do Fujacal."
+      "notes": "Its east end, at the Rua do Fujacal. From the pavement on the street's south side, by the wall. Moved 9.8 m onto it, off the junction where Mapillary puts it (task 058)."
     },
     {
       "id": "lobato-crossing",
       "name": "Rua Conselheiro Lobato, at the crossing",
       "nome": "Rua Conselheiro Lobato, na passadeira",
       "kind": "foot",
-      "x": 277.9,
-      "y": 10.6,
-      "z": 832.7,
-      "tx": 245.6,
-      "ty": 10.6,
-      "tz": 738,
+      "x": 275.1,
+      "y": 10.5,
+      "z": 833.7,
+      "tx": 242.8,
+      "ty": 10.5,
+      "tz": 739,
       "fov": 60,
+      "surface": "pavement",
       "photo": {
         "source": "mapillary",
         "id": "1009515680842321",
@@ -734,7 +761,7 @@
         "roll": -0.1,
         "pano": true
       },
-      "notes": "From the pavement: the photo is a panorama taken on foot."
+      "notes": "From the pavement at the crossing's foot: the photo is a panorama taken on foot. Moved 3 m onto it, off the carriageway where Mapillary puts it; the tiles have that pavement as an island (task 058)."
     },
     {
       "id": "travessa-lobato",
@@ -748,6 +775,7 @@
       "ty": 5.8,
       "tz": 923.2,
       "fov": 51,
+      "surface": "lane",
       "photo": {
         "source": "mapillary",
         "id": "4307530829277183",
@@ -768,13 +796,14 @@
       "name": "Rua Conselheiro Lobato, from the Travessa, looking east",
       "nome": "Rua Conselheiro Lobato, da Travessa, a olhar para nascente",
       "kind": "foot",
-      "x": 4.7,
-      "y": 4.3,
-      "z": 902.7,
-      "tx": 103.1,
-      "ty": 11.5,
-      "tz": 884.8,
+      "x": 6.7,
+      "y": 4.2,
+      "z": 913.8,
+      "tx": 105.1,
+      "ty": 11.4,
+      "tz": 895.9,
       "fov": 51,
+      "surface": "lane",
       "photo": {
         "source": "mapillary",
         "id": "239080507987601",
@@ -788,7 +817,7 @@
         "pitch": 4.1,
         "roll": -1.3
       },
-      "notes": "The photo is from a car. In the game an invented house stands in the street, 6 m ahead (task 011)."
+      "notes": "The photo is from a car in the right lane, cars parked along the kerb. Moved 11.3 m onto that lane, 2 m clear of the kerb for them, off the junction north of the street where Mapillary puts it (task 058)."
     },
     {
       "id": "capela-sao-joao",
@@ -802,6 +831,7 @@
       "ty": 24.2,
       "tz": 1086.8,
       "fov": 60,
+      "surface": "ground",
       "photo": {
         "source": "mapillary",
         "id": "832014945694011",
@@ -823,13 +853,14 @@
       "name": "The Altice Forum, from the west",
       "nome": "O Altice Forum, de oeste",
       "kind": "foot",
-      "x": -135.3,
+      "x": -134.7,
       "y": 1,
-      "z": 1098.7,
-      "tx": -36.8,
+      "z": 1095.1,
+      "tx": -36.2,
       "ty": 7.1,
-      "tz": 1116.1,
+      "tz": 1112.5,
       "fov": 52,
+      "surface": "path",
       "photo": {
         "source": "mapillary",
         "id": "4541369425891502",
@@ -843,7 +874,7 @@
         "pitch": 3.5,
         "roll": -6
       },
-      "notes": "From the path along its fence, 133 m from the route, which sees it from further west. Mapillary says the camera looked at 139°; the game frames what the photo shows at 100° (the buildings outlined from it with tools/buildings.mjs mark): the hall's west face with the α on the right, the buildings north of it on the left."
+      "notes": "From the path along its fence, 133 m from the route, which sees it from further west. Mapillary says the camera looked at 139°; the game frames what the photo shows at 100° (the buildings outlined from it with tools/buildings.mjs mark): the hall's west face with the α on the right, the buildings north of it on the left. Moved 3.7 m onto the path, off the verge where Mapillary puts it (task 058)."
     },
     {
       "id": "picoto-top",
@@ -857,6 +888,7 @@
       "ty": 56.7,
       "tz": 1345,
       "fov": 49,
+      "surface": "lane",
       "photo": {
         "source": "mapillary",
         "id": "498906697923294",

@@ -42,8 +42,33 @@ export type Sight =
   | { kind: 'cruzeiro'; x: number; z: number; y: number }
   // The Tourigalo: `face` is the way its head points; `sign` is the front of the restaurant behind it.
   | { kind: 'tourigalo'; x: number; z: number; y: number; face: number; sign?: { x: number; z: number; face: number; L: number } }
-  | { kind: 'makro' | 'altice'; x: number; z: number; y: number; face: number; L: number }
-  | { kind: 'stadium'; x: number; z: number; y: number; angle: number; L: number; W: number };
+  | { kind: 'makro'; x: number; z: number; y: number; face: number; L: number }
+  // The Altice Forum's α, on its hall's west face: its middle at (x, z), h over y, facing `face`.
+  | { kind: 'altice'; x: number; z: number; y: number; face: number; h: number }
+  // The Estádio 1.º de Maio: its pitch's middle, long axis and half-sizes; and as the LiDAR measured
+  // them (tools/sights.mjs), its stands and its floodlights' masts, each [x, z, the top's height].
+  | { kind: 'stadium'; x: number; z: number; y: number; angle: number; L: number; W: number; stands?: Stands; lights?: [number, number, number][] }
+  // São João da Ponte's chapel (task 021): the middle of its outline, the way its front looks, its
+  // half-length and half-width, and its heights over y as the LiDAR measured its parts: the porch's
+  // eaves, the bell block's top, and the nave's eaves and ridge. `covers` is its outline: a game draws
+  // it there in place of the tiles' building.
+  | { kind: 'saojoao'; x: number; z: number; y: number; face: number; L: number; W: number; porch: number; top: number; eaves: number; ridge: number; covers: [number, number][] }
+  // São João da Ponte's bridge, an arch of dressed granite: where the road's middle crosses the river,
+  // and how far its decks reach from there. A game draws the decks within r of (x, z) as the arch.
+  | { kind: 'arch'; x: number; z: number; r: number; y: number };
+
+// The stadium's stands, along spokes square to its track's oval. In the pitch's frame (s along its
+// long axis, (cos angle, sin angle), t across it, (-sin angle, cos angle)), the oval is two bends of
+// radius R0 round (±S, 0) joined by straights at t = ±R0. Its spokes are spread evenly round it from
+// the middle of its +s end, turning towards +t, each running out square to it: h[j] is the stands'
+// height above elev0 at (from + j) × dr metres out, from where they leave the track to the top of
+// their outer wall, beyond which is the ground outside.
+export interface Stands {
+  S: number;
+  R0: number;
+  dr: number;
+  spokes: { from: number; h: number[] }[];
+}
 
 // parking: a car park on the ground, or the bays and lanes along a street (OpenStreetMap's amenity=parking
 // but in a building), task 016.

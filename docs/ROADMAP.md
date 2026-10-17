@@ -83,7 +83,10 @@ decision 036).
 ## Phase 4 · Street furniture, landmarks and light
 
 - **020** Street furniture where it stands: lamps, signs, bins, benches, shelters, parked cars.
-- **021** The landmarks along the route, built from their photos, São João da Ponte first.
+- **021** The landmarks along the route, built from their photos, São João da Ponte first: its
+  chapel and bridge, the Altice Forum, the Estádio 1.º de Maio and the Picoto's top (its table
+  checked against today's race on 2026-10-16).
+- **056** The route's chapels and wayside shrines, which aren't among the 32 (found by 021).
 - **022** Braga's light: the real sun, the sky and the haze, and its weather.
 - **053** Last, after every task open on 2026-10-16 but 038: every task's notes read for what they
   left to improve, each thing still worth doing drafted as a task.
@@ -157,7 +160,9 @@ files, and in each the foundations first.
 ## Later
 
 - **The old town's landmarks** (the Sé, the Arco da Porta Nova, the Praça da República, the
-  Theatro Circo up close, the Torre de Menagem), when a track or the shooter goes there. The
+  Theatro Circo, the Torre de Menagem; and those task 021 dropped as the race doesn't see them: the
+  Museu D. Diogo de Sousa, the Palácio do Raio, the Fonte do Ídolo, the Cividade, the Capela dos
+  Coimbras, the Congregados), and the Igreja de Lamaçães, when a track or the shooter goes there. The
   cartoon models in `../party-kart/src/render/landmarks.ts` and `braga.ts` are for the first
   track, not to scale.
 - **Life in the streets:** the TUB's buses on their routes, traffic, people on the pavements

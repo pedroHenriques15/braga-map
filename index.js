@@ -157,6 +157,20 @@ function inRing(pts, x, z) {
   return c;
 }
 
+// The sights, the stadium's stands read from their own part: each spoke's heights, in metres.
+function sightsOf(list, nums, part) {
+  return list.map((s) => {
+    if (s.kind !== 'stadium' || !s.stands || !part) return s;
+    let i = part.at;
+    const spokes = s.stands.from.map((from, k) => {
+      const h = Array.from(nums.subarray(i, i + s.stands.n[k]), (v) => v / 10);
+      i += s.stands.n[k];
+      return { from, h };
+    });
+    return { ...s, stands: { S: s.stands.S, R0: s.stands.R0, dr: s.stands.dr, spokes } };
+  });
+}
+
 // What every game needs, whichever part of the map it's in: the extent, the tiles and the
 // sections, the relief everywhere and the horizon round it, the rivers, the landmarks and the
 // sights, the open world's area with the gates where the streets leave it, and the shooter's.
@@ -188,7 +202,7 @@ export function map() {
     tiles: m.tiles,
     sections: m.sections,
     landmarks: m.landmarks,
-    sights: m.sights,
+    sights: sightsOf(m.sights, nums, head.stands),
     areaKinds: m.areas,
     roofColors: m.roofColors,
     storey: m.storey,

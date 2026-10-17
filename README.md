@@ -63,8 +63,8 @@ map().groundKinds; // the kinds it says, each with its photo: [{ kind, texture: 
   ground, so the ground is the street's own surface; a bridge's deck isn't, so under a bridge it's
   what's below. Where the LiDAR took a tree's crown or a roof for ground over a street in the open
   world's area, the street's height is held under it, and a crown or roof more than 5 m over it is
-  taken off beside it too (`lines.mjs`'s `streetBumps`, task 026: three today). A building stands on the ground at its lowest corner (`y`), and its height is from
-  there.
+  taken off beside it too (`lines.mjs`'s `streetBumps`, task 026: three today). A building stands
+  on the ground at its lowest corner (`y`), and its height is from there.
 - Each street says its level (task 012): on the ground; on a bridge, with its deck's height at
   each point (`heights`); in a tunnel, under the ground, with its road's; or under something at the
   ground's own level (a building over it, or a deck the map draws as a tunnel under a bridge). A

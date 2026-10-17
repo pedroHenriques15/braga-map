@@ -130,7 +130,7 @@ Steps, landmark by landmark:
   tree a crown 3 m round from 2.5 to 10 m up), within 45° of the race's heading. Without the trees,
   the chapel is 160 m, the stadium 470 m, the Altice 230 m and the Picoto's cross 930 m. The
   Picoto Adventure Park was "a sign" on 2026-10-13: nothing has drawn one since the first track.
-- **What was built** (braga-map 1.19.0, decision 037; party-kart `chapel.ts`, `stadium.ts`, `sights.ts`):
+- **What was built** (braga-map 1.19.0, decision 038; party-kart `chapel.ts`, `stadium.ts`, `sights.ts`):
   - **São João da Ponte's chapel** (`saojoao`): its outline's rectangle, 20.2 × 10.6 m, its front to
     the square before it; its heights from the LiDAR's three parts of its building (the porch's eaves
     3.6 m, the nave's eaves 6.0 and ridge 7.9, the bell gable's top 10.6). Drawn in its building's
@@ -206,4 +206,4 @@ Steps, landmark by landmark:
   classes building, up to 4.8 m) shows as a grey box at the left of `capela-sao-joao`, where its photo
   shows the park's trees; it may be a kiosk under them. The race's view of the arch from the road: its
   faces are under the deck, seen from the river and its paths.
-- **Done** 2026-10-17 (decision 037), the second "Done when" half met on Claude's marks (above).
+- **Done** 2026-10-17 (decision 038), the second "Done when" half met on Claude's marks (above).

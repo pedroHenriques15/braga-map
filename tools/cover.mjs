@@ -39,6 +39,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import zlib from 'node:zlib';
+import { pathToFileURL } from 'node:url';
 import sharp from 'sharp';
 import { CACHE, ROOT } from './geo.mjs';
 import { DGT, mapToTM, orthoGrid, points, tileBox as dgtBox, tileKey, tilesOver } from './dgt.mjs';
@@ -65,10 +66,11 @@ const DGT_CREDIT = { source: 'DGT', author: 'Direção-Geral do Território', li
 // For each 50 cm cell of one of DGT's tiles (on its own grid, row 0 to the north): the mean intensity
 // of the ground's points (0 where there's none), how many there are, how many points are a tree's
 // (medium or high vegetation) and water's, and the top of every point in it (NaN where none), noise
-// left out. Made once into .cache/dgt/cover/.
-const CELLS = 2000;
+// left out. Made once into .cache/dgt/cover/, and read by carriageways.mjs too (task 026), which keeps
+// the tiles it reads: this keeps the last four.
+export const CELLS = 2000;
 const lidarCache = new Map();
-async function lidarCells(key) {
+export async function lidarCells(key) {
   if (lidarCache.has(key)) return lidarCache.get(key);
   const file = path.join(DGT, 'cover', key + '.bin.gz'), M = CELLS * CELLS;
   let c = null;
@@ -230,7 +232,7 @@ function islands(cls, min, fixed) {
 
 // ---- Classing a tile ----
 
-const ground = await terrain();
+let ground; // the terrain, read when this runs on its own
 
 async function classify(id) {
   const [ti, tj] = id.match(/-?\d+/g).map(Number), box = tileBox(ti, tj), M = N * N;
@@ -531,24 +533,27 @@ function writeIndexes() {
 
 // ---- Making them ----
 
-const args = process.argv.slice(2);
-const checking = args.includes('--check');
-const named = args.filter((a) => !a.startsWith('--'));
-const B = amigos.box;
-const under = allTiles().map(([i, j]) => tileId(i, j)).filter((id) => { const [i, j] = id.match(/-?\d+/g).map(Number), b = tileBox(i, j); return b.x1 > B.x0 && b.x0 < B.x1 && b.z1 > B.z0 && b.z0 < B.z1; });
-for (const id of named) if (!under.includes(id) && !map().tiles.includes(id)) throw new Error(`no tile ${id}`);
-const todo = named.length ? named : under;
-fs.mkdirSync(OUT, { recursive: true });
-for (const id of todo) {
-  const t0 = Date.now();
-  const made = await classify(id);
-  const sizes = await write(id, made);
-  if (checking) await check(id, made);
-  const share = new Array(KINDS.length).fill(0), M = N * N;
-  let crowns = 0;
-  for (const v of made.cls) { share[v & 7]++; crowns += v >> 3; }
-  const cars = WHERE.map((w, i) => `${made.cars.filter((c) => c[5] === i).length} ${w}`).join(', ');
-  console.log(`${id}: ${KINDS.map((k, c) => `${k} ${((100 * share[c]) / M).toFixed(0)}%`).join(', ')}, under crowns ${((100 * crowns) / M).toFixed(0)}%; cars ${cars}; ${sizes} (${((Date.now() - t0) / 1000).toFixed(0)} s)`);
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  ground = await terrain();
+  const args = process.argv.slice(2);
+  const checking = args.includes('--check');
+  const named = args.filter((a) => !a.startsWith('--'));
+  const B = amigos.box;
+  const under = allTiles().map(([i, j]) => tileId(i, j)).filter((id) => { const [i, j] = id.match(/-?\d+/g).map(Number), b = tileBox(i, j); return b.x1 > B.x0 && b.x0 < B.x1 && b.z1 > B.z0 && b.z0 < B.z1; });
+  for (const id of named) if (!under.includes(id) && !map().tiles.includes(id)) throw new Error(`no tile ${id}`);
+  const todo = named.length ? named : under;
+  fs.mkdirSync(OUT, { recursive: true });
+  for (const id of todo) {
+    const t0 = Date.now();
+    const made = await classify(id);
+    const sizes = await write(id, made);
+    if (checking) await check(id, made);
+    const share = new Array(KINDS.length).fill(0), M = N * N;
+    let crowns = 0;
+    for (const v of made.cls) { share[v & 7]++; crowns += v >> 3; }
+    const cars = WHERE.map((w, i) => `${made.cars.filter((c) => c[5] === i).length} ${w}`).join(', ');
+    console.log(`${id}: ${KINDS.map((k, c) => `${k} ${((100 * share[c]) / M).toFixed(0)}%`).join(', ')}, under crowns ${((100 * crowns) / M).toFixed(0)}%; cars ${cars}; ${sizes} (${((Date.now() - t0) / 1000).toFixed(0)} s)`);
+  }
+  const n = writeIndexes();
+  console.log(`${n} tiles → ${path.relative(ROOT, OUT)}/`);
 }
-const n = writeIndexes();
-console.log(`${n} tiles → ${path.relative(ROOT, OUT)}/`);

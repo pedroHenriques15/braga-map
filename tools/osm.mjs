@@ -28,10 +28,13 @@ export function driven(t = {}) {
   if (v === 'yes' || v === '1' || v === 'true' || (v == null && (t.junction === 'roundabout' || t.junction === 'circular'))) return 1;
   return 0;
 }
-// The carriageway, kerb to kerb: the map's width where it gives one, else its lanes, else what that
-// kind of street usually is.
+// The carriageway, kerb to kerb: as DGT's LiDAR measured it (`width:lidar`, which lines.mjs's
+// onCarriageways puts in, task 026), else the map's width where it gives one, else its lanes, else
+// what that kind of street usually is.
 export function carriageway(t = {}) {
   const kind = (t.highway || 'residential').replace('_link', '');
+  const m = parseFloat(t['width:lidar']);
+  if (m >= 2 && m <= 40) return m;
   const w = parseFloat(t.width);
   if (w >= 3 && w <= 40) return w;
   const lanes = parseInt(t.lanes);

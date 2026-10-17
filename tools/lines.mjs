@@ -1,8 +1,62 @@
 // The streets and the railway as OpenStreetMap has them, for world.mjs and streets.mjs: each way's
 // kind, its width kerb to kerb, its points, nodes and tags, and its level; and the height of each
-// point that's off the ground, on a bridge's deck or a tunnel's road.
-import { P } from './geo.mjs';
+// point that's off the ground, on a bridge's deck or a tunnel's road. And the streets moved onto
+// their carriageways where DGT's LiDAR measured them (task 026).
+import fs from 'node:fs';
+import path from 'node:path';
+import { CACHE, P, unP } from './geo.mjs';
 import { carriageway, LINE } from './osm.mjs';
+
+// ---- The streets on their carriageways (task 026) ----
+
+// carriageways.mjs measures where each street's carriageway really is in the open world's area, and
+// works out the moves that put each line on its middle, at its width: .cache/carriageways.json. The
+// map's way stays the street, with its name, kind, junctions and direction; its nodes move. Every
+// reader of the map's streets reads them through onCarriageways: world.mjs (and through it the
+// tiles, the paths' joins and the ground held at the decks' ends), track.mjs's graph, open.mjs's
+// edge and gates, walls.mjs and the map page. Without the file, the map's lines as they are.
+const MOVES = path.join(CACHE, 'carriageways.json');
+let moves;
+export function carriagewayMoves() {
+  if (moves === undefined) moves = fs.existsSync(MOVES) ? JSON.parse(fs.readFileSync(MOVES, 'utf8')).moves ?? null : null;
+  return moves;
+}
+
+// A street's points and nodes ([x, z] on the map, its node ids) with its moves made: each node moved,
+// and the points put in between two where its middle bends between them, each with a node id of its
+// own below zero.
+export function moveLine(id, nodes, pts, m = carriagewayMoves()) {
+  if (!m) return { nodes, pts };
+  const outN = [], outP = [];
+  for (let i = 0; i < nodes.length; i++) {
+    const d = m.nodes[nodes[i]], p = pts[i];
+    outN.push(nodes[i]);
+    outP.push(d ? [p[0] + d[0], p[1] + d[1]] : p);
+    const put = i + 1 < nodes.length ? m.inserts[`${id}:${nodes[i]}-${nodes[i + 1]}`] : null;
+    if (put) for (const q of put) { outN.push(-(id * 10000 + outN.length)); outP.push(q); }
+  }
+  return { nodes: outN, pts: outP };
+}
+
+// OpenStreetMap's data as fetch.mjs keeps it (base.json, paths.json, street.json), with the moves
+// made: each street's way on its carriageway, its width the one measured where it was clearly
+// (`width:lidar`, which osm.mjs's carriageway takes before the map's), but with `widths` false; and
+// every other way or node that shares a node with a street (a footway that ends on it) moved with it there.
+export function onCarriageways(osm, { widths = true } = {}) {
+  const m = carriagewayMoves();
+  if (!m) return osm;
+  const at = ([x, z]) => { const [lat, lon] = unP(x, z); return { lat, lon }; };
+  return {
+    ...osm,
+    elements: osm.elements.map((e) => {
+      if (e.type === 'node') { const d = m.nodes[e.id]; return d ? { ...e, ...at([P(e)[0] + d[0], P(e)[1] + d[1]]) } : e; }
+      const w = widths ? m.widths[e.id] : undefined;
+      if (e.type !== 'way' || !e.nodes || e.nodes.length !== e.geometry?.length || (!w && !e.nodes.some((n) => m.nodes[n]) && !e.nodes.some((n, i) => m.inserts[`${e.id}:${n}-${e.nodes[i + 1]}`]))) return e;
+      const got = moveLine(e.id, e.nodes, e.geometry.map(P), m);
+      return { ...e, nodes: got.nodes, geometry: got.pts.map(at), ...(w && { tags: { ...e.tags, 'width:lidar': String(w) } }) };
+    }),
+  };
+}
 
 // Each street's level: on the ground; on a bridge; in a tunnel, under the ground's surface; or
 // under something at the ground's own level, open either side: a building over it (a passage, or

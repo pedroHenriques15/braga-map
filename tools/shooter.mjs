@@ -24,6 +24,7 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { P, readCache, ROOT } from './geo.mjs';
 import { carriageway, footprints, LINE, ringOf, segDist, simplify } from './osm.mjs';
+import { onCarriageways } from './lines.mjs';
 import { square } from './open.mjs';
 
 export const FILE = path.join(ROOT, 'tools/shooter.json');
@@ -245,7 +246,7 @@ export function work({ base, buildings = [], log = console.log }) {
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const t0 = Date.now();
   const buildings = [...footprints(readCache('osm/buildings.json')).map(ringOf), ...(readCache('roofs.json').found ?? []).map((f) => f.pts)];
-  const pts = work({ base: readCache('osm/base.json'), buildings });
+  const pts = work({ base: onCarriageways(readCache('osm/base.json')), buildings });
   fs.writeFileSync(FILE, JSON.stringify({ about: "The shooter's area's edge (task 015), made by tools/shooter.mjs from OpenStreetMap: run that again rather than editing it. © OpenStreetMap contributors (ODbL).", pts }) + '\n');
   console.log(`the edge: ${pts.length} points, in ${((Date.now() - t0) / 1000).toFixed(0)} s → ${path.relative(ROOT, FILE)}`);
 }

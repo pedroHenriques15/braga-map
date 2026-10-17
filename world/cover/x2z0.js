@@ -2,12 +2,12 @@
 // its LiDAR saw parked there: in cars.json, each [x, z, angle, length, width, where (0 other, 1 kerb, 2 park)].
 export default {
   tile: 'x2z0', box: { x0: 1000, z0: 0, x1: 1500, z1: 500 },
-  classes: { high: { url: new URL('./x2z0/classes-high.webp', import.meta.url).href, w: 1000, h: 1000, bytes: 77592 },
-    medium: { url: new URL('./x2z0/classes-medium.webp', import.meta.url).href, w: 500, h: 500, bytes: 30034 },
-    low: { url: new URL('./x2z0/classes-low.webp', import.meta.url).href, w: 250, h: 250, bytes: 12408 } },
-  colour: { high: { url: new URL('./x2z0/colour-high.webp', import.meta.url).href, w: 128, h: 1152, bytes: 23590, squares: 125 },
-    medium: { url: new URL('./x2z0/colour-medium.webp', import.meta.url).href, w: 112, h: 1008, bytes: 17868, squares: 100 },
-    low: { url: new URL('./x2z0/colour-low.webp', import.meta.url).href, w: 64, h: 576, bytes: 7244, squares: 50 } },
-  cars: { url: new URL('./x2z0/cars.json', import.meta.url).href, n: 932, bytes: 24989 },
+  classes: { high: { url: new URL('./x2z0/classes-high.webp', import.meta.url).href, w: 1000, h: 1000, bytes: 77250 },
+    medium: { url: new URL('./x2z0/classes-medium.webp', import.meta.url).href, w: 500, h: 500, bytes: 29938 },
+    low: { url: new URL('./x2z0/classes-low.webp', import.meta.url).href, w: 250, h: 250, bytes: 12380 } },
+  colour: { high: { url: new URL('./x2z0/colour-high.webp', import.meta.url).href, w: 128, h: 1152, bytes: 23388, squares: 125 },
+    medium: { url: new URL('./x2z0/colour-medium.webp', import.meta.url).href, w: 112, h: 1008, bytes: 17952, squares: 100 },
+    low: { url: new URL('./x2z0/colour-low.webp', import.meta.url).href, w: 64, h: 576, bytes: 7256, squares: 50 } },
+  cars: { url: new URL('./x2z0/cars.json', import.meta.url).href, n: 931, bytes: 24962 },
   credit: { source: 'DGT', author: 'Direção-Geral do Território', licence: 'CC BY 4.0', url: 'https://snig.dgterritorio.gov.pt/rndg/srv/por/catalog.search#/metadata/96d83932-f957-40d6-a2ea-3a25751c4b2d', date: '2025' },
 };

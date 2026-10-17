@@ -217,7 +217,7 @@ test('no sliver in the carriageways: no notch under a metre wide into them, no c
     // closing fills none of it.
     const small = holes.filter((h) => C.Clipper.Area(h) < 600 * K * K);
     // But a part of one under 4 cm wide and over half a metre long is a crack where the carriageways
-    // round it touch (streets.mjs fills an island where it's under 10 cm wide, which the tiles' 10 cm
+    // round it touch (streets.mjs fills an island where it's under 20 cm wide, which the tiles' 10 cm
     // narrow): what opening it (shrunk, then grown) takes away, a film of 3 mm along its edges left in.
     for (const h of small) for (const r of clip(C.ClipType.ctDifference, [h], offset(offset(offset([h], -0.02), 0.02), 0.003))) {
       if (!C.Clipper.Orientation(r) || !inOpen([r[0].X / K, r[0].Y / K])) continue;

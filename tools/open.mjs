@@ -28,7 +28,7 @@ import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { P, readCache, ROOT } from './geo.mjs';
 import { carriageway, footprints, Grid, inside, LINE, ringOf, simplify } from './osm.mjs';
-import { isSquare, LEVEL } from './lines.mjs';
+import { isSquare, LEVEL, onCarriageways } from './lines.mjs';
 
 export const FILE = path.join(ROOT, 'tools/open.json');
 
@@ -145,7 +145,22 @@ export function square(pts, lines) {
       pts = ring;
     }
   }
-  return { pts, left };
+  return { pts: despike(pts), left };
+}
+
+// A ring without its spikes: a point where it turns back on itself (by more than 165°) to within 2 m of
+// where it came from, as squaring a crossing makes where the edge runs along a street and crosses it
+// at a bend (task 026: the Travessa da Ilha's, cut where it leaves further on).
+function despike(pts) {
+  for (let again = true; again && pts.length > 3; ) {
+    again = false;
+    for (let k = 0; k < pts.length; k++) {
+      const p = pts[(k - 1 + pts.length) % pts.length], q = pts[k], r = pts[(k + 1) % pts.length];
+      const ux = q[0] - p[0], uz = q[1] - p[1], vx = r[0] - q[0], vz = r[1] - q[1], l = Math.hypot(ux, uz) * Math.hypot(vx, vz);
+      if (l > 0 && (ux * vx + uz * vz) / l < -0.966 && Math.hypot(r[0] - p[0], r[1] - p[1]) < 2) { pts = pts.filter((_, i) => i !== k); again = true; break; }
+    }
+  }
+  return pts;
 }
 
 // ---- Working the edge out ----
@@ -374,7 +389,9 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const t0 = Date.now();
   const { default: amigos } = await import('../tracks/amigos.js');
   const buildings = [...footprints(readCache('osm/buildings.json')).map(ringOf), ...(readCache('roofs.json').found ?? []).map((f) => f.pts)];
-  const pts = work({ base: readCache('osm/base.json'), buildings, loop: amigos.points.map(({ p }) => [p[0], p[2]]), places: TAKE_IN });
+  // The streets where they are (task 026), at the map's widths, which the edge's rules were agreed on
+  // (decision 020): a street's measured width would move which streets are in.
+  const pts = work({ base: onCarriageways(readCache('osm/base.json'), { widths: false }), buildings, loop: amigos.points.map(({ p }) => [p[0], p[2]]), places: TAKE_IN });
   fs.writeFileSync(FILE, JSON.stringify({ about: "The open world's edge (task 032), made by tools/open.mjs from OpenStreetMap: run that again rather than editing it. © OpenStreetMap contributors (ODbL).", pts }) + '\n');
   console.log(`the edge: ${pts.length} points, in ${((Date.now() - t0) / 1000).toFixed(0)} s → ${path.relative(ROOT, FILE)}`);
 }

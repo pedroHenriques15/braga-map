@@ -195,6 +195,9 @@ favourite spots first and finding photos for them.
   or its buildings outlined from the camera (`node tools/buildings.mjs mark <id>`), say otherwise,
   the camera is aimed as the photo looks, and its note says so: `monte-da-forca` 3° up (Mapillary's
   9.5°), `estadio` 5.5° (7.1°). The other viewpoints over 5° fit as Mapillary has them.
+- **And on the surface its photo was taken from** (task 058, decision 041): where Mapillary's
+  position is off the lane, the pavement or the path the photo shows, the camera is moved the
+  shortest way onto it, its heading and pitch kept.
 
 The alternative, the owner's and the friends' favourite spots, would have waited on the photo walk,
 and a spot with no photo can't be judged.
@@ -1039,3 +1042,76 @@ finishes within 3.3 s, with 2 respawns (10.8 s and 2).
 The alternatives were the task's other answers: the offsets measured and listed only, the map's
 lines kept (decision 022 as it was); and the map's `width` tag where it has one, the measured width
 replacing only the guesses.
+
+## 040 · The route's chapels and shrines are landmarks too: from their photos, where the map has them, in place of what stands for them
+
+*2026-10-17 · task 056 · the small landmarks the race passes that aren't among the 32*
+
+Decision 038 for the route's small landmarks: the Capela de Santa Justa, the Capela de Santo Adrião,
+the Capela de Santa Tecla, the Igreja de São Lázaro's bell tower, and the wayside shrines of the
+Senhor do Bonfim and the Senhor da Boa Morte. Each is a sight of its own, built from its photos at
+the size and heights braga-map gives it, and drawn by a game in place of what the tiles had there.
+
+- **Where the map has it, as the map has it** (decision 022): each stands on its outline's rectangle,
+  its front to the street or the square its photos were taken from. Where the outline is off the
+  LiDAR's walls (Santa Tecla's, by 2–3 m) it's listed, not moved; where the photo shows a front
+  narrower than the outline, the model takes the photo's width on the outline's front.
+- **Measured where the LiDAR can say**: the eaves and ridge from `roofs.mjs`'s parts, the top (a
+  bell gable's, a cross's) from the point cloud (`tools/sights.mjs`). Where it can't, under a tree
+  whose leaves it took for a roof (Boa Morte's) or for a bell gable too thin for it (Santo Adrião's),
+  as the photo shows it, said in its comment.
+- **In place of what stands for it:** a chapel covers its building and a porch the map has as a
+  building of its own (`covers`); a church's tower covers only the part that is the tower, the rest
+  stays the church's parts. A shrine the tiles leave out as too small is the sight alone, not a wall
+  to the karts.
+- **Judged where the race passes it:** a viewpoint at a chapel only where a photo was taken from the
+  race's line and the friends' houses' rule (decisions 009 and 018) allows it; the owner chose two
+  (2026-10-17), Santa Justa's and Santo Adrião's.
+- **Small, so baked together:** a game draws them as one mesh a material, a draw call each wherever
+  any is in view.
+
+The alternatives were leaving them to task 017's church facade and kit (the shrines not drawn at
+all), and boxes in their photos, which the photos found online, one front each at most, can't give.
+
+## 041 · A viewpoint's camera stands on the surface its photo was taken from
+
+*2026-10-17 · task 058 · narrows decision 009's "exactly where Mapillary's reconstruction puts its photo"*
+
+Decision 009 stood each viewpoint's camera exactly where Mapillary's reconstruction puts its photo,
+and Mapillary's position is a phone's GPS: a few metres off, a dozen in a street of tall buildings.
+While the map's streets were off too, some cameras stood in the road by luck; once task 026 put the
+streets where the LiDAR measured them (decision 039), cameras whose photos were taken from a car
+stood on the median, on the pavement or on the verge. The owner chose to move them the shortest way
+onto the surface their photos show, their headings and pitches kept (task 058's answer,
+2026-10-17), over letting Mapillary's position stand and taking a camera off its surface as the
+photo's fault: it's still the photo's place, within the GPS's error, as task 055 aimed two cameras as
+their photos look.
+
+- **Each viewpoint says what its photo was taken from** (`surface` in `refs/viewpoints.json`): a
+  lane (a carriageway), a pavement (or a central reservation or an island beside the carriageway),
+  a path, or the ground where none of those is (a square, a park). `test/viewpoints.test.js` holds
+  each camera on it in the tiles, and a car's half a car's width (0.9 m) in from the carriageway's
+  edge.
+- **Where Mapillary's position is off it, the camera moves across its street,** square to its
+  heading: in a lane, to the middle of the lane the photo shows, between the lines the tiles paint
+  (where they paint none, the half of the carriageway the photo drives on, or its middle if it's a
+  lane wide), and 2 m clear of the kerb where the photo shows cars parked along it; on a pavement or a path, to where across it the photo stands, half a metre
+  in at least. Its target moves with it, so its heading and pitch stay, and its height is the eye's
+  over the ground there. Its notes say how far; the test lets a moved camera be up to 15 m from where
+  Mapillary puts its photo, and any other 5 m.
+- **The heading and the pitch stay Mapillary's,** but where task 055 aimed a camera as its photo
+  looks.
+
+What it moved, 2026-10-17: 15 of the 34 cameras, from 1.7 m to 11.3 m. Twelve stood off their
+photo's surface or on another street: on the median against its hedge (`imaculada-conceicao`), on
+the pavement across the road (`bom-jesus`), on the carriageway where the photo is from the
+Avenida da Liberdade's wide pavement (`liberdade`, `lobato-crossing`), on the cycleway beside the
+pavement (`sao-joao-da-ponte`), on the verge (`alameda-fujacal`, `altice-forum`), on the pavement
+where the photo is from the road (`porfirio-da-silva`, `travessa-fujacal`), in a car park or a
+junction beside the street (`conselheiro-lobato`, `lobato-pavement`, `lobato-east`). Three were in
+the road but not in the photo's lane: against the kerb (`fujacal-start`, `falperra`) or over the
+centre line (`capela-santa-justa`). The Avenida da Liberdade's pavement is an island in the tiles,
+grass in party-kart (task 059).
+
+The alternative was the task's other answer: Mapillary's position stands, and a camera off its
+surface is the photo's fault, not the game's.

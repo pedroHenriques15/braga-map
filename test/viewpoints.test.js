@@ -44,9 +44,12 @@ test('each viewpoint says where it looks from, and whose photo it is set against
     for (const k of ['source', 'id', 'url', 'author', 'licence', 'date']) assert.ok(p[k], `${v.id}: photo.${k}`);
     assert.ok(['mapillary', 'commons', 'owner'].includes(p.source), v.id);
     assert.match(p.date, /^\d{4}-\d{2}-\d{2}$/, v.id);
-    // The camera stands where the photo was taken.
+    // The camera stands where the photo was taken: within 5 m of where Mapillary puts it, a phone's
+    // GPS; or, where that's off the surface the photo was taken from, moved the shortest way onto it
+    // (task 058), up to 15 m, and its notes say so.
     const [x, z] = P({ lat: p.lat, lon: p.lon });
-    assert.ok(Math.hypot(x - v.x, z - v.z) < 5, `${v.id} is ${Math.hypot(x - v.x, z - v.z).toFixed(1)} m from its photo`);
+    const off = Math.hypot(x - v.x, z - v.z);
+    assert.ok(off < 5 || (off < 15 && /\bMoved\b/.test(v.notes)), `${v.id} is ${off.toFixed(1)} m from its photo`);
   }
 });
 
@@ -85,6 +88,35 @@ test('each viewpoint is at eye level above the ground', async () => {
   for (const v of views) {
     const up = v.y - w.height(v.x, v.z);
     assert.ok(up > 0.5 && up < 3, `${v.id} is ${up.toFixed(1)} m above the ground`);
+  }
+});
+
+// Whether (x, z) is inside a piece's rings: its outline, and none of its holes.
+const inRing = (x, z, r) => {
+  let c = false;
+  for (let i = 0, j = r.length - 1; i < r.length; j = i++) {
+    const [xi, zi] = r[i], [xj, zj] = r[j];
+    if (zi > z !== zj > z && x < ((xj - xi) * (z - zi)) / (zj - zi) + xi) c = !c;
+  }
+  return c;
+};
+const inPiece = (x, z, p) => inRing(x, z, p.rings[0]) && !p.rings.slice(1).some((h) => inRing(x, z, h));
+// Half a car's width: a car's camera in its lane is at least this far in from the carriageway's edge.
+const HALF_CAR = 0.9;
+
+test('each viewpoint\'s camera stands on the surface its photo was taken from', async () => {
+  for (const v of views) {
+    assert.ok(['lane', 'pavement', 'path', 'ground'].includes(v.surface), `${v.id}: surface`);
+    const w = await loadWorld({ x0: v.x - 2, x1: v.x + 2, z0: v.z - 2, z1: v.z + 2 });
+    const S = w.streets;
+    const on = (x, z) => (S.carriageways.some((c) => inPiece(x, z, c)) ? 'lane' : S.paths.some((p) => inPiece(x, z, p)) ? 'path' : S.pavements.some((p) => inPiece(x, z, p)) ? 'pavement' : 'ground');
+    assert.equal(on(v.x, v.z), v.surface, `${v.id} stands on ${on(v.x, v.z)}, its photo on ${v.surface}`);
+    // In a lane, a car's width from the kerb: round the camera, the carriageway everywhere half a
+    // car's width out (pieces of it cut at the tiles' edges joined, as a game draws them).
+    if (v.surface === 'lane') for (let a = 0; a < 16; a++) {
+      const x = v.x + HALF_CAR * Math.cos((a * Math.PI) / 8), z = v.z + HALF_CAR * Math.sin((a * Math.PI) / 8);
+      assert.equal(on(x, z), 'lane', `${v.id} is within ${HALF_CAR} m of its carriageway's edge`);
+    }
   }
 });
 

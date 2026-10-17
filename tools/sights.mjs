@@ -1,7 +1,8 @@
 // What the sights are, measured where the map alone can't say (task 021): the Estádio 1.º de Maio's
-// stands and floodlights, from DGT's 2025 point cloud. world.mjs puts them on its sight.
+// stands and floodlights, and the route's chapels' and shrines' tops (task 056), from DGT's 2025 point
+// cloud. world.mjs puts them on their sights.
 //
-// node tools/sights.mjs     after fetch.mjs (lidar), before world.mjs (a minute)
+// node tools/sights.mjs     after fetch.mjs (lidar), before world.mjs (two minutes)
 //
 // - The stands: the stadium is a bowl of terraces round an athletics track, roofed over its main
 //   stand on the west and walled outside. Each is measured along spokes out from the track, square
@@ -12,8 +13,12 @@
 // - The floodlights: the masts round the pitch, each the points over 25 m above it (unclassified,
 //   the LiDAR's for what it doesn't know), gathered within 3 m.
 //
-// .cache/sights.json: { stadium: { S, R0, dr, spokes: [{ from, h }], lights: [[x, z, top]] } }, the
-// spokes' heights in metres above ELEV0, from the `from`th metre out.
+// - The route's chapels and wayside shrines (task 056): each one's top, its bell gable's or its
+//   cross's, and the ground round it.
+//
+// .cache/sights.json: { stadium: { S, R0, dr, spokes: [{ from, h }], lights: [[x, z, top]] }, small:
+// { <id>: { top, ground } } }, the spokes' heights in metres above ELEV0, from the `from`th metre
+// out, and the chapels' and shrines' too.
 import fs from 'node:fs';
 import path from 'node:path';
 import { CACHE, ELEV0, P, readCache } from './geo.mjs';
@@ -24,6 +29,8 @@ const base = readCache('osm/base.json').elements;
 const find = (id) => base.find((e) => e.type === 'way' && e.id === id && e.geometry);
 const pitch = find(22660434), bowl = find(22660087);
 if (!pitch || !bowl) throw new Error("no Estádio 1.º de Maio in .cache/osm/base.json: its pitch (way 22660434) and outline (way 22660087)");
+// The route's chapels and shrines, by their ways in OpenStreetMap (world.mjs names them the same).
+const SMALL = { 'santa-justa': 383764627, 'santo-adriao': 159203541, 'santa-tecla': 234261710, bonfim: 407006302, 'boa-morte': 383792816 };
 
 // The pitch's frame, as world.mjs takes it: its middle, its long axis, and s along it, t across.
 const r = minRect(ringOf(pitch));
@@ -117,7 +124,34 @@ for (const [x, z, y] of masts) {
 }
 const kept = lights.filter((m) => m.n >= 10).map((m) => [Math.round(m.x * 10) / 10, Math.round(m.z * 10) / 10, Math.round(m.top * 10) / 10]);
 
-const out = { stadium: { S, R0, dr: DR, pitch: Math.round(pitchY * 10) / 10, spokes, lights: kept } };
+// The route's chapels and wayside shrines (task 056): over each one's outline, or within a metre of
+// it (a bell gable on its corner, the cross on its gable), the highest point that isn't vegetation or
+// noise; and the ground round it, the lowest ground point within 2 m of it. Both above ELEV0. The
+// shrines are too small for tools/roofs.mjs to have measured. Under a tree's crown the LiDAR may
+// take a roof for its leaves: then the top is null.
+const buildings = readCache('osm/buildings.json').elements;
+const small = {};
+for (const [id, way] of Object.entries(SMALL)) {
+  const e = buildings.find((q) => q.type === 'way' && q.id === way && q.geometry);
+  if (!e) throw new Error(`no way/${way} (${id}) in .cache/osm/buildings.json`);
+  const ring = ringOf(e).slice(0, -1);
+  const near = (x, z, m) => inside(ring, x, z) || ring.some(([ax, az], k) => segDist(x, z, { x: ax, z: az }, { x: ring[(k + 1) % ring.length][0], z: ring[(k + 1) % ring.length][1] }) < m);
+  const b = { x0: Math.min(...ring.map((p) => p[0])) - 3, x1: Math.max(...ring.map((p) => p[0])) + 3, z0: Math.min(...ring.map((p) => p[1])) - 3, z1: Math.max(...ring.map((p) => p[1])) + 3 };
+  let top = -Infinity, ground = Infinity;
+  for (const key of tilesOver(b)) {
+    await points(key, (p) => {
+      if (p.x < b.x0 || p.x > b.x1 || p.z < b.z0 || p.z > b.z1) return;
+      if (p.cls === CLASS.ground) { if (p.y < ground && near(p.x, p.z, 2)) ground = p.y; return; }
+      if (!VEGETATION.includes(p.cls) && p.y > top && near(p.x, p.z, 1)) top = p.y;
+    });
+  }
+  // Null where the LiDAR saw nothing but the trees over it.
+  const m = (v) => (Number.isFinite(v) ? Math.round((v - ELEV0) * 10) / 10 : null);
+  small[id] = { top: m(top), ground: m(ground) };
+}
+
+const out = { stadium: { S, R0, dr: DR, pitch: Math.round(pitchY * 10) / 10, spokes, lights: kept }, small };
 fs.writeFileSync(path.join(CACHE, 'sights.json'), JSON.stringify(out));
 const tops = spokes.filter((q) => q.h.length).map((q) => Math.max(...q.h));
+console.log(`the chapels and shrines: ${Object.entries(small).map(([id, q]) => `${id} ${q.top === null ? 'under trees' : `${(q.top - q.ground).toFixed(1)} m over its ground`}`).join(', ')}`);
 console.log(`the stadium: the pitch at ${out.stadium.pitch} m, ${spokes.length} spokes, the stands from ${Math.min(...tops).toFixed(1)} to ${Math.max(...tops).toFixed(1)} m at their tops, ${spokes.filter((q) => !q.h.length).length} spokes with none; ${kept.length} floodlights, ${kept.map((m) => m[2]).join(', ')} m at their tops`);

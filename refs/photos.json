@@ -9311,6 +9311,198 @@
       "notes": ""
     },
     {
+      "id": "landmark-capela-de-santa-justa-1",
+      "what": "landmark:capela-de-santa-justa",
+      "name": "Capela de Santa Justa",
+      "use": "texture",
+      "heading": 83,
+      "pitch": 8,
+      "fov": 62,
+      "photo": {
+        "source": "commons",
+        "id": "Santa Justa Chapel.JPG",
+        "url": "https://commons.wikimedia.org/wiki/File:Santa_Justa_Chapel.JPG",
+        "author": "Joseolgon",
+        "licence": "CC BY-SA 3.0",
+        "date": "2010-03-22",
+        "lat": 41.542079,
+        "lon": -8.425344
+      },
+      "notes": "Its granite front straight on, in the sun: the cross on its little curved pediment, the door under the inscription and its cornice, the saint's tiles, the bell gable on the white block to its right. Commons puts the camera on the chapel itself: where it stood, and the way it looked, are as the photo frames the front, from the pavement across the street."
+    },
+    {
+      "id": "landmark-capela-de-santa-justa-2",
+      "what": "landmark:capela-de-santa-justa",
+      "name": "Capela de Santa Justa",
+      "use": "reference",
+      "heading": 357.4,
+      "pitch": 4.1,
+      "fov": 64.7,
+      "photo": {
+        "source": "mapillary",
+        "id": "1086469605212323",
+        "url": "https://www.mapillary.com/app/?pKey=1086469605212323",
+        "author": "apires",
+        "licence": "CC BY-SA 4.0",
+        "date": "2019-03-13",
+        "lat": 41.54191,
+        "lon": -8.425286,
+        "heading": 357.4,
+        "pitch": 4.1,
+        "roll": -3
+      },
+      "notes": "Up the Rua Monsenhor Airosa, as the race comes to it: the bell gable over the white houses, the granite gable beyond it. The viewpoint capela-santa-justa."
+    },
+    {
+      "id": "landmark-capela-de-santa-justa-3",
+      "what": "landmark:capela-de-santa-justa",
+      "name": "Capela de Santa Justa",
+      "use": "reference",
+      "heading": 182.8,
+      "pitch": 5.1,
+      "fov": 64.7,
+      "photo": {
+        "source": "mapillary",
+        "id": "500330181391002",
+        "url": "https://www.mapillary.com/app/?pKey=500330181391002",
+        "author": "apires",
+        "licence": "CC BY-SA 4.0",
+        "date": "2018-02-03",
+        "lat": 41.542422,
+        "lon": -8.425248,
+        "heading": 182.8,
+        "pitch": 5.1,
+        "roll": -2
+      },
+      "notes": "From the north, 38 m off: its white north side with a dark door, granite at its corner, its tiled roof."
+    },
+    {
+      "id": "landmark-capela-de-santo-adriao-1",
+      "what": "landmark:capela-de-santo-adriao",
+      "name": "Capela de Santo Adrião",
+      "use": "reference",
+      "heading": 42,
+      "pitch": 2,
+      "fov": 66,
+      "photo": {
+        "source": "commons",
+        "id": "Igreja Santo Adriao 04.JPG",
+        "url": "https://commons.wikimedia.org/wiki/File:Igreja_Santo_Adriao_04.JPG",
+        "author": "Joseolgon",
+        "licence": "CC BY-SA 3.0",
+        "date": "2013-05-26",
+        "lat": 41.539774,
+        "lon": -8.411141
+      },
+      "notes": "The porch from before it and its south side: granite columns on low rubble walls, the round-arched door, two barred windows, the bell gable on the apex. No position on Commons: where it stood and the way it looked, as the photo frames it."
+    },
+    {
+      "id": "landmark-capela-de-santo-adriao-2",
+      "what": "landmark:capela-de-santo-adriao",
+      "name": "Capela de Santo Adrião",
+      "use": "reference",
+      "heading": 352,
+      "pitch": 2,
+      "fov": 66,
+      "photo": {
+        "source": "commons",
+        "id": "Igreja Santo Adriao 03.JPG",
+        "url": "https://commons.wikimedia.org/wiki/File:Igreja_Santo_Adriao_03.JPG",
+        "author": "Joseolgon",
+        "licence": "CC BY-SA 3.0",
+        "date": "2013-05-26",
+        "lat": 41.539648,
+        "lon": -8.410949
+      },
+      "notes": "Its south side from the lawn: rubble granite under a tiled roof, a small window, the porch at its west end under a hipped roof, the bell gable over it. No position on Commons: as the photo frames it."
+    },
+    {
+      "id": "landmark-capela-de-santo-adriao-3",
+      "what": "landmark:capela-de-santo-adriao",
+      "name": "Capela de Santo Adrião",
+      "use": "reference",
+      "heading": 206,
+      "pitch": 5,
+      "fov": 65.4,
+      "photo": {
+        "source": "mapillary",
+        "id": "4047367548666345",
+        "url": "https://www.mapillary.com/app/?pKey=4047367548666345",
+        "author": "apires",
+        "licence": "CC BY-SA 4.0",
+        "date": "2018-01-14",
+        "lat": 41.540055,
+        "lon": -8.410861,
+        "heading": 186.8,
+        "pitch": 0,
+        "roll": 0
+      },
+      "notes": "From the road the race takes, up its bank: its north side and the porch. It frames the chapel at 206°, not at the phone's compass's 186.8°. The viewpoint capela-santo-adriao."
+    },
+    {
+      "id": "landmark-capela-de-santa-tecla-1",
+      "what": "landmark:capela-de-santa-tecla",
+      "name": "Capela de Santa Tecla",
+      "use": "reference",
+      "heading": 132,
+      "pitch": 12,
+      "fov": 45,
+      "photo": {
+        "source": "commons",
+        "id": "Santa Tecla Chapel.JPG",
+        "url": "https://commons.wikimedia.org/wiki/File:Santa_Tecla_Chapel.JPG",
+        "author": "Joseolgon",
+        "licence": "CC BY-SA 3.0",
+        "date": "2013-02-26",
+        "lat": 41.547179,
+        "lon": -8.407544
+      },
+      "notes": "Its front straight on: white render framed in granite, the cornice, the pediment with the saint in her niche, the pinnacles, the great cross on its scrolled block; the green door under the inscription (1729), a barred window either side, the steps. The gate's shadows on it, so a reference only. No position on Commons: as the photo frames it."
+    },
+    {
+      "id": "landmark-capela-de-santa-tecla-2",
+      "what": "landmark:capela-de-santa-tecla",
+      "name": "Capela de Santa Tecla",
+      "use": "reference",
+      "heading": 132,
+      "pitch": 20,
+      "fov": 30,
+      "photo": {
+        "source": "commons",
+        "id": "Entrada Santa Tecla.JPG",
+        "url": "https://commons.wikimedia.org/wiki/File:Entrada_Santa_Tecla.JPG",
+        "author": "Joseolgon",
+        "licence": "CC BY-SA 3.0",
+        "date": "2013-02-26",
+        "lat": 41.547179,
+        "lon": -8.407544
+      },
+      "notes": "The inscription over its door, close: \"A CUSTA DE JOZE PINHEYRO LEYTE ANNO 1729\", the door dark green. Taken where the one before was."
+    },
+    {
+      "id": "landmark-igreja-de-sao-lazaro-1",
+      "what": "landmark:igreja-de-sao-lazaro",
+      "name": "Igreja de São Lázaro",
+      "use": "reference",
+      "heading": 21.2,
+      "pitch": 4.7,
+      "fov": 64.4,
+      "photo": {
+        "source": "mapillary",
+        "id": "302103508215044",
+        "url": "https://www.mapillary.com/app/?pKey=302103508215044",
+        "author": "apires",
+        "licence": "CC BY-SA 4.0",
+        "date": "2019-04-12",
+        "lat": 41.546189,
+        "lon": -8.421797,
+        "heading": 21.2,
+        "pitch": 4.7,
+        "roll": 0.4
+      },
+      "notes": "Its west side from the street: white render over a base of big granite slabs, a row of windows."
+    },
+    {
       "id": "closeup-azulejos-1",
       "what": "closeup:azulejos",
       "name": "Azulejos, yellow and blue",

@@ -1308,6 +1308,23 @@
    "sure": false,
    "notes": "A big vacant shopping building, half behind trees in a small dim photo: weathered, streaked pale grey concrete walls with pilasters, a blank top band and rows of small windows. Its ground floor (seen in facade-lidar-x302z819 #1) is cream render with granite window surrounds under a canopy on dark red columns."
   },
+  "way/108323630": {
+   "type": "civic",
+   "colour": "white",
+   "material": "render",
+   "floors": 2,
+   "ground": "blank",
+   "base": {
+    "colour": "pale-grey",
+    "material": "granite"
+   },
+   "balconies": "none",
+   "shutters": "none",
+   "seen": "landmark-igreja-de-sao-lazaro-1",
+   "patch": null,
+   "sure": false,
+   "notes": "The Igreja de São Lázaro (1969), its south-west corner from the street: white render over a base of big pale granite slabs, a row of windows high up, and a darker wall of rough granite further along. Its bell tower is drawn by the games as a model of its own (task 056)."
+  },
   "way/108323632": {
    "seen": null,
    "notes": "a speck in every photo it is in (under 0.05% of it)."

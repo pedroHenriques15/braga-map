@@ -274,6 +274,82 @@ export function meetings(lines) {
   return ends.filter((e) => !ends.some((o) => o.n === e.n && o.level === e.level && o.u[0] * e.u[0] + o.u[1] * e.u[1] < -0.5));
 }
 
+// The ground held to a street on the ground where DGT's terrain stands more than `over` above it within
+// its carriageway: a tree's crown or a roof the LiDAR classed as ground, which a street the tiles drape
+// on their ground would climb (task 026: the Avenida Doutor Porfírio da Silva's at (755, 653), 18 m
+// over the street, threw the race's karts off it). Along each street every metre, its own height is the
+// median of the terrain over its middle half, carried across at that half's slope; where the terrain is
+// more than `over` above that, within the street's width, the street's height. And where it stands
+// more than `tall` over the street on its carriageway, the whole of what stands more than `over` over
+// it there, if that ends within `reach` of where it's on the street (a crown, a roof: not a hill or a
+// terrace, which runs on), at the ground's height round it. `lines`: lines.mjs's streetsOf, those in
+// `box`; `at(x, z)`, the height held there, or undefined; `near(x, z, r)`, whether any of it is
+// within r; `blobs`, those taken off beside the streets ({ x, z, cells, over }).
+export function streetBumps(lines, ground, box, { over = 1, tall = 5, reach = 20 } = {}) {
+  const S = 0.5, cells = new Map(), coarse = new Set(), key = (i, j) => i * 100003 + j;
+  const mid = (i) => (i + 0.5) * S;
+  const median = (v) => { const s = v.sort((a, b) => a - b); return s[s.length >> 1]; };
+  for (const l of lines) {
+    if (l.k > 8 || l.level !== LEVEL.ground || !l.pts.some(([x, z]) => x >= box.x0 && x <= box.x1 && z >= box.z0 && z <= box.z1)) continue;
+    const hw = l.w / 2;
+    for (let i = 1; i < l.pts.length; i++) {
+      const [ax, az] = l.pts[i - 1], [bx, bz] = l.pts[i], L = Math.hypot(bx - ax, bz - az);
+      if (L < 1e-6) continue;
+      const tx = (bx - ax) / L, tz = (bz - az) / L, rx = -tz, rz = tx;
+      for (let d = 0; d < L; d += 1) {
+        const x = ax + tx * d, z = az + tz * d, mid = [], slopes = [];
+        for (let o = 0; o <= hw / 2 + 1e-9; o += S) {
+          const p = ground.at(x + rx * o, z + rz * o), q = ground.at(x - rx * o, z - rz * o);
+          mid.push(p);
+          if (o) { mid.push(q); slopes.push((p - q) / (2 * o)); }
+        }
+        const y = median(mid), g = slopes.length ? median(slopes) : 0;
+        for (let a = -0.5; a <= 0.5; a += S) for (let o = -hw; o <= hw + 1e-9; o += S) {
+          const px = x + tx * a + rx * o, pz = z + tz * a + rz * o, k = key(Math.floor(px / S), Math.floor(pz / S)), was = cells.get(k);
+          if (!was || Math.abs(o) < was.o) cells.set(k, { y: y + g * o, o: Math.abs(o), i: Math.floor(px / S), j: Math.floor(pz / S) });
+          coarse.add(key(Math.floor(px / 4), Math.floor(pz / 4)));
+        }
+      }
+    }
+  }
+  const lumps = new Map(), seen = new Set(), blobs = [];
+  for (const c of cells.values()) {
+    const k0 = key(c.i, c.j);
+    if (seen.has(k0) || ground.at(mid(c.i), mid(c.j)) <= c.y + tall) continue;
+    seen.add(k0);
+    const region = [], rim = [], queue = [[c.i, c.j]];
+    let closed = true, top = 0;
+    while (queue.length) {
+      const [i, j] = queue.pop();
+      if (Math.hypot(i - c.i, j - c.j) * S > reach) { closed = false; break; }
+      region.push([i, j]);
+      top = Math.max(top, ground.at(mid(i), mid(j)) - c.y);
+      for (const [di, dj] of [[1, 0], [-1, 0], [0, 1], [0, -1]]) {
+        const ni = i + di, nj = j + dj, nk = key(ni, nj);
+        if (seen.has(nk)) continue;
+        const h = ground.at(mid(ni), mid(nj));
+        if (h > c.y + over) { seen.add(nk); queue.push([ni, nj]); } else rim.push(h);
+      }
+    }
+    if (!closed || !rim.length) continue;
+    const y = median(rim);
+    for (const [i, j] of region) if (!cells.has(key(i, j))) { lumps.set(key(i, j), y); coarse.add(key(Math.floor(mid(i) / 4), Math.floor(mid(j) / 4))); }
+    blobs.push({ x: Math.round(mid(c.i)), z: Math.round(mid(c.j)), cells: region.length, over: Math.round(top) });
+  }
+  return {
+    blobs,
+    at(x, z) {
+      const k = key(Math.floor(x / S), Math.floor(z / S)), c = cells.get(k);
+      if (c) return ground.at(x, z) > c.y + over ? c.y : undefined;
+      return lumps.get(k);
+    },
+    near(x, z, r) {
+      for (let i = Math.floor((x - r) / 4); i <= Math.floor((x + r) / 4); i++) for (let j = Math.floor((z - r) / 4); j <= Math.floor((z + r) / 4); j++) if (coarse.has(key(i, j))) return true;
+      return false;
+    },
+  };
+}
+
 // The ground held to the street where a street on a bridge or in a tunnel meets the streets on the
 // ground (meetings), at those `keep` keeps (task 043). The LiDAR's is the bare earth, so where a
 // street meets a bridge it has the embankment falling away under the deck, and at a tunnel's mouth

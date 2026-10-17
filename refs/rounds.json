@@ -526,6 +526,52 @@
         "altice-forum": [960, 720],
         "picoto-top": [960, 720]
       }
+    },
+    {
+      "id": "2026-10-17-after026",
+      "label": "As ruas no sítio",
+      "date": "2026-10-17",
+      "tasks": [
+        "026"
+      ],
+      "note": "Cada rua no seu sítio real (tarefa 026): na área do mundo aberto, as ruas passaram da linha do OpenStreetMap para o meio da faixa de rodagem que o LiDAR mede, de lancil a lancil, à largura medida; 244 ruas mudaram, até 3,9 m. É a primeira ronda com a luz da tarefa 022 e os marcos da 021 juntos. Saíram das ruas as copas e os telhados que o LiDAR tomava por chão (as árvores da Avenida Doutor Porfírio da Silva). O salto continua nas ruas como estavam (tarefa 057). As câmaras continuam onde o Mapillary as põe, e em quatro sítios a rua mudou e a câmara não: ficaram fora da superfície de onde a foto foi tirada (tarefa 058).",
+      "made": "2026-10-17T14:25:36.796Z",
+      "game": "fd4dc07",
+      "map": "1.20.1",
+      "shots": {
+        "fujacal-start": [960, 720],
+        "imaculada-conceicao": [960, 720],
+        "liberdade": [960, 540],
+        "sao-joao-da-ponte": [960, 540],
+        "devesa": [960, 540],
+        "alvaro-carneiro": [960, 720],
+        "porfirio-da-silva": [960, 720],
+        "31-de-janeiro": [960, 720],
+        "joao-xxi": [960, 720],
+        "bernardo-sequeira": [960, 720],
+        "bom-jesus": [960, 720],
+        "pascoal-fernandes": [960, 720],
+        "egidio-guimaraes": [960, 720],
+        "robert-smith": [960, 720],
+        "robert-smith-picoto": [960, 720],
+        "falperra": [960, 720],
+        "sameiro": [960, 720],
+        "estadio": [960, 720],
+        "viriato-amaral-nunes": [960, 720],
+        "monte-da-forca": [960, 720],
+        "couteiro": [960, 720],
+        "conselheiro-lobato": [960, 720],
+        "fujacal-west": [960, 720],
+        "travessa-fujacal": [960, 720],
+        "alameda-fujacal": [960, 720],
+        "lobato-pavement": [960, 432],
+        "lobato-crossing": [960, 540],
+        "travessa-lobato": [960, 720],
+        "lobato-east": [960, 720],
+        "capela-sao-joao": [960, 540],
+        "altice-forum": [960, 720],
+        "picoto-top": [960, 720]
+      }
     }
   ]
 }

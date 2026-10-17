@@ -30,7 +30,7 @@ import { allTiles, EXT, OPEN, OPEN_BOX, OPEN_SEEN, OPEN_TILES, SECTIONS, section
 import { gatesOf } from './open.mjs';
 import { terrain } from './terrain.mjs';
 import { decks } from './decks.mjs';
-import { carriagewayMoves, heldGround, isLine, isSquare, LEVEL, levelHeights, onCarriageways, pathLines, pathsOf, streetsOf } from './lines.mjs';
+import { carriagewayMoves, heldGround, isLine, isSquare, LEVEL, levelHeights, onCarriageways, pathLines, pathsOf, streetBumps, streetsOf } from './lines.mjs';
 import { packPaths, packStreets, streetSurfaces } from './streets.mjs';
 import { cutWalls, packWalls } from './walls.mjs';
 import { BALCONIES, BALCONY, COLOUR, COLOURS, floorsOf, GROUND, GROUND_OF, guesser, MATERIAL, MATERIALS, TYPE, TYPES } from './facades.mjs';
@@ -72,12 +72,20 @@ for (const f of fs.readdirSync(path.join(ROOT, 'tracks')).filter((f) => f.endsWi
 // from it (task 040), so its deck and the street it meets are at one height there; and on the FINE
 // tiles, round where a street on a bridge or in a tunnel meets the streets on the ground, the ground
 // is held to the street (lines.mjs's heldGround, task 043), not the embankment under the deck or the
-// hill over the tunnel.
+// hill over the tunnel; and under a street's carriageway, to the street, where the LiDAR's ground stands
+// more than a metre over it, and round a crown or a roof standing more than 5 m over it (streetBumps,
+// task 026).
 const lines = streetsOf(base, inExt);
 // The decks DGT's point cloud saw (decks.mjs), for the flyovers and the bridges the map ends short.
 const deck = decks();
 if (!deck) console.log('no .cache/decks.json: the decks straight between their ends (node tools/decks.mjs)');
 const held = heldGround(lines, ground, (e) => FINE.has(tileAt(...e.p)?.id), deck);
+// And over the open world's area, where a street's carriageway would climb something the LiDAR classed
+// as ground (a tree's crown, a roof) more than a metre over it, the street's own height; and where that
+// stands more than 5 m over it, the whole crown or roof, beside the street too (task 026).
+const bumps = streetBumps(lines, ground, OPEN_BOX);
+console.log(`crowns and roofs the LiDAR took for ground, taken off the streets: ${bumps.blobs.map((b) => `(${b.x}, ${b.z}) ${b.over} m`).join(', ') || 'none'}`);
+const holds = (x, z) => held.at(x, z) ?? bumps.at(x, z);
 const grids = new Map(); // tile id → { step, n, dm }
 const gridOf = (t) => {
   let g = grids.get(t.id);
@@ -91,7 +99,7 @@ const gridDm = (t, i, j) => {
   const g = gridOf(t), k = j * g.n + i;
   if (Number.isNaN(g.dm[k])) {
     const x = t.box.x0 + i * g.step, z = t.box.z0 + j * g.step;
-    g.dm[k] = dm(ground.mean(x, z, g.step, g.step === 2 && held.near(x, z, g.step) ? held.at : undefined) - ELEV0);
+    g.dm[k] = dm(ground.mean(x, z, g.step, g.step === 2 && (held.near(x, z, g.step) || bumps.near(x, z, g.step)) ? holds : undefined) - ELEV0);
   }
   return g.dm[k];
 };

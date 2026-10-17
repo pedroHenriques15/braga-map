@@ -1,5 +1,5 @@
 ---
-status: doing
+status: done
 priority: high
 kind: code
 repo: braga-map
@@ -135,19 +135,50 @@ Steps:
 
 ## Done when
 
-- [ ] `tools/carriageways.mjs` prints, over the open world's area, how much of the streets' length
+- [x] `tools/carriageways.mjs` prints, over the open world's area, how much of the streets' length
   it measured, the spread of the offsets and widths against the map's, and the worst places.
-- [ ] Every street on the ground whose carriageway is measured more than 0.5 m off its line for
+  > 85.4 km measured, both edges seen over 12.9 km (15%) and one over 17.9 (21%); the middle within
+  > 0.63 m of the line for half, 2.00 for 90%, 3.75 for 99%; the width less the map's from -2.05 m
+  > (10%) to 4.20 (90%); the fifteen furthest off, and the places named (the viewpoints, the João
+  > XXI, the Liberdade's south end). Decision 039 has the rest.
+- [x] Every street on the ground whose carriageway is measured more than 0.5 m off its line for
   30 m or more is drawn on its measured middle, at its measured width (a test).
+  > `test/carriageways.test.js`, "every street measured off its line for HOLD or more is drawn on
+  > its middle, at its width": a quarter metre (OFF) rather than half, within the quarter metre the
+  > edges are measured to. 244 streets moved, 342 stretches over 24.2 km. But for the five ways the
+  > jump takes off from and lands on, kept as the map has them (task 057), and the width of a street
+  > that runs on into a deck, the deck's.
 - [ ] Nowhere in the area does a carriageway on the ground overhang a drop of more than 1 m that the
   measured street doesn't have (a test), and on the Avenida João XXI by eye too.
-- [ ] The decks' ends and the tunnels' mouths still meet the ground's streets within 5 cm, and the
+  > Not "nowhere": past an edge the LiDAR saw, over a drop of more than a metre, 269 places every 2 m
+  > on the map's lines and 48 on the moved ones (the test holds it to a fifth); over any drop, seen
+  > or not, 681 and 411, most under trees and parked cars where no edge was seen. The João XXI's slip
+  > road at (586, 230) no longer overhangs its drop (its own test, and the check picture). The 48
+  > left are listed by `node tools/carriageways.mjs`.
+- [x] The decks' ends and the tunnels' mouths still meet the ground's streets within 5 cm, and the
   race still runs on its streets (the tests that say so pass).
+  > braga-map's `npm test`, 108 of 108 ("a deck or a tunnel meets the ground's streets at its ends
+  > to within 5 cm" among them); party-kart's 62 of 62 on 1.20.1.
 - [ ] `bom-jesus`, `liberdade`, `viriato-amaral-nunes` and `alameda-fujacal` shot again, before and
   after: each camera on the surface its photo was taken from, and none scoring lower than the round
   before.
-- [ ] party-kart's `npm test` and `npm run check` pass on the new tag, with the lap's summary line
+  > Half met. Shot in "As ruas no sítio" (`2026-10-17-after026`): none of the four lower on Claude's
+  > marks (3, 3, 2, 2, as before), but their cameras didn't move with the streets: each stands where
+  > Mapillary has its photo, a few metres off, `bom-jesus` still on the pavement, `liberdade` on the
+  > carriageway, `alameda-fujacal` on the verge by the wall (`viriato-amaral-nunes` was on the road's
+  > edge already). And `imaculada-conceicao` fell 3 → 2: its camera is now on the median, against
+  > the hedge. Task 058 asks whether to move the cameras. Four others rose or got their camera onto
+  > the road: `robert-smith-picoto` 2 → 3 (the brick wall off the camera), `fujacal-west` 2 → 3,
+  > `fujacal-start` and `pascoal-fernandes` (on the road now, 3 as before). All 32: 2.53 against
+  > "Os marcos"' 2.50.
+- [x] party-kart's `npm test` and `npm run check` pass on the new tag, with the lap's summary line
   before and after, and the budget is measured.
+  > On 1.20.1 (party-kart `fd4dc07`): 62 of 62, `tsc` clean. The lap: "laps 302.1, 300.0 s;
+  > respawns 0; longest air 2.04 s; top 217 km/h; wall hits 51", against 1.19.0's "laps 298.8, 296.9
+  > s; respawns 0; longest air 1.98 s; top 217 km/h; wall hits 39"; the eight bots within 8.7 s with
+  > 4 respawns (10.8 s and 2). A lap in the browser with the autopilot and three bots: 5:06.3, no page
+  > errors. The budget: party-kart's `docs/architecture.md`, 0.01 M triangles more, 0.05 MB more
+  > download.
 
 ## Out of scope
 
@@ -193,3 +224,35 @@ Steps:
   Liberdade's south end (49, 304), drawn as three one-way ways, the world has two thin islands
   (0.3 to 1.5 m) where the orthophoto shows one road. A measured carriageway, from one outside kerb
   to the other, should leave no island there.
+- **Done (2026-10-17), braga-map 1.20.0 and 1.20.1, decision 039.** `tools/carriageways.mjs`
+  measures every street on the ground in the open world's area every 2 m, across bins of a quarter
+  metre (its kerbs and footings in the 50 cm ground, walls, banks and drops, the road by the echo);
+  `lines.mjs`'s `onCarriageways` moves the map's nodes for every reader (`world.mjs`, `track.mjs`,
+  `open.mjs`, `shooter.mjs`, `walls.mjs`, `build.mjs`, `streets.mjs`). Where it differs from "What":
+  - **A quarter metre, not half:** the edges are measured to a quarter metre, and a third of a metre
+    already took the João XXI's slip road over its drop.
+  - **Kerb to kerb, bays included;** the car parks the map has are not carriageway.
+  - **The jump's streets are kept as the map has them** (the landing street is 5 m by the LiDAR, and
+    party-kart's autopilot couldn't turn into it off the flight): task 057. The planner then took
+    another jump, so `tools/tracks.mjs` names the approved one's lip (`jump`).
+  - **`open.mjs` takes the moved lines at the map's widths,** as its edge rules were set on them: the
+    area 3.486 km² before, 3.489 after, 201 gates.
+  - **The streets' cracks are closed up to 20 cm** (`streets.mjs`, 10 before): the moved streets'
+    joins leave cracks of 10–20 cm.
+  - **The tiles hold a street's height under a crown or a roof the LiDAR took for ground**
+    (`streetBumps`), and take one off beside it where it stands more than 5 m over: the Avenida
+    Doutor Porfírio da Silva's plane trees at (760, 659), 19 m, which its measured width (10 m, the
+    map's 7.6) took in, threw the race's karts off it. Two roofs over service ways went too.
+  - **In party-kart:** a car just off a deck's end took the embankment under the deck for the land's
+    slope (its normal is taken over 3 m) and was thrown up off it at speed: at the east end of the
+    Avenida Doutor António Alves Palha's deck, a dozen times a race of eight bots on the new track
+    and twice on 1.19.0's. Off a piece, the normal now takes
+    the deck's height where it's nearer the car's. The kerb test followed the Rua do Fujacal's east
+    kerb (1.9 m east), and the lap test drives 640 s for its two laps.
+- **The Liberdade's south end** (task 048's note): its three one-way ways had no station with both
+  edges seen, so they stay as the map has them, and the two thin islands with them.
+- **The cameras didn't move with the streets** (task 058): `bom-jesus`, `liberdade` and
+  `alameda-fujacal` stand where Mapillary has their photos, a few metres off the surface the photos
+  were taken from, and `imaculada-conceicao`'s is now on the median.
+- **While landing it:** task 056's session tagged 1.21.0 from 1.20.0, before 1.20.1 went up: 056 has
+  main (1.20.1) to merge before it lands.

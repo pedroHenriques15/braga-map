@@ -85,6 +85,11 @@ Steps:
   > what stands there from the photos (the owner, 2026-10-18). The signs stay task 020's.
 - [x] The give-way markings: here or in task 018?
   > Here, at every entry of the 20, measured on the orthophoto (the owner, 2026-10-18).
+- [x] The islands' lawns: the orthophoto is a summer's, and some lawns were dry in it (the Via da
+  Falperra's beige where its photo is green). Their colour: a lawn's green as in March, the
+  orthophoto's, or the old grass texture?
+  > A lawn's green as in March (the owner, 2026-10-18): the cover's classes, and an island's grass
+  > in the green of the area's watered lawns in the same photo. The city's other lawns: task 068.
 
 ## Read first
 
@@ -95,13 +100,27 @@ Steps:
 
 ## Done when
 
-- [ ] Every roundabout in the open world's box has its ring where the LiDAR measured it and an
+- [x] Every roundabout in the open world's box has its ring where the LiDAR measured it and an
       island with a kerb, as the world's data (a test).
-- [ ] Every island is drawn in its own surface, and every roundabout on the route has its
+  > 18 of the 20 rings moved onto what was measured; the Praça Paulo Vidal's and the Rotunda Lions
+  > Clube's stay, too little of their islands seen (cars parked along one). 19 islands in the tiles,
+  > each round one's kerb within 35 cm of the circle measured (`test/roundabouts.test.js`); Largo de
+  > Maximinos has none, a street the map has on the ground running through its middle (Notes).
+- [x] Every island is drawn in its own surface, and every roundabout on the route has its
       centrepiece, checked against its photo.
-- [ ] A give-way line and its triangles at every entry of the 20 (a test), their sizes in
+  > Each roundabout's island in what the cover says it is, at the kerb's height (party-kart's
+  > `coverMaterial`): the route's eight grass, São João da Ponte's with paving round its plinth. The
+  > one centrepiece on the route, São João da Ponte's São João Baptista, white stone on its plinth,
+  > 4.3 m, checked against its photos (2024, 2026) from above and from its east entry; the others' are
+  > grass, hedges and signs (task 020's). Santos da Cunha's statue (in the area, not on the route)
+  > isn't checked against a photo.
+- [x] A give-way line and its triangles at every entry of the 20 (a test), their sizes in
       `docs/STREET-DETAILS.md`.
-- [ ] braga-map's `npm test`, party-kart's `npm test` and `npm run check` pass.
+  > 73 give-way lines and 80 triangles in the tiles; every one of the 54 entries the test finds has
+  > its line, but where a zebra the map has is at its place (`test/roundabouts.test.js`).
+- [x] braga-map's `npm test`, party-kart's `npm test` and `npm run check` pass.
+  > braga-map 138 of 138; party-kart 66 of 66 on this map (the autopilot's laps 303.0 and 300.2 s,
+  > no respawn; main's 302.4 and 300.3), `npm run check` clean.
 - [ ] The viewpoints round the route's roundabouts shot again and no worse: `sao-joao-da-ponte`
       above all, and `devesa`, `falperra`, `estadio` and `robert-smith` (within 50 m of a ring).
 

@@ -1417,8 +1417,11 @@ paint the give-way markings at their entries.
   (`.cache/roundabouts.json`), so every reader of the streets has them; and a corner's rounding never
   fills a roundabout's island, however far it reaches (it filled one on the route, at (-109, 1678)).
 - **The island is the ground's:** a roundabout's island is `round` in the tiles, the cover classes it
-  from the LiDAR and the orthophoto as any ground, not as paving, and party-kart draws it in the
-  land's own material, its grass, flower beds and paving at the kerb's height.
+  from the LiDAR and the orthophoto as any ground, not as paving (where it echoes as grass, it's
+  grass: a lawn the summer of 2025 dried reads as paving in its photo), and party-kart draws it in the
+  land's own material, its grass, flower beds and paving at the kerb's height; its grass in a
+  watered lawn's green in the same photo, as the game's March has it, not the summer's (the owner's
+  answer, 2026-10-18; the city's other lawns are task 068's).
 - **What stands in it is the map's:** OpenStreetMap's statues, fountains and monuments in an island
   (`fetch.mjs art`), each as tall as DGT's point cloud has it, all its points but the ground's (São
   João da Ponte's São João Baptista, 4.3 m, is classed as noise there): two statues, São João Baptista

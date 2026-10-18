@@ -249,6 +249,8 @@ footer p { margin: 0; max-width: 90ch; }
   // Whether this viewer may see the others' marks for a place: always in a closed round, and in the
   // open one once they've given theirs (or when they can't give one).
   const shows = (r, vp) => !isOpen(r) || !S.write || !!mine(r, vp)?.s;
+  // A place dropped from the viewpoints (task 052) is in a round only if the round shot it.
+  const shot = (r, v) => !v.dropped || !!r.shots[v.id];
 
   // ---- Loading the places and the rounds, published beside this page. ----
   async function load() {
@@ -283,8 +285,7 @@ footer p { margin: 0; max-width: 90ch; }
     const tasks = r.tasks.length ? ` Mostra ${r.tasks.length > 1 ? 'as tarefas' : 'a tarefa'} ${r.tasks.join(', ')}.` : '';
     $('#roundNote').textContent = `${r.note}${tasks}${isOpen(r.id) ? '' : ' Esta ronda está fechada: as notas dão-se na mais recente.'}`;
     S.cards.clear();
-    // A place dropped from the viewpoints (task 052) only in the rounds that shot it.
-    const cards = S.views.filter((v) => !v.dropped || r.shots[v.id]).map((v) => card(v, r, before));
+    const cards = S.views.filter((v) => shot(r, v)).map((v) => card(v, r, before));
     $('#cards').replaceChildren(...cards);
     $('#summary').hidden = false;
     refresh();
@@ -409,14 +410,15 @@ footer p { margin: 0; max-width: 90ch; }
       const rated = entries(r, vp).filter((e) => e.s);
       return rated.length ? { a: rated.reduce((s, e) => s + e.s, 0) / rated.length, n: rated.length } : null;
     };
-    const cell = (r, vp) => {
-      if (!shows(r.id, vp)) return h('td', { class: 'hide', title: 'Dá a tua nota primeiro' }, '·');
-      const x = avgOf(r.id, vp);
+    const cell = (r, v) => {
+      if (!shot(r, v)) return h('td', { class: 'hide' }, '–');
+      if (!shows(r.id, v.id)) return h('td', { class: 'hide', title: 'Dá a tua nota primeiro' }, '·');
+      const x = avgOf(r.id, v.id);
       return x ? h('td', {}, one(x.a), h('span', { class: 'n' }, `(${x.n})`)) : h('td', { class: 'hide' }, '–');
     };
     // An area's average: its places' averages, each place counting once, when all of them show.
     const areaCell = (r, key) => {
-      const vps = S.views.filter((v) => key === 'all' || v.areas.includes(key));
+      const vps = S.views.filter((v) => shot(r, v) && (key === 'all' || v.areas.includes(key)));
       if (vps.some((v) => !shows(r.id, v.id))) return h('td', { class: 'hide', title: 'Avalia os sítios todos desta zona primeiro' }, '·');
       const xs = vps.map((v) => avgOf(r.id, v.id)).filter(Boolean);
       return xs.length ? h('td', {}, one(xs.reduce((s, x) => s + x.a, 0) / xs.length), h('span', { class: 'n' }, `(${xs.length} sítios)`)) : h('td', { class: 'hide' }, '–');
@@ -424,7 +426,7 @@ footer p { margin: 0; max-width: 90ch; }
     const head = h('tr', {}, h('th', {}, 'Sítio'), ...S.rounds.map((r) => h('th', {}, r.label, h('br'), day(r.date))));
     const areas = [['all', 'Todos os sítios'], ['route', 'Percurso'], ['shooter', 'Fujacal'], ['skyline', 'Horizonte']]
       .map(([k, label]) => h('tr', { class: 'area' }, h('td', {}, label), ...S.rounds.map((r) => areaCell(r, k))));
-    const rows = S.views.map((v) => h('tr', {}, h('td', {}, v.nome), ...S.rounds.map((r) => cell(r, v.id))));
+    const rows = S.views.map((v) => h('tr', {}, h('td', {}, v.nome), ...S.rounds.map((r) => cell(r, v))));
     $('#table').replaceChildren(h('thead', {}, head), h('tbody', {}, ...areas, ...rows));
   }
 

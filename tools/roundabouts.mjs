@@ -232,8 +232,8 @@ export function ringMoves(rings, lines, base) {
 
 // ---- What stands in an island ----
 
-// What the map has in each island of `rings` (each seen well enough: inside the kerb seen round it,
-// half a metre in), from `art` (fetch.mjs's art.json): a statue or another artwork, a fountain, a
+// What the map has in each island of `rings` (each seen well enough, moved or not: inside the kerb
+// seen round it, half a metre in), from `art` (fetch.mjs's art.json): a statue or another artwork, a fountain, a
 // monument or a memorial, an obelisk or a cross; each as DGT's point cloud has it within NEAR_ART of
 // the map's point: where its points over the ground stand (their middle), and as high as the TOPth
 // highest reaches, where that's TALL or more. All its points but the ground's: a thin statue's are
@@ -245,7 +245,7 @@ export async function standsIn(rings, art, ground) {
   const [{ points, toTM, tileKey }] = await Promise.all([import('./dgt.mjs')]);
   const found = [];
   for (const ring of rings) {
-    if (!ring.profile?.ok) continue;
+    if (!(ring.profile?.seen >= SEEN)) continue;
     const kerb = ring.stations.filter((q) => q.din !== null).map((q) => [q.x - q.n[0] * (q.din + 0.5), q.z - q.n[1] * (q.din + 0.5)]);
     const inside = (x, z) => { let o = false; for (let i = 0, j = kerb.length - 1; i < kerb.length; j = i++) if (kerb[i][1] > z !== kerb[j][1] > z && x < kerb[i][0] + ((z - kerb[i][1]) / (kerb[j][1] - kerb[i][1])) * (kerb[j][0] - kerb[i][0])) o = !o; return o; };
     for (const e of art) {
@@ -293,6 +293,12 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     ring.stations = measureRing(ring, section, arms);
     ring.profile = ringProfile(ring, ring.stations);
     ring.arms = arms.length;
+    // A ring a deck passes over stays as the map has it: the LiDAR sees its kerb only between the
+    // deck's piers, and a tunnel's mouth beside it takes the ground the ring's carriageway reaches
+    // (the Rotunda Santos da Cunha's, under its viaduct, over the Avenida Imaculada Conceição's tunnel).
+    const reach = Math.max(...ring.pts.map(([x, z]) => Math.hypot(x - ring.c[0], z - ring.c[1]))) + ring.w;
+    ring.under = lines.some((l) => l.level === LEVEL.bridge && l.pts.some((q, i) => i && segDist(ring.c, l.pts[i - 1], q) < reach));
+    if (ring.under) ring.profile.ok = false;
   }
   const moves = ringMoves(rings, lines, base);
   const art = fs.existsSync(path.join(CACHE, 'osm', 'art.json')) ? readCache('osm/art.json').elements : [];
@@ -304,11 +310,11 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     name: name(r), ways: r.ways.map((l) => l.id), c: r.c.map(r2), stations: r.stations.length, arms: r.arms,
     seen: r2(r.profile.seen), outer: r.stations.filter((q) => q.dout !== null).length,
     island: r.profile.island === null ? null : r2(r.profile.island), mapIsland: r2(radius(r) - r.w / 2),
-    width: r.profile.width, measured: r.profile.measured, clear: r.profile.clear, mapWidth: r2(r.w), moved: r.profile.ok, round: !!r.profile.circle,
+    width: r.profile.width, measured: r.profile.measured, clear: r.profile.clear, mapWidth: r2(r.w), moved: r.profile.ok, round: !!r.profile.circle, ...(r.under && { under: true }),
     ...(r.profile.circle && { centre: r.profile.circle.slice(0, 2).map(r2) }),
   }));
   fs.writeFileSync(FILE, JSON.stringify({ about: "Where each roundabout's ring is, as DGT's 2025 LiDAR sees it, by tools/roundabouts.mjs (task 014): informação geográfica cedida pela Direção-Geral do Território (CC BY 4.0). © OpenStreetMap contributors (ODbL).", rings: out, moves, stands: got }));
-  for (const r of out) console.log(`${r.name} (${r.c.map(Math.round)}): ${r.stations} stations, the island seen at ${Math.round(r.seen * 100)}%, ${r.island ?? '–'} m round (the map's ${r.mapIsland}), the outer kerb at ${r.outer}; ${r.width ?? '–'} m wide${r.clear ? ' clearly' : r.measured ? '' : ", to the map's outer edge"} (the map's ${r.mapWidth}); ${r.moved ? (r.round ? 'moved, round' : 'moved along its line') : 'stays'}`);
+  for (const r of out) console.log(`${r.name} (${r.c.map(Math.round)}): ${r.stations} stations, the island seen at ${Math.round(r.seen * 100)}%, ${r.island ?? '–'} m round (the map's ${r.mapIsland}), the outer kerb at ${r.outer}; ${r.width ?? '–'} m wide${r.clear ? ' clearly' : r.measured ? '' : ", to the map's outer edge"} (the map's ${r.mapWidth}); ${r.moved ? (r.round ? 'moved, round' : 'moved along its line') : r.under ? 'stays, a deck over it' : 'stays'}`);
   for (const q of got) console.log(`in ${out.find((r) => r.ways[0] === q.ring)?.name}'s island: ${q.osm}, a ${q.kind}${q.name ? ` (${q.name})` : q.subject ? ` of ${q.subject}` : ''}, ${q.h} m high at (${q.x}, ${q.z})`);
   console.log(`${out.length} rings, ${out.filter((r) => r.moved).length} moved, ${out.filter((r) => r.moved && r.measured).length} with their width measured; ${Object.keys(moves.nodes).length} nodes moved, ${Object.keys(moves.inserts).length} stretches with points put in, in ${((Date.now() - t0) / 1000).toFixed(0)} s → ${path.relative(process.cwd(), FILE)}`);
   const all = { nodes: { ...base?.nodes, ...moves.nodes }, inserts: { ...base?.inserts, ...moves.inserts }, widths: { ...base?.widths, ...moves.widths } };

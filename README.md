@@ -402,7 +402,9 @@ streets; when a track moves enough to change the edge, run the three again until
   circle (by least squares, fitted again without the points furthest off): its ring is then that
   circle, half its width out; otherwise (an oval, a ring round a square) its line moves out by the
   middle measured round it, as `carriageways.mjs` moves a street. A ring with under three fifths of
-  its island seen (cars parked along it, the Praça Paulo Vidal's) stays as the map has it. Its ways
+  its island seen (cars parked along it, the Praça Paulo Vidal's) stays as the map has it, and so does
+  one a deck passes over (the Rotunda Santos da Cunha's, under its viaduct): its kerb is seen only
+  between the deck's piers. Its ways
   take its width, and each arm's end eases onto it over 20 m. `lines.mjs`'s `carriagewayMoves` lays
   these moves over `carriageways.json`'s, so every reader of the streets has them. And what stands
   in each island: OpenStreetMap's artworks, fountains and monuments in it (`fetch.mjs art`), each

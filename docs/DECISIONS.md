@@ -1452,9 +1452,11 @@ paint the give-way markings at their entries.
   round island (most) is one circle fitted to its kerb, and its ring that circle half its width out;
   an oval, or a ring round a square, moves out by the middle measured round it. The width is the one
   measured, where five or more stations saw both kerbs; else the ring runs from the island's kerb to
-  the map's outer edge. Of the open world's box's 20 rings, 18 moved (15 round), 17 at a width
-  measured; the Praça Paulo Vidal's (cars parked along its island) and the Rotunda Lions Clube's
-  stay as the map has them. Its moves are laid over `carriageways.json`'s, a file of its own
+  the map's outer edge. Of the open world's box's 20 rings, 17 moved (15 round), 16 at a width
+  measured. Three stay as the map has them: the Praça Paulo Vidal's (cars parked along its island) and
+  the Rotunda Lions Clube's, too little of their islands seen, and a ring a deck passes over, the
+  Rotunda Santos da Cunha's under its viaduct: its kerb is seen only between the piers, and its ring
+  widened reached the tunnel's mouth beside it, which task 045 holds to its own street. Its moves are laid over `carriageways.json`'s, a file of its own
   (`.cache/roundabouts.json`), so every reader of the streets has them; and a corner's rounding never
   fills a roundabout's island, however far it reaches (it filled one on the route, at (-109, 1678)).
 - **The island is the ground's:** a roundabout's island is `round` in the tiles, the cover classes it

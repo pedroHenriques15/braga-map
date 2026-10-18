@@ -59,7 +59,7 @@ const NO_ISLAND = new Set(['Largo de Maximinos']);
 test("every roundabout in the open world's box has its island where the LiDAR measured its kerb", { skip }, () => {
   const rings = measured.rings, islands = world.streets.pavements.filter((p) => p.round);
   assert.ok(rings.length >= 20, `${rings.length} rings`);
-  assert.ok(rings.filter((r) => r.moved).length >= 18, 'most moved');
+  assert.ok(rings.filter((r) => r.moved).length >= 17, 'most moved');
   for (const r of rings) {
     if (NO_ISLAND.has(r.name)) continue;
     const c = r.centre ?? r.c, mine = islands.filter((p) => p.rings[0].some(([x, z]) => Math.hypot(x - c[0], z - c[1]) < (r.island ?? 10) + 3));

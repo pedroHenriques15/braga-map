@@ -102,8 +102,9 @@ Steps:
 
 - [x] Every roundabout in the open world's box has its ring where the LiDAR measured it and an
       island with a kerb, as the world's data (a test).
-  > 18 of the 20 rings moved onto what was measured; the Praça Paulo Vidal's and the Rotunda Lions
-  > Clube's stay, too little of their islands seen (cars parked along one). 19 islands in the tiles,
+  > 17 of the 20 rings moved onto what was measured; the Praça Paulo Vidal's and the Rotunda Lions
+  > Clube's stay, too little of their islands seen (cars parked along one), and the Rotunda Santos da
+  > Cunha's, a viaduct over it (Notes). 19 islands in the tiles,
   > each round one's kerb within 35 cm of the circle measured (`test/roundabouts.test.js`); Largo de
   > Maximinos has none, a street the map has on the ground running through its middle (Notes).
 - [x] Every island is drawn in its own surface, and every roundabout on the route has its
@@ -139,12 +140,15 @@ Steps:
 - **Started 2026-10-18** in worktrees `../braga-map-014` (its `.cache` a junction to main's) and
   `../party-kart-014`, from origin/main. "What" checked against main and rewritten (it was written
   before the open world); the owner answered the three questions it raised.
-- **The rings** (`tools/roundabouts.mjs`, decision 050): of the open world's box's 20, 18 moved, 15
-  of them round (one circle fitted to the island's kerb), 3 along their lines (the Alfredo Barros's
-  oval, Santos da Cunha's, its kerb half hidden under its viaduct, and the small one at (-922, 1811));
-  17 at a width measured, the Álvaro Carneiro's to the map's outer edge (its outer kerb seen at 5
-  stations). Two stay: the Praça Paulo Vidal's (cars parked along its island, 25% of the kerb seen)
-  and the Rotunda Lions Clube's (57%). The islands moved most: the Avenida Dom João II's at (1953,
+- **The rings** (`tools/roundabouts.mjs`, decision 050): of the open world's box's 20, 17 moved, 15
+  of them round (one circle fitted to the island's kerb), 2 along their lines (the Alfredo Barros's
+  oval and the small one at (-922, 1811)); 16 at a width measured, the Álvaro Carneiro's to the map's
+  outer edge (its outer kerb seen at 5 stations). Three stay: the Praça Paulo Vidal's (cars parked
+  along its island, 25% of the kerb seen), the Rotunda Lions Clube's (57%), and the Rotunda Santos da
+  Cunha's, under its viaduct: its kerb half hidden by the deck's piers (moved along its line, 8.0 m
+  wide for 7.4), its carriageway reached the Avenida Imaculada Conceição's tunnel mouth beside it,
+  and once merged with task 045 the mouth's ground took the roundabout's height, 2.38 m off (045's
+  test), so a ring a deck passes over stays as the map has it. The islands moved most: the Avenida Dom João II's at (1953,
   1230), 12.6 m round where the map had 19.4, its ring 11.5 m wide; São João da Ponte's 5.9 for 8.6,
   10.3 m wide for 6.5; the one at (303, 1396) 7.0 for 8.6. Each checked over the orthophoto
   (`--check`, `.cache/roundabouts/`). `carriageways.json`, `walls.json` and `trees.json` aren't

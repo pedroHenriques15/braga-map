@@ -30,6 +30,8 @@ whole area. Free roam went live with task 036 before the race moved onto the str
   race's hops on the Avenida João XXI's upper lane (party-kart, found by 045).
 - **067** The Rua Padre Francisco de Almeida over its 9 m lump, at its own height: a lump the LiDAR
   has across the whole street, which the tiles follow (found by 045).
+- **069** The loading screen says so when the game itself can't be downloaded, rather than spin
+  forever: a friend's endless spinner after the deploy of 2026-10-18 (party-kart).
 
 ## Phase 1 · See it: references, the scorecard and the budget
 

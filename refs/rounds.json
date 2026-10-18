@@ -716,6 +716,54 @@
         "capela-santa-justa": [960, 720],
         "capela-santo-adriao": [960, 720]
       }
+    },
+    {
+      "id": "2026-10-18-after019",
+      "label": "As árvores",
+      "date": "2026-10-18",
+      "tasks": [
+        "019"
+      ],
+      "note": "Cada árvore como o LiDAR de 2025 a vê (tarefa 019): onde está, a sua altura, a largura da copa e onde ela começa, e a sua espécie, das que o OpenStreetMap nomeia, das matas da carta de uso do solo (COS2025) ou da sua forma: folhosas, pinheiros, eucaliptos, ciprestes e cedros, choupos e palmeiras. Perto, cada uma tem o tronco na sua casca e a copa feita de raminhos das suas folhas, de fotografias (Poly Haven); ao longe, a imagem da sua espécie. As matas e os parques já não se enchem de árvores inventadas. As árvores estão de folha, como no verão: as fotos de inverno mostram-nas despidas. A espécie de cada árvore à vista das fotos fica para a tarefa 061 (os plátanos do Parque da Ponte saem eucaliptos, como a mata que a COS2025 lá tem).",
+      "made": "2026-10-18T01:41:02.147Z",
+      "game": "ad143d0",
+      "map": "1.23.0",
+      "shots": {
+        "fujacal-start": [960, 720],
+        "imaculada-conceicao": [960, 720],
+        "liberdade": [960, 540],
+        "sao-joao-da-ponte": [960, 540],
+        "devesa": [960, 540],
+        "alvaro-carneiro": [960, 720],
+        "porfirio-da-silva": [960, 720],
+        "31-de-janeiro": [960, 720],
+        "joao-xxi": [960, 720],
+        "bernardo-sequeira": [960, 720],
+        "bom-jesus": [960, 720],
+        "pascoal-fernandes": [960, 720],
+        "egidio-guimaraes": [960, 720],
+        "robert-smith": [960, 720],
+        "robert-smith-picoto": [960, 720],
+        "falperra": [960, 720],
+        "sameiro": [960, 720],
+        "estadio": [960, 720],
+        "viriato-amaral-nunes": [960, 720],
+        "monte-da-forca": [960, 720],
+        "couteiro": [960, 720],
+        "conselheiro-lobato": [960, 720],
+        "fujacal-west": [960, 720],
+        "travessa-fujacal": [960, 720],
+        "alameda-fujacal": [960, 720],
+        "lobato-pavement": [960, 432],
+        "lobato-crossing": [960, 540],
+        "travessa-lobato": [960, 720],
+        "lobato-east": [960, 720],
+        "capela-sao-joao": [960, 540],
+        "altice-forum": [960, 720],
+        "picoto-top": [960, 720],
+        "capela-santa-justa": [960, 720],
+        "capela-santo-adriao": [960, 720]
+      }
     }
   ]
 }

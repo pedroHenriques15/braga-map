@@ -221,7 +221,7 @@ node tools/decks.mjs   # the bridges' decks DGT's point cloud saw: .cache/decks.
 node tools/carriageways.mjs  # where each street's carriageway really is, and the moves that put the map's lines there: .cache/carriageways.json (20 s, 4 minutes the first time)
 node tools/walls.mjs   # the walls, fences, railings, hedges and gates round the open world's area: .cache/walls.json (2 minutes, and 3 more the first time)
 node tools/sights.mjs  # the Estádio 1.º de Maio's stands and floodlights, the chapels' and shrines' tops, from the point cloud: .cache/sights.json (two minutes)
-node tools/trees.mjs   # every tree the LiDAR sees, its height, crown, foot and kind: .cache/trees.json (40 s, 20 minutes the first time)
+node tools/trees.mjs   # every tree the LiDAR sees, its height, crown, foot and kind: .cache/trees.json (40 s, 25 minutes the first time)
 npm run page     # the map page's map/braga.json
 npm run tracks   # every track: tracks/<id>.js, and map/tracks.json for the page
 npm run open     # the open world's edge, round the Volta dos Amigos: tools/open.json (seconds)
@@ -386,7 +386,7 @@ streets; when a track moves enough to change the edge, run the three again until
   the tiles carry every barrier the map has but where it opens, every gate, each piece whole and off
   the carriageways, and a retaining wall's higher ground on its left.
 - `trees.mjs` finds every tree in DGT's point cloud (task 019). It boils each tile down once to 50 cm
-  cells (`.cache/dgt/trees/`, 15 s a tile): the highest and the lowest point of high vegetation (class
+  cells (`.cache/dgt/trees/`, 35 s a tile): the highest and the lowest point of high vegetation (class
   5, 2 m and more up) over the terrain, how many there are and their colour (the cloud's near-infrared,
   red, green and blue), and how many points are the ground's and a building's. Then, a tile at a time
   with 20 m round it: the canopy's height in each cell, its gaps filled and smoothed; every cell from

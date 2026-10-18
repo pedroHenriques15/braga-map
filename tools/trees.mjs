@@ -1,13 +1,13 @@
 // Every tree DGT's 2025 LiDAR sees over the map (task 019): where it stands, how tall it is, how wide
 // its crown and how high its crown's foot, and what kind of tree it is.
 //
-// node tools/trees.mjs                 after fetch.mjs (lidar, trees); before world.mjs (about 10
-//                                      minutes the first time, then 2)
+// node tools/trees.mjs                 after fetch.mjs (lidar, trees); before world.mjs (25
+//                                      minutes the first time, then 40 s)
 // node tools/trees.mjs --check x,z[,r] …   and the orthophoto round each point (r metres, 60 if left
 //                                      out) with the crowns found over it, each in its kind's colour,
 //                                      into .cache/trees/
 //
-// - .cache/dgt/trees/<tile>.bin.gz: each of the point cloud's tiles boiled down once (about 15 s a
+// - .cache/dgt/trees/<tile>.bin.gz: each of the point cloud's tiles boiled down once (about 35 s a
 //   tile) to 50 cm cells on DGT's grid, the terrain model's own: the highest and the lowest point of
 //   high vegetation in each (class 5, 2 m and more over the ground) over the ground there, how many
 //   there are and their colour (the near-infrared, red, green and blue the cloud has for each point),

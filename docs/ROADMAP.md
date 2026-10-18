@@ -44,6 +44,11 @@ decision 030), two viewpoints aimed as their photos look, not as Mapillary has t
 from, 15 of them moved off where Mapillary puts them (058, decision 041); and every round's shots
 in a few sheets, so the scorecard holds about 100 more rounds (062, decision 045).
 
+- **064** The rounds made while the scorecard was out of reach go up, with Claude's marks: 052's,
+  063's and 042's, made by sessions whose account can't open "Braga real" (2026-10-18). Ready in
+  `.cache/scorecard/` with `tools/scorecard.mjs`; it waits for Claude Code signed in to the
+  scorecard's account. 042's round is to be shot again first, on 063's renderer.
+
 ## Phase 2 · The shape: the ground, the streets and the buildings where they really are
 
 Done: the buildings' heights and roofs (010), the buildings the map lacks (011), the bridges and

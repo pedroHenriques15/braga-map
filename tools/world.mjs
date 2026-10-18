@@ -30,7 +30,7 @@ import { allTiles, EXT, OPEN, OPEN_BOX, OPEN_SEEN, OPEN_TILES, SECTIONS, section
 import { gatesOf } from './open.mjs';
 import { terrain } from './terrain.mjs';
 import { decks } from './decks.mjs';
-import { carriagewayMoves, heldGround, isLine, isSquare, LEVEL, levelHeights, onCarriageways, pathLines, pathsOf, streetBumps, streetsOf } from './lines.mjs';
+import { carriagewayMoves, heldGround, isLine, isSquare, LEVEL, levelHeights, onCarriageways, pathLines, pathsOf, streetBands, streetBumps, streetsOf } from './lines.mjs';
 import { packPaths, packStreets, streetSurfaces } from './streets.mjs';
 import { cutWalls, packWalls } from './walls.mjs';
 import { KINDS as TREE_KINDS, osmKind, TREES } from './trees.mjs';
@@ -76,7 +76,8 @@ for (const f of fs.readdirSync(path.join(ROOT, 'tracks')).filter((f) => f.endsWi
 // is held to the street (lines.mjs's heldGround, task 043), not the embankment under the deck or the
 // hill over the tunnel; and under a street's carriageway, to the street, where the LiDAR's ground stands
 // more than a metre over it, and round a crown or a roof standing more than 5 m over it (streetBumps,
-// task 026).
+// task 026); and where a 2 m square reaches a street's carriageway, to the part of it on the street
+// alone, not a wall, a cutting or a bank beside it (streetBands, task 045).
 const lines = streetsOf(base, inExt);
 // The decks DGT's point cloud saw (decks.mjs), for the flyovers and the bridges the map ends short.
 const deck = decks();
@@ -88,6 +89,11 @@ const held = heldGround(lines, ground, (e) => FINE.has(tileAt(...e.p)?.id), deck
 const bumps = streetBumps(lines, ground, OPEN_BOX);
 console.log(`crowns and roofs the LiDAR took for ground, taken off the streets: ${bumps.blobs.map((b) => `(${b.x}, ${b.z}) ${b.over} m`).join(', ') || 'none'}`);
 const holds = (x, z) => held.at(x, z) ?? bumps.at(x, z);
+// And over the open world's area, a 2 m square that reaches a street's carriageway is the mean over the
+// part of it on the carriageway alone, and of that, what's within 30 cm of the street's own surface: not
+// the wall, the cutting or the bank beside it, nor a wall's top the carriageway's width reaches (task
+// 045). But a square that reaches the ground held at a deck's end is as task 043 holds it.
+const bands = streetBands(lines, OPEN_BOX, (x, z) => (held.atDeck(x, z) ? bumps.at(x, z) : holds(x, z)) ?? ground.at(x, z), (x, z) => held.atDeck(x, z));
 const grids = new Map(); // tile id → { step, n, dm }
 const gridOf = (t) => {
   let g = grids.get(t.id);
@@ -101,7 +107,8 @@ const gridDm = (t, i, j) => {
   const g = gridOf(t), k = j * g.n + i;
   if (Number.isNaN(g.dm[k])) {
     const x = t.box.x0 + i * g.step, z = t.box.z0 + j * g.step;
-    g.dm[k] = dm(ground.mean(x, z, g.step, g.step === 2 && (held.near(x, z, g.step) || bumps.near(x, z, g.step)) ? holds : undefined) - ELEV0);
+    const fine = g.step === 2;
+    g.dm[k] = dm(ground.mean(x, z, g.step, fine && (held.near(x, z, g.step) || bumps.near(x, z, g.step)) ? holds : undefined, fine && bands.near(x, z, g.step) ? bands.of(x, z, g.step) : undefined) - ELEV0);
   }
   return g.dm[k];
 };

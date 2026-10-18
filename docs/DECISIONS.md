@@ -1395,7 +1395,48 @@ The alternatives were the task's: the game working the corners out from the name
 (every game again, from lines cut at the tiles' edges, without the map's nodes), and the names drawn
 into atlases of plates.
 
-## 049 · A roundabout's ring is where the LiDAR measured it, and its island is what the ground is there
+## 049 · The ground under a street is the street's: a 2 m square takes only the carriageway it reaches
+
+*2026-10-18 · task 045 · after decision 008 (the LiDAR's ground) and task 043's held ends*
+
+The tiles hold the ground every 2 m, each point the mean of the LiDAR's over a 2 m square, and a
+street on the ground takes that height. Within 2 to 4 m of a wall, a cutting or a bank, the squares
+took its top into the street, which rode up it, or rippled along it where the wall ran across the
+grid (the Avenida João XXI over its junction), and six tunnels' mouths had a cutting's wall in their
+first 2 m. Over the open world's area, a square that reaches a street's carriageway is now the mean of
+the part on it alone (`lines.mjs`'s `streetBands`, `terrain.mjs`'s `mean`):
+
+- **Of the carriageway, only the street's own surface:** every metre along it, the median of the
+  ground over its middle half, carried across at that half's slope (as `streetBumps` has it, but
+  never more than 10% across). What's more than 30 cm off it isn't the street: a wall's top the
+  carriageway's width reaches where the map's line is a metre off the street's middle, the wall's
+  face smeared over the LiDAR's last half metre, the cutting or the island over a tunnel's mouth. A
+  square with none of the street's surface in it keeps the mean of all of it, so a wall stays where
+  it is.
+- **Two streets at different heights side by side** (a cutting's street and a lane along its top a
+  metre away, at the João XXI and the Liberdade's underpass): each point holds the one whose surface
+  its own ground is within a metre of, the side of the wall it's on, so the ground steps between
+  them at the wall, not in either street; on the wall's face, the one whose middle is nearest.
+- **Not at a deck's end:** a square that reaches the ground task 043 holds there keeps it as it is,
+  for a car that feels the land's slope over its length. Nor where the map tags an area's outline as
+  a street (`area:highway`, the Rotunda Santos da Cunha's island): it's no carriageway.
+
+What it came to: along the area's streets every 2 m, the tiles' ground more than 15 cm off the
+LiDAR's at 110 of 43,139 points (355 before), 94 of them where a wall or a cutting's edge runs
+within 1.5 m of the street's middle; the six walled mouths within 7 cm of their street's slope.
+A 2 m grid still can't hold a lane on a cutting's top and the street at its foot a metre apart both
+to their edges: the step between them is a metre either side of the wall, and a car that tilts by
+the land 1.5 m beside it feels it (party-kart's race hops 0.4 to 0.7 s on the João XXI's upper lane:
+task 066).
+
+The alternatives, each measured on the walled mouths, the streets' middles and party-kart's drives:
+the nearest street's middle for each point (the step moved off the wall, onto the lane the race
+drives at the Liberdade), the higher street for each point (the roundabout over a mouth took it),
+and the old mean wherever two levels meet (two walled mouths stayed off). A finer grid, or the
+streets on the ground carrying their own heights as the decks do, would hold both edges; neither is
+needed for the streets' middles.
+
+## 050 · A roundabout's ring is where the LiDAR measured it, and its island is what the ground is there
 
 *2026-10-18 · task 014 · as the streets' carriageways (decision 039)*
 

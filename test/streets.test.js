@@ -10,9 +10,11 @@ import ClipperLib from 'clipper-lib';
 import { loadWorld } from '../index.js';
 import amigos from '../tracks/amigos.js';
 import { CACHE, readCache } from '../tools/geo.mjs';
+import { heldGround, LEVEL, onCarriageways, streetBands, streetBumps, streetsOf } from '../tools/lines.mjs';
 import { stopsAt, streetSurfaces } from '../tools/streets.mjs';
 import { barriersOf } from '../tools/walls.mjs';
-import { OPEN_BOX } from '../tools/sections.mjs';
+import { EXT, OPEN_BOX } from '../tools/sections.mjs';
+import { decks } from '../tools/decks.mjs';
 
 const C = ClipperLib;
 const NZ = C.PolyFillType.pftNonZero;
@@ -195,6 +197,37 @@ test('the streets end at their walls: a pavement at any, a carriageway at the ma
   assert.ok(open(54.2, 3.9) && !corner(54.2, 3.9) && corner(53.4, 3.4), "the corner's kerb at the wall");
 });
 
+test("the tiles' 2 m ground held to a street's carriageway: not the wall beside it, nor the wall's top (task 045)", () => {
+  // The heights streetBands keeps of a square's samples (as terrain.mjs's mean takes them) round a grid
+  // point, by their offset across: z from -0.75 to 0.75.
+  const kept = (bands, x, z, at) => { const of = bands.of(x, z, 2); return of && [-0.75, -0.25, 0.25, 0.75].map((b) => of(x + 0.25, z + b, at(x + 0.25, z + b)) ?? null); };
+  const street = (id, w, z, t = {}) => ({ ...way(id, 5, w, [[0, z], [40, z]], [id * 10, id * 10 + 1], t), t: { highway: 'residential', ...t } });
+  const B = { x0: -10, x1: 50, z0: -10, z1: 20 };
+  // A street 4 m wide at 10 m, a wall 5 m high at 2.5 m from its line: of the square round (20, 2),
+  // its carriageway alone; and none of a square all beyond it.
+  const wallBy = (x, z) => (z < 2.5 ? 10 : 15);
+  const by = streetBands([street(1, 4, 0)], B, wallBy);
+  assert.deepEqual(kept(by, 20, 2, wallBy), [10, 10, null, null], "the square's part on the carriageway");
+  assert.equal(by.of(20, 4, 2), null, "a square off it, the ground's own");
+  // The wall in the carriageway, 1.5 m from its line (the map's line 1.5 m off the street's middle): what
+  // stands on it is off the street's own surface, and a square all on the wall's top keeps the wall.
+  const wallIn = (x, z) => (z < 1.5 ? 10 : 15);
+  const into = streetBands([street(1, 4, 0)], B, wallIn);
+  assert.deepEqual(kept(into, 20, 1, wallIn), [10, 10, 10, null], "the street's own surface, not the wall's top");
+  assert.equal(into.of(20, 2.3, 2), null, "a square whose part on the carriageway is all the wall's top: its mean as it is");
+  // A cutting's street, 5 m wide at 10 m, and a lane 3 m wide on its top at 15 m, half a metre beyond it,
+  // the cutting's face between them: each point holds the level its own ground is on, though nearer the
+  // other's middle; on the face itself, the street whose middle is nearest.
+  const face = (x, z) => (z < 2.4 ? 10 : z < 2.8 ? 12.5 : 15);
+  const pair = streetBands([street(1, 5, 0), street(2, 3, 4.5)], B, face);
+  assert.deepEqual(kept(pair, 20, 2.3, face), [10, 10, null, null], "below the face, the cutting's");
+  assert.deepEqual(kept(pair, 20, 2.9, face), [null, null, 15, 15], "above it, the lane's");
+  assert.deepEqual(kept(pair, 20, 2.6, face), [null, null, null, 15], "on it, the lane's, whose middle is nearer");
+  // Not an outline the map tags as a street (area:highway), nor a square that reaches a deck's held end.
+  assert.equal(streetBands([street(1, 10, 0, { 'area:highway': 'traffic_island' })], B, wallBy).of(20, 0, 2), null, "an island's outline isn't a carriageway");
+  assert.equal(streetBands([street(1, 4, 0)], B, wallBy, (x) => x > 30).of(31, 0, 2), null, "at a deck's end, the ground as task 043 holds it");
+});
+
 // ---- In the open world's tiles ----
 
 // The tiles under the box round the area, where the surfaces are made; the streets checked are those
@@ -202,6 +235,11 @@ test('the streets end at their walls: a pavement at any, a carriageway at the ma
 const w = await loadWorld(OPEN_BOX);
 const S = w.streets;
 const inOpen = ([x, z]) => w.inOpen(x, z);
+// The LiDAR's ground, where it was fetched, and the streets as world.mjs takes them with the ground it
+// holds to them on purpose, for the ground under every street (task 045).
+const lidar = fs.existsSync(`${CACHE}/dgt/MDT-50cm`) ? await (await import('../tools/terrain.mjs')).terrain() : null;
+const mapped = lidar ? streetsOf(onCarriageways(readCache('osm/base.json')), (x, z, m = 0) => x >= EXT.x0 - m && x <= EXT.x1 + m && z >= EXT.z0 - m && z <= EXT.z1 + m) : [];
+const held = lidar && heldGround(mapped, lidar, () => true, decks()), bumps = lidar && streetBumps(mapped, lidar, OPEN_BOX);
 
 test("every ring is closed and simple, and off the ground has its heights", () => {
   for (const p of [...S.carriageways, ...S.pavements]) {
@@ -401,7 +439,7 @@ test("a deck or a tunnel meets the ground's streets at its ends to within 5 cm",
         const d = [v[0] - e.p[0], v[1] - e.p[1]], along = d[0] * e.u[0] + d[1] * e.u[1];
         if (Math.hypot(...d) > e.w / 2 + 3 || !(along < 0.5 || ('surface' in piece && Math.hypot(...d) < e.w + 2 && onEdge(v)))) return;
         const dy = Math.abs(piece.ys[i][k] - w.height(...v));
-        if (dy > 0.0501 && offLine(v, w.height(...v)) >= 0.4) { steep++; return; }
+        if (dy > 0.0501 && offLine(v, w.height(...v)) >= 0.4) { steep++; console.log("STEEP", v, dy.toFixed(2), piece.ys[i][k], w.height(...v).toFixed(2)); return; }
         n++;
         worst = Math.max(worst, dy);
         if (dy > 0.0501) off.push(`(${v}) ${dy.toFixed(2)}`);
@@ -438,26 +476,63 @@ test('the street on the ground runs into every deck and tunnel on its own slope'
   // ground stays within a decimetre of it, the tiles' own step (they hold heights in decimetres, so
   // the ground anywhere is up to 5 cm off what it rounds, and the ends where nothing dipped are up to
   // 7 cm off such a line). Before task 043 the ground dipped 0.2 to 0.6 m into five decks' abutments,
-  // and climbed 0.5 to 4.5 m up the tunnels' portals.
-  // But at four mouths of the narrow bores (the João XXI's and the Liberdade's), a cutting's wall
-  // stands 1.5 to 4 m from the street's middle, and the tiles' 2 m ground takes it into the street,
-  // there and on along the cutting; and at the Avenida Imaculada Conceição's two under the Rotunda
-  // Santos da Cunha (task 047), the roundabout's carriageway over the mouth: task 045.
-  const WALLED = [[560, 233.5], [530, 249], [123.5, 611], [122.5, 607.5], [-775, 975.5], [-810, 1012]];
-  const off = [], walled = [];
+  // and climbed 0.5 to 4.5 m up the tunnels' portals. And before task 045 held the ground to the
+  // streets' carriageways, six mouths were 0.13 to 0.97 m off in their first 2 m: four of the narrow
+  // bores (the João XXI's and the Liberdade's), where a cutting's wall stands 1.5 to 4 m from the
+  // street's middle, and the Avenida Imaculada Conceição's two under the Rotunda Santos da Cunha
+  // (task 047), with the roundabout's island over the mouth.
+  const off = [];
   let worst = 0;
   for (const e of joins) {
     const as = Array.from({ length: 13 }, (_, k) => k * 0.5), hs = as.map((a) => w.height(e.p[0] - e.u[0] * a, e.p[1] - e.u[1] * a));
     const fit = as.map((a, k) => [a, hs[k]]).filter(([a]) => a >= 2), ma = fit.reduce((s, [a]) => s + a, 0) / fit.length, mh = fit.reduce((s, [, h]) => s + h, 0) / fit.length;
     const slope = fit.reduce((s, [a, h]) => s + (a - ma) * (h - mh), 0) / fit.reduce((s, [a]) => s + (a - ma) ** 2, 0);
     const d = Math.max(...as.filter((a) => a <= 2).map((a, k) => Math.abs(hs[k] - mh - slope * (a - ma))));
-    const at = `${e.level} at (${e.p}) ${d.toFixed(2)} m`;
-    if (WALLED.some(([x, z]) => Math.hypot(x - e.p[0], z - e.p[1]) < 2)) walled.push(at);
-    else { worst = Math.max(worst, d); if (d > 0.1) off.push(at); }
+    worst = Math.max(worst, d);
+    if (d > 0.1) off.push(`${e.level} at (${e.p}) ${d.toFixed(2)} m`);
   }
-  console.log(`${joins.length - walled.length} decks' ends and tunnels' mouths: the first 2 m within ${worst.toFixed(2)} m of the street's slope beyond; in a walled cutting, ${walled.join(', ')}`);
-  assert.equal(walled.length, WALLED.length, 'the walled mouths are where they were');
+  console.log(`${joins.length} decks' ends and tunnels' mouths: the first 2 m within ${worst.toFixed(2)} m of the street's slope beyond`);
   assert.deepEqual(off, [], "the ground dips or climbs where the street meets a deck or a tunnel");
+});
+
+test("the ground under every street in the area at its own height: its middle within 15 cm of the LiDAR's (task 045)", { skip: !lidar && 'no LiDAR (node tools/fetch.mjs lidar)' }, () => {
+  // Every 2 m along every street on the ground inside the area's edge (the map's lines as world.mjs
+  // takes them, on their carriageways, but an outline the map tags as a street, area:highway), the tiles'
+  // ground against the LiDAR's: but where the tiles hold it to the street on purpose, at a deck's end or
+  // a tunnel's mouth (task 043) and over a crown or a roof the LiDAR took for ground (task 026). Before
+  // task 045, 355 of 43,139 were more than 15 cm off (0.82%), the 2 m squares taking in a wall, a
+  // cutting or a bank beside the street; 67 of them with no step in the LiDAR's ground within 1.5 m
+  // across the street's middle.
+  let n = 0;
+  const off = [];
+  for (const l of mapped) {
+    if (l.k > 8 || (l.level !== LEVEL.ground && l.level !== LEVEL.under) || l.t['area:highway']) continue;
+    let start = 0;
+    for (let i = 1; i < l.pts.length; i++) {
+      const [ax, az] = l.pts[i - 1], [bx, bz] = l.pts[i], L = Math.hypot(bx - ax, bz - az);
+      if (L < 1e-6) continue;
+      const tx = (bx - ax) / L, tz = (bz - az) / L;
+      let d = start;
+      for (; d < L; d += 2) {
+        const x = ax + tx * d, z = az + tz * d;
+        if (!w.inOpen(x, z) || held.at(x, z) !== undefined || bumps.at(x, z) !== undefined) continue;
+        n++;
+        const y = lidar.at(x, z), dy = w.height(x, z) + w.elev0 - y;
+        if (Math.abs(dy) <= 0.15) continue;
+        const step = Math.max(...[-1.5, -1, -0.5, 0.5, 1, 1.5].map((o) => Math.abs(lidar.at(x - tz * o, z + tx * o) - y)));
+        off.push({ at: `${l.t.name ?? `${l.t.highway} ${l.id}`} (${x.toFixed(1)}, ${z.toFixed(1)}) ${dy.toFixed(2)} m`, step });
+      }
+      start = d - L;
+    }
+  }
+  // Where it's still off, nearly always a wall or a cutting's edge within 1.5 m of the middle: the map's
+  // line along it, or a lane on a cutting's top a metre from the street in it, where the 2 m grid holds
+  // each point to one level and steps between them at the wall. The rest, half a metre steps or less.
+  const flat = off.filter((p) => p.step <= 0.5);
+  console.log(`the ground under the area's streets: ${n} points, ${off.length} more than 15 cm off the LiDAR's (${((100 * off.length) / n).toFixed(2)}%), ${off.length - flat.length} by a step of half a metre or more within 1.5 m across, ${flat.length} not: ${flat.map((p) => p.at).join(', ')}`);
+  assert.ok(n > 40000, `${n} points`);
+  assert.ok(off.length <= n * 0.005, `${off.length} points more than 15 cm off`);
+  assert.ok(flat.length <= n * 0.001, `${flat.length} of them by no step`);
 });
 
 test("no corner of the ground's streets lies past a deck's or a tunnel's end (task 046)", () => {

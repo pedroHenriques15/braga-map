@@ -139,7 +139,7 @@ Steps:
 - **Started 2026-10-18** in worktrees `../braga-map-014` (its `.cache` a junction to main's) and
   `../party-kart-014`, from origin/main. "What" checked against main and rewritten (it was written
   before the open world); the owner answered the three questions it raised.
-- **The rings** (`tools/roundabouts.mjs`, decision 049): of the open world's box's 20, 18 moved, 15
+- **The rings** (`tools/roundabouts.mjs`, decision 050): of the open world's box's 20, 18 moved, 15
   of them round (one circle fitted to the island's kerb), 3 along their lines (the Alfredo Barros's
   oval, Santos da Cunha's, its kerb half hidden under its viaduct, and the small one at (-922, 1811));
   17 at a width measured, the Álvaro Carneiro's to the map's outer edge (its outer kerb seen at 5

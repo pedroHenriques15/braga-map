@@ -9,7 +9,9 @@ import { test } from 'node:test';
 import { CACHE } from '../tools/geo.mjs';
 
 const { rounds } = JSON.parse(fs.readFileSync(new URL('../refs/rounds.json', import.meta.url), 'utf8'));
-const { viewpoints } = JSON.parse(fs.readFileSync(new URL('../refs/viewpoints.json', import.meta.url), 'utf8'));
+// The viewpoints, and those dropped since (task 052), which stay places of the rounds that shot them.
+const { viewpoints: current, dropped = [] } = JSON.parse(fs.readFileSync(new URL('../refs/viewpoints.json', import.meta.url), 'utf8'));
+const viewpoints = [...current, ...dropped];
 const OUT = path.join(CACHE, 'scorecard');
 const up8 = (n) => Math.ceil(n / 8) * 8;
 

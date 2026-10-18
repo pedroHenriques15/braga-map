@@ -283,7 +283,8 @@ footer p { margin: 0; max-width: 90ch; }
     const tasks = r.tasks.length ? ` Mostra ${r.tasks.length > 1 ? 'as tarefas' : 'a tarefa'} ${r.tasks.join(', ')}.` : '';
     $('#roundNote').textContent = `${r.note}${tasks}${isOpen(r.id) ? '' : ' Esta ronda está fechada: as notas dão-se na mais recente.'}`;
     S.cards.clear();
-    const cards = S.views.map((v) => card(v, r, before));
+    // A place dropped from the viewpoints (task 052) only in the rounds that shot it.
+    const cards = S.views.filter((v) => !v.dropped || r.shots[v.id]).map((v) => card(v, r, before));
     $('#cards').replaceChildren(...cards);
     $('#summary').hidden = false;
     refresh();

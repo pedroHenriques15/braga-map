@@ -75,8 +75,8 @@ Steps:
 - [ ] Along the area's streets the tiles' ground follows the LiDAR's at the carriageway's middle
   (step 3's test), and braga-map's `npm test` passes.
 - [ ] party-kart's world-ground drive on the new tiles isn't thrown on the Avenida João XXI.
-- [ ] The viewpoints `joao-xxi` and `lobato-crossing` shot again (no worse: the streets by the
-  cuttings lie on their real level).
+- [ ] The viewpoint `lobato-crossing` shot again (no worse: the streets by the cuttings lie on their
+  real level; `joao-xxi` was dropped in task 052, the owner's answer).
 
 ## Out of scope
 

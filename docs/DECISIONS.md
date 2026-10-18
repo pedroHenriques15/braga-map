@@ -1261,3 +1261,46 @@ the page shows each shot through a window its size over its sheet.
 The alternatives were the artifact's assets (which may be refused to a viewer from outside the
 owner's organization, as the friends are: task 003), thinning the old rounds (their pictures lost
 beside the marks given on them), and a second page (the rounds split across two links).
+
+## 046 · A street ends at its walls: the pavement runs to the first one, and a carriageway gives way to the map's
+
+*2026-10-18 · task 052 · adds to decisions 021, 033 and 039*
+
+Task 013 put the walls in the world, and many of the map's stood where the world drew a street: a
+wall on a carriageway was cut away (decision 033, as a building in a street is cut at the kerb,
+decision 021), and one on a pavement stood in the middle of it, the pavement going on past it into
+the garden behind. In Braga a street ends at its walls. The owner chose (task 052's answers,
+2026-10-16 and 2026-10-18):
+
+- **A pavement runs from its kerb to the first wall or building behind it,** 3.2 m at most: the
+  map's walls, fences, railings, hedges, guard rails and retaining walls, and the walls, fences and
+  retaining walls the LiDAR found, but not the hedges it found (half of those in task 013's contact
+  sheets were scrub) nor the gates (`stopsAt` in `tools/streets.mjs`). Each piece of a kerb looks
+  straight out from it, and what's behind a wall it sees, from 15 cm short of the wall's line (the
+  tiles' 10 cm), is no pavement; but what another kerb sees past it stays, as a street on a wall's
+  other side has its pavement up to it. A path stops at a wall the same way, either side of its
+  line, but where it passes through one (walls.mjs opens the wall there).
+- **A carriageway the map's wall stands in gives way to it,** its edge brought back to 15 cm short of
+  the wall where the wall runs along it (within 30°), inside its band or within 15 cm of its edge,
+  over a metre or more, and on straight across an opening in it up to 6 m that no other street passes
+  through (a gate, a door); but not round a deck's or a tunnel's end, which meets the ground's
+  streets at their height (decision 023). Where a road's two carriageways touch with the map's wall
+  between them, both stop at it, and its gap is an island, not a crack filled in (decision 035). A
+  junction's rounded corner stops at a wall of the map's in it, as seen from the junction. The wall is where the
+  street really ends (decision 019: the street at its real width), and since task 026 (decision 039)
+  the streets are on their carriageways, so this is where the map's width, or its kind's usual, is
+  wider than the street there and the LiDAR didn't measure it.
+- **No narrower than its lanes:** those the map paints, each 2.5 m, or one where it paints none (the
+  owner's answer once `lanesOf` turned out to count only painted lanes). Where they don't fit beside
+  the wall, each side goes back out in proportion to how far it came in, and the wall is cut where it
+  stands in the street, as before. The lines painted on a narrower stretch share what's left, easing
+  in and out over 10 m a metre; a zebra and a stop line span what's there.
+- **The LiDAR's walls on a carriageway are still cut** (1.40 km of its retaining walls, mostly the
+  steps in the ground at a carriageway's edge it took for walls): the task gave the map's.
+
+What it did, braga-map 1.24.0: …
+
+The alternatives were the task's: the wall cut away as before, or kept standing in the street; and
+for the LiDAR's walls, all of them stopping a pavement, or only the map's and its retaining walls;
+for a street with no lanes painted, a lane each way it's driven (5 m for a two-way street, which
+would have kept 0.46 km of walls cut, the Travessa da Devesa's among them) or 026's narrowest, 2.4 m.

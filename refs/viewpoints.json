@@ -230,34 +230,6 @@
       "notes": ""
     },
     {
-      "id": "joao-xxi",
-      "name": "Avenida João XXI",
-      "nome": "Avenida João XXI",
-      "kind": "kart",
-      "x": 693.6,
-      "y": 24.6,
-      "z": 161.4,
-      "tx": 781.5,
-      "ty": 47.3,
-      "tz": 113.6,
-      "fov": 52,
-      "surface": "lane",
-      "photo": {
-        "source": "mapillary",
-        "id": "206830544387598",
-        "url": "https://www.mapillary.com/app/?pKey=206830544387598",
-        "author": "waldyrious",
-        "licence": "CC BY-SA 4.0",
-        "date": "2018-04-16",
-        "lat": 41.549747,
-        "lon": -8.413686,
-        "heading": 61.5,
-        "pitch": 12.8,
-        "roll": -2.3
-      },
-      "notes": ""
-    },
-    {
       "id": "bernardo-sequeira",
       "name": "Rua Bernardo Sequeira",
       "nome": "Rua Bernardo Sequeira",
@@ -402,12 +374,12 @@
       "name": "Avenida Robert Smith, the Picoto ahead",
       "nome": "Avenida Robert Smith, com o Picoto à frente",
       "kind": "kart",
-      "x": 1208.9,
+      "x": 1209.9,
       "y": 42.4,
-      "z": 1154.5,
-      "tx": 1129.8,
+      "z": 1155.8,
+      "tx": 1130.8,
       "ty": 46.8,
-      "tz": 1215.8,
+      "tz": 1217.1,
       "fov": 51,
       "surface": "lane",
       "photo": {
@@ -423,7 +395,7 @@
         "pitch": 2.5,
         "roll": -2.3
       },
-      "notes": ""
+      "notes": "The photo is from a car in the right lane, a wall on its right. Moved 1.7 m onto that lane's middle, off the wall's foot where Mapillary puts it, once task 052 brought the street back to that wall (task 058's rule)."
     },
     {
       "id": "falperra",
@@ -959,6 +931,37 @@
         "roll": 0
       },
       "notes": "From a car on the route, looking up the bank at the chapel above the road: its north side, and its porch on the right. Aimed at 206° and 5° up, where the photo frames the chapel and the road, not at Mapillary's 186.8°, the phone's compass; 2.5 m north of where Mapillary puts it, in the road as the photo is."
+    }
+  ],
+  "dropped": [
+    {
+      "id": "joao-xxi",
+      "name": "Avenida João XXI",
+      "nome": "Avenida João XXI",
+      "kind": "kart",
+      "x": 693.6,
+      "y": 24.6,
+      "z": 161.4,
+      "tx": 781.5,
+      "ty": 47.3,
+      "tz": 113.6,
+      "fov": 52,
+      "surface": "lane",
+      "photo": {
+        "source": "mapillary",
+        "id": "206830544387598",
+        "url": "https://www.mapillary.com/app/?pKey=206830544387598",
+        "author": "waldyrious",
+        "licence": "CC BY-SA 4.0",
+        "date": "2018-04-16",
+        "lat": 41.549747,
+        "lon": -8.413686,
+        "heading": 61.5,
+        "pitch": 12.8,
+        "roll": -2.3
+      },
+      "notes": "",
+      "dropped": "2026-10-18, task 052 (the owner's answer): its camera stood on the map's median hedge, which the streets now give way to. Kept for where its photo was taken (the facades seen in it, refs/buildings.json) and its earlier rounds on the scorecard; no longer shot."
     }
   ]
 }

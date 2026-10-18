@@ -12,7 +12,9 @@ import { CACHE } from '../tools/geo.mjs';
 
 const { buildings } = JSON.parse(fs.readFileSync(new URL('../refs/buildings.json', import.meta.url), 'utf8'));
 const photos = new Set(JSON.parse(fs.readFileSync(new URL('../refs/photos.json', import.meta.url), 'utf8')).photos.map((p) => p.id));
-const views = new Set(JSON.parse(fs.readFileSync(new URL('../refs/viewpoints.json', import.meta.url), 'utf8')).viewpoints.map((v) => v.id));
+// A building may have been seen in a viewpoint's photo since dropped (task 052).
+const { viewpoints, dropped = [] } = JSON.parse(fs.readFileSync(new URL('../refs/viewpoints.json', import.meta.url), 'utf8'));
+const views = new Set([...viewpoints, ...dropped].map((v) => v.id));
 
 test('each building seen is said in the facades\' words, with the photo it was seen in', () => {
   for (const [name, e] of Object.entries(buildings)) {

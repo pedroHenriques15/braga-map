@@ -589,7 +589,9 @@ let infill = 0;
 let signs = 0;
 {
   const photos = new Map(JSON.parse(fs.readFileSync(path.join(ROOT, 'refs', 'photos.json'), 'utf8')).photos.map((p) => [p.id, p]));
-  const views = new Map(JSON.parse(fs.readFileSync(path.join(ROOT, 'refs', 'viewpoints.json'), 'utf8')).viewpoints.map((v) => [v.id, v]));
+  // The viewpoints, and those dropped (task 052), whose photos are still where a building was seen.
+  const { viewpoints, dropped = [] } = JSON.parse(fs.readFileSync(path.join(ROOT, 'refs', 'viewpoints.json'), 'utf8'));
+  const views = new Map([...viewpoints, ...dropped].map((v) => [v.id, v]));
   const sgrid = new Grid(30);
   for (const s of streets) {
     for (let i = 1; i < s.pts.length; i++) {
@@ -750,7 +752,8 @@ let nTrees = 0;
 // leave room for, and the lines painted on them, at their levels; and the paths (task 050), each
 // flight of steps a tread at a time with its handrails; cut to the tiles. And the walls, fences,
 // railings, hedges and gates (walls.mjs, task 013), each cut to the tiles and at the edge of a
-// carriageway or a path on the ground it stands on.
+// carriageway or a path on the ground it stands on; the pavements and paths stop at them, and a
+// carriageway gives way to the map's, no narrower than its lanes (task 052).
 
 const wallList = fs.existsSync(path.join(CACHE, 'walls.json')) ? readCache('walls.json').walls : null;
 if (!wallList) console.log('no .cache/walls.json: no walls (node tools/walls.mjs)');
@@ -760,7 +763,7 @@ const treesOff = { moved: 0, out: 0 };
   const nodes = onCarriageways(readCache('osm/street.json')).elements.filter((e) => e.type === 'node');
   const rings = (kind) => areas.filter(([k]) => k === AREA.indexOf(kind)).map(([, r]) => r);
   const B = OPEN_BOX, over = tilesOver(B).map((t) => ({ id: t.id, box: { x0: Math.max(t.box.x0, B.x0), x1: Math.min(t.box.x1, B.x1), z0: Math.max(t.box.z0, B.z0), z1: Math.min(t.box.z1, B.z1) } }));
-  const { cuts, stats } = streetSurfaces({ lines, heights, elev0: ELEV0, height: tileGround, nodes, buildings: outlines, squares: rings('plaza'), water: rings('water'), paths: walks, box: B, cuts: over });
+  const { cuts, stats } = streetSurfaces({ lines, heights, elev0: ELEV0, height: tileGround, nodes, buildings: outlines, squares: rings('plaza'), water: rings('water'), paths: walks, walls: wallList ?? [], box: B, cuts: over });
   for (const { id } of over) {
     const t = tiles.get(id);
     t.streets = packStreets(cuts.get(id), t.box.x0, t.box.z0);
@@ -800,7 +803,7 @@ const treesOff = { moved: 0, out: 0 };
   }
   const ps = stats.paths;
   console.log(`trees on a carriageway as it's drawn: ${treesOff.moved} moved off it, ${treesOff.out} left out`);
-  if (wallList) console.log(`walls: ${nWalls} pieces in the open world's tiles, of ${wallList.length}`);
+  if (wallList) console.log(`walls: ${nWalls} pieces in the open world's tiles, of ${wallList.length}; ${stats.walls.streets} streets brought back to the map's walls in them, giving way ${Math.round(stats.walls.given)} m² of carriageway; ${Math.round(stats.walls.behind)} m² of pavement and ${Math.round(stats.walls.paths)} m² of paths behind a wall taken off`);
   console.log(`streets: ${stats.edges} stretches in the open world's ${over.length} tiles, ${stats.junctions} junctions, ${stats.islands} islands, ${stats.reservations} reservations, ${Math.round(stats.slivers)} m² of slivers closed, ${Math.round(stats.past)} m² of corners cut back past a deck's or a tunnel's end, ${Math.round(stats.km.kerb)} km of kerb, in ${Math.round(stats.seconds)} s`);
   console.log(`paths: ${walks.length} ways round the area, ${Object.entries(ps.m2).map(([k, v]) => `${k} ${Math.round(v)} m²`).join(', ')} (cycleways ${Math.round(ps.lanes)} m² beside the road and ${Math.round(ps.flush)} m² flush with a pavement); ${ps.flights} flights of steps in ${ps.treads} treads, ${ps.steep} rising more than 0.3 m`);
 }

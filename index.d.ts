@@ -207,9 +207,11 @@ export interface Sign {
 // road is within 2 m of the ground, no pavement of one lies over the other's surfaces (task 040).
 export type StreetLevel = 'ground' | 'bridge' | 'tunnel';
 
-// Where cars drive: each street's carriageway at its real width (the map's `width`, or its lanes, or
-// what its kind of street usually is), joined to the others where they meet, each corner rounded as
-// a kerb turns it. rings: its outline, then its holes.
+// Where cars drive: each street's carriageway at its real width (as DGT's LiDAR measured it, task 026,
+// or the map's `width`, or its lanes, or what its kind of street usually is), joined to the others
+// where they meet, each corner rounded as a kerb turns it; brought back to a wall of the map's that
+// stands in it (task 052), 15 cm short of the wall's line, but no narrower than its lanes (2.5 m
+// each, or one where none is painted). rings: its outline, then its holes.
 export interface Carriageway {
   surface: 'asphalt' | 'setts' | 'paving' | 'dirt';
   level: StreetLevel;
@@ -217,9 +219,10 @@ export interface Carriageway {
   ys?: number[][];
 }
 
-// What's beside the carriageways: a pavement, from the kerb to the buildings, 3.2 m at most (none
-// where the map says so, or out in the open, or by a fast road, a service road, a track or a
-// pedestrian street); a central reservation between a road's two carriageways; or an island they go
+// What's beside the carriageways: a pavement, from the kerb to the first building or wall behind it
+// (task 052: any wall but a hedge DGT's LiDAR found, or a gate; 15 cm short of its line), 3.2 m at
+// most (none where the map says so, or out in the open, or by a fast road, a service road, a track
+// or a pedestrian street); a central reservation between a road's two carriageways; or an island they go
 // round (a roundabout's, or a small one with nothing built on it).
 export interface Pavement {
   kind: 'pavement' | 'reservation' | 'island';
@@ -252,7 +255,8 @@ export interface Marking {
 // What's walked or cycled (task 050): every footway, path (a bridleway too), cycleway and flight of
 // steps the map has in the open world's area, but the pavements, crossings and islands it draws as
 // footways (or cycleways), which are the streets' own, and what's indoors. Each piece cut back to the
-// carriageways at its level, the buildings (but a passage under one) and the water, at the map's
+// carriageways at its level, the buildings (but a passage under one), the water and on the ground the
+// walls either side of its line (task 052, as a pavement stops at them), at the map's
 // width or what its kind usually is (a footway 2 m, a path 1.5 m, a cycleway 2.5 m or 1.5 m one way,
 // steps 2 m). Where two overlap, steps keep their place, then a cycleway, a footway, a path.
 // - A footway or a path gives way to the pavements: where it meets a street, it joins the pavement.
@@ -304,7 +308,9 @@ export interface Streets {
 // where its points are growing, 5 m), or a retaining wall where the terrain steps a metre or more
 // within a metre, 4 m long or more; laid where the map's buildings round it sit. Cut at the edges of
 // the tiles, where a street or a path passes through it (an opening as wide as the way), at a gate
-// and where it would stand on a carriageway or a path on the ground.
+// and where it would stand on a carriageway or a path on the ground: since task 052 a carriageway
+// gives way to a wall of the map's, but where its lanes don't fit beside it, and the pavements and
+// paths stop at the walls.
 // - kind: 'wall' (free standing); 'retaining' (holding up the ground on one side: its points run with
 //   the higher ground on their left, (dz, -dx) of each step (dx, dz)); 'fence' (see-through, wire or
 //   mesh); 'railing' (metal bars); 'hedge'; 'guard_rail' (a road's steel barrier); 'gate' (a gate

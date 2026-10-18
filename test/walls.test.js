@@ -1,7 +1,8 @@
 // The walls, fences, railings, hedges and gates (task 013): in the open world's tiles as the games
 // read them, every barrier OpenStreetMap has in the area, but where it opens for a street, a path or
-// a gate, or would stand on a carriageway; every gate the map has; each piece whole and standing off
-// the carriageways; and a retaining wall's higher ground on its left.
+// a gate, or would stand on a carriageway whose lanes don't fit beside it (task 052); every gate the
+// map has; each piece whole and standing off the carriageways; and a retaining wall's higher ground
+// on its left.
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -46,17 +47,22 @@ const inRings = (rings, x, z) => {
   for (const r of rings) for (let i = 0, j = r.length - 1; i < r.length; j = i++) if (r[i][1] > z !== r[j][1] > z && x < r[i][0] + ((z - r[i][1]) / (r[j][1] - r[i][1])) * (r[j][0] - r[i][0])) odd = !odd;
   return odd;
 };
-const roads = [...w.streets.carriageways, ...w.streets.paths].filter((c) => c.level === 'ground' || c.level === 'under');
-const roadCells = new Map();
-for (const c of roads) {
-  const xs = c.rings[0].map((v) => v[0]), zs = c.rings[0].map((v) => v[1]);
-  for (let i = Math.floor(Math.min(...xs) / 10); i <= Math.floor(Math.max(...xs) / 10); i++) for (let j = Math.floor(Math.min(...zs) / 10); j <= Math.floor(Math.max(...zs) / 10); j++) {
-    const k = i + ',' + j;
-    if (!roadCells.has(k)) roadCells.set(k, []);
-    roadCells.get(k).push(c);
+// Whether (x, z) is on one of some pieces, quickly: the pieces in cells of 10 m.
+const onAny = (list) => {
+  const cells = new Map();
+  for (const c of list) {
+    const xs = c.rings[0].map((v) => v[0]), zs = c.rings[0].map((v) => v[1]);
+    for (let i = Math.floor(Math.min(...xs) / 10); i <= Math.floor(Math.max(...xs) / 10); i++) for (let j = Math.floor(Math.min(...zs) / 10); j <= Math.floor(Math.max(...zs) / 10); j++) {
+      const k = i + ',' + j;
+      if (!cells.has(k)) cells.set(k, []);
+      cells.get(k).push(c);
+    }
   }
-}
-const onRoad = (x, z) => (roadCells.get(Math.floor(x / 10) + ',' + Math.floor(z / 10)) ?? []).some((c) => inRings(c.rings, x, z));
+  return (x, z) => (cells.get(Math.floor(x / 10) + ',' + Math.floor(z / 10)) ?? []).some((c) => inRings(c.rings, x, z));
+};
+const ground = (c) => c.level === 'ground' || c.level === 'under';
+const onCarriageway = onAny(w.streets.carriageways.filter(ground)), onPath = onAny(w.streets.paths.filter(ground));
+const onRoad = (x, z) => onCarriageway(x, z) || onPath(x, z);
 // A line every half metre: [x, z] points.
 const along = (pts) => {
   const out = [];
@@ -104,23 +110,30 @@ test('no wall stands on a carriageway or a path on the ground, but a gate across
   assert.ok(on <= n * 0.002, `${on} of ${n} half metres of wall on a carriageway or a path`);
 });
 
-test("every barrier the map has in the area is there, but where it opens", { skip }, () => {
+test("every barrier the map has in the area is there, but where it opens, or a carriageway's lanes don't fit beside it", { skip }, () => {
+  // Since task 052 a carriageway gives way to the map's walls that stand in it, and pavements and
+  // paths stop at them: one is cut on a carriageway only where the street's lanes don't fit beside it
+  // (or it stands across it, or in it under a metre long, or where streets meet).
   const near = index(w.walls);
   const gates = w.walls.filter((x) => x.kind === 'gate' || x.kind === 'bar');
   const gateAt = (x, z) => gates.some((g) => g.pts.some(([gx, gz]) => Math.hypot(gx - x, gz - z) < 7));
   const osm = barriersOf(readCache('osm/barriers.json'), () => true).filter((b) => b.pts.some(inOpen) && b.kind !== 'gate' && b.kind !== 'bar');
-  let all = 0, there = 0, opened = 0;
-  const missing = [];
+  let all = 0, there = 0, carriageway = 0, path = 0, gate = 0;
+  const missing = [], cut = [];
   for (const b of osm) {
     for (const [x, z] of along(b.pts).filter(inOpen)) {
       all++;
       if (near(x, z).d < 0.3) there++;
-      else if (onRoad(x, z) || gateAt(x, z)) opened++;
+      else if (onCarriageway(x, z)) { carriageway++; cut.push([Math.round(x), Math.round(z)]); }
+      else if (onPath(x, z)) path++;
+      else if (gateAt(x, z)) gate++;
       else missing.push([Math.round(x), Math.round(z), b.kind, b.id]);
     }
   }
-  console.log(`the map's barriers in the area: ${(all / 2000).toFixed(1)} km, ${((there / all) * 100).toFixed(1)}% there, ${((opened / all) * 100).toFixed(1)}% cut away on a carriageway or a path the world draws, or at a gate, ${((missing.length / all) * 100).toFixed(1)}% neither (where a street or a path passes, and pieces under 50 cm)`);
-  assert.ok(there / all >= 0.8, `only ${((there / all) * 100).toFixed(1)}% of the map's barriers there`);
+  const pc = (n) => `${((n / all) * 100).toFixed(1)}%`;
+  console.log(`the map's barriers in the area: ${(all / 2000).toFixed(1)} km, ${pc(there)} there; cut away on a carriageway ${pc(carriageway)} (${(carriageway / 2000).toFixed(2)} km), on a path ${pc(path)}, at a gate ${pc(gate)}; ${pc(missing.length)} neither (where a street or a path passes, and pieces under 50 cm)`);
+  assert.ok(there / all >= 0.8, `only ${pc(there)} of the map's barriers there`);
+  assert.ok(carriageway / all <= 0.02, `${pc(carriageway)} of the map's barriers cut on a carriageway, e.g. at ${JSON.stringify(cut.filter((_, i) => i % 50 === 0).slice(0, 8))}`);
   assert.ok(missing.length / all <= 0.03, `${missing.length} half metres missing, e.g. ${JSON.stringify(missing.slice(0, 5))}`);
 });
 

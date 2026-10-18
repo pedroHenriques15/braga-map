@@ -168,8 +168,11 @@ Steps:
   street it's on.
 - **Found:** task 066 (party-kart: a car tilts by the street it's on) and task 067 (the lump across the
   Rua Padre Francisco de Almeida).
-- **Budget:** no geometry or textures. The 25 tiles with the ground every 2 m changed: 13,962 KB in
-  all as before, 6.061 → 6.065 MB gzipped.
+- **Budget:** no geometry or textures of its own. The 25 tiles with the ground every 2 m changed:
+  13,962 KB in all as before, 6.061 → 6.065 MB gzipped. The round against "As placas", at the median of
+  the 33 viewpoints: the same draw calls (149 on High, 107 on Low) and textures (130 and 41 MB), about
+  11,000 more triangles on High (2.145 → 2.157 M) and 2,000 on Low, where the streets' edges meet the
+  land a step further (party-kart's skirts and retaining walls).
 - **Landed** (2026-10-18): braga-map **1.27.0** (`330463b`, tag `v1.27.0`), main merged first (the
   deploy's note only) and the remake run again (open, shooter, world, tracks, cover, textures, the
   page): nothing changed but the 25 tiles, the track the same. `trees.json`, `carriageways.json` and

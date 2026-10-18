@@ -1,5 +1,5 @@
 ---
-status: todo
+status: doing
 priority: medium
 kind: code
 repo: both
@@ -102,3 +102,78 @@ Steps:
     which hides nearly everything.
   - `capela-sao-joao`: the park's big trees on both sides, as in the photo, but a thick trunk in
     front of the camera hides the left of the view.
+
+### Step 1, 2026-10-18: what's off at the two places
+
+Looked at with `trees.mjs --check`, the point cloud round each camera (every point within 40 m,
+from above and along the sight line), the 2025 orthophoto, the photos (the chapel's whole
+panorama too), the tiles' paths and 019's shots.
+
+- **`capela-sao-joao`: a piece of a bigger tree's crown, taken for a tree.** The camera is where
+  Mapillary puts the panorama, at the head of the walk into the park, between its two pergolas;
+  the panorama shows no trunk within 8–10 m all round, and the park's canopy over the camera out
+  to the Largo's edge. The "tree" 1.6 m ahead (29 m, crown 7.8 m, foot 17.4 m, classed a cypress or
+  cedar for being narrow) is that canopy's south edge reaching out over the Largo: not a point of
+  high vegetation under it below 16.3 m, so no stem to find. Its top stands 1.7 m over where it
+  meets the 36.4 m crown to its north, but 15.5 m from that crown's top, past the 12.7 m a bump may
+  be (`REACH`), so it stayed a tree. Its middle is 4.6 m ahead and its lowest leaves 3.7 m ahead,
+  both further out over the open Largo. Two more like it at the Largo's north-east corner (33 m,
+  crown 6.9 m, foot 18.9 m; 34 m, crown 4.3 m, foot 20.4 m), 10–13 m to the camera's left. Not a
+  leaning tree, and not the camera.
+- **`altice-forum`: the camera is under the willow, as in the photo, but the willow is three trees
+  and its leaves hang to the eye.** The camera is right: 058 put it 0.46 m inside the cycleway's
+  south edge, and the photo stands at the path's right edge. The photo's right-hand tree is a
+  weeping willow on the verge between the path and the fence: the LiDAR's top is 2.8 m south of the
+  camera (9.6 m, crown 9.1 m, foot 3.5 m), within about 2 m of where the photo has its trunk. Its
+  crown reaches over the camera in the photo too (its twigs hang at the top of the frame), and the
+  LiDAR has leaves 2.7–9.5 m over the camera's place. But trees.mjs splits it in three: the willow,
+  its north lobe over the cycleway (6.9 m, crown 2.4 m, foot 2.5 m; its trunk on the cycleway 1.75 m
+  from the camera, the willow's light green in the orthophoto), and its east edge (8.2 m, crown
+  2.9 m, foot 4.9 m, a "cypress" 5.4 m ahead, whose thin trunk is the one in the middle of 019's
+  shot); each lobe is further from the willow's top than the 3.4 m a bump may be. And party-kart
+  hangs the willow's leaves round the camera: a broadleaf's cards are up to 4.5 m, the lowest
+  centred 0.5 m over the foot, so they reach down to 1.75 m, the eye's height, and the camera is
+  inside the crown's 4.55 m radius. The thick crown at the shot's left (6.8 m, 10.4 m ahead, its
+  trunk on the cycleway too) is in the 2025 orthophoto and LiDAR but not the 2019 photo: planted
+  since.
+- **What the task assumed that isn't so:**
+  - Step 2's rules don't find either trunk. At the chapel there are no stem points, and the
+    middle and the lowest cell are further into the open Largo; at the Forum the lowest cells are
+    the willow's hanging twigs, one of them on the cycleway 1.7 m from the camera. Taken as the
+    trunk, each would make its place worse.
+  - Step 4's test as written passes at both today: the nearest trunks are 1.63 m and 1.75 m from
+    the cameras, and both eyes (1.70 m and 1.74 m over the ground) are under every crown's foot.
+- **How common the chapel's case is:** of the 390,000 crowns over the point cloud (251,700 on the
+  map), 11,000 are narrow (no wider than 0.35 of their height), hold their leaves in their upper
+  half, and meet a taller crown; 5,000 of them are 15 m or taller.
+- **The owner's answers (2026-10-18):** a crown with no trunk under it that meets a taller crown
+  joins it, and that tree's crown is drawn over all its leaves, off its trunk where it spreads to
+  one side (a field on `Tree`, a leaning trunk in party-kart); and party-kart hangs no card of
+  leaves below its crown's foot.
+- **The owner's answer on pavements (2026-10-18):** moving every trunk off the pavements (1,359 of
+  the 1,718 moved) took the street trees out of their pits: at `alameda-fujacal` the near tree left
+  the kerb its photo has it at, for the strip between the pavement and the houses. So a trunk on a
+  pavement moves only where its crown's middle is off the pavement and the carriageway (a garden's
+  tree reaching over its wall); a street tree, its crown over the pavement or the street, stays.
+
+### Where it stands (2026-10-18, not landed)
+
+- braga-map (worktree `../braga-map-063`, uncommitted): `trees.mjs`'s `mergeStemless` joins a narrow
+  crown with its leaves in its upper half to the taller crown it meets (10,468 over the point cloud;
+  246,269 trees on the map, where there were 251,738); each tree's crown's middle is written as
+  `cx, cz` (`index.d.ts`'s `Tree`, two more numbers a tree in the tiles). `world.mjs` keeps a crown
+  where it is when its trunk moves, and moves 684 trunks off what people walk on (359 off a path,
+  325 overhanging a pavement from nearer its back than its kerb), 41 with nowhere to go, 3,053
+  street trees left in their pavements. Made with `TREES=trees-063.json`, main's `trees.json` and
+  `dgt/trees/` untouched. The camera test is in `test/trees.test.js` (2.5 m from a trunk, not in a
+  crown): it passes here and fails on 1.23.0's world. 116 tests pass.
+- party-kart (worktree `../party-kart-063`, uncommitted, braga-map installed from the worktree with
+  `--install-links`; the tag goes back before committing): the crown at its middle, the trunk leaning
+  into it past half its radius (25° at most), no card below the foot. 64 tests and `tsc` pass; laps
+  302.1 and 300.1 s, no respawn, as on main.
+- Shots `party-kart-063/shots/2026-10-18-try063all`: the chapel's trunk is gone and the Largo open;
+  at the Forum the hall, its α and the willow's leaves overhead as in the photo. Elsewhere the crowns
+  sit a little higher; `alameda-fujacal`'s and `31-de-janeiro`'s street trees are where they were.
+- Left: wait for 062 to land; merge main, run the remake again (trees into `trees.json`, open,
+  shooter, world, tracks, cover, textures, the page), take the next version, pin party-kart to it;
+  shoot and post the round; the budget; docs (README, decision, ROADMAP); finish.

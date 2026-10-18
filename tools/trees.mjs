@@ -2,7 +2,8 @@
 // its crown and how high its crown's foot, and what kind of tree it is.
 //
 // node tools/trees.mjs                 after fetch.mjs (lidar, trees); before world.mjs (25
-//                                      minutes the first time, then 40 s)
+//                                      minutes the first time, then 40 s); with TREES=<name>.json,
+//                                      into .cache/<name>.json, which world.mjs reads given the same
 // node tools/trees.mjs --check x,z[,r] …   and the orthophoto round each point (r metres, 60 if left
 //                                      out) with the crowns found over it, each in its kind's colour,
 //                                      into .cache/trees/
@@ -12,8 +13,9 @@
 //   high vegetation in each (class 5, 2 m and more over the ground) over the ground there, how many
 //   there are and their colour (the near-infrared, red, green and blue the cloud has for each point),
 //   and how many points are the ground's and a building's.
-// - .cache/trees.json: every tree, [x, z, kind, height, crown, foot] each (index.d.ts's Tree), with
-//   how many of each kind and how many OpenStreetMap's trees were matched.
+// - .cache/trees.json: every tree, [x, z, kind, height, crown, foot, mapped, cx, cz] each (index.d.ts's
+//   Tree: its trunk at (x, z), its crown's middle at (cx, cz)), with how many of each kind and how many
+//   OpenStreetMap's trees were matched.
 import fs from 'node:fs';
 import path from 'node:path';
 import zlib from 'node:zlib';
@@ -231,9 +233,46 @@ export function mergeSlivers({ h }, { lab }) {
   return into.size;
 }
 
+// A crown with no trunk under it is a limb of the taller crown it meets, reaching out past the reach a
+// bump may be from its top: a big tree's over a square, a willow's over a path (task 063). It's as narrow
+// as a cypress or a poplar (kindOf's NARROW), but holds its leaves in its upper half, where theirs come
+// down near the ground, so nothing of it comes down to where its trunk would be; and the taller crown
+// borders it along a share of its edge (MEETS). It joins the taller crown it meets most. How many joined
+// whose tops are on the tile itself.
+const NARROW = 2.8, MEETS = 0.2;
+export function mergeStemless({ g, h }, { lab }) {
+  const top = new Map(), topAt = new Map(), area = new Map(), lows = new Map(), edges = new Map(), meets = new Map();
+  for (let k = 0; k < W * W; k++) { const r = lab[k]; if (r >= 0 && h[k] > (top.get(r) ?? 0)) { top.set(r, h[k]); topAt.set(r, k); } }
+  for (let j = 1; j < W - 1; j++) for (let i = 1; i < W - 1; i++) {
+    const k = j * W + i, r = lab[k];
+    if (r < 0 || h[k] < Math.max(2, 0.25 * top.get(r))) continue;
+    area.set(r, (area.get(r) ?? 0) + 1);
+    if (g.low[k]) { let l = lows.get(r); if (!l) lows.set(r, (l = [])); l.push(g.low[k] / 100); }
+    for (const q of [k - 1, k + 1, k - W, k + W]) {
+      const o = lab[q];
+      if (o === r) continue;
+      edges.set(r, (edges.get(r) ?? 0) + 1);
+      if (o >= 0 && top.get(o) > top.get(r) && h[q] >= 0.5 * top.get(r)) { let m = meets.get(r); if (!m) meets.set(r, (m = new Map())); m.set(o, (m.get(o) ?? 0) + 1); }
+    }
+  }
+  const into = new Map();
+  for (const [r, m] of meets) {
+    const t = top.get(r), width = 2 * Math.sqrt((area.get(r) * CELL * CELL) / Math.PI), l = (lows.get(r) ?? []).sort((u, v) => u - v);
+    const foot = Math.min(FOOT_MAX * t, l.length ? l[Math.floor(l.length * FOOT)] : 2);
+    if (t < NARROW * width || foot < 0.5 * t) continue;
+    const [o, n] = [...m].reduce((p, q) => (q[1] > p[1] ? q : p));
+    if (n >= MEETS * edges.get(r)) into.set(r, o);
+  }
+  const final = (r) => { for (let n = 0; into.has(r) && n < 20; n++) r = into.get(r); return r; };
+  for (let k = 0; k < W * W; k++) if (lab[k] >= 0 && into.has(lab[k])) lab[k] = final(lab[k]);
+  const own = (k) => { const i = k % W, j = (k - i) / W; return i >= M && j >= M && i < M + N && j < M + N; };
+  return [...into.keys()].filter((r) => own(topAt.get(r))).length;
+}
+
 // Each crown whose top is on the tile itself: its top (the highest point in it) and the tree's height
 // there; its crown's area, the cells it covers 2 m and more and a quarter of its height over the ground
-// (not the hedge or the shrubs it stands in), and so its width (as a disc's); its crown's foot, the
+// (not the hedge or the shrubs it stands in), and so its width (as a disc's), and its middle (mx, mz),
+// where it's drawn, off its top where it spreads to one side (task 063); its crown's foot, the
 // median of the lowest points in its cells; its colour in the point cloud, and how much of the laser
 // went through it to the ground. Each in metres on the map. Where OpenStreetMap maps two trees or more
 // in one crown (`seeds`, by the crown's label: [cell, tree] each), the crowns ran together, and each
@@ -338,8 +377,9 @@ export function osmTrees() {
 export async function treesOn(key, osm) {
   const c = await canopy(key), k = crowns(c);
   mergeSlivers(c, k);
+  const limbs = mergeStemless(c, k);
   const { seeds, lone } = matchOsm(key, k, osm);
-  return { trees: measure(key, c, k, seeds), lone, c, k };
+  return { trees: measure(key, c, k, seeds), lone, limbs, c, k };
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -434,9 +474,10 @@ async function check(x, z, r, osm, wood) {
     if (l < 0 || (lab[k - 1] === l && lab[k + 1] === l && lab[k - nx] === l && lab[k + nx] === l)) continue;
     px.set(SHOW[kindAt.get(l)], k * 3);
   }
-  for (const d of found.values()) for (const t of d.trees) {
-    const i = Math.round((t.x - box.x0) / step), j = Math.round((t.z - box.z0) / step);
-    for (let a = -3; a <= 3; a++) for (const [u, v] of [[i + a, j], [i, j + a]]) if (u >= 0 && v >= 0 && u < nx && v < nz) px.set([255, 0, 0], (v * nx + u) * 3);
+  // Each trunk a red cross, and its crown's middle a cyan one where that's off it.
+  for (const d of found.values()) for (const t of d.trees) for (const [x, z, c] of [[t.mx, t.mz, [0, 255, 255]], [t.x, t.z, [255, 0, 0]]]) {
+    const i = Math.round((x - box.x0) / step), j = Math.round((z - box.z0) / step);
+    for (let a = -3; a <= 3; a++) for (const [u, v] of [[i + a, j], [i, j + a]]) if (u >= 0 && v >= 0 && u < nx && v < nz) px.set(c, (v * nx + u) * 3);
   }
   const file = path.join(CACHE, 'trees', `${x}_${z}.png`);
   fs.mkdirSync(path.dirname(file), { recursive: true });
@@ -445,7 +486,9 @@ async function check(x, z, r, osm, wood) {
 }
 
 // ---------------------------------------------------------------------------------------------
-// Every tree, into .cache/trees.json.
+// Every tree, into .cache/trees.json, or the file TREES names there (a worktree's own, beside main's).
+
+export const TREES = process.env.TREES || 'trees.json';
 
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const args = process.argv.slice(2), t0 = Date.now();
@@ -456,10 +499,12 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   }
   const keys = fs.readdirSync(path.join(DGT, 'LAZ')).filter((f) => f.endsWith('.laz')).map((f) => f.slice(0, -4)).sort();
   const found = [], lone = [];
+  let limbs = 0;
   for (const key of keys) {
     const r = await treesOn(key, osm);
     found.push(...r.trees);
     lone.push(...r.lone);
+    limbs += r.limbs;
   }
   // OpenStreetMap's trees in no crown: planted since July 2025, or under 3 m then. Each is kept where no
   // tree the LiDAR found stands within 4 m (else it's that tree, mapped off), at the height and crown
@@ -475,9 +520,10 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     young.push({ x: t.at[0], z: t.at[1], h, crown, foot: h * 0.4, osm: t, colour: [1, 0, 0, 0], young: true });
   }
   const inMap = (t) => t.x >= EXT.x0 && t.x <= EXT.x1 && t.z >= EXT.z0 && t.z <= EXT.z1;
-  const trees = [...found, ...young].filter(inMap).map((t) => [+t.x.toFixed(1), +t.z.toFixed(1), kindOf(t, wood(t.x, t.z)), +t.h.toFixed(1), +t.crown.toFixed(1), +Math.min(t.foot, t.h - 0.5).toFixed(1), t.osm ? 1 : 0]);
+  const trees = [...found, ...young].filter(inMap).map((t) => [+t.x.toFixed(1), +t.z.toFixed(1), kindOf(t, wood(t.x, t.z)), +t.h.toFixed(1), +t.crown.toFixed(1), +Math.min(t.foot, t.h - 0.5).toFixed(1), t.osm ? 1 : 0, +(t.mx ?? t.x).toFixed(1), +(t.mz ?? t.z).toFixed(1)]);
   trees.sort((a, b) => a[1] - b[1] || a[0] - b[0]);
   const counts = Object.fromEntries(KINDS.map((k, i) => [k, trees.filter((t) => t[2] === i).length]));
-  fs.writeFileSync(path.join(CACHE, 'trees.json'), JSON.stringify({ about: 'tools/trees.mjs: every tree on the map, [x, z, kind, height, crown, foot, mapped] each (KINDS by index; metres; mapped 1 where OpenStreetMap has it), and the tiles of the point cloud they were found on (seen)', kinds: KINDS, counts, seen: keys, trees }));
-  console.log(`trees: ${trees.length} on the map (${found.filter(inMap).length} the LiDAR found, ${young.filter(inMap).length} of OpenStreetMap's in no crown kept as young trees, ${off} more within 4 m of one found left out); ${Object.entries(counts).map(([k, n]) => `${n} ${k}`).join(', ')}; OpenStreetMap's ${osm.length}, ${trees.filter((t) => t[6]).length} of them on the map matched or kept (${((Date.now() - t0) / 1000).toFixed(0)} s)`);
+  fs.writeFileSync(path.join(CACHE, TREES), JSON.stringify({ about: 'tools/trees.mjs: every tree on the map, [x, z, kind, height, crown, foot, mapped, cx, cz] each (KINDS by index; metres; its trunk at x, z, its crown\'s middle at cx, cz; mapped 1 where OpenStreetMap has it), and the tiles of the point cloud they were found on (seen)', kinds: KINDS, counts, seen: keys, trees }));
+  const off1 = trees.filter((t) => Math.hypot(t[7] - t[0], t[8] - t[1]) >= 1).length;
+  console.log(`trees: ${trees.length} on the map (${found.filter(inMap).length} the LiDAR found, ${young.filter(inMap).length} of OpenStreetMap's in no crown kept as young trees, ${off} more within 4 m of one found left out); ${limbs} crowns with no trunk joined the taller crown they meet; ${off1} crowns' middles 1 m or more off their trunks; ${Object.entries(counts).map(([k, n]) => `${n} ${k}`).join(', ')}; OpenStreetMap's ${osm.length}, ${trees.filter((t) => t[6]).length} of them on the map matched or kept, into .cache/${TREES} (${((Date.now() - t0) / 1000).toFixed(0)} s)`);
 }

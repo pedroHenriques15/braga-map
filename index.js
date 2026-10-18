@@ -368,12 +368,12 @@ export async function loadWorld(area) {
     }
     // The shops' signs: [x0, z0, x1, z1, y, h, colour, text] each, in the header.
     for (const [x0, z0, x1, z1, sy, sh, c, text] of head.signs?.list ?? []) signs.push({ text, colour: F.colours[c][0], from: [x0, z0], to: [x1, z1], y: sy, h: sh });
-    // The trees (tools/world.mjs): [x, z, kind | mapped << 3 | filled << 4 | height << 5, crown, foot]
-    // each, in half metres, then decimetres.
+    // The trees (tools/world.mjs): [x, z, kind | mapped << 3 | filled << 4 | height << 5, crown, foot,
+    // dx, dz] each, in half metres, then decimetres (dx, dz: its crown's middle from its trunk).
     const T = head.trees;
-    for (let i = T.at; i < T.at + T.n; i += 5) {
-      const v = nums[i + 2], kind = m.treeKinds[v & 7].kind, h = (v >> 5) / 10, crown = nums[i + 3] / 10;
-      trees.push({ x: nums[i] / 2, z: nums[i + 1] / 2, kind, h, crown, foot: nums[i + 4] / 10, trunk: trunkOf(kind, h, crown), mapped: (v & 8) !== 0, filled: (v & 16) !== 0 });
+    for (let i = T.at; i < T.at + T.n; i += 7) {
+      const v = nums[i + 2], kind = m.treeKinds[v & 7].kind, h = (v >> 5) / 10, crown = nums[i + 3] / 10, x = nums[i] / 2, z = nums[i + 1] / 2;
+      trees.push({ x, z, cx: Math.round(x * 10 + nums[i + 5]) / 10, cz: Math.round(z * 10 + nums[i + 6]) / 10, kind, h, crown, foot: nums[i + 4] / 10, trunk: trunkOf(kind, h, crown), mapped: (v & 8) !== 0, filled: (v & 16) !== 0 });
     }
     // The streets as surfaces, in the open world's tiles: each piece [what, ...] (tools/streets.mjs's
     // packStreets), points in decimetres, the first of each ring or line from the tile's corner and

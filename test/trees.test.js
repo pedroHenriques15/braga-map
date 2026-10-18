@@ -5,7 +5,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { test } from 'node:test';
-import { CELL, M, W, canopyOf, crowns, kindOf, KINDS, layers, measure, mergeSlivers, osmKind } from '../tools/trees.mjs';
+import { CELL, M, W, canopyOf, crowns, kindOf, KINDS, layers, measure, mergeSlivers, mergeStemless, osmKind } from '../tools/trees.mjs';
 import { loadWorld, map } from '../index.js';
 import { CREDITS, TREES } from '../world/textures.js';
 import amigos from '../tracks/amigos.js';
@@ -34,6 +34,7 @@ function madeUp(trees) {
   }
   const c = canopyOf(g), k = crowns(c);
   mergeSlivers(c, k);
+  mergeStemless(c, k);
   return measure('-24_208', c, k);
 }
 
@@ -54,6 +55,25 @@ test('crowns that touch are two trees, a broad crown with bumps one, a narrow on
     assert.ok(t.foot >= 2.5 && t.foot <= 4.5, `its foot at ${t.foot} m`);
   }
   assert.ok(Math.hypot(a.x - b.x, a.z - b.z) > 7 && Math.hypot(a.x - b.x, a.z - b.z) < 9);
+});
+
+// São João da Ponte's Largo (task 063): a big tree's limb reaching out past where a bump may be, its
+// leaves all high, is that tree's, its crown reaching further and its middle off its trunk; a narrow
+// tree as tall beside a big one, its leaves from near the ground, is a tree of its own.
+test("a limb with no trunk under it is its tree's; a narrow tree with its own trunk beside a big one stays", () => {
+  const o = M + 600;
+  const [big, ...rest] = madeUp([
+    { i: o, j: o, h: 30, r: 10, foot: 15 },
+    { i: o + 23, j: o, h: 26, r: 3, foot: 16 },
+  ]);
+  assert.equal(rest.length, 0, 'the limb is a tree of its own');
+  assert.ok(Math.abs(big.h - 30) < 0.4 && big.crown > 20, `${big.h.toFixed(1)} m tall, ${big.crown.toFixed(1)} m across`);
+  assert.ok(big.mx - big.x > 0.5, `its crown's middle ${(big.mx - big.x).toFixed(1)} m off its trunk, towards the limb`);
+  const found = madeUp([
+    { i: o, j: o + 200, h: 30, r: 10, foot: 15 },
+    { i: o + 23, j: o + 200, h: 26, r: 3, foot: 3 },
+  ]);
+  assert.equal(found.length, 2, found.map((t) => `${t.h.toFixed(1)} m, ${t.crown.toFixed(1)} m`).join('; '));
 });
 
 test("a tree's kind: the map's name for it, else its wood's, else its shape's", () => {
@@ -99,6 +119,21 @@ test("the trees under the Volta dos Amigos' box are the LiDAR's, each sized, of 
   const inside = o.trees.filter((t) => o.inOpen(t.x, t.z));
   const on = inside.filter((t) => pieces.some((q) => t.x >= q.x0 && t.x <= q.x1 && t.z >= q.z0 && t.z <= q.z1 && q.p.rings.reduce((c, r) => c !== inRing(r, t.x, t.z), false)));
   assert.ok(on.length <= inside.length / 1000, `${on.length} of ${inside.length} trees on a carriageway: ${on.slice(0, 5).map((t) => `(${t.x}, ${t.z})`).join(', ')}`);
+});
+
+// No viewpoint's camera stands within 2.5 m of a trunk, or in a crown (within its radius of its middle,
+// between its foot and its top): none of their photos was taken from there (task 063). The Altice
+// Forum's stands under its willow's crown, its leaves over the eye, as its photo does.
+test("no viewpoint's camera stands by a trunk or in a crown", async () => {
+  const { viewpoints } = JSON.parse(fs.readFileSync(new URL('../refs/viewpoints.json', import.meta.url), 'utf8'));
+  for (const v of viewpoints) {
+    const w = await loadWorld({ x0: v.x - 40, x1: v.x + 40, z0: v.z - 40, z1: v.z + 40 });
+    for (const t of w.trees) {
+      const d = Math.hypot(t.x - v.x, t.z - v.z), up = v.y - w.height(t.x, t.z);
+      assert.ok(d >= 2.5, `${v.id}: a trunk ${d.toFixed(1)} m from its camera, at (${t.x}, ${t.z})`);
+      assert.ok(Math.hypot(t.cx - v.x, t.cz - v.z) >= t.crown / 2 || up <= t.foot || up >= t.h, `${v.id}: its camera in the crown of the tree at (${t.x}, ${t.z}), ${up.toFixed(1)} m up, its leaves from ${t.foot} m`);
+    }
+  }
 });
 
 test("each kind of tree has its bark and its leaves at every level, credited", () => {

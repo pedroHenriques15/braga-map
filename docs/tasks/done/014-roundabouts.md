@@ -206,3 +206,5 @@ Steps:
   `.cache/scorecard/marks/2026-10-18-after014.json`: 2.94 over 33, none moved.
 - **Not checked:** the owner's marks; a phone; a race with friends round the rings measured; the
   deploy (not asked). The Comendador Santos da Cunha's statue against a photo (none on the surface).
+- **Landed** (2026-10-18): braga-map 1.28.0 (`1d785a2`, tagged `v1.28.0`) and party-kart `a3ff284`
+  pinned to it, peer prefix `pk38`. Not deployed.

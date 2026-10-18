@@ -1477,3 +1477,40 @@ paint the give-way markings at their entries.
 The alternatives were the task's: checking the islands against the photos and keeping the map's
 rings, and the markings left to task 018. The race's road takes the rings measured: party-kart's
 peer prefix moves.
+
+## 051 · A tree near a viewpoint is the species its photo shows, and a kind is a look to draw: nine, each deciduous or evergreen
+
+*2026-10-18 · task 061 · on decision 043's trees, as the facades seen (decision 036)*
+
+Task 019 named each tree's kind from OpenStreetMap's tags, else COS2025's wood, else its shape
+(decision 043): the Parque da Ponte's trees were eucalyptus, as COS2025 has the park's wood, and the
+avenues' hackberries and limes one broadleaf. The viewpoints' photos show what they are.
+
+- **The trees seen are recorded** in `refs/trees.json`, as `refs/buildings.json` records the facades:
+  every tree in view of seven viewpoints within 60 m of their cameras (`tools/species.mjs mark`
+  numbers them on the photo and on the orthophoto round it), by its crown's middle (what a photo and
+  the orthophoto show, and what `world.mjs` keeps where it is, decision 047), its species and how sure
+  of it; the stretches of avenue a photo shows lined with one species (a line, and how far from it a
+  trunk stands); and the places one species fills (the Parque da Ponte's limes). 87 trees, five rows,
+  one place. A row is named only as far as a photo shows it: the same avenue further on may be
+  planted otherwise.
+- **They come first** in `kindOf`: a tree seen is the species seen, whatever else names it; then
+  OpenStreetMap's species or genus, where the map names one; then a row's or a place's; then 019's
+  rules. A tree seen is the crown whose middle is nearest, within half its crown and 3 m at least;
+  `npm test` checks that each of the 87 is matched and of its kind.
+- **A kind is a look to draw, not a species.** Three new ones, each with its bark and leaves from Poly
+  Haven, toned (`refs/textures.json`'s `tone`, `lobes`), and its shape in party-kart: the plane (pale
+  mottled bark, an open crown of broad leaves), the lime (dark ridged bark, a dense crown of small
+  sprays) and the birch (white bark, fine hanging twigs). The other species seen are drawn as the kind
+  they look like: hackberries, robinias and the horse chestnut as broadleaves, the white poplars as
+  poplars, the fan palm as a palm; a tree the photo can't name (9 of the 87, hidden behind others)
+  keeps 019's rules. Nine kinds; the tiles hold a tree's kind in
+  4 bits since (16).
+- **Each kind is deciduous or evergreen** (`map().treeKinds[i].evergreen`), for the seasons to come.
+- **The Parque da Ponte's trees are limes**, not the planes task 019 and the task had: Commons' photo of
+  its bandstand, in late June, has their heart-shaped leaves and their crowns in flower. The planes
+  are a few, the one beside São João da Ponte's chapel and the Liberdade's; the Porfírio da Silva's
+  white trees are white poplars, not birches.
+
+The alternatives: a species for every one of the 246,000 trees (no photo shows most of them), or
+each avenue's row named the length of the avenue from one photo of it.

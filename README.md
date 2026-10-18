@@ -94,8 +94,10 @@ map().groundKinds; // the kinds it says, each with its photo: [{ kind, texture: 
   buildings, or a wall it puts along the edge).
 - Round the open world's area (in the box round it, `OPEN_BOX` in `tools/sections.mjs`), every
   street is a surface too (task 033, `world.streets`): its carriageway at its real width, joined to
-  the others where they meet, each corner rounded as a kerb turns it, a roundabout round its island;
-  the kerbs (dropped at the crossings); the pavements behind them, up to the buildings; the central
+  the others where they meet, each corner rounded as a kerb turns it, a roundabout round its island,
+  and brought back to a wall of the map's that stands in it, no narrower than its lanes (task 052);
+  the kerbs (dropped at the crossings); the pavements behind them, up to the buildings and the walls;
+  the central
   reservations; and the lines painted on them, from what the map says (lanes, the line between the
   two ways, zebras, stop lines at traffic lights). Each piece is cut to its tile, at its street's
   level, with its heights off the ground. `index.d.ts` says what each part is.
@@ -103,7 +105,8 @@ map().groundKinds; // the kinds it says, each with its photo: [{ kind, texture: 
   `world.streets.paths`), but the pavements, crossings and islands it draws as footways, which are
   the streets' own, and what's indoors: each at the map's width or its kind's (a footway 2 m, a path
   1.5 m, a cycleway 2.5 m, or 1.5 m one way, steps 2 m), in what it's paved with, cut back to the
-  carriageways, the buildings (but a passage under one, `under`) and the water. A footway gives way
+  carriageways, the buildings (but a passage under one, `under`), the water and the walls either side
+  of its line (but where it passes through one). A footway gives way
   to the pavements, where it meets a street; the pavements give way to a cycleway, which runs in one
   flush with it (`raised`), or along the carriageway's edge as a lane at the road's level with a kerb
   behind it (the Avenida da Liberdade's red lanes). A footbridge is on its deck, at its heights as a
@@ -117,7 +120,7 @@ map().groundKinds; // the kinds it says, each with its photo: [{ kind, texture: 
   them (`source`), each as high as the LiDAR measured it (else the map's `height`), its top's height
   at each point; a wall of the map's where the terrain steps across it is a retaining wall. Each opens
   where a street or a path passes through it and is cut where it would stand on a carriageway or a
-  path; a gate where the map has one, where a driveway crosses a wall, and in a door's or a car's gap
+  path, but a street gives way to the map's where its lanes fit beside one (task 052); a gate where the map has one, where a driveway crosses a wall, and in a door's or a car's gap
   in a wall the LiDAR found. What each is made of is the map's where it says, else by what's round it
   (the owner's answer, checked against the viewpoints' photos): a retaining wall granite, or concrete
   where it holds up a street; a wall in front of a house or a block of flats rendered and painted, a
@@ -399,8 +402,9 @@ streets; when a track moves enough to change the edge, run the three again until
   where a street or a path crosses it (a way the map stops 3 m short of a wall goes through it), and
   gets what it's made of by what's round it (`dress`). `world.mjs` cuts each to the tiles and where
   it would stand on a carriageway or a path (`cutWalls`, `packWalls`). `test/walls.test.js` checks
-  the tiles carry every barrier the map has but where it opens, every gate, each piece whole and off
-  the carriageways, and a retaining wall's higher ground on its left.
+  the tiles carry every barrier the map has but where it opens (and how much is still cut on a
+  carriageway: where its lanes don't fit beside it, across it, or where streets meet), every gate,
+  each piece whole and off the carriageways, and a retaining wall's higher ground on its left.
 - `trees.mjs` finds every tree in DGT's point cloud (task 019). It boils each tile down once to 50 cm
   cells (`.cache/dgt/trees/`, 35 s a tile): the highest and the lowest point of high vegetation (class
   5, 2 m and more up) over the terrain, how many there are and their colour (the cloud's near-infrared,
@@ -455,7 +459,18 @@ streets; when a track moves enough to change the edge, run the three again until
   reservations (between two one-way carriageways running opposite ways up to 14 m apart, for 30 m
   or more); and the pavements, 3.2 m out from the kerb or to the buildings and the water, and none
   along a side the map says has none, or out in the open (no building within 25 m), or by a fast
-  road, a service road, a track or a pedestrian street. The kerbs wherever a pavement, reservation
+  road, a service road, a track or a pedestrian street. The streets end at their walls (task 052,
+  decision 046): the walls (`stopsAt`: the map's, and the walls, fences and retaining walls the LiDAR
+  found, but not its hedges nor the gates) stop a pavement, each piece of a kerb looking straight out
+  from it and none behind a wall it sees, 15 cm short of the wall's line, but what another kerb sees
+  past it (a street on its other side); and a carriageway gives way to a wall of the map's that runs
+  along it inside its band, or within 15 cm of its edge (`pullBack`): its edge 15 cm short of the
+  wall, on straight across an opening up to 6 m that no other street passes through, but not for a
+  wall under a metre long, nor round a deck's or a tunnel's end, and no narrower than its lanes
+  (`lanesOf`'s, 2.5 m each, or one where it paints none: where they don't fit, the wall is cut as
+  before); and a junction's rounded corner stops at a wall of the map's in it, seen from the
+  junction (`behind`). Its lines share what's left, easing in and out over 10 m a metre, and its zebras and stop
+  lines span it; two carriageways brought back to a wall between them leave its gap as an island. The kerbs wherever a pavement, reservation
   or island is behind the carriageway, 15 cm high, dropped at the crossings; the lines from
   `lanesOf` (each lane at least 2.5 m), stopping at the junctions and short of the zebras; a zebra
   at every crossing the map has, 4 m deep, but the unmarked ones. Everything to the nearest 10 cm,
@@ -481,11 +496,12 @@ streets; when a track moves enough to change the edge, run the three again until
   flight of steps a tread at a time (each slab of its line, from the foot), the cycleways, the
   footways and the paths, each giving way to those before it. A cycleway in a pavement is a lane
   where, 40 cm out, the carriageway is beside it along half its length or more.
-  `test/streets.test.js` checks it on made-up streets (a T junction, a roundabout, a reservation) and
-  in the world's tiles: every ring simple, nothing lying on anything else at its level, a deck
-  meeting the ground's streets within 5 cm at its ends and a tunnel's end on the cutting's floor, no
-  pavement of one level over the other's surfaces where they're at one height, every street inside
-  the open world's edge with its carriageway at its width. `test/paths.test.js` checks the paths
+  `test/streets.test.js` checks it on made-up streets (a T junction, a roundabout, a reservation,
+  walls along a street and between two carriageways) and in the world's tiles: every ring simple,
+  nothing lying on anything else at its level, a deck meeting the ground's streets within 5 cm at its
+  ends and a tunnel's end on the cutting's floor, no pavement of one level over the other's surfaces
+  where they're at one height, every street inside the open world's edge with its carriageway at its
+  width, and how much of the walls facing a street have pavement past them. `test/paths.test.js` checks the paths
   against the map's (`.cache/osm/paths.json`): each drawn, or what's there instead; the streets'
   own left to them; each at its level; each flight's treads a riser apart, as many as the map
   counts; the Liberdade's lanes; and nothing on anything else.
@@ -508,7 +524,9 @@ streets; when a track moves enough to change the edge, run the three again until
   `MAPILLARY_TOKEN`. `test/viewpoints.test.js` checks each viewpoint stands where its photo was
   taken, at eye level, on the surface its photo was taken from (`surface`: a lane, a pavement, a
   path or the ground; where Mapillary's position is off it, the camera is moved the shortest way
-  onto it, task 058, decision 041), and at least 150 m from every waypoint and egg. `refs/photos.json` lists
+  onto it, task 058, decision 041), and at least 150 m from every waypoint and egg. A viewpoint
+  dropped stays under `dropped`, no longer shot, for where its photo was taken (the facades seen in
+  it) and its earlier rounds (`joao-xxi`, task 052). `refs/photos.json` lists
   the reference photos (task 008): for each building in the shooter's area and the ones a local
   knows along the route, the landmarks, bridges and roundabouts, the kinds of building, wall and
   gate, and close-ups of pavements, kerbs, azulejos and street furniture, a real photo from

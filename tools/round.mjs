@@ -136,17 +136,19 @@ const areasOf = (v) => [
   ...(v.kind === 'skyline' ? ['skyline'] : []),
 ];
 
-const { credit, viewpoints } = JSON.parse(fs.readFileSync(path.join(ROOT, 'refs', 'viewpoints.json'), 'utf8'));
+const { credit, viewpoints, dropped = [] } = JSON.parse(fs.readFileSync(path.join(ROOT, 'refs', 'viewpoints.json'), 'utf8'));
+// A viewpoint dropped (task 052) stays on the page for the rounds that shot it, marked `dropped`.
+const shotOnce = new Set((fs.existsSync(LOG) ? JSON.parse(fs.readFileSync(LOG, 'utf8')).rounds : []).flatMap((r) => Object.keys(r.shots)));
 
 // The photos, once each.
 const list = [];
-for (const v of viewpoints) {
+for (const v of [...viewpoints, ...dropped.filter((d) => shotOnce.has(d.id)).map((d) => ({ ...d, dropped: true }))]) {
   const src = path.join(CACHE, 'refs', `${v.id}.jpg`);
   if (!fs.existsSync(src)) throw new Error(`no photo for ${v.id}: node tools/refs.mjs`);
   const file = path.join(OUT, 'photos', `${v.id}.jpg`);
   const size = fs.existsSync(file) && fs.statSync(file).mtimeMs > fs.statSync(src).mtimeMs ? jpegSize(file) : writeJpeg(file, shrink(jpeg.decode(fs.readFileSync(src), { maxMemoryUsageInMB: 1024 }), W));
   const p = v.photo;
-  list.push({ id: v.id, nome: v.nome, kind: v.kind, areas: areasOf(v), photo: { w: size[0], h: size[1], source: p.source, author: p.author, licence: p.licence, url: p.url, date: p.date } });
+  list.push({ id: v.id, nome: v.nome, kind: v.kind, areas: areasOf(v), ...(v.dropped && { dropped: true }), photo: { w: size[0], h: size[1], source: p.source, author: p.author, licence: p.licence, url: p.url, date: p.date } });
 }
 
 function jpegSize(file) {

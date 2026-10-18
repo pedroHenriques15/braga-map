@@ -65,7 +65,8 @@ Steps:
   and nothing under "Streets, squares and railway in the box the tiles don't draw whole" but the
   streets being built or of no known class.
 - [ ] The Praça da República is a `plaza` area in the tiles round (0, 0), and on the map page.
-- [ ] No viewpoint looks at these squares today (the nearest, `joao-xxi`, is 290 m from one): a
+- [ ] No viewpoint looks at these squares today (the nearest was `joao-xxi`, 290 m from one, dropped
+  in task 052): a
   shot of party-kart's city over the Praça da República, before and after, shows it paved as a
   square.
 

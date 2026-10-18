@@ -1,13 +1,17 @@
 // Every street as surfaces (task 033): on made-up streets, the corners a kerb rounds, a roundabout's
-// island, a reservation, the pavements where a street is built up and the crossings; and in the open
-// world's tiles as the games read them, every street inside its edge (task 032) with its carriageway
-// at its real width, nothing lying on anything else at its level, and the Volta dos Amigos on them.
+// island, a reservation, the pavements where a street is built up and the crossings, and the walls
+// they end at (task 052); and in the open world's tiles as the games read them, every street inside
+// its edge (task 032) with its carriageway at its real width, nothing lying on anything else at its
+// level, no pavement past a wall, and the Volta dos Amigos on them.
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
 import { test } from 'node:test';
 import ClipperLib from 'clipper-lib';
 import { loadWorld } from '../index.js';
 import amigos from '../tracks/amigos.js';
-import { streetSurfaces } from '../tools/streets.mjs';
+import { CACHE, readCache } from '../tools/geo.mjs';
+import { stopsAt, streetSurfaces } from '../tools/streets.mjs';
+import { barriersOf } from '../tools/walls.mjs';
 import { OPEN_BOX } from '../tools/sections.mjs';
 
 const C = ClipperLib;
@@ -132,6 +136,46 @@ test('no sliver: a bend at a node, carriageways that touch; but a narrow median,
   assert.ok(!on(gore)(118, (3.5 + edge(118)) / 2), 'and where it is 1.3 m wide');
 });
 
+test('the streets end at their walls: a pavement at any, a carriageway at the map\'s, no narrower than its lanes (task 052)', () => {
+  // A residential street east-west, 8 m wide, no lanes painted, houses along both sides.
+  const houses = [[[0, 12], [100, 12], [100, 20], [0, 20]], [[0, -12], [100, -12], [100, -20], [0, -20]]];
+  const wall = (pts, source = 'osm', kind = 'wall') => ({ kind, source, level: 'ground', pts });
+  const walls = [
+    // The map's wall 1 m in from the south kerb, from x 10 to 40: the carriageway's edge comes back to
+    // it, 15 cm short of its line, and no pavement is behind it.
+    wall([[10, 3], [40, 3]]),
+    // One 1.5 m out from the north kerb, from x 60 to 90: the pavement runs to it.
+    wall([[60, -5.5], [90, -5.5]], 'lidar'),
+    // A hedge the LiDAR found 1.5 m out from the south kerb: the pavement runs past it.
+    wall([[60, 5.5], [90, 5.5]], 'lidar', 'hedge'),
+  ];
+  const got = cut(streetSurfaces({ lines: [way(1, 5, 8, [[0, 0], [100, 0]], [1, 2])], box, buildings: houses, walls }));
+  const road = inside(got.carriageways), pave = inside(got.pavements.filter((p) => p.kind === 'pavement'));
+  assert.ok(road(25, 2.7) && !road(25, 2.95) && road(50, 3.9) && road(25, -3.9), "the carriageway's south edge at the map's wall, and at its width past it and across");
+  assert.ok(!pave(25, 2.95) && !pave(25, 3.5) && !pave(25, 6), 'no pavement behind the wall');
+  assert.ok(pave(75, -4.3) && pave(75, -5.2) && !pave(75, -5.8) && !pave(75, -7), 'the north pavement from the kerb to the wall');
+  assert.ok(pave(75, 6.5), "and the south's past the hedge the LiDAR found");
+  // A road of two lanes painted, 7 m: the map's wall 1 m from its line. The lanes don't fit beside
+  // it, so the edge comes in to 5 m from the other, and the wall stands in it; the centre line is
+  // the middle of what's left.
+  const two = cut(streetSurfaces({ lines: [way(1, 3, 7, [[0, 0], [100, 0]], [1, 2], { highway: 'secondary', lanes: '2' })], box, walls: [wall([[10, 1], [60, 1]])] }));
+  const narrow = inside(two.carriageways);
+  assert.ok(narrow(35, 1.4) && !narrow(35, 1.6) && narrow(35, -3.4) && narrow(80, 3.4), 'the edge 1.5 m from the line, 5 m from the other');
+  const onCentre = (p) => two.markings.some((m) => m.kind === 'centre' && m.pts.some((q, i) => i && segDist(p, m.pts[i - 1], q) < 0.1));
+  assert.ok(onCentre([35, -1]) && onCentre([90, 0]), 'the centre line in the middle of what is left, and of the road past it');
+  // A road's two one-way carriageways that touch, the map's wall between them: both stop at it, and
+  // its gap is an island, not a crack filled in.
+  const t = { highway: 'secondary', oneway: 'yes' }, d = 7.1;
+  const pair = cut(streetSurfaces({ lines: [way(1, 3, 7, [[0, 0], [150, 0]], [1, 2], t), way(2, 3, 7, [[150, d], [0, d]], [3, 4], t), way(3, 5, 6, [[150, 0], [150, d]], [2, 3]), way(4, 5, 6, [[0, d], [0, 0]], [4, 1])], box, walls: [wall([[20, d / 2], [130, d / 2]])] }));
+  const both = inside(pair.carriageways);
+  assert.ok(!both(75, d / 2) && both(75, d / 2 - 0.3) && both(75, d / 2 + 0.3) && both(10, d / 2), 'both carriageways at the wall, and joined past it');
+  assert.ok(inside(pair.pavements.filter((p) => p.kind === 'island'))(75, d / 2), 'the wall on an island');
+  // A junction's corner stops at the map's wall across it.
+  const tee = [way(1, 5, 6, [[0, 0], [50, 0]], [1, 2]), way(2, 5, 6, [[50, 0], [100, 0]], [2, 3]), way(3, 5, 6, [[50, 0], [50, 50]], [2, 4])];
+  const corner = inside(cut(streetSurfaces({ lines: tee, box, walls: [wall([[53.1, 4.4], [54.4, 3.1]])] })).carriageways), open = inside(cut(streetSurfaces({ lines: tee, box })).carriageways);
+  assert.ok(open(54.2, 3.9) && !corner(54.2, 3.9) && corner(53.4, 3.4), "the corner's kerb at the wall");
+});
+
 // ---- In the open world's tiles ----
 
 // The tiles under the box round the area, where the surfaces are made; the streets checked are those
@@ -188,7 +232,7 @@ test('nothing lies on anything else at its level: carriageways, pavements', () =
   }
 });
 
-test('no sliver in the carriageways: no notch under a metre wide into them, no crack between them (task 048)', () => {
+test('no sliver in the carriageways: no notch under a metre wide into them, no crack between them, but where a wall stands (tasks 048, 052)', () => {
   // Each level's carriageways together, in millimetres, where a crack between two pieces is a hole or
   // a notch; and what closing them by 0.4 m (grown, then shrunk) fills, a film of 5 mm along their
   // edges left out, where it comes back a millimetre off. streets.mjs closes them by half a metre, and
@@ -199,7 +243,32 @@ test('no sliver in the carriageways: no notch under a metre wide into them, no c
   const clip = (type, a, b) => { const c = new C.Clipper(), out = []; c.AddPaths(a, C.PolyType.ptSubject, true); c.AddPaths(b, C.PolyType.ptClip, true); c.Execute(type, out, NZ, NZ); return out; };
   const at = (q) => `(${(q.X / K).toFixed(1)}, ${(q.Y / K).toFixed(1)})`;
   const cracks = [], notches = [];
-  let filled = 0;
+  let filled = 0, walled = 0;
+  // But a gap a wall stands in, where the carriageways either side of it stop at it (task 052: a
+  // road's two carriageways at its median's wall): the walls' lines every half metre, and how much of
+  // a ring's length they run in it.
+  const wallPts = new Map();
+  // The map's own lines too, where fetched: a wall's tip cut where the streets don't give way to it.
+  const mapWalls = fs.existsSync(`${CACHE}/osm/barriers.json`) ? barriersOf(readCache('osm/barriers.json'), (x, z) => inOpen([x, z])) : [];
+  for (const x of [...w.walls, ...mapWalls]) {
+    if (x.kind === 'gate' || x.kind === 'bar') continue;
+    for (let i = 1; i < x.pts.length; i++) {
+      const [ax, az] = x.pts[i - 1], [bx, bz] = x.pts[i], n = Math.max(1, Math.ceil(Math.hypot(bx - ax, bz - az) / 0.5));
+      for (let k = 0; k < n; k++) {
+        const p = [ax + ((bx - ax) * (k + 0.5)) / n, az + ((bz - az) * (k + 0.5)) / n], c = Math.floor(p[0] / 10) + ',' + Math.floor(p[1] / 10);
+        if (!wallPts.has(c)) wallPts.set(c, []);
+        wallPts.get(c).push(p);
+      }
+    }
+  }
+  // Whether a wall runs within half a metre of a ring.
+  const wallBy = (r) => r.some((q) => { const x = q.X / K, z = q.Y / K; for (let i = Math.floor(x / 10) - 1; i <= Math.floor(x / 10) + 1; i++) for (let j = Math.floor(z / 10) - 1; j <= Math.floor(z / 10) + 1; j++) if ((wallPts.get(i + ',' + j) ?? []).some(([px, pz]) => Math.hypot(px - x, pz - z) < 0.5)) return true; return false; });
+  const wallIn = (r) => {
+    const xs = r.map((q) => q.X / K), zs = r.map((q) => q.Y / K), ring = r.map((q) => [q.X / K, q.Y / K]);
+    let n = 0;
+    for (let i = Math.floor(Math.min(...xs) / 10); i <= Math.floor(Math.max(...xs) / 10); i++) for (let j = Math.floor(Math.min(...zs) / 10); j <= Math.floor(Math.max(...zs) / 10); j++) for (const p of wallPts.get(i + ',' + j) ?? []) if (inside([{ rings: [ring] }])(...p)) n++;
+    return n * 0.5;
+  };
   const rings = (list) => list.flatMap((p) => p.rings.map((r, i) => { const q = mm(r); return C.Clipper.Orientation(q) === !i ? q : q.reverse(); }));
   for (const level of ['ground', 'bridge', 'tunnel']) {
     const U = clip(C.ClipType.ctUnion, rings(S.carriageways.filter((p) => p.level === level)), []);
@@ -211,7 +280,11 @@ test('no sliver in the carriageways: no notch under a metre wide into them, no c
     const filledBy = inside(S.pavements.filter((p) => p.level === level));
     for (const h of holes) {
       const mid = [h.reduce((s, q) => s + q.X, 0) / h.length / K, h.reduce((s, q) => s + q.Y, 0) / h.length / K];
-      if (!offset([h], -0.15).length && inOpen(mid) && !filledBy(...mid)) cracks.push(`${level} ${at(h[0])}, ${(C.Clipper.Area(h) / K / K).toFixed(2)} m²`);
+      if (!offset([h], -0.15).length && inOpen(mid) && !filledBy(...mid)) {
+        const long = Math.max(...h.flatMap((p) => h.map((q) => Math.hypot(p.X - q.X, p.Y - q.Y)))) / K;
+        if (wallIn(h) >= long / 2) walled++;
+        else cracks.push(`${level} ${at(h[0])}, ${(C.Clipper.Area(h) / K / K).toFixed(2)} m²`);
+      }
     }
     // An island (a hole under streets.mjs's ISLAND, 600 m²) keeps its own shape, however narrow: the
     // closing fills none of it.
@@ -222,7 +295,9 @@ test('no sliver in the carriageways: no notch under a metre wide into them, no c
     for (const h of small) for (const r of clip(C.ClipType.ctDifference, [h], offset(offset(offset([h], -0.02), 0.02), 0.003))) {
       if (!C.Clipper.Orientation(r) || !inOpen([r[0].X / K, r[0].Y / K])) continue;
       const long = Math.max(...r.flatMap((p) => r.map((q) => Math.hypot(p.X - q.X, p.Y - q.Y)))) / K;
-      if (long > 0.5) cracks.push(`${level} ${at(r[0])}, ${long.toFixed(2)} m along an island`);
+      // But the tip of a wall's gap, where the streets widen again past its end: a wall runs by it.
+      if (long > 0.5 && wallBy(r)) walled++;
+      else if (long > 0.5) cracks.push(`${level} ${at(r[0])}, ${long.toFixed(2)} m along an island`);
     }
     const D = clip(C.ClipType.ctDifference, offset(offset(U, 0.4), -0.4), [...offset(U, 0.005), ...small]).filter((r) => C.Clipper.Orientation(r));
     // Each piece of it as deep as its farthest point from where it opens, the closed outline across
@@ -241,10 +316,11 @@ test('no sliver in the carriageways: no notch under a metre wide into them, no c
       filled++;
       const mouth = r.map((a, i) => [a, r[(i + 1) % r.length]]).filter(([a, b]) => !onEdge({ X: (a.X + b.X) / 2, Y: (a.Y + b.Y) / 2 }));
       const deep = mouth.length ? Math.max(...r.map((p) => Math.min(...mouth.map(([a, b]) => segDistMm(p, a, b))))) / K : 0;
-      if (deep > 0.5) notches.push(`${level} ${at(r[0])}, ${deep.toFixed(2)} m deep, ${(C.Clipper.Area(r) / K / K).toFixed(2)} m²`);
+      if (deep > 0.5 && wallIn(r) >= deep / 2) walled++;
+      else if (deep > 0.5) notches.push(`${level} ${at(r[0])}, ${deep.toFixed(2)} m deep, ${(C.Clipper.Area(r) / K / K).toFixed(2)} m²`);
     }
   }
-  console.log(`closing the carriageways by 0.4 m fills ${filled} corners and notches in the area, ${notches.length} over half a metre deep; ${cracks.length} holes under 0.3 m wide`);
+  console.log(`closing the carriageways by 0.4 m fills ${filled} corners and notches in the area, ${notches.length} over half a metre deep; ${cracks.length} holes under 0.3 m wide; ${walled} gaps a wall stands in`);
   assert.deepEqual(cracks, [], 'cracks between carriageways');
   assert.deepEqual(notches, [], 'notches under a metre wide into the carriageways');
 });
@@ -496,6 +572,59 @@ test('every street in the area has its carriageway, at its real width', () => {
   assert.ok(midOk / mid > 0.995, `${mid - midOk} of ${mid} points in the middle of a street have no carriageway`);
   assert.ok(Math.abs(q(0.5) - 1) < 0.03, `the carriageways are ${q(0.5)} of the map's widths`);
   assert.ok(q(0.1) > 0.85, `one in ten carriageways is under ${q(0.1)} of its width`);
+});
+
+test('no pavement runs past a wall into what is behind it (task 052)', () => {
+  // Each wall a pavement stops at (streets.mjs's stopsAt), every half metre but its last metre at
+  // either end, where it faces a street (within 60° of square to the way to the nearest carriageway's
+  // edge, 4 m off at most): whether there's pavement 0.4 m past it, but another street's, whose
+  // carriageway is on that side of the wall.
+  const ground = S.carriageways.filter((c) => c.level === 'ground'), pave = inside(S.pavements.filter((p) => p.level === 'ground' && p.kind === 'pavement')), onRoad = inside(ground);
+  const edges = new Map();
+  for (const c of ground) for (const r of c.rings) r.forEach((a, i) => {
+    const b = r[(i + 1) % r.length];
+    for (let cx = Math.floor(Math.min(a[0], b[0]) / 5); cx <= Math.floor(Math.max(a[0], b[0]) / 5); cx++) for (let cz = Math.floor(Math.min(a[1], b[1]) / 5); cz <= Math.floor(Math.max(a[1], b[1]) / 5); cz++) {
+      const k = cx + ',' + cz;
+      if (!edges.has(k)) edges.set(k, []);
+      edges.get(k).push([a, b]);
+    }
+  });
+  const nearest = (x, z, r = 4) => {
+    let best = null;
+    for (let cx = Math.floor((x - r) / 5); cx <= Math.floor((x + r) / 5); cx++) for (let cz = Math.floor((z - r) / 5); cz <= Math.floor((z + r) / 5); cz++) for (const [a, b] of edges.get(cx + ',' + cz) ?? []) {
+      const d = segDist([x, z], a, b), dx = b[0] - a[0], dz = b[1] - a[1], f = Math.max(0, Math.min(1, ((x - a[0]) * dx + (z - a[1]) * dz) / (dx * dx + dz * dz || 1)));
+      if (d <= r && (!best || d < best.d)) best = { d, p: [a[0] + dx * f, a[1] + dz * f] };
+    }
+    return best;
+  };
+  let facing = 0, past = 0;
+  const at = [];
+  for (const x of w.walls.filter(stopsAt)) {
+    const L = x.pts.reduce((s, p, i) => (i ? s + Math.hypot(p[0] - x.pts[i - 1][0], p[1] - x.pts[i - 1][1]) : 0), 0);
+    let s0 = 0;
+    for (let i = 1; i < x.pts.length; i++) {
+      const [ax, az] = x.pts[i - 1], [bx, bz] = x.pts[i], l = Math.hypot(bx - ax, bz - az), n = Math.max(1, Math.ceil(l / 0.5)), ux = (bx - ax) / (l || 1), uz = (bz - az) / (l || 1);
+      for (let k = 0; k < n && l > 1e-6; k++) {
+        const s = (l * (k + 0.5)) / n, px = ax + ux * s, pz = az + uz * s;
+        if (s0 + s < 1 || L - s0 - s < 1 || !inOpen([px, pz]) || onRoad(px, pz)) continue;
+        const e = nearest(px, pz);
+        if (!e || e.d < 0.05) continue;
+        const ox = (px - e.p[0]) / e.d, oz = (pz - e.p[1]) / e.d;
+        if (Math.abs(ux * ox + uz * oz) > 0.5) continue;
+        const sg = -uz * ox + ux * oz > 0 ? 1 : -1, nx = -uz * sg, nz = ux * sg, fx = px + nx * 0.4, fz = pz + nz * 0.4;
+        facing += 0.5;
+        if (!pave(fx, fz)) continue;
+        const f = nearest(fx, fz);
+        if (f && (f.p[0] - px) * nx + (f.p[1] - pz) * nz > 0) continue;
+        past += 0.5;
+        at.push(`(${Math.round(px)}, ${Math.round(pz)})`);
+      }
+      s0 += l;
+    }
+  }
+  console.log(`walls a pavement stops at, facing a street: ${(facing / 1000).toFixed(2)} km; with pavement past them ${(past / 1000).toFixed(2)} km (${((past / facing) * 100).toFixed(1)}%: 40.8% on braga-map 1.22.0), e.g. at ${at.filter((_, i) => i % 40 === 0).slice(0, 6).join(', ')}`);
+  assert.ok(facing > 10000, `only ${facing} m of walls facing a street`);
+  assert.ok(past / facing <= 0.02, `${((past / facing) * 100).toFixed(1)}% of the walls facing a street have pavement past them`);
 });
 
 test("the Volta dos Amigos runs on its streets: every point on a carriageway, but in the jump's flight", () => {

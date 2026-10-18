@@ -44,6 +44,14 @@ const TWIST = 0.5;
 // The lines painted: as wide as the track's (party-kart's road.ts), dashes 3 m on and 4 m off; a
 // zebra 4 m deep, a stop line 0.5 m.
 const LINE_W = 0.14, DASH = [3, 4], ZEBRA = 4, STOP = 0.5;
+// The walls the streets end at (task 052): a street's edge, a pavement's or a path's stops FACE short
+// of a wall's line, as the tiles round to 10 cm and a wall on a carriageway or a path is cut there
+// (world.mjs). A carriageway comes back to a wall of the map's that runs along it, within ALONG of
+// its way, looked at every SG metres along it; but not to one in it under RUN long, and across an
+// opening in a wall up to GAP long where no other street passes (a gate, a door), its edge runs on
+// straight. It's no narrower than its lanes, LANE_MIN each, or one where the map paints none (the
+// owner's answer); its painted lines ease in and out of a narrower stretch EASE across a metre.
+const FACE = 0.15, ALONG = Math.cos(Math.PI / 6), SG = 0.5, RUN = 1, GAP = 6, LANE_MIN = 2.5, EASE = 0.1;
 const UNPAVED = new Set(['unpaved', 'dirt', 'gravel', 'fine_gravel', 'ground', 'compacted', 'earth', 'grass', 'mud', 'sand', 'pebblestone', 'grass_paver']);
 
 // ---- Clipper, in metres ----
@@ -239,8 +247,9 @@ export { band, grow, meet, minus, positive, shapes, toPath, toPts, union };
 
 const dist = (a, b) => Math.hypot(b[0] - a[0], b[1] - a[1]);
 const lengthOf = (pts) => pts.reduce((s, p, i) => (i ? s + dist(pts[i - 1], p) : 0), 0);
-// A line moved o metres to its right (to its left if o is negative), its corners mitred. Right is
-// as seen on the map, north up: x east, z south, so (dx, dz)'s right is (-dz, dx).
+// A line moved o metres to its right (to its left if o is negative), its corners mitred; or each
+// point by its own, where o is a list. Right is as seen on the map, north up: x east, z south, so
+// (dx, dz)'s right is (-dz, dx).
 function shift(pts, o) {
   const nrm = (a, b) => { const dx = b[0] - a[0], dz = b[1] - a[1], l = Math.hypot(dx, dz) || 1; return [-dz / l, dx / l]; };
   return pts.map((p, i) => {
@@ -252,7 +261,8 @@ function shift(pts, o) {
       const sx = a[0] + b[0], sz = a[1] + b[1], l = Math.hypot(sx, sz);
       if (l > 1e-6) { const f = 1 / (Math.max(0.5, l / 2) * l); nx = sx * f; nz = sz * f; }
     }
-    return [p[0] + nx * o, p[1] + nz * o];
+    const k = typeof o === 'number' ? o : o[i];
+    return [p[0] + nx * k, p[1] + nz * k];
   });
 }
 // The way a line runs from its point i, as a unit vector: towards the first point 2 m or more along
@@ -345,7 +355,9 @@ const marked = (t) => !['unmarked', 'no'].includes(t.crossing) && t['crossing:ma
 // from `lines` (lines.mjs's streetLines: { k, w, pts, nodes, t, level }) and the heights of those off
 // the ground (`heights`, above the sea; out above `elev0`), and `height`, the ground's at (x, z) as the
 // tiles hold it, above the sea, for a deck's ends; `nodes`, the crossings and traffic lights
-// (fetch.mjs's street.json); `buildings`, `squares` and `water`, rings round them. Everything comes
+// (fetch.mjs's street.json); `buildings`, `squares` and `water`, rings round them; `walls`, the walls,
+// fences, hedges and gates (walls.mjs's, index.d.ts's Wall), which the pavements and the paths stop
+// at and a carriageway gives way to (task 052, `stopsAt` and `givesWayTo` below). Everything comes
 // out cut to each of `cuts` ([{ id, box }], the box itself by default), in `cuts`, a Map by id:
 // - carriageways: [{ surface, level, rings: [outer, ...holes], ys? }], surface asphalt, setts,
 //   paving or dirt;
@@ -360,11 +372,12 @@ const marked = (t) => !['unmarked', 'no'].includes(t.crossing) && t['crossing:ma
 //   runs in, a kerb over the ground; ys a tread's height at each of its points, or a footbridge's;
 // - handrails: [{ level, pts, ys }], along a flight of steps, ys the rail's top;
 // level ground, bridge or tunnel, and ys a height at each point (each ring's) off the ground.
-export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height = null, nodes = [], buildings = [], squares = [], water = [], paths = [], box, cuts = [{ id: 'box', box }], margin = 80 }) {
+export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height = null, nodes = [], buildings = [], squares = [], water = [], paths = [], walls = [], box, cuts = [{ id: 'box', box }], margin = 80 }) {
   const t0 = Date.now();
   const near = ([x, z], m) => x >= box.x0 - m && x <= box.x1 + m && z >= box.z0 - m && z <= box.z1 + m;
   const ways = lines.filter((l) => l.k <= 8 && l.pts.some((p) => near(p, margin)));
   const walks = paths.filter((p) => p.pts.some((q) => near(q, margin)));
+  const stops = walls.filter((w) => stopsAt(w) && w.pts.length > 1 && w.pts.some((p) => near(p, margin + 20)));
   const stopAt = new Map(nodes.filter((n) => n.tags).map((n) => [n.id, n.tags]));
 
   // The graph: a node wherever ways meet or end, and an edge between each two along a way.
@@ -392,18 +405,26 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height =
   // one other edge at its level, or through a junction into one that runs on within 20° of straight,
   // round as a way is where it bends, as wide as the narrower: cut square, the two left a wedge open
   // outside the bend, a sliver or another street's surface in it (task 048). `square` is it without
-  // those, where the lines painted on a street stop.
+  // those, where the lines painted on a street stop. On the ground, each gives way to the map's walls
+  // that stand in it (task 052, pullBack): `gives`, taken off it and off the join or the corner it
+  // meets the next at, and a dead end's round end as wide as it is there.
   const ends = new Map(), up = (e) => (e.level === 1 || e.level === 2 ? e.level : 0);
   for (const e of edges) [[e.nodes[0], 0], [e.nodes.at(-1), e.pts.length - 1]].forEach(([n, i]) => { if (n != null) ends.set(n, [...(ends.get(n) ?? []), { e, i, dir: heading(e.pts, i, i > 0) }]); });
+  const onGround = edges.filter((e) => !up(e));
+  // But not round a deck's or a tunnel's end, where it meets the ground's streets at their height (task
+  // 040): within its width and 4 m of it.
+  const held = [...ends.values()].filter((at) => at.some((a) => up(a.e)) && at.some((a) => !up(a.e))).map((at) => ({ p: at[0].e.pts[at[0].i], r: Math.max(...at.filter((a) => up(a.e)).map((a) => a.e.w)) + 4 }));
+  const mapWalls = segments(stops.filter(givesWayTo).map((w) => w.pts));
+  const given = pullBack(onGround, mapWalls, segments(onGround.map((e) => e.pts), 10, onGround), box, held);
   for (const e of edges) {
     const caps = [], joins = [];
     for (const [n, i] of [[e.nodes[0], 0], [e.nodes.at(-1), e.pts.length - 1]]) {
       const p = e.pts[i], at = ends.get(n) ?? [], me = at.find((a) => a.e === e && a.i === i);
-      if (at.length < 2) { caps.push(circle(p, e.w / 2, 24)); continue; }
+      if (at.length < 2) { caps.push(e.pull ? capOf(e, i) : circle(p, e.w / 2, 24)); continue; }
       const others = at.filter((a) => a !== me && up(a.e) === up(e)), on = at.length === 2 ? others : others.filter((a) => a.dir[0] * me.dir[0] + a.dir[1] * me.dir[1] < -0.94);
-      if (on.length) joins.push(circle(p, Math.max(...on.map((a) => Math.min(a.e.w, e.w))) / 2));
+      if (on.length) joins.push(...minus([circle(p, Math.max(...on.map((a) => Math.min(a.e.w, e.w))) / 2)], at.flatMap((a) => a.e.gives ?? [])));
     }
-    e.square = union(band([toPath(e.pts)], e.w / 2, true), caps);
+    e.square = minus(union(band([toPath(e.pts)], e.w / 2, true), caps), e.gives ?? []);
     e.poly = joins.length ? union(e.square, joins) : e.square;
   }
 
@@ -448,7 +469,7 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height =
   const W = water.filter((r) => r.length > 2 && r.some((p) => near(p, margin + 40))).map((r) => positive(toPath(r)));
   const Q = squares.filter((r) => r.length > 2 && r.some((p) => near(p, margin + 40))).map((r) => positive(toPath(r)));
   const built = wallIndex(buildings.filter((r) => r.some((p) => near(p, margin + 60))));
-  const stats = { edges: edges.length, junctions: 0, islands: 0, reservations: 0, slivers: 0, past: 0, km: { kerb: 0, dropped: 0 }, m2: {}, paths: { m2: {}, flights: 0, treads: 0, steep: 0, lanes: 0, flush: 0 } };
+  const stats = { edges: edges.length, junctions: 0, islands: 0, reservations: 0, slivers: 0, past: 0, km: { kerb: 0, dropped: 0 }, m2: {}, paths: { m2: {}, flights: 0, treads: 0, steep: 0, lanes: 0, flush: 0 }, walls: { given, streets: onGround.filter((e) => e.pull).length, behind: 0, paths: 0 } };
 
   // The carriageways of each group: each edge's band, the corners where they meet rounded.
   const made = new Map();
@@ -483,7 +504,10 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height =
       const p = a[0].e.pts[a[0].i], r = R_KERB[Math.max(...a.map((x) => x.e.k))], hw = Math.max(...a.map((x) => x.e.w / 2));
       const R = Math.min(45, hw + 3 * r + 2), disc = [circle(p, R)], local = meet(union(...around(p, R).map((e) => e.poly)), disc);
       const enclosed = shapes(local).flatMap(([, ...holes]) => holes.filter((h) => Math.abs(C.Clipper.Area(h)) > 25 * S * S).map(positive));
-      const fill = minus(meet(grow(grow(local, r), -r), disc), [...local, ...enclosed]);
+      // Stopping where a street round it gives way to a wall, and at a wall of the map's in it, seen
+      // from the junction (task 052).
+      const shut = key === 'ground' ? behind(p, mapWalls.near({ x0: p[0] - R, x1: p[0] + R, z0: p[1] - R, z1: p[1] + R }).filter(([ax, az, bx, bz]) => !held.some((q) => dist(q.p, [(ax + bx) / 2, (az + bz) / 2]) < q.r)), R) : [];
+      const fill = minus(meet(grow(grow(local, r), -r), disc), [...local, ...enclosed, ...around(p, R).flatMap((e) => e.gives ?? []), ...shut]);
       if (area(fill) > 0.05) fills.push({ n, p, paths: fill, surface: a.reduce((m, x) => (x.e.k < m.e.k ? x : m)).e.surface });
       stats.junctions += a.length > 2;
     }
@@ -542,8 +566,17 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height =
     // (10 cm until task 026, which the tiles' 10 cm could narrow to a crack again).
     // Each sliver the surface of what's round it most.
     const small = shapes(U1).flatMap(([, ...holes]) => holes.filter((h) => Math.abs(C.Clipper.Area(h)) < ISLAND * S * S).map(positive));
-    const cracks = small.flatMap((h) => (grow([h], -0.15).length ? minus([h], opened([h], 0.1)) : [h]));
-    const slivers = shapes([...minus(closed(U1, 0.5), [...U1, ...small]), ...cracks]);
+    // But a hole under 0.3 m wide is left where a street gave way to a wall (task 052), but for its
+    // parts under 26 cm wide, which the tiles' 10 cm could narrow to a crack (its ends, where the
+    // streets widen again): two carriageways brought back to a wall between them leave its gap,
+    // 2 × FACE wide.
+    const gives = list.flatMap((e) => e.gives ?? []);
+    const cracks = small.flatMap((h) => {
+      if (grow([h], -0.15).length) return minus([h], opened([h], 0.1));
+      const gap = meet([h], gives);
+      return gap.length ? [...minus([h], gap), ...minus(gap, opened(gap, 0.13))] : [h];
+    });
+    const slivers = shapes([...minus(closed(U1, 0.5), [...U1, ...small, ...gives]), ...cracks]);
     if (slivers.length) {
       const near = [...bySurface].map(([s, p]) => [s, splitter(p)]);
       for (const sh of slivers) {
@@ -728,6 +761,9 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height =
   for (const [key, g] of made) {
     const level = levelName(key), ys = level === 'ground' ? null : level === 'bridge' ? yOf(g.list, g.ends, g.touches) : yOf(g.list), U = g.U;
     const inU = insideOf(U), owner = lineIndex(g.list);
+    // The walls the pavements and paths on the ground stop at (task 052). One on a carriageway, which
+    // world.mjs cuts, stands behind the kerb, or another kerb sees past it.
+    const walled = level === 'ground' && stops.length ? segments(stops.map((w) => w.pts)) : null;
     const surfaces = [...g.bySurface].map(([surface, paths]) => [surface, paths, cutTo(shapes(paths))]);
     const snap = snapRounding(surfaces.flatMap(([, , cut]) => cut.flatMap(([, pieces]) => pieces.flat())));
     for (const [surface, paths, cut] of surfaces) {
@@ -755,6 +791,17 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height =
     const pieces = [];
     for (const ring of U) {
       const pts = toPts(ring), list = [];
+      // Which way is out of it: the side of its edges the carriageway isn't on, 5 cm off each, the
+      // same all round a ring (its points are rounded to 10 cm, so one edge alone can be wrong: a
+      // street brought back to a wall, task 052, has its edge 15 cm short of a line on the 10 cm grid).
+      let left = 0, all = 0;
+      for (let i = 0; i < pts.length; i++) {
+        const a = pts[i], b = pts[(i + 1) % pts.length], L = dist(a, b);
+        if (L < 1e-3) continue;
+        all++;
+        if (inU((a[0] + b[0]) / 2 - ((b[1] - a[1]) / L) * 0.05, (a[1] + b[1]) / 2 + ((b[0] - a[0]) / L) * 0.05)) left++;
+      }
+      const out = left * 2 > all ? -1 : 1;
       for (let i = 0; i < pts.length; i++) {
         const a = pts[i], b = pts[(i + 1) % pts.length], L = dist(a, b), n = Math.max(1, Math.ceil(L / PIECE));
         if (L < 1e-3) continue;
@@ -762,8 +809,7 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height =
         for (let k = 0; k < n; k++) {
           const p = [a[0] + (b[0] - a[0]) * (k / n), a[1] + (b[1] - a[1]) * (k / n)], q = [a[0] + (b[0] - a[0]) * ((k + 1) / n), a[1] + (b[1] - a[1]) * ((k + 1) / n)];
           const m = [(p[0] + q[0]) / 2, (p[1] + q[1]) / 2];
-          let nrm = [-tz, tx];
-          if (inU(m[0] + nrm[0] * 0.05, m[1] + nrm[1] * 0.05)) nrm = [tz, -tx];
+          const nrm = [-tz * out, tx * out];
           list.push({ p, q, m, nrm, island: inIsland(m[0] + nrm[0] * 0.3, m[1] + nrm[1] * 0.3), own: owner(m[0], m[1], 30) });
         }
       }
@@ -834,6 +880,14 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height =
         }
       }
       pave = minus(grow(U, PAVE), [...U, ...B, ...W]);
+      // From its kerb to the first wall behind it (task 052), and none where a street gave way to a
+      // wall: there, what's behind the wall begins (seen along the wall's back from where the street
+      // widens again past its end, it would be).
+      if (walled) {
+        const dark = union(shade(pieces.flat(), walled, PAVE + 0.3), g.list.flatMap((e) => e.gives ?? []));
+        stats.walls.behind += area(meet(meet(pave, dark), boxPath));
+        pave = minus(pave, dark);
+      }
       pave = minus(pave, [...band(none, PAVE + 0.5, true), ...res, ...islands]);
       pave = union(pave, minus(Q, [...U, ...B, ...W, ...res, ...islands]));
       pave = minus(pave, g.noPave ?? []);
@@ -844,7 +898,7 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height =
     // to: the flights of steps and the cycleways.
     let flushed = [], lanes = [];
     if (level === 'ground') {
-      const got = groundPaths(walks.filter((p) => (p.kind === 'steps' ? !!p.flight : p.level === 0 || p.level === 3)), { U, kerbed: [...pave, ...res, ...islands], B, W, over, levelName: pathLevel });
+      const got = groundPaths(walks.filter((p) => (p.kind === 'steps' ? !!p.flight : p.level === 0 || p.level === 3)), { U, kerbed: [...pave, ...res, ...islands], B, W, over, walled, boxPath, levelName: pathLevel });
       if (got.taken.length) {
         const T = union(got.taken);
         [pave, res, islands] = [minus(pave, T), minus(res, T), minus(islands, T)];
@@ -853,6 +907,7 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height =
       addPaths(got.out);
       for (const r of got.rails) addLines('handrails', [r.path], { level: r.level }, r.ys);
       for (const k of ['flights', 'treads', 'steep']) stats.paths[k] += got.stats[k];
+      stats.walls.paths += got.stats.behind;
       stats.paths.lanes += area(meet(lanes, boxPath));
       stats.paths.flush += area(meet(flushed, boxPath));
     }
@@ -948,27 +1003,32 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height =
       return at;
     };
     const zebraZones = zebras.map((c) => positive(toPath(rectAcross(c.p, c.d, c.e.w / 2 + 0.5, ZEBRA / 2 + 1))));
+    // Where a street gives way to a wall (task 052), its lanes share what's left, easing in and out.
     for (const e of g.list) {
       const n = lanesOf(e.t), one = isOneway(e.t);
       if (n < 2 || e.w / n < 2.5) continue;
       const back = one ? 0 : Math.max(1, Math.min(n - 1, parseInt(e.t['lanes:backward']) || Math.floor(n / 2)));
-      const lw = e.w / n, off = [...keepOff(e), ...zebraZones];
+      const lw = e.w / n, off = [...keepOff(e), ...zebraZones], eased = e.pull && { l: ease(e.pull.l, e.pull.s), r: ease(e.pull.r, e.pull.s) };
       for (let i = 1; i < n; i++) {
-        const centre = !one && i === back, ln = cutLines([toPath(shift(e.pts, -e.w / 2 + i * lw))], off, false);
-        addLines('markings', cutLines(ln, e.poly, true), { kind: centre ? 'centre' : 'lane', w: LINE_W, dash: centre && n >= 4 ? null : DASH, level }, ys);
+        const centre = !one && i === back;
+        const at = eased ? shift(e.pull.d, Array.from(eased.l, (l, k) => -l + (i * (l + eased.r[k])) / n)) : shift(e.pts, -e.w / 2 + i * lw);
+        addLines('markings', cutLines(cutLines([toPath(at)], off, false), e.poly, true), { kind: centre ? 'centre' : 'lane', w: LINE_W, dash: centre && n >= 4 ? null : DASH, level }, ys);
       }
     }
+    // A zebra and a stop line run across the street (to its right, as it's drawn) from 0.3 m in from
+    // one edge to 0.3 m in from the other, where they are (widthAt: its edges where it gives way to a
+    // wall).
     for (const c of zebras) {
-      const across = [-c.d[1], c.d[0]], h = c.e.w / 2 - 0.3;
-      addLines('markings', [toPath([[c.p[0] - across[0] * h, c.p[1] - across[1] * h], [c.p[0] + across[0] * h, c.p[1] + across[1] * h]])], { kind: 'zebra', w: ZEBRA, dash: null, level }, ys);
+      const dir = [-c.d[1], c.d[0]], [l, r] = widthAt(c.e, c.e.nodes.indexOf(c.n)), a = -(l - 0.3), b = r - 0.3;
+      addLines('markings', [toPath([[c.p[0] + dir[0] * a, c.p[1] + dir[1] * a], [c.p[0] + dir[0] * b, c.p[1] + dir[1] * b]])], { kind: 'zebra', w: ZEBRA, dash: null, level }, ys);
     }
     // A stop line where the map has traffic lights on a street, across the side they stop.
     for (const e of g.list) e.nodes.forEach((n, i) => {
       const t = stopAt.get(n);
       if (t?.highway !== 'traffic_signals' || t.crossing) return;
       const [dx, dz] = heading(e.pts, i, i === e.pts.length - 1), s = i === e.pts.length - 1 ? -1 : 1, across = [-dz * s, dx * s], p = e.pts[i];
-      const dir = t['traffic_signals:direction'], h = e.w / 2 - 0.3;
-      const [a, b] = isOneway(e.t) || !['forward', 'backward'].includes(dir) ? [-h, h] : dir === 'forward' ? [0, h] : [-h, 0];
+      const dir = t['traffic_signals:direction'], [l, r] = widthAt(e, i), hl = l - 0.3, hr = r - 0.3;
+      const [a, b] = isOneway(e.t) || !['forward', 'backward'].includes(dir) ? [-hl, hr] : dir === 'forward' ? [0, hr] : [-hl, 0];
       addLines('markings', [toPath([[p[0] + across[0] * a, p[1] + across[1] * a], [p[0] + across[0] * b, p[1] + across[1] * b]])], { kind: 'stop', w: STOP, dash: null, level }, ys);
     });
   }
@@ -993,6 +1053,248 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height =
   return { cuts: new Map(into.map((c) => [c.id, c.out])), stats };
 }
 
+// ---- The walls the streets end at (task 052) ----
+
+// What a pavement or a path stops at (the owner's answer): the map's walls, fences, railings, hedges,
+// guard rails and retaining walls, and the walls, fences and retaining walls the LiDAR found, but not
+// the hedges it found (half of those in task 013's contact sheets were scrub) nor the gates; on the
+// ground. And what a carriageway gives way to: the map's.
+export const stopsAt = (w) => w.level !== 'bridge' && w.kind !== 'gate' && w.kind !== 'bar' && !(w.source === 'lidar' && w.kind === 'hedge');
+export const givesWayTo = (w) => stopsAt(w) && w.source === 'osm';
+
+// Some lines' stretches in cells of `cell` metres, for those near a box: each [ax, az, bx, bz, tag],
+// the tag the line's own (`tags[j]` for the line j) or null.
+function segments(lines, cell = 10, tags = null) {
+  const grid = new Map(), segs = [];
+  lines.forEach((pts, j) => {
+    for (let i = 1; i < pts.length; i++) {
+      const [ax, az] = pts[i - 1], [bx, bz] = pts[i];
+      if (ax === bx && az === bz) continue;
+      const k = segs.push([ax, az, bx, bz, tags ? tags[j] : null]) - 1;
+      for (let cx = Math.floor(Math.min(ax, bx) / cell); cx <= Math.floor(Math.max(ax, bx) / cell); cx++) for (let cz = Math.floor(Math.min(az, bz) / cell); cz <= Math.floor(Math.max(az, bz) / cell); cz++) {
+        const key = cx + ',' + cz;
+        if (!grid.has(key)) grid.set(key, []);
+        grid.get(key).push(k);
+      }
+    }
+  });
+  const near = (b) => {
+    const got = new Set();
+    for (let cx = Math.floor(b.x0 / cell); cx <= Math.floor(b.x1 / cell); cx++) for (let cz = Math.floor(b.z0 / cell); cz <= Math.floor(b.z1 / cell); cz++) for (const k of grid.get(cx + ',' + cz) ?? []) got.add(k);
+    return [...got].map((k) => segs[k]);
+  };
+  return { segs, near };
+}
+const boxOf = (pts, m = 0) => ({ x0: Math.min(...pts.map((p) => p[0])) - m, x1: Math.max(...pts.map((p) => p[0])) + m, z0: Math.min(...pts.map((p) => p[1])) - m, z1: Math.max(...pts.map((p) => p[1])) + m });
+// The right of a line's stretch j (from its point j - 1 to j), as a unit vector.
+const rightOf = (pts, j) => { const [ax, az] = pts[j - 1], [bx, bz] = pts[j], L = Math.hypot(bx - ax, bz - az) || 1; return [-(bz - az) / L, (bx - ax) / L]; };
+
+// The part of the segment from (ua, va) to (ub, vb) in [u0, u1] × [v0, v1] (Liang–Barsky), or null.
+function clipTo(ua, va, ub, vb, u0, u1, v0, v1) {
+  const du = ub - ua, dv = vb - va;
+  let t0 = 0, t1 = 1;
+  for (const [p, q] of [[-du, ua - u0], [du, u1 - ua], [-dv, va - v0], [dv, v1 - va]]) {
+    if (p === 0) { if (q < 0) return null; continue; }
+    const r = q / p;
+    if (p < 0) { if (r > t1) return null; t0 = Math.max(t0, r); } else { if (r < t0) return null; t1 = Math.min(t1, r); }
+  }
+  return [ua + du * t0, va + dv * t0, ua + du * t1, va + dv * t1];
+}
+// Whether the segment from p to q meets a ring: crosses its edge, or starts inside it.
+function meetsRing(p, q, ring) {
+  const o = (a, b, c) => Math.sign((b[0] - a[0]) * (c[1] - a[1]) - (b[1] - a[1]) * (c[0] - a[0]));
+  for (let i = 0; i < ring.length; i++) {
+    const a = ring[i], b = ring[(i + 1) % ring.length];
+    if (o(p, q, a) !== o(p, q, b) && o(a, b, p) !== o(a, b, q)) return true;
+  }
+  let odd = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) if (ring[i][1] > p[1] !== ring[j][1] > p[1] && p[0] < ring[i][0] + ((p[1] - ring[i][1]) / (ring[j][1] - ring[i][1])) * (ring[j][0] - ring[i][0])) odd = !odd;
+  return odd;
+}
+
+// What's behind some walls (`walls`, segments()) from some edges: each piece { p, q, nrm } of an edge
+// (a carriageway's, or a side of a path's line) looks straight out from it, along nrm, `depth` metres,
+// and what's behind a wall it sees, from FACE short of the wall's line, is in its shadow; a wall it
+// sees end on casts none, and none nearer it than `keep`. What's in one piece's shadow and in another's
+// sight stays: a street on a wall's other side sees up to it. Returns the area to take away.
+function shade(pieces, walls, depth, keep = 0) {
+  const strips = [];
+  for (const pc of pieces) {
+    const [px, pz] = pc.p, L = dist(pc.p, pc.q);
+    if (L < 1e-3) continue;
+    const tx = (pc.q[0] - px) / L, tz = (pc.q[1] - pz) / L, [nx, nz] = pc.nrm;
+    const at = (u, v) => [px + tx * u + nx * v, pz + tz * u + nz * v], corners = [at(0, 0), at(L, 0), at(L, depth), at(0, depth)], b = boxOf(corners);
+    const dark = [];
+    for (const [ax, az, bx, bz] of walls.near(b)) {
+      const c = clipTo((ax - px) * tx + (az - pz) * tz, (ax - px) * nx + (az - pz) * nz, (bx - px) * tx + (bz - pz) * tz, (bx - px) * nx + (bz - pz) * nz, 0, L, 0, depth);
+      if (!c || Math.abs(c[2] - c[0]) < 0.02) continue;
+      dark.push(positive(toPath([at(c[0], Math.max(keep, c[1] - FACE)), at(c[2], Math.max(keep, c[3] - FACE)), at(c[2], depth + 0.1), at(c[0], depth + 0.1)])));
+    }
+    strips.push({ path: positive(toPath(corners)), b, dark });
+  }
+  if (!strips.some((s) => s.dark.length)) return [];
+  // The shadows 50 m at a time, so that each union is small: each less what the pieces whose strips
+  // reach into its box see.
+  const cells = new Map(), C5 = 5;
+  for (const s of strips) for (let cx = Math.floor(s.b.x0 / C5); cx <= Math.floor(s.b.x1 / C5); cx++) for (let cz = Math.floor(s.b.z0 / C5); cz <= Math.floor(s.b.z1 / C5); cz++) {
+    const k = cx + ',' + cz;
+    if (!cells.has(k)) cells.set(k, []);
+    cells.get(k).push(s);
+  }
+  const bins = new Map();
+  for (const s of strips) for (const d of s.dark) {
+    const b = boundsOfPaths([d]), k = Math.floor((b.x0 + b.x1) / 100) + ',' + Math.floor((b.z0 + b.z1) / 100);
+    if (!bins.has(k)) bins.set(k, { dark: [], b: { ...b } });
+    const bin = bins.get(k);
+    bin.dark.push(d);
+    bin.b = { x0: Math.min(bin.b.x0, b.x0), x1: Math.max(bin.b.x1, b.x1), z0: Math.min(bin.b.z0, b.z0), z1: Math.max(bin.b.z1, b.z1) };
+  }
+  const out = [];
+  for (const { dark, b } of bins.values()) {
+    const near = new Set();
+    for (let cx = Math.floor(b.x0 / C5); cx <= Math.floor(b.x1 / C5); cx++) for (let cz = Math.floor(b.z0 / C5); cz <= Math.floor(b.z1 / C5); cz++) for (const s of cells.get(cx + ',' + cz) ?? []) near.add(s);
+    const seen = [...near].filter((s) => boxesMeet(s.b, b)).flatMap((s) => (s.sees ??= s.dark.length ? minus([s.path], s.dark) : [s.path]));
+    out.push(...minus(union(dark), seen.length ? union(seen) : []));
+  }
+  return out;
+}
+// A line's two sides, in pieces of up to PIECE metres, each looking out from it.
+function sides(pts) {
+  const out = [];
+  for (let i = 1; i < pts.length; i++) {
+    const a = pts[i - 1], b = pts[i], L = dist(a, b), n = Math.max(1, Math.ceil(L / PIECE));
+    if (L < 1e-3) continue;
+    const nrm = rightOf(pts, i);
+    for (let k = 0; k < n; k++) {
+      const p = [a[0] + ((b[0] - a[0]) * k) / n, a[1] + ((b[1] - a[1]) * k) / n], q = [a[0] + ((b[0] - a[0]) * (k + 1)) / n, a[1] + ((b[1] - a[1]) * (k + 1)) / n];
+      out.push({ p, q, nrm }, { p, q, nrm: [-nrm[0], -nrm[1]] });
+    }
+  }
+  return out;
+}
+
+// Each street on the ground brought back to the map's walls that stand in it (the owner's answers):
+// along its way, at each of its points and every SG metres or less between them, its edges' offsets
+// from it, each brought back to FACE short of a wall of the map's (`walls`, segments()) running along
+// it, within 30°, inside its band or within FACE of its edge. A wall in it under RUN long is left, to be cut as before; across an
+// opening in a wall up to GAP long that no other street's way passes through (`ways`, segments() of
+// the streets tagged with their edges), its edge runs on straight; but none round a deck's or a
+// tunnel's end (`held`, [{ p, r }]). And it's no narrower than its
+// lanes (lanesOf's, LANE_MIN each, or one where it has none): where they don't fit, each side goes
+// back out in proportion to how far it came in, and the wall is cut where it stands in it. Each street
+// brought back gets `pull`, { d, s, at, l, r }: those points, how far along it each is, which of them
+// is each of its own points, and its edges' offsets to its left and right at each; and `gives`, what
+// of its band gives way. Returns the m² of carriageway given way in `box`.
+function pullBack(edges, walls, ways, box, held = []) {
+  let m2 = 0;
+  for (const e of edges) {
+    const h = e.w / 2, F = Math.max(lanesOf(e.t), 1) * LANE_MIN;
+    if (e.w - F < 0.1) continue;
+    const near = walls.near(boxOf(e.pts, h + 1));
+    if (!near.length) continue;
+    const d = [], s = [], at = [], cum = [0];
+    for (let j = 1; j < e.pts.length; j++) {
+      const a = e.pts[j - 1], b = e.pts[j], L = dist(a, b), n = Math.max(1, Math.ceil(L / SG));
+      at.push(d.length);
+      for (let k = 0; k < n; k++) { d.push([a[0] + ((b[0] - a[0]) * k) / n, a[1] + ((b[1] - a[1]) * k) / n]); s.push(cum[j - 1] + (L * k) / n); }
+      cum.push(cum[j - 1] + L);
+    }
+    at.push(d.length);
+    d.push(e.pts.at(-1));
+    s.push(cum.at(-1));
+    // The stretch each point is on (its first point's, at a point of the way), and its right there.
+    const on = (i) => { let j = 1; while (j < e.pts.length - 1 && at[j] <= i) j++; return j; };
+    const nrm = d.map((_, i) => rightOf(e.pts, on(i))), off = (i, o) => [d[i][0] + nrm[i][0] * o, d[i][1] + nrm[i][1] * o];
+    const station = (x) => { let lo = 0, hi = s.length - 1; while (hi - lo > 1) { const m = (lo + hi) >> 1; if (s[m] <= x) lo = m; else hi = m; } return lo; };
+    const l = new Float64Array(d.length).fill(h), r = new Float64Array(d.length).fill(h);
+    for (const [ax, az, bx, bz] of near) {
+      const L = Math.hypot(bx - ax, bz - az), ux = (bx - ax) / L, uz = (bz - az) / L, m = Math.max(1, Math.ceil(L / 0.25));
+      for (let k = 0; k <= m; k++) {
+        const x = ax + (bx - ax) * (k / m), z = az + (bz - az) * (k / m);
+        if (held.some((q) => Math.hypot(x - q.p[0], z - q.p[1]) < q.r)) continue;
+        // Its nearest point on the way: how far along it, how far from it, which side, the way it runs.
+        let best = null;
+        for (let j = 1; j < e.pts.length; j++) {
+          const [px, pz] = e.pts[j - 1], [qx, qz] = e.pts[j], dx = qx - px, dz = qz - pz, LL = Math.hypot(dx, dz) || 1e-9;
+          const f = Math.max(0, Math.min(1, ((x - px) * dx + (z - pz) * dz) / (LL * LL))), o = Math.hypot(px + dx * f - x, pz + dz * f - z);
+          if (!best || o < best.o) best = { j, f, o, along: cum[j - 1] + f * LL, right: (x - px) * -dz + (z - pz) * dx >= 0, t: [dx / LL, dz / LL] };
+        }
+        // Not past its ends, nor out of it (but within FACE of its edge, as where a road's two
+        // carriageways touch, the map's wall in the crack between them), nor across it.
+        if ((best.j === 1 && best.f <= 0) || (best.j === e.pts.length - 1 && best.f >= 1) || best.o >= h + FACE) continue;
+        if (Math.abs(best.t[0] * ux + best.t[1] * uz) < ALONG) continue;
+        const i = station(best.along), side = best.right ? r : l, v = Math.max(0, best.o - FACE);
+        for (const q of [i, Math.min(d.length - 1, i + 1)]) side[q] = Math.min(side[q], v);
+      }
+    }
+    for (const [side, sgn] of [[l, -1], [r, 1]]) {
+      const runs = [];
+      for (let i = 0; i < d.length; i++) if (side[i] < h - 0.01) { if (runs.length && runs.at(-1)[1] === i - 1) runs.at(-1)[1] = i; else runs.push([i, i]); }
+      // On straight across a short opening that no other street passes through.
+      for (let k = runs.length - 1; k > 0; k--) {
+        const a = runs[k - 1][1], b = runs[k][0];
+        if (s[b] - s[a] > GAP) continue;
+        const quad = [off(a, sgn * side[a]), off(b, sgn * side[b]), off(b, sgn * (h + 0.5)), off(a, sgn * (h + 0.5))];
+        if (ways.near(boxOf(quad)).some(([px, pz, qx, qz, f]) => f !== e && meetsRing([px, pz], [qx, qz], quad))) continue;
+        for (let i = a + 1; i < b; i++) side[i] = side[a] + ((side[b] - side[a]) * (s[i] - s[a])) / (s[b] - s[a]);
+        runs[k - 1][1] = runs[k][1];
+        runs.splice(k, 1);
+      }
+      for (const [a, b] of runs) if (s[b] - s[a] < RUN) for (let i = a; i <= b; i++) side[i] = h;
+    }
+    let moved = false;
+    for (let i = 0; i < d.length; i++) {
+      if (l[i] + r[i] < F) { const k = (F - l[i] - r[i]) / (2 * h - l[i] - r[i]); l[i] += (h - l[i]) * k; r[i] += (h - r[i]) * k; }
+      moved ||= l[i] < h - 0.01 || r[i] < h - 0.01;
+    }
+    if (!moved) continue;
+    // What it keeps: each stretch from its left edge to its right, and at each of its points between
+    // two stretches, the wedge between them either side; well out of its band where it isn't brought
+    // back.
+    const L2 = Array.from(l, (v) => (v < h - 0.01 ? v : h + 2)), R2 = Array.from(r, (v) => (v < h - 0.01 ? v : h + 2)), kept = [];
+    for (let j = 1; j < e.pts.length; j++) {
+      const idx = [];
+      for (let i = at[j - 1]; i <= at[j]; i++) idx.push(i);
+      const [nx, nz] = rightOf(e.pts, j);
+      kept.push(positive(toPath([...idx.map((i) => [d[i][0] + nx * R2[i], d[i][1] + nz * R2[i]]), ...idx.reverse().map((i) => [d[i][0] - nx * L2[i], d[i][1] - nz * L2[i]])])));
+      if (j === e.pts.length - 1) continue;
+      const i = at[j], v = d[i], b = rightOf(e.pts, j + 1), sx = nx + b[0], sz = nz + b[1], sl = Math.hypot(sx, sz), f = sl > 1e-6 ? 1 / (Math.max(0.5, sl / 2) * sl) : 0, mx = sl > 1e-6 ? sx * f : nx, mz = sl > 1e-6 ? sz * f : nz;
+      for (const [sg, o] of [[1, R2[i]], [-1, L2[i]]]) kept.push(positive(toPath([v, [v[0] + sg * nx * o, v[1] + sg * nz * o], [v[0] + sg * mx * o, v[1] + sg * mz * o], [v[0] + sg * b[0] * o, v[1] + sg * b[1] * o]])));
+    }
+    e.pull = { d, s, at, l, r };
+    e.gives = minus(band([toPath(e.pts)], h + 1, true), union(kept));
+    m2 += area(meet(meet(e.gives, band([toPath(e.pts)], h, true)), [rect(box)]));
+  }
+  return m2;
+}
+// What's behind some walls' stretches seen from a point p (a junction's, for its corner), from FACE
+// short of each to R past it.
+function behind(p, segs, R) {
+  const out = [];
+  for (const [ax, az, bx, bz] of segs) {
+    const ends = [[ax, az], [bx, bz]].map((q) => { const d = dist(p, q), u = [(q[0] - p[0]) / (d || 1), (q[1] - p[1]) / (d || 1)]; return { d, near: [q[0] - u[0] * FACE, q[1] - u[1] * FACE], far: [q[0] + u[0] * R, q[1] + u[1] * R] }; });
+    if (ends.some((e) => e.d < 0.5)) continue;
+    out.push(positive(toPath([ends[0].near, ends[1].near, ends[1].far, ends[0].far])));
+  }
+  return out;
+}
+// A dead end's round end, where its street gives way to a wall: as wide as it is there.
+function capOf(e, i) {
+  const { d, l, r } = e.pull, k = i ? d.length - 1 : 0, [nx, nz] = rightOf(e.pts, i ? e.pts.length - 1 : 1), c = (r[k] - l[k]) / 2;
+  return circle([d[k][0] + nx * c, d[k][1] + nz * c], (l[k] + r[k]) / 2, 24);
+}
+// A street's edges' offsets to its left and its right at its point i: its half width, or where it
+// gives way to a wall.
+const widthAt = (e, i) => (e.pull ? [e.pull.l[e.pull.at[i]], e.pull.r[e.pull.at[i]]] : [e.w / 2, e.w / 2]);
+// Offsets eased: none more than EASE a metre past the next, so the lines painted on a street ease in
+// and out where it narrows.
+function ease(a, s) {
+  const o = Float64Array.from(a);
+  for (let i = 1; i < o.length; i++) o[i] = Math.min(o[i], o[i - 1] + EASE * (s[i] - s[i - 1]));
+  for (let i = o.length - 2; i >= 0; i--) o[i] = Math.min(o[i], o[i + 1] + EASE * (s[i + 1] - s[i]));
+  return o;
+}
+
 // ---- The paths (task 050) ----
 
 // Which takes the other's place where two paths overlap: a flight of steps over everything, then a
@@ -1000,6 +1302,9 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height =
 const PATH_ORDER = ['steps', 'cycleway', 'footway', 'path'];
 // A handrail's top over the steps' nosing, and how far in from the flight's side it runs.
 const RAIL = 0.9, RAIL_IN = 0.15;
+// How much of a path either side of its line a wall leaves it (task 052): one the map draws along the
+// line, or nearly, stands on it, and is cut there.
+const PATH_KEEP = 0.3;
 // How far out from a cycleway in a pavement the carriageway is looked for, and how much of the
 // cycleway's length has it there for it to be a lane beside the road.
 const LANE_GAP = 0.4, LANE = 0.5;
@@ -1073,14 +1378,22 @@ function stationOn(pts) {
 // the flight's); what the kerbed areas give way to (`taken`); `flush` and `lanes`; the handrails
 // { pts, ys, level }; and how many treads rise more than `step` over the one before (or the
 // foot's ground), and how many flights there are.
-function groundPaths(list, { U, kerbed, B, W, over, step = 0.3, levelName }) {
+function groundPaths(list, { U, kerbed, B, W, over, walled = null, boxPath = null, step = 0.3, levelName }) {
   const nearU = splitter(U), nearK = splitter(kerbed), nearB = splitter([...B, ...W]), nearO = splitter(over);
-  const out = [], taken = [], rails = [], stats = { flights: 0, treads: 0, steep: 0 };
-  // Cut back as everything is.
-  const cut = (A, p) => {
+  const out = [], taken = [], rails = [], stats = { flights: 0, treads: 0, steep: 0, behind: 0 };
+  // Cut back as everything is, and on the ground to the walls either side of its line (task 052),
+  // which open where it passes through them (walls.mjs).
+  const cut = (A, p, pts = p.pts) => {
     const b = boundsOfPaths(A), onGround = p.level === 0 || p.level === 3;
     let got = onGround ? minus(A, nearU(b)) : A;
     if (p.level === 0) got = minus(got, nearB(b));
+    if (onGround && walled) {
+      const dark = shade(sides(pts), walled, p.w / 2 + 0.3, PATH_KEEP);
+      if (dark.length) {
+        stats.behind += area(boxPath ? meet(meet(got, dark), boxPath) : meet(got, dark));
+        got = minus(got, dark);
+      }
+    }
     return onGround ? minus(got, nearO(b)) : got;
   };
 
@@ -1089,7 +1402,7 @@ function groundPaths(list, { U, kerbed, B, W, over, step = 0.3, levelName }) {
   for (const p of list.filter((q) => q.kind === 'steps' && q.flight)) {
     const f = p.flight, L = lengthOf(f.pts);
     if (L < 0.3) continue;
-    let F = cut(band([toPath(f.pts)], p.w / 2, true), p);
+    let F = cut(band([toPath(f.pts)], p.w / 2, true), p, f.pts);
     const fb = boundsOfPaths(F);
     F = minus(F, treads.filter((t) => boxesMeet(t.b, fb)).flatMap((t) => t.paths));
     if (!F.length) continue;
@@ -1283,8 +1596,9 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const deck = decks(), { heights } = levelHeights(lines, ground, height, heldGround(lines, ground, undefined, deck), deck);
   const nodes = onCarriageways(readCache('osm/street.json')).elements.filter((e) => e.type === 'node');
   const paths = pathLines(pathsOf(onCarriageways(readCache('osm/paths.json')), (x, z, m) => x >= box.x0 - m && x <= box.x1 + m && z >= box.z0 - m && z <= box.z1 + m), { ground, grid: height, deck, lines, heights, elev0: ELEV0 });
+  const walls = fs.existsSync(path.join(CACHE, 'walls.json')) ? readCache('walls.json').walls : [];
   const made = streetSurfaces({
-    lines, heights, elev0: ELEV0, height, nodes, box, paths,
+    lines, heights, elev0: ELEV0, height, nodes, box, paths, walls,
     buildings: world.buildings.map((b) => b.pts),
     squares: world.areas.filter((x) => x.kind === 'plaza').map((x) => x.pts),
     water: world.areas.filter((x) => x.kind === 'water').map((x) => x.pts),
@@ -1292,6 +1606,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const got = { ...made.cuts.get('box'), stats: made.stats }, s = got.stats;
   console.log(`${s.edges} edges, ${s.junctions} junctions, ${s.islands} islands, ${s.reservations} reservations, ${Math.round(s.slivers)} m² of slivers closed, ${Math.round(s.past)} m² of corners cut back past a deck's or a tunnel's end, in ${s.seconds} s`);
   console.log(`carriageways ${Object.entries(s.m2).filter(([k]) => k !== 'pavement').map(([k, v]) => `${k} ${Math.round(v)} m²`).join(', ')}; pavements ${Math.round(s.m2.pavement)} m²; kerbs ${s.km.kerb.toFixed(2)} km, ${s.km.dropped.toFixed(2)} km dropped`);
+  console.log(`walls: ${s.walls.streets} streets brought back to the map's walls in them, giving way ${Math.round(s.walls.given)} m² of carriageway; ${Math.round(s.walls.behind)} m² of pavement and ${Math.round(s.walls.paths)} m² of paths behind a wall taken off`);
   console.log(`${got.carriageways.length} carriageway pieces, ${got.pavements.length} pavements, ${got.kerbs.length} kerbs, ${got.markings.length} markings (${['lane', 'centre', 'zebra', 'stop'].map((k) => `${got.markings.filter((m) => m.kind === k).length} ${k}`).join(', ')})`);
   const ps = s.paths;
   console.log(`paths: ${got.paths.length} pieces, ${Object.entries(ps.m2).map(([k, v]) => `${k} ${Math.round(v)} m²`).join(', ')} (cycleways ${Math.round(ps.lanes)} m² beside the road, ${Math.round(ps.flush)} m² flush); ${ps.flights} flights in ${ps.treads} treads, ${ps.steep} rising over 0.3 m; ${got.handrails.length} handrails`);
@@ -1311,12 +1626,13 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     data[k] = c[0]; data[k + 1] = c[1]; data[k + 2] = c[2]; data[k + 3] = 255;
   }
   fs.writeFileSync(path.join(dir, 'ortho.jpg'), jpeg.default.encode({ data, width: w, height: h }, 82).data);
-  fs.writeFileSync(path.join(dir, 'index.html'), page(box, got));
+  fs.writeFileSync(path.join(dir, 'index.html'), page(box, got, walls.filter((w) => w.pts.some((q) => q[0] >= box.x0 - 20 && q[0] <= box.x1 + 20 && q[1] >= box.z0 - 20 && q[1] <= box.z1 + 20))));
   console.log(`${path.join(dir, 'index.html')}`);
 }
 
-// The page: the orthophoto, and over it the streets' surfaces, each kind on a layer of its own.
-function page(box, got) {
+// The page: the orthophoto, and over it the streets' surfaces, each kind on a layer of its own, and
+// the walls (task 052): the map's red, the LiDAR's orange, the hedges it found green, the gates blue.
+function page(box, got, walls = []) {
   const ring = (r) => 'M' + r.map(([x, z]) => `${x} ${z}`).join('L') + 'Z';
   const poly = (list, cls) => list.map((p) => `<path class="${cls}" d="${p.rings.map(ring).join('')}"/>`).join('');
   const line = (list, attrs) => list.map((l) => `<path ${attrs(l)} d="M${l.pts.map(([x, z]) => `${x} ${z}`).join('L')}"/>`).join('');
@@ -1339,6 +1655,7 @@ svg { width: 100vw; height: 100vh; display: block; cursor: grab; touch-action: n
 [class^="p-"] { fill-rule: evenodd; stroke: rgba(0,0,0,.35); stroke-width: .05; } .p-footway { fill: rgba(0,200,255,.55); } .p-path { fill: rgba(150,110,40,.6); }
 .p-cycleway { fill: rgba(230,40,40,.6); } .p-cycleway.raised { fill: rgba(255,140,0,.65); } .p-steps { fill: rgba(220,40,220,.6); } .l-bridge { stroke: #fff; stroke-width: .25; } .l-under { opacity: .5; }
 .rail { fill: none; stroke: #222; stroke-width: .12; }
+[class^="w-"] { fill: none; stroke-width: .25; stroke-linecap: round; } .w-osm { stroke: #ff2020; } .w-lidar { stroke: #ffa000; } .w-hedge { stroke: #30ff30; } .w-gate { stroke: #00b0ff; }
 </style></head><body>
 <svg id="v" viewBox="${box.x0} ${box.z0} ${W} ${H}">
 <image href="ortho.jpg" x="${box.x0}" y="${box.z0}" width="${W}" height="${H}" preserveAspectRatio="none"/>
@@ -1347,9 +1664,10 @@ svg { width: 100vw; height: 100vh; display: block; cursor: grab; touch-action: n
 <g id="paths">${['footway', 'path', 'cycleway', 'steps'].map((k) => got.paths.filter((p) => p.kind === k).map((p) => `<path class="p-${k}${p.raised ? ' raised' : ''} l-${p.level}" d="${p.rings.map(ring).join('')}"/>`).join('')).join('')}${line(got.handrails, () => 'class="rail"')}</g>
 <g id="kerbs">${line(got.kerbs, (k) => `class="kerb${k.h ? '' : ' dropped'}"`)}</g>
 <g id="markings">${line(got.markings, (m) => `class="${m.kind}" stroke-width="${m.w}"${m.dash ? ` stroke-dasharray="${m.dash.join(' ')}"` : ''}`)}</g>
+<g id="walls">${line(walls, (w) => `class="w-${w.kind === 'gate' || w.kind === 'bar' ? 'gate' : w.source === 'osm' ? 'osm' : w.kind === 'hedge' ? 'hedge' : 'lidar'}"`)}</g>
 </svg>
 <div class="panel"><b>As ruas como superfícies</b> (tarefa 033)<br>
-${[['carriageways', 'Faixas de rodagem'], ['pavements', 'Passeios, separadores e ilhas'], ['paths', 'Caminhos (azul), ciclovias (vermelho; laranja ao nível do passeio), escadas (magenta)'], ['kerbs', 'Lancis (laranja: rebaixados)'], ['markings', 'Marcas na estrada']].map(([id, t]) => `<label><input type="checkbox" checked data-g="${id}"> ${t}</label>`).join('')}
+${[['carriageways', 'Faixas de rodagem'], ['pavements', 'Passeios, separadores e ilhas'], ['paths', 'Caminhos (azul), ciclovias (vermelho; laranja ao nível do passeio), escadas (magenta)'], ['kerbs', 'Lancis (laranja: rebaixados)'], ['markings', 'Marcas na estrada'], ['walls', 'Muros (vermelho: do mapa; laranja: do LiDAR; verde: sebes do LiDAR; azul: portões)']].map(([id, t]) => `<label><input type="checkbox" checked data-g="${id}"> ${t}</label>`).join('')}
 <small>Roda para fazer zoom, arrasta para mover.</small></div>
 <div class="credit">Ruas: © OpenStreetMap contributors (ODbL). Ortofoto 2025: informação geográfica cedida pela Direção-Geral do Território (CC BY 4.0).</div>
 <script>

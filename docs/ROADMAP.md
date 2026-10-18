@@ -45,7 +45,8 @@ in a few sheets, so the scorecard holds about 100 more rounds (062, decision 045
 - **064** The rounds made while the scorecard was out of reach go up, with Claude's marks: 052's,
   063's and 042's, made by sessions whose account can't open "Braga real" (2026-10-18). Ready in
   `.cache/scorecard/` with `tools/scorecard.mjs`; it waits for Claude Code signed in to the
-  scorecard's account. 042's round is to be shot again first, on 063's renderer.
+  scorecard's account. 042's round was shot again on 063's renderer. A dry run on 2026-10-18 with
+  all three: 14 files to add in one publish, 109 beside the page after.
 
 ## Phase 2 · The shape: the ground, the streets and the buildings where they really are
 

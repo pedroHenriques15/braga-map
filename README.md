@@ -264,6 +264,8 @@ node tools/buildings.mjs  # the buildings whose facades to look at (refs/buildin
 node tools/textures.mjs  # the photo textures refs/textures.json asks for: world/textures/ (about a minute)
 node tools/cover.mjs   # what the ground is every 50 cm under the Volta dos Amigos' box, and the cars parked: world/cover/ (3 minutes, 10 the first time)
 node tools/round.mjs <round> --label "…" [--shots <party-kart>/shots]  # a round of party-kart's shots, in a few sheets, for the scorecard
+node tools/scorecard.mjs files <listing>      # what the scorecard lacks of .cache/scorecard/, in publishes inside their limits
+node tools/scorecard.mjs marks <claude.json>  # Claude's waiting marks added to its document, to set pinned to its version
 ```
 
 They need Node 22.18 or later. Run them in that order: `track.mjs` and `world.mjs` read the
@@ -601,7 +603,18 @@ streets; when a track moves enough to change the edge, run the three again until
   is that round's (`[w, h, round]`, task 057) and isn't in a sheet twice. A round goes up by
   publishing the page again with its sheets and `data/rounds.json` beside it; the files already up
   stay. `--pack` packs the rounds prepared before 062, a file a shot, and prints those files as the
-  ones to take off the page.
+  ones to take off the page; with none left, it writes the lists again from `refs/rounds.json`.
+- `scorecard.mjs` is for rounds made where the scorecard can't be published (task 064): each waits
+  in `.cache/scorecard/`, its sheets by `round.mjs` and Claude's marks in
+  `marks/<round>.json`, `{ <place>: { s, c, at } }`. `files <listing>` reads a listing of the
+  page's published files and writes `.cache/scorecard/publish.json`: what to add (every sheet and
+  photo the page needs that isn't up, and the two lists), what to take off, and the `files` maps to
+  publish with (`root: .cache/scorecard`), the files coming off first, each publish within 255
+  files and 64 MB and the version within 511. `marks <claude.json>` takes `scores/claude` as the
+  page's database gives it and writes `marks/next.json`, the document with the waiting rounds it
+  hasn't got added: each a round of `refs/rounds.json`, every place it shot marked 1 to 5 and
+  signed "(Claude)", after the round was shot. Both stop when `.cache/scorecard/data/rounds.json`
+  isn't `refs/rounds.json`'s (`round.mjs --pack` on main writes it again).
 
 ### How a track is planned
 

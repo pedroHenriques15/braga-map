@@ -70,3 +70,8 @@ Steps:
 
 - Found by task 058 (2026-10-17), moving `liberdade`'s and `lobato-crossing`'s cameras off the
   carriageway onto the pavement their photos were taken from: the tiles have it as an island.
+- From task 052 (2026-10-18, braga-map 1.24.0): it isn't an island any more. A street beside it gave
+  way to the map's wall along its edge, which opened the carriageways' ring round it, so it's drawn as
+  pavement 3.2 m out from the kerbs (calçada under `liberdade`'s camera, left of the cycle lane) and
+  bare ground beyond (grey right of the lane, where the photo has calçada to the hedge). Check "Today"
+  against it before starting.

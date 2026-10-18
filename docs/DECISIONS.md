@@ -1298,7 +1298,16 @@ the garden behind. In Braga a street ends at its walls. The owner chose (task 05
 - **The LiDAR's walls on a carriageway are still cut** (1.40 km of its retaining walls, mostly the
   steps in the ground at a carriageway's edge it took for walls): the task gave the map's.
 
-What it did, braga-map 1.24.0: …
+What it did, braga-map 1.24.0: 181 streets brought back to the map's walls, giving way 3,204 m² of
+carriageway; 39,800 m² of pavement and 700 m² of paths behind a wall taken off. Of the 17.4 km of
+walls a pavement stops at that face a street, 0.16 km (0.9%) have pavement past them, where 40.8% had
+on 1.22.0 (at a kerb's sharp outside corner, and in the squares); of the map's 29.7 km of barriers,
+0.43 km (1.4%) are still cut on a carriageway, where 3.50 km were (12%): mostly where a median's wall
+runs straight at a junction's point, so its corner sees it end on, then across a street, and 10 m
+where the lanes don't fit. One viewpoint dropped (`joao-xxi`, the owner's answer) and one camera moved
+onto its lane (`robert-smith-picoto`, decision 041). The race the same line, its road 14 m² smaller
+and its barriers split where a median's wall stands; in party-kart the autopilot's laps 302.4 and
+300.3 s with no respawn, eight bots within 4.6 s, and a lap in the browser with three bots 310.0 s.
 
 The alternatives were the task's: the wall cut away as before, or kept standing in the street; and
 for the LiDAR's walls, all of them stopping a pavement, or only the map's and its retaining walls;

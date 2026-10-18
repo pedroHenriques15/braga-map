@@ -1394,3 +1394,86 @@ names, one on each wall, as Braga's do.
 The alternatives were the task's: the game working the corners out from the names on the lines
 (every game again, from lines cut at the tiles' edges, without the map's nodes), and the names drawn
 into atlases of plates.
+
+## 049 · The ground under a street is the street's: a 2 m square takes only the carriageway it reaches
+
+*2026-10-18 · task 045 · after decision 008 (the LiDAR's ground) and task 043's held ends*
+
+The tiles hold the ground every 2 m, each point the mean of the LiDAR's over a 2 m square, and a
+street on the ground takes that height. Within 2 to 4 m of a wall, a cutting or a bank, the squares
+took its top into the street, which rode up it, or rippled along it where the wall ran across the
+grid (the Avenida João XXI over its junction), and six tunnels' mouths had a cutting's wall in their
+first 2 m. Over the open world's area, a square that reaches a street's carriageway is now the mean of
+the part on it alone (`lines.mjs`'s `streetBands`, `terrain.mjs`'s `mean`):
+
+- **Of the carriageway, only the street's own surface:** every metre along it, the median of the
+  ground over its middle half, carried across at that half's slope (as `streetBumps` has it, but
+  never more than 10% across). What's more than 30 cm off it isn't the street: a wall's top the
+  carriageway's width reaches where the map's line is a metre off the street's middle, the wall's
+  face smeared over the LiDAR's last half metre, the cutting or the island over a tunnel's mouth. A
+  square with none of the street's surface in it keeps the mean of all of it, so a wall stays where
+  it is.
+- **Two streets at different heights side by side** (a cutting's street and a lane along its top a
+  metre away, at the João XXI and the Liberdade's underpass): each point holds the one whose surface
+  its own ground is within a metre of, the side of the wall it's on, so the ground steps between
+  them at the wall, not in either street; on the wall's face, the one whose middle is nearest.
+- **Not at a deck's end:** a square that reaches the ground task 043 holds there keeps it as it is,
+  for a car that feels the land's slope over its length. Nor where the map tags an area's outline as
+  a street (`area:highway`, the Rotunda Santos da Cunha's island): it's no carriageway.
+
+What it came to: along the area's streets every 2 m, the tiles' ground more than 15 cm off the
+LiDAR's at 110 of 43,139 points (355 before), 94 of them where a wall or a cutting's edge runs
+within 1.5 m of the street's middle; the six walled mouths within 7 cm of their street's slope.
+A 2 m grid still can't hold a lane on a cutting's top and the street at its foot a metre apart both
+to their edges: the step between them is a metre either side of the wall, and a car that tilts by
+the land 1.5 m beside it feels it (party-kart's race hops 0.4 to 0.7 s on the João XXI's upper lane:
+task 066).
+
+The alternatives, each measured on the walled mouths, the streets' middles and party-kart's drives:
+the nearest street's middle for each point (the step moved off the wall, onto the lane the race
+drives at the Liberdade), the higher street for each point (the roundabout over a mouth took it),
+and the old mean wherever two levels meet (two walled mouths stayed off). A finer grid, or the
+streets on the ground carrying their own heights as the decks do, would hold both edges; neither is
+needed for the streets' middles.
+
+## 050 · A roundabout's ring is where the LiDAR measured it, and its island is what the ground is there
+
+*2026-10-18 · task 014 · as the streets' carriageways (decision 039)*
+
+Every roundabout's ring was a band round OpenStreetMap's line for it, at the width its kind of street
+usually is, and its island the hole the band left (task 033): task 026 measured almost no ring, as a
+ring is all junctions and it takes no station near one. At São João da Ponte the island was 8.6 m
+round where the LiDAR has 5.9, and the ring 6.5 m wide where it's 10.3. The owner chose to measure
+the rings (task 014's answers, 2026-10-18), to draw each island in what the ground is there, and to
+paint the give-way markings at their entries.
+
+- **Measured as a street is, out from the island** (`tools/roundabouts.mjs`): every 2 m round the
+  ring, 026's cross-section; the island's kerb all round, the outer kerb but in an arm's mouth. A
+  round island (most) is one circle fitted to its kerb, and its ring that circle half its width out;
+  an oval, or a ring round a square, moves out by the middle measured round it. The width is the one
+  measured, where five or more stations saw both kerbs; else the ring runs from the island's kerb to
+  the map's outer edge. Of the open world's box's 20 rings, 17 moved (15 round), 16 at a width
+  measured. Three stay as the map has them: the Praça Paulo Vidal's (cars parked along its island) and
+  the Rotunda Lions Clube's, too little of their islands seen, and a ring a deck passes over, the
+  Rotunda Santos da Cunha's under its viaduct: its kerb is seen only between the piers, and its ring
+  widened reached the tunnel's mouth beside it, which task 045 holds to its own street. Its moves are laid over `carriageways.json`'s, a file of its own
+  (`.cache/roundabouts.json`), so every reader of the streets has them; and a corner's rounding never
+  fills a roundabout's island, however far it reaches (it filled one on the route, at (-109, 1678)).
+- **The island is the ground's:** a roundabout's island is `round` in the tiles, the cover classes it
+  from the LiDAR and the orthophoto as any ground, not as paving (where it echoes as grass, it's
+  grass: a lawn the summer of 2025 dried reads as paving in its photo), and party-kart draws it in the
+  land's own material, its grass, flower beds and paving at the kerb's height; its grass in a
+  watered lawn's green in the same photo, as the game's March has it, not the summer's (the owner's
+  answer, 2026-10-18; the city's other lawns are task 068's).
+- **What stands in it is the map's:** OpenStreetMap's statues, fountains and monuments in an island
+  (`fetch.mjs art`), each as tall as DGT's point cloud has it, all its points but the ground's (São
+  João da Ponte's São João Baptista, 4.3 m, is classed as noise there): two statues, São João Baptista
+  and the Comendador Santos da Cunha. The signs on the islands are street furniture (task 020).
+- **The give-way markings** at every entry, where a street runs into the ring the way its traffic
+  goes: the dashed line across the side coming in, at the ring's edge, and a triangle's outline in
+  each lane behind it, their sizes from the orthophoto and the photos (docs/STREET-DETAILS.md): 73
+  lines and 80 triangles in the open world's tiles.
+
+The alternatives were the task's: checking the islands against the photos and keeping the map's
+rings, and the markings left to task 018. The race's road takes the rings measured: party-kart's
+peer prefix moves.

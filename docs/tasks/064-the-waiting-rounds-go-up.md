@@ -16,7 +16,7 @@ From the afternoon of 2026-10-18, Claude Code on the owner's machine has been si
 that can't open the scorecard "Braga real" (https://claude.ai/artifact/MsA5VZHSqxfD3e4BDYrYPs): the
 Artifact tool doesn't find it, and its database lets a session read but not write. Tasks 052, 063
 and 042 made their rounds anyway, and they wait in `.cache/scorecard/`. Until they go up, the
-owner and the friends mark "As árvores", three rounds behind the game.
+owner and the friends mark "As árvores", four rounds behind the game.
 
 ## What
 
@@ -29,6 +29,8 @@ round. Waiting in `.cache/scorecard/` (shared by every worktree through its `.ca
 | `2026-10-18-after052` "Até aos muros" | 052 | `rounds/2026-10-18-after052-1…4.jpg` | 2.88 over 33, none moved |
 | `2026-10-18-after063` "Os troncos" | 063 | `rounds/2026-10-18-after063-1…4.jpg` | 2.94, `capela-sao-joao` 3→4, `altice-forum` 2→3 |
 | `2026-10-18-after042` "As placas" | 042 | `rounds/2026-10-18-after042-1…4.jpg` | 2.94 over 33, none moved: shot again with 063's renderer (step 2, done) |
+| `2026-10-18-after045` "O chão das ruas" | 045 | `rounds/2026-10-18-after045-1…4.jpg` | 2.94 over 33, none moved (against "As placas"): shot on party-kart `b38c87e`, braga-map 1.27.0 |
+| `2026-10-18-after014` "As rotundas" | 014 | `rounds/2026-10-18-after014-1…4.jpg` | 2.94 over 33, none moved (against "O chão das ruas": São João da Ponte's statue and Falperra's give-way markings, its island's lawn darker than the photo's): shot on party-kart `613db39` with braga-map 1.28.0 |
 
 Claude's marks for each are in `.cache/scorecard/marks/<round>.json`, `{ <place>: { s, c, at } }`,
 taken from the files the sessions left (`claude-marks-052.json`, `-063.json`, `-042.json`: each the
@@ -103,3 +105,7 @@ None.
 - The page with 052's round, served from `.cache/scorecard`, checked in a browser at 1280 and 390 px:
   33 cards, every picture loading, `joao-xxi` in the rounds before. That check found the summary
   waiting for a mark on `joao-xxi` in the open round, fixed on main (`9e1a3aa`).
+- 045's round, "O chão das ruas" (2026-10-18), made after 042's landed and shot on party-kart's main with
+  braga-map 1.27.0: four sheets more to publish (18 files with the other three's, by the dry run's
+  count), and its marks in `marks/2026-10-18-after045.json` alone (no whole-document file), checked
+  against `merge`'s rules: every place marked, after the round was made, each signed.

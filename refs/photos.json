@@ -9733,6 +9733,76 @@
         "heading": null
       },
       "notes": "Generic: Portugal's regulation drawing, not a photo of Braga. Commons gives no position: a close-up, of a surface or an object."
+    },
+    {
+      "id": "roundabout-way-235828253-1",
+      "what": "roundabout:way/235828253",
+      "use": "reference",
+      "heading": 74.4,
+      "pitch": -8.2,
+      "fov": 110,
+      "photo": {
+        "source": "mapillary",
+        "id": "1035845168525108",
+        "url": "https://www.mapillary.com/app/?pKey=1035845168525108",
+        "author": "waldyrious",
+        "licence": "CC BY-SA 4.0",
+        "date": "2025-09-29",
+        "lat": 41.539403,
+        "lon": -8.433722,
+        "heading": 163.8,
+        "pitch": -1.5,
+        "roll": -3.6,
+        "pano": true
+      },
+      "notes": "The ring is ways 235828253, 1026531955, 1026531954, 1026531953, 235828260, 235828256, 1081221719, 235828257; its island and what stands in it, for task 014."
+    },
+    {
+      "id": "roundabout-way-235828253-2",
+      "what": "roundabout:way/235828253",
+      "use": "reference",
+      "heading": 278.6,
+      "pitch": -9.3,
+      "fov": 110,
+      "photo": {
+        "source": "mapillary",
+        "id": "4117648825148402",
+        "url": "https://www.mapillary.com/app/?pKey=4117648825148402",
+        "author": "waldyrious",
+        "licence": "CC BY-SA 4.0",
+        "date": "2025-09-29",
+        "lat": 41.539417,
+        "lon": -8.433477,
+        "heading": 32.1,
+        "pitch": 1.3,
+        "roll": 2.6,
+        "pano": true
+      },
+      "notes": "The ring is ways 235828253, 1026531955, 1026531954, 1026531953, 235828260, 235828256, 1081221719, 235828257; its island and what stands in it, for task 014."
+    },
+    {
+      "id": "roundabout-way-239601643-3",
+      "what": "roundabout:way/239601643",
+      "name": "Largo de São João da Ponte",
+      "use": "reference",
+      "heading": 159.8,
+      "pitch": -4,
+      "fov": 83,
+      "photo": {
+        "source": "mapillary",
+        "id": "901028272728191",
+        "url": "https://www.mapillary.com/app/?pKey=901028272728191",
+        "author": "o_andras",
+        "licence": "CC BY-SA 4.0",
+        "date": "2026-03-21",
+        "lat": 41.542228,
+        "lon": -8.417756,
+        "heading": 261.8,
+        "pitch": 18.8,
+        "roll": 8.2,
+        "pano": true
+      },
+      "notes": "The ring is ways 239601643, 239601646, 246864637, 246864626, 239601644; its island and what stands in it, for task 014."
     }
   ]
 }

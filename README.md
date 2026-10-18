@@ -68,8 +68,12 @@ map().groundKinds; // the kinds it says, each with its photo: [{ kind, texture: 
   ground, so the ground is the street's own surface; a bridge's deck isn't, so under a bridge it's
   what's below. Where the LiDAR took a tree's crown or a roof for ground over a street in the open
   world's area, the street's height is held under it, and a crown or roof more than 5 m over it is
-  taken off beside it too (`lines.mjs`'s `streetBumps`, task 026: three today). A building stands
-  on the ground at its lowest corner (`y`), and its height is from there.
+  taken off beside it too (`lines.mjs`'s `streetBumps`, task 026: three today). And there, where a
+  2 m point's square reaches a street's carriageway, it's the mean of the part on the street alone,
+  not a wall, a cutting or a bank beside it (`streetBands`, task 045, decision 049): a street's middle
+  is within 15 cm of the LiDAR's at 99.75% of the area's points, and where two streets at different
+  heights run a metre apart, the ground steps between them at the wall. A building stands on the
+  ground at its lowest corner (`y`), and its height is from there.
 - Each street says its level (task 012): on the ground; on a bridge, with its deck's height at
   each point (`heights`); in a tunnel, under the ground, with its road's; or under something at the
   ground's own level (a building over it, or a deck the map draws as a tunnel under a bridge). A
@@ -94,12 +98,15 @@ map().groundKinds; // the kinds it says, each with its photo: [{ kind, texture: 
   buildings, or a wall it puts along the edge).
 - Round the open world's area (in the box round it, `OPEN_BOX` in `tools/sections.mjs`), every
   street is a surface too (task 033, `world.streets`): its carriageway at its real width, joined to
-  the others where they meet, each corner rounded as a kerb turns it, a roundabout round its island,
+  the others where they meet, each corner rounded as a kerb turns it, a roundabout round its island
+  (its ring and island where DGT's LiDAR measured them, task 014: `round`, for a game to draw in what
+  the ground is there),
   and brought back to a wall of the map's that stands in it, no narrower than its lanes (task 052);
   the kerbs (dropped at the crossings); the pavements behind them, up to the buildings and the walls;
   the central
   reservations; and the lines painted on them, from what the map says (lanes, the line between the
-  two ways, zebras, stop lines at traffic lights). Each piece is cut to its tile, at its street's
+  two ways, zebras, stop lines at traffic lights, and at each roundabout's entry the give-way line
+  and a triangle in each lane behind it, task 014). Each piece is cut to its tile, at its street's
   level, with its heights off the ground. `index.d.ts` says what each part is.
 - So is every footway, path, cycleway and flight of steps the map has there (task 050,
   `world.streets.paths`), but the pavements, crossings and islands it draws as footways, which are
@@ -252,6 +259,7 @@ node tools/fetch.mjs microsoft    # Microsoft's building footprints over the map
 node tools/roofs.mjs   # every building's height and roof, and those the map lacks: .cache/roofs.json (10 minutes the first time)
 node tools/decks.mjs   # the bridges' decks DGT's point cloud saw: .cache/decks.json (10 minutes)
 node tools/carriageways.mjs  # where each street's carriageway really is, and the moves that put the map's lines there: .cache/carriageways.json (20 s, 4 minutes the first time)
+node tools/roundabouts.mjs   # where each roundabout's ring and island really are, and the statues in them: .cache/roundabouts.json (a minute; --check draws each over the orthophoto)
 node tools/walls.mjs   # the walls, fences, railings, hedges and gates round the open world's area: .cache/walls.json (2 minutes, and 3 more the first time)
 node tools/sights.mjs  # the Estádio 1.º de Maio's stands and floodlights, the chapels' and shrines' tops, from the point cloud: .cache/sights.json (two minutes)
 node tools/trees.mjs   # every tree the LiDAR sees, its height, crown, foot and kind: .cache/trees.json (40 s, 25 minutes the first time; TREES=<name>.json writes .cache/<name>.json, which world.mjs then reads given the same)
@@ -286,7 +294,7 @@ and `build.mjs` and `world.mjs` take the buildings'
 heights and roofs from `roofs.mjs`'s measurements, `world.mjs` the trees from `trees.mjs` (run it after
 `fetch.mjs trees`), and the walls from `walls.mjs` (run it
 after `roofs.mjs`, `npm run open` and `fetch.mjs barriers`), and the streets on their carriageways from `carriageways.mjs`
-(run it before `walls.mjs`, `npm run open`, `npm run shooter`, `npm run world` and `npm run tracks`, which
+and the roundabouts' rings from `roundabouts.mjs` (run them, in that order, before `walls.mjs`, `npm run open`, `npm run shooter`, `npm run world` and `npm run tracks`, which
 all take the streets moved, and `cover.mjs` again after `world.mjs`), and the facades from `refs/buildings.json` and the shops from `fetch.mjs shops`. All of them need the LiDAR. `track.mjs` also reads
 the streets the world draws (`world.streets`, which don't depend on a track) for the race's road, so
 a new track's area needs `npm run open` and `npm run world` before `npm run tracks` plans it on the
@@ -300,7 +308,7 @@ streets; when a track moves enough to change the edge, run the three again until
   trees, the crossings, traffic lights and bus stops, and the turn
   restrictions) and elevation tiles, plus coarser ones 16 km round for the horizon. The public
   Overpass server is often busy: it waits and tries again. `node tools/fetch.mjs trees` fetches
-  only what's named (`base`, `paths`, `barriers`, `buildings`, `admin`, `pois`, `shops`, `trees`, `street`,
+  only what's named (`base`, `paths`, `barriers`, `buildings`, `admin`, `pois`, `art`, `shops`, `trees`, `street`,
   `restrictions`, `dem`, `horizon`). A
   new fetch brings the map's changes since, so the tracks may come out different: run the games'
   tests after. `node tools/fetch.mjs microsoft` gets Microsoft's building footprints (found by
@@ -393,6 +401,27 @@ streets; when a track moves enough to change the edge, run the three again until
   lines (red, their edges dashed), the edges measured (cyan to a way's left, yellow to its right)
   and the lines moved (green), into `.cache/carriageways/`. `test/carriageways.test.js` checks it
   on made-up cross-sections and streets, and on the open world's streets where they were measured.
+- `roundabouts.mjs` measures each roundabout's ring in the open world's box (task 014), which
+  `carriageways.mjs` leaves (a ring is all junctions): every 2 m round it, the same cross-section
+  (`across`), out from the island: its island's kerb all round, its outer kerb but in an arm's mouth
+  (within the arm's half width and 1.5 m of its line). Its width is the median of those measured both
+  sides (within 1.5 m of their median), where 5 or more were; else from the island's kerb to the
+  map's outer edge. An island is round where three fifths of its kerb seen is within 30 cm of one
+  circle (by least squares, fitted again without the points furthest off): its ring is then that
+  circle, half its width out; otherwise (an oval, a ring round a square) its line moves out by the
+  middle measured round it, as `carriageways.mjs` moves a street. A ring with under three fifths of
+  its island seen (cars parked along it, the Praça Paulo Vidal's) stays as the map has it, and so does
+  one a deck passes over (the Rotunda Santos da Cunha's, under its viaduct): its kerb is seen only
+  between the deck's piers. Its ways
+  take its width, and each arm's end eases onto it over 20 m. `lines.mjs`'s `carriagewayMoves` lays
+  these moves over `carriageways.json`'s, so every reader of the streets has them. And what stands
+  in each island: OpenStreetMap's artworks, fountains and monuments in it (`fetch.mjs art`), each
+  where DGT's point cloud has it and as tall (all its points but the ground's: a thin statue's are
+  classed as noise), for `world.mjs`'s sights. It prints each ring, what was seen of it and how far
+  its island is off the map's; `--check` draws each over the orthophoto into `.cache/roundabouts/`
+  (the map's lines red, the island's kerb cyan, the outer kerb yellow, the ring moved green).
+  `test/roundabouts.test.js` checks it on a made-up ring, and on the open world's: each island in
+  the tiles where its kerb was measured, a give-way line at every entry, the statues.
 - `walls.mjs` makes the walls, fences, railings, hedges and gates round the open world's area (task
   013), for `world.mjs`. It boils each tile of DGT's point cloud there down once to 50 cm cells on the
   terrain model's grid (`.cache/dgt/walls/`): the highest point off the terrain, and the highest under
@@ -476,7 +505,7 @@ streets; when a track moves enough to change the edge, run the three again until
   those on the ground joined into one, each bridge and each tunnel its own; each corner where
   streets meet, or a street turns, rounded at a kerb's radius (3–10 m, by the smaller street) by
   closing the carriageways round it, which leaves a roundabout's island, or another they enclose,
-  open; the surface (asphalt, setts, paving, dirt) the bigger street's where two meet. Then what's
+  open (a roundabout's whole, however far it reaches past the corner, task 014); the surface (asphalt, setts, paving, dirt) the bigger street's where two meet. Then what's
   beside them: islands (holes with nothing built on them, under 600 m², or a roundabout's); central
   reservations (between two one-way carriageways running opposite ways up to 14 m apart, for 30 m
   or more); and the pavements, 3.2 m out from the kerb or to the buildings and the water, and none
@@ -495,7 +524,10 @@ streets; when a track moves enough to change the edge, run the three again until
   lines span it; two carriageways brought back to a wall between them leave its gap as an island. The kerbs wherever a pavement, reservation
   or island is behind the carriageway, 15 cm high, dropped at the crossings; the lines from
   `lanesOf` (each lane at least 2.5 m), stopping at the junctions and short of the zebras; a zebra
-  at every crossing the map has, 4 m deep, but the unmarked ones. Everything to the nearest 10 cm,
+  at every crossing the map has, 4 m deep, but the unmarked ones; and at each roundabout's entry, where a
+  street runs into the ring the way its traffic goes, a give-way line across the side coming in, at
+  the ring's edge, and a triangle behind it in each lane, but none on a zebra (task 014, their sizes
+  in [docs/STREET-DETAILS.md](docs/STREET-DETAILS.md)). Everything to the nearest 10 cm,
   the carriageways snap-rounded together, so two pieces that meet share their points there and no
   crack opens between them; and before that, no sliver (task 048, decision 035): a notch into the
   carriageways under a metre wide closed, a gap between two under 0.3 m wide filled, and an island

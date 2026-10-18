@@ -9,7 +9,8 @@
 // - the orthophoto (25 cm) and its near-infrared: NDVI tells plants from paint, and the colour tells bare
 //   soil and gravel from paving, where the photo isn't in a shadow, under a car or a tree;
 // - the world's buildings (a roof), the map's water, and the streets' own surfaces where the world draws
-//   them (round the open world's area), which every game draws over the ground anyway.
+//   them (round the open world's area), which every game draws over the ground anyway; but not a
+//   roundabout's island, which a game draws in what the ground is there (task 014).
 //
 // Where the photo can't be read (a shadow, a car, a tree's crown), the ground takes what the nearest
 // ground like it is (the laser says how alike). Then each kind's own colour, from the photo where it can
@@ -55,6 +56,10 @@ const [ASPHALT, PAVING, SETTS, GRASS, SOIL, GRAVEL, WATER, ROOF] = KINDS.keys();
 export const CROWN = 8; // a tree's crown over it
 const UNSEEN = 15, UNDER = 14; // while classing: light ground the photo can't say more of, and the ground under a crown
 const S = 0.5, N = 500 / S; // a cell, and a tile's cells a side
+// In a roundabout's island (task 014), ground that echoes this much (thousands) is a lawn, whatever the
+// photo's near-infrared says: one the summer dried reads as paving in the 2025 orthophoto, but its echo
+// is a lawn's (14 to 26 in the route's islands; a pavement's 7 to 12).
+const LAWN = 13;
 const LEVELS = { high: 1, medium: 2, low: 4 }; // cells (of 50 cm) a class cell, at each level
 const COLOUR = { high: 8, medium: 10, low: 20 }; // and cells a side a kind's colour square, at each
 const OUT = path.join(ROOT, 'world', 'cover');
@@ -247,13 +252,16 @@ async function classify(id) {
   for (const a of world.areas) if (a.kind === 'water') fill([a.pts, ...(a.holes ?? [])], fixedKind, WATER, box);
   const SURFACE = { asphalt: ASPHALT, setts: SETTS, paving: PAVING, dirt: SOIL, calcada: PAVING, concrete: PAVING, gravel: GRAVEL, metal: PAVING, wood: PAVING };
   for (const p of world.streets.paths) if (p.level === 'ground' || p.level === 'under') fill(p.rings, fixedKind, SURFACE[p.surface] ?? PAVING, box);
-  for (const p of world.streets.pavements) if (p.level === 'ground') fill(p.rings, fixedKind, PAVING, box);
+  // But a roundabout's island, which a game draws in what the ground is there (task 014).
+  for (const p of world.streets.pavements) if (p.level === 'ground' && !p.round) fill(p.rings, fixedKind, PAVING, box);
   for (const c of world.streets.carriageways) if (c.level === 'ground') fill(c.rings, fixedKind, SURFACE[c.surface] ?? ASPHALT, box);
   for (const b of world.buildings) fill([b.pts], fixedKind, ROOF, box);
   // Where the map has woods, parks, lawns and fields: there, ground that echoes weakly is the floor of a
   // wood in its shade, not asphalt (the map's own paths and streets there stay what they are).
   const wooded = new Uint8Array(M);
   for (const a of world.areas) if (['forest', 'scrub', 'park', 'grass', 'farm'].includes(a.kind)) fill([a.pts, ...a.holes], wooded, 1, box);
+  const ringed = new Uint8Array(M);
+  for (const p of world.streets.pavements) if (p.level === 'ground' && p.round) fill(p.rings, ringed, 1, box);
 
   // The laser's intensity off the ground, the mean over 1.5 m round each cell weighted by its points,
   // and where there are none (under a car, a dense crown, a wall), the nearest there are.
@@ -289,6 +297,8 @@ async function classify(id) {
     // a kiosk or a shed it leaves out, and the ground is what's round it; past the map's edge, where the
     // world has no buildings, a building.
     if (over > 2.5 && !lid.tree[k]) { cls[k] = x >= EXT.x0 && x <= EXT.x1 && z >= EXT.z0 && z <= EXT.z1 ? UNDER : ROOF; continue; }
+    // A roundabout's lawn, dry or not.
+    if (ringed[k] && I[k] > LAWN) { cls[k] = GRASS; continue; }
     // Plants on the ground: green in the near-infrared, and as the laser sees grass. Green with a weak
     // echo is a crown leaning over something in the photo (a street has the street's echo), or plants in
     // a wood's shade: what's round it.

@@ -5,7 +5,7 @@
 // its near-infrared (`nir`, about 110 MB) and the COS2025 land use (`cos`).
 //
 // node tools/fetch.mjs            everything but DGT's
-// node tools/fetch.mjs trees      only what's named (base, paths, barriers, buildings, admin, pois, shops, trees,
+// node tools/fetch.mjs trees      only what's named (base, paths, barriers, buildings, admin, pois, art, shops, trees,
 //                                 street, restrictions, dem, horizon, lidar, ortho, cos)
 import fs from 'node:fs';
 import path from 'node:path';
@@ -108,6 +108,14 @@ out center tags;`,
   nwr["tourism"~"^(attraction|museum|viewpoint|artwork)$"]["name"];
   nwr["historic"]["name"];
   nwr["name"~"Sameiro|Bom Jesus|Picoto|Sete Fontes|Theatro Circo|Avenida Central|Praça da República|Santa Bárbara|Biscainhos|Alto da Cividade|Fonte do Ídolo|Altice Forum|1.º de Maio|Parque da Ponte"];
+);
+out center tags;`,
+  // What stands in a square or a roundabout's island, named or not: statues and other artworks,
+  // fountains, monuments and memorials, obelisks and crosses (roundabouts.mjs, task 014).
+  art: `[out:json][timeout:120][bbox:${BOX}];
+(
+  nwr["tourism"="artwork"]; nwr["amenity"="fountain"];
+  nwr["historic"~"^(memorial|monument|statue)$"]; nwr["man_made"~"^(obelisk|cross)$"];
 );
 out center tags;`,
 };

@@ -118,9 +118,11 @@ const NONE = 63;
 // A street's level (tools/world.mjs's LEVEL).
 const LEVELS = ['ground', 'bridge', 'tunnel', 'under'];
 // What each piece of a street's surfaces is (tools/streets.mjs's STREET): the carriageways' surfaces,
-// what's beside them, the kerbs and the markings.
-const STREET = ['asphalt', 'setts', 'paving', 'dirt', 'pavement', 'reservation', 'island', 'kerb', 'lane', 'centre', 'zebra', 'stop'];
-const DASH = [3, 4];
+// what's beside them, the kerbs and the markings; a roundabout's island its own (task 014), read as an
+// island that's round. And a marking's dashes: none, the lanes', or a give-way line's.
+const STREET = ['asphalt', 'setts', 'paving', 'dirt', 'pavement', 'reservation', 'island', 'kerb', 'lane', 'centre', 'zebra', 'stop', 'giveway', 'yield', 'roundabout'];
+const DASHES = [null, [3, 4], [0.5, 0.5]];
+const ROUND = STREET.indexOf('roundabout');
 // What each path is, what it's paved with, and its level (tools/streets.mjs's PATH, PATH_SURFACES
 // and PATH_LEVELS).
 const PATH = ['footway', 'path', 'cycleway', 'steps'];
@@ -402,10 +404,11 @@ export async function loadWorld(area) {
       return pts;
     };
     for (let i = St.at; i < St.at + St.n; ) {
-      const kind = STREET[nums[i] & 15];
+      const code = nums[i] & 15;
+      const kind = code === ROUND ? 'island' : STREET[code];
       const level = LEVELS[nums[i] >> 4];
       const off = level !== 'ground';
-      if ((nums[i] & 15) <= 6) {
+      if (code <= 6 || code === ROUND) {
         const rings = [];
         let j = i + 2;
         for (let r = 0; r < nums[i + 1]; r++) {
@@ -413,14 +416,14 @@ export async function loadWorld(area) {
           rings.push(dm(j + 1, n));
           j += 1 + n * 2;
         }
-        const piece = (nums[i] & 15) <= 3 ? { surface: kind, level, rings } : { kind, level, rings };
+        const piece = code <= 3 ? { surface: kind, level, rings } : code === ROUND ? { kind, round: true, level, rings } : { kind, level, rings };
         if (off) piece.ys = rings.map((r) => r.map(() => nums[j++] / 10));
-        ((nums[i] & 15) <= 3 ? streets.carriageways : streets.pavements).push(piece);
+        (code <= 3 ? streets.carriageways : streets.pavements).push(piece);
         i = j;
       } else {
         const n = nums[i + 3];
         const pts = dm(i + 4, n);
-        const piece = kind === 'kerb' ? { h: nums[i + 1] / 100, level, pts } : { kind, w: nums[i + 1] / 100, dash: nums[i + 2] ? DASH : null, level, pts };
+        const piece = kind === 'kerb' ? { h: nums[i + 1] / 100, level, pts } : { kind, w: nums[i + 1] / 100, dash: DASHES[nums[i + 2]] ?? null, level, pts };
         i += 4 + n * 2;
         if (off) {
           piece.ys = Array.from(nums.subarray(i, i + n), (v) => v / 10);

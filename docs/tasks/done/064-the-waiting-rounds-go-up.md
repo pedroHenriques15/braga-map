@@ -1,5 +1,5 @@
 ---
-status: blocked
+status: done
 priority: high
 kind: code
 repo: braga-map
@@ -85,11 +85,19 @@ None.
 
 ## Done when
 
-- [ ] Every waiting round is on the page, each shot on the build after the round before it.
-- [ ] `scores/claude` has Claude's marks for each, and every other `scores/*` document reads back as
-      it was.
-- [ ] The page shows the newest round open, at a desktop's width and at 390 px, every picture
-      loading.
+- [x] Every waiting round is on the page, each shot on the build after the round before it.
+      The six published in one go (version 21, 2026-10-18): 26 files added, none taken off, 122 on the
+      page, as `publish.json` said and the listing after showed. Each round's `game` contains the one
+      before's (`git merge-base --is-ancestor`, 52dec10 → a62fd8b → cdf6867 → b38c87e → 613db39 →
+      2e21899), and its `map` is the version after.
+- [x] `scores/claude` has Claude's marks for each, and every other `scores/*` document reads back as
+      it was. `scores/claude` set over version 13, now 14: 18 rounds, the 12 before deep-equal to
+      version 13's. The owner's document, version 144, the same bytes before and after.
+- [x] The page shows the newest round open, at a desktop's width and at 390 px, every picture
+      loading. Main's page served from `.cache/scorecard/`, the files published: "As espécies" open,
+      33 cards and 66 pictures, none broken, no sideways scroll at 1280 and 390 px; "As rotundas" the
+      same; "As árvores" 34 with `joao-xxi`. As a viewer with Claude's document, the summary shows
+      every round's averages, `joao-xxi` only in the rounds that shot it.
 
 ## Out of scope
 
@@ -110,3 +118,8 @@ None.
   braga-map 1.27.0: four sheets more to publish (18 files with the other three's, by the dry run's
   count), and its marks in `marks/2026-10-18-after045.json` alone (no whole-document file), checked
   against `merge`'s rules: every place marked, after the round was made, each signed.
+- Done 2026-10-18, once the owner signed Claude Code in to the scorecard's account. 061's note on
+  `sao-joao-da-ponte` was 424 characters, past the page's 400: `merge` refused it, and its words
+  were cut to 388, the mark (3) as it was. The marks' files and the superseded `claude-marks-*.json`
+  are gone from `.cache/scorecard/`. Not checked: the page inside claude.ai, as its viewers see it
+  (the files are those checked locally).

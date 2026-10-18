@@ -79,12 +79,12 @@ Steps:
   > corners in Fujacal, the Devesa, the Rua dos Olivais and the Largo Senhor dos Aflitos, and at
   > stops (screenshots, 2026-10-18).
 - [x] The viewpoints where plates or stops show score no lower than the round before.
-  > Claude's marks for "As placas" (`2026-10-18-after042`) against "Até aos muros" (`after052`):
-  > none moved, 2.88 over the 33. Plates show at `falperra` (a post with two at the roundabout's
-  > corner, where the photo has its signpost), `estadio` and `sao-joao-da-ponte` (a post on the
-  > pavement ahead, which the photo doesn't show); the route's plate across the street at `devesa`
-  > and `fujacal-start` is gone, as their cameras stand mid-street, away from a corner. Not yet on the
-  > page: see Notes.
+  > Claude's marks for "As placas" (`2026-10-18-after042`) against the round before, 063's "Os
+  > troncos" (`after063`, both with 063's trees): none moved, 2.94 over the 33. Plates show at
+  > `falperra` (a post with two at the roundabout's corner, where the photo has its signpost),
+  > `estadio` and `sao-joao-da-ponte` (a post on the pavement ahead, which the photo doesn't show);
+  > the route's plate across the street at `devesa` is gone, as its camera stands mid-street, away
+  > from a corner. Not yet on the page: see Notes.
 - [x] What it costs against the budget, on High, Medium and Low, in Notes and party-kart's
   `docs/architecture.md`.
   > In Notes.
@@ -120,16 +120,19 @@ Steps:
   texture gave way to one plate and one canvas of letters for every name. Building the plates takes
   30–60 ms; the rounds' build times differ by up to 1.7 s at the median, the desktop busy with the
   other sessions' work (main's game built in the same 7.3 s as 042's, side by side). The round "As
-  placas" on 1.26.0: 149, 146 and 107 calls at the median, 2.15, 1.67 and 1.00 M triangles.
-- **The round "As placas"** (`2026-10-18-after042`) is made, in 062's sheets: 33 shots of their own
-  in 4 sheets in `.cache/scorecard/rounds/`, and `refs/rounds.json`. **Not published:** the
+  placas" on 1.26.0 against 063's "Os troncos" on 1.25.0 (its figures in party-kart's docs, its shots
+  gone with its worktree): 147 → 149, 144 → 146 and 106 → 107 calls at the median, 2.05 → 2.15,
+  1.57 → 1.67 and 0.91 → 1.00 M triangles, textures 139 → 130, 84 → 74 and 50 → 41 MB.
+- **The round "As placas"** (`2026-10-18-after042`) is made, in 062's sheets, after 063's "Os troncos"
+  (shot with 063's party-kart, `cdf6867` and the map to be tagged): 31 shots of its own in 4 sheets
+  in `.cache/scorecard/rounds/` and 2 the same as 063's, and `refs/rounds.json`. **Not published:** the
   scorecard opened from this session in the morning (062 republished it), but since the afternoon
   its account is another (the Artifact tool lists none of the scorecard's), as 052 found. Claude's
   marks are ready in `.cache/scorecard/claude-marks-042.json`: the whole of `scores/claude` at its
-  version 13 with 052's round and this one added (it supersedes 052's `claude-marks-052.json`): set
-  it pinned to version 13. To publish both rounds: the page (`scorecard/index.html`), the 8 sheets
-  (`rounds/2026-10-18-after052-1…4.jpg` and `-after042-1…4.jpg`), `data/rounds.json` and
-  `data/viewpoints.json` (`joao-xxi` marked `dropped`), all from `.cache/scorecard/`; the version then
-  holds 106 files.
+  version 13 with the three rounds added, 052's, 063's and this one (it supersedes
+  `claude-marks-052.json` and `claude-marks-063.json`): set it pinned to version 13. To publish the
+  three: the page (`scorecard/index.html`), the 12 sheets (`rounds/2026-10-18-after052-1…4.jpg`,
+  `-after063-1…4.jpg` and `-after042-1…4.jpg`), `data/rounds.json` and `data/viewpoints.json`
+  (`joao-xxi` marked `dropped`), all from `.cache/scorecard/`; the version then holds 110 files.
 - **Not checked:** the owner's marks; a phone (the plates' 90,000 triangles are always drawn, as
   one mesh); the deploy (not asked).

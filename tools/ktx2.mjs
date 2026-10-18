@@ -8,11 +8,11 @@ import { encodeToKTX2 } from 'ktx2-encoder';
 // it's 0.9–1.6 dB closer for some 40% more bytes; above 200, 0.2 dB at most (task 007's notes).
 export const QUALITY = 200;
 
-// A KTX2 file of an RGB image ({ w, h, data } with three bytes a pixel), Basis's ETC1S (or UASTC,
-// with Zstandard), with its mipmaps, sRGB.
+// A KTX2 file of an RGB image ({ w, h, data } with three bytes a pixel, or four with `channels: 4`, its
+// alpha last), Basis's ETC1S (or UASTC, with Zstandard), with its mipmaps, sRGB.
 export async function ktx2(img, uastc = false) {
-  const rgba = Buffer.alloc(img.w * img.h * 4);
-  for (let i = 0, j = 0; i < img.w * img.h * 3; i += 3, j += 4) { rgba[j] = img.data[i]; rgba[j + 1] = img.data[i + 1]; rgba[j + 2] = img.data[i + 2]; rgba[j + 3] = 255; }
+  const ch = img.channels ?? 3, rgba = Buffer.alloc(img.w * img.h * 4);
+  for (let i = 0, j = 0; i < img.w * img.h * ch; i += ch, j += 4) { rgba[j] = img.data[i]; rgba[j + 1] = img.data[i + 1]; rgba[j + 2] = img.data[i + 2]; rgba[j + 3] = ch === 4 ? img.data[i + 3] : 255; }
   // The encoder prints each mipmap it makes; this keeps the console to what's made.
   const write = process.stdout.write;
   process.stdout.write = () => true;
@@ -28,11 +28,12 @@ export async function ktx2(img, uastc = false) {
   }
 }
 
-// An RGB image at another size, as sharp's Lanczos has it.
+// An RGB (or RGBA) image at another size, as sharp's Lanczos has it.
 export async function resize(img, w, h) {
   if (w === img.w && h === img.h) return img;
-  const { data, info } = await sharp(img.data, { raw: { width: img.w, height: img.h, channels: 3 } }).resize(w, h, { fit: 'fill', kernel: 'lanczos3' }).raw().toBuffer({ resolveWithObject: true });
-  return { w: info.width, h: info.height, data };
+  const channels = img.channels ?? 3;
+  const { data, info } = await sharp(img.data, { raw: { width: img.w, height: img.h, channels } }).resize(w, h, { fit: 'fill', kernel: 'lanczos3' }).raw().toBuffer({ resolveWithObject: true });
+  return { w: info.width, h: info.height, data, ...(channels === 4 ? { channels } : {}) };
 }
 
 // A KTX2 file's size in pixels, from its header.

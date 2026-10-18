@@ -1,6 +1,6 @@
 // Made by tools/textures.mjs: a loader for each tile's photo textures (task 007), so a game only
-// downloads the index of those it loads; each kind of ground's photo (task 016); and every source
-// they're made from, with its authors.
+// downloads the index of those it loads; each kind of ground's photo (task 016); each kind of tree's
+// bark and leaves (task 019); and every source they're made from, with its authors.
 export const TEXTURES = {
   'x-1z1': () => import('./textures/x-1z1.js'),
   'x0z1': () => import('./textures/x0z1.js'),
@@ -39,7 +39,81 @@ export const SURFACES = {
       low: { url: new URL('./textures/surfaces/surface-gravel-low.ktx2', import.meta.url).href, w: 256, h: 256, bytes: 21365 } },
     credit: { source: 'Poly Haven', author: 'Jenelle van Heerden, Dimitrios Savva', licence: 'CC0', url: 'https://polyhaven.com/a/gravel_floor_02', date: '2024-02-29' } },
 };
+export const TREES = {
+  broadleaf: {
+    bark: { id: 'tree-broadleaf-bark', metres: 1.8, mean: [85, 72, 53],
+      files: { high: { url: new URL('./textures/trees/tree-broadleaf-bark-high.ktx2', import.meta.url).href, w: 512, h: 512, bytes: 66029 },
+        medium: { url: new URL('./textures/trees/tree-broadleaf-bark-medium.ktx2', import.meta.url).href, w: 256, h: 256, bytes: 18363 },
+        low: { url: new URL('./textures/trees/tree-broadleaf-bark-low.ktx2', import.meta.url).href, w: 128, h: 128, bytes: 5119 } },
+      credit: { source: 'Poly Haven', author: 'Charlotte Baglioni', licence: 'CC0', url: 'https://polyhaven.com/a/chinese_hackberry_bark', date: '2025-07-15' } },
+    leaves: { id: 'tree-broadleaf-leaves', mean: [98, 104, 36], cover: 0.55,
+      files: { high: { url: new URL('./textures/trees/tree-broadleaf-leaves-high.ktx2', import.meta.url).href, w: 512, h: 512, bytes: 78927 },
+        medium: { url: new URL('./textures/trees/tree-broadleaf-leaves-medium.ktx2', import.meta.url).href, w: 256, h: 256, bytes: 35010 },
+        low: { url: new URL('./textures/trees/tree-broadleaf-leaves-low.ktx2', import.meta.url).href, w: 128, h: 128, bytes: 10969 } },
+      credit: { source: 'Poly Haven', author: 'Rob Tuytel, Rico Cilliers', licence: 'CC0', url: 'https://polyhaven.com/a/island_tree_02', date: '2022-10-26' } },
+  },
+  pine: {
+    bark: { id: 'tree-pine-bark', metres: 2, mean: [104, 84, 66],
+      files: { high: { url: new URL('./textures/trees/tree-pine-bark-high.ktx2', import.meta.url).href, w: 512, h: 512, bytes: 75728 },
+        medium: { url: new URL('./textures/trees/tree-pine-bark-medium.ktx2', import.meta.url).href, w: 256, h: 256, bytes: 21362 },
+        low: { url: new URL('./textures/trees/tree-pine-bark-low.ktx2', import.meta.url).href, w: 128, h: 128, bytes: 5808 } },
+      credit: { source: 'Poly Haven', author: 'Dimitrios Savva', licence: 'CC0', url: 'https://polyhaven.com/a/pine_bark', date: '2023-09-05' } },
+    leaves: { id: 'tree-pine-leaves', mean: [102, 98, 63], cover: 0.44,
+      files: { high: { url: new URL('./textures/trees/tree-pine-leaves-high.ktx2', import.meta.url).href, w: 512, h: 512, bytes: 91727 },
+        medium: { url: new URL('./textures/trees/tree-pine-leaves-medium.ktx2', import.meta.url).href, w: 256, h: 256, bytes: 37808 },
+        low: { url: new URL('./textures/trees/tree-pine-leaves-low.ktx2', import.meta.url).href, w: 128, h: 128, bytes: 10994 } },
+      credit: { source: 'Poly Haven', author: 'Rob Tuytel, Rico Cilliers', licence: 'CC0', url: 'https://polyhaven.com/a/pine_tree_01', date: '2023-06-23' } },
+  },
+  eucalyptus: {
+    bark: { id: 'tree-eucalyptus-bark', metres: 1.82, mean: [92, 79, 66],
+      files: { high: { url: new URL('./textures/trees/tree-eucalyptus-bark-high.ktx2', import.meta.url).href, w: 512, h: 512, bytes: 75955 },
+        medium: { url: new URL('./textures/trees/tree-eucalyptus-bark-medium.ktx2', import.meta.url).href, w: 256, h: 256, bytes: 21397 },
+        low: { url: new URL('./textures/trees/tree-eucalyptus-bark-low.ktx2', import.meta.url).href, w: 128, h: 128, bytes: 5869 } },
+      credit: { source: 'Poly Haven', author: 'Dimitrios Savva', licence: 'CC0', url: 'https://polyhaven.com/a/bark_bluegum', date: '2024-11-26' } },
+    leaves: { id: 'tree-eucalyptus-leaves', mean: [118, 126, 86], cover: 0.44,
+      files: { high: { url: new URL('./textures/trees/tree-eucalyptus-leaves-high.ktx2', import.meta.url).href, w: 512, h: 512, bytes: 74771 },
+        medium: { url: new URL('./textures/trees/tree-eucalyptus-leaves-medium.ktx2', import.meta.url).href, w: 256, h: 256, bytes: 34802 },
+        low: { url: new URL('./textures/trees/tree-eucalyptus-leaves-low.ktx2', import.meta.url).href, w: 128, h: 128, bytes: 10770 } },
+      credit: { source: 'Poly Haven', author: 'Rico Cilliers', licence: 'CC0', url: 'https://polyhaven.com/a/shrub_04', date: '2024-02-06' } },
+  },
+  conifer: {
+    bark: { id: 'tree-conifer-bark', metres: 2.27, mean: [84, 65, 49],
+      files: { high: { url: new URL('./textures/trees/tree-conifer-bark-high.ktx2', import.meta.url).href, w: 512, h: 512, bytes: 69113 },
+        medium: { url: new URL('./textures/trees/tree-conifer-bark-medium.ktx2', import.meta.url).href, w: 256, h: 256, bytes: 19445 },
+        low: { url: new URL('./textures/trees/tree-conifer-bark-low.ktx2', import.meta.url).href, w: 128, h: 128, bytes: 5368 } },
+      credit: { source: 'Poly Haven', author: 'Charlotte Baglioni', licence: 'CC0', url: 'https://polyhaven.com/a/chinese_cedar_bark', date: '2024-06-06' } },
+    leaves: { id: 'tree-conifer-leaves', mean: [92, 107, 54], cover: 0.41,
+      files: { high: { url: new URL('./textures/trees/tree-conifer-leaves-high.ktx2', import.meta.url).href, w: 512, h: 512, bytes: 87413 },
+        medium: { url: new URL('./textures/trees/tree-conifer-leaves-medium.ktx2', import.meta.url).href, w: 256, h: 256, bytes: 36818 },
+        low: { url: new URL('./textures/trees/tree-conifer-leaves-low.ktx2', import.meta.url).href, w: 128, h: 128, bytes: 10705 } },
+      credit: { source: 'Poly Haven', author: 'Rob Tuytel, Rico Cilliers', licence: 'CC0', url: 'https://polyhaven.com/a/fir_tree_01', date: '2023-06-16' } },
+  },
+  poplar: {
+    bark: { id: 'tree-poplar-bark', metres: 1, mean: [67, 55, 44],
+      files: { high: { url: new URL('./textures/trees/tree-poplar-bark-high.ktx2', import.meta.url).href, w: 512, h: 512, bytes: 71183 },
+        medium: { url: new URL('./textures/trees/tree-poplar-bark-medium.ktx2', import.meta.url).href, w: 256, h: 256, bytes: 19978 },
+        low: { url: new URL('./textures/trees/tree-poplar-bark-low.ktx2', import.meta.url).href, w: 128, h: 128, bytes: 5415 } },
+      credit: { source: 'Poly Haven', author: 'Dario Barresi, Dimitrios Savva', licence: 'CC0', url: 'https://polyhaven.com/a/bark_willow', date: '2022-11-10' } },
+    leaves: { id: 'tree-poplar-leaves', mean: [98, 104, 36], cover: 0.47,
+      files: { high: { url: new URL('./textures/trees/tree-poplar-leaves-high.ktx2', import.meta.url).href, w: 512, h: 512, bytes: 81448 },
+        medium: { url: new URL('./textures/trees/tree-poplar-leaves-medium.ktx2', import.meta.url).href, w: 256, h: 256, bytes: 36766 },
+        low: { url: new URL('./textures/trees/tree-poplar-leaves-low.ktx2', import.meta.url).href, w: 128, h: 128, bytes: 11133 } },
+      credit: { source: 'Poly Haven', author: 'Rob Tuytel, Rico Cilliers', licence: 'CC0', url: 'https://polyhaven.com/a/island_tree_02', date: '2022-10-26' } },
+  },
+  palm: {
+    bark: { id: 'tree-palm-bark', metres: 1.3, mean: [159, 147, 133],
+      files: { high: { url: new URL('./textures/trees/tree-palm-bark-high.ktx2', import.meta.url).href, w: 512, h: 512, bytes: 79740 },
+        medium: { url: new URL('./textures/trees/tree-palm-bark-medium.ktx2', import.meta.url).href, w: 256, h: 256, bytes: 22435 },
+        low: { url: new URL('./textures/trees/tree-palm-bark-low.ktx2', import.meta.url).href, w: 128, h: 128, bytes: 6097 } },
+      credit: { source: 'Poly Haven', author: 'Dimitrios Savva, Rico Cilliers', licence: 'CC0', url: 'https://polyhaven.com/a/palm_tree_bark', date: '2021-12-09' } },
+    leaves: { id: 'tree-palm-leaves', mean: [99, 107, 41], cover: 0.19,
+      files: { high: { url: new URL('./textures/trees/tree-palm-leaves-high.ktx2', import.meta.url).href, w: 512, h: 512, bytes: 48788 },
+        medium: { url: new URL('./textures/trees/tree-palm-leaves-medium.ktx2', import.meta.url).href, w: 256, h: 256, bytes: 22666 },
+        low: { url: new URL('./textures/trees/tree-palm-leaves-low.ktx2', import.meta.url).href, w: 128, h: 128, bytes: 8392 } },
+      credit: { source: 'Poly Haven', author: 'Rob Tuytel, Rico Cilliers', licence: 'CC0', url: 'https://polyhaven.com/a/island_tree_02', date: '2022-10-26' } },
+  },
+};
 export const CREDITS = [
   { source: 'Mapillary', licence: 'CC BY-SA 4.0', authors: ['apires', 'stuckstick', 'waldyrious'], kinds: ['facade'] },
-  { source: 'Poly Haven', licence: 'CC0', authors: ['Charlotte Baglioni', 'Dimitrios Savva', 'Jenelle van Heerden', 'Rob Tuytel', 'Sergej Majboroda', 'eye-candy.xyz'], kinds: ['surface'] },
+  { source: 'Poly Haven', licence: 'CC0', authors: ['Charlotte Baglioni', 'Dario Barresi', 'Dimitrios Savva', 'Jenelle van Heerden', 'Rico Cilliers', 'Rob Tuytel', 'Sergej Majboroda', 'eye-candy.xyz'], kinds: ['bark', 'leaves', 'surface'] },
 ];

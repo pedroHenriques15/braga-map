@@ -14,8 +14,10 @@
 // world/textures/<tile>/<id>-<level>.ktx2   the textures, for each level: high, medium, low
 // world/textures/<tile>.js                  the tile's index (index.d.ts's PhotoTexture)
 // world/textures/surfaces/<id>-<level>.ktx2 each kind of ground's, on no tile
+// world/textures/trees/<id>-<level>.ktx2    each kind of tree's bark and leaves (task 019), on no tile
 // world/textures.js                         TEXTURES, a loader of each tile's index; SURFACES, each
-//                                           kind of ground's (index.d.ts's GroundTexture); and CREDITS
+//                                           kind of ground's (index.d.ts's GroundTexture); TREES, each
+//                                           kind of tree's bark and leaves (TreeTexture); and CREDITS
 import fs from 'node:fs';
 import path from 'node:path';
 import sharp from 'sharp';
@@ -35,6 +37,9 @@ const FACADE = { high: 40, medium: 20, low: 10 };
 const MAX = 2048;
 // A kind of ground's side at each level: 1 to 4 mm a pixel on High, as its photo spans 1 to 4 m.
 const SURFACE = { high: 1024, medium: 512, low: 256 };
+// A tree's bark and leaves (task 019) at each level: a bark photo spanning about 1 to 2 m, a spray of
+// leaves about 1 m.
+const TREE = { high: 512, medium: 256, low: 128 };
 const DGT_CREDIT = { source: 'DGT', author: 'Direção-Geral do Território', licence: 'CC BY 4.0', url: 'https://snig.dgterritorio.gov.pt/rndg/srv/por/catalog.search#/metadata/96d83932-f957-40d6-a2ea-3a25751c4b2d', date: '2025' };
 
 // ---- Pixels ----
@@ -210,11 +215,145 @@ async function surface(t) {
   };
 }
 
+// A Poly Haven asset's record and the files of it named (their 2k JPEGs), kept in .cache/textures/sources/.
+async function polyHaven(asset, keys) {
+  const dir = path.join(WORK, 'sources'), info = path.join(dir, asset + '.json');
+  fs.mkdirSync(dir, { recursive: true });
+  const get = async (url) => {
+    const r = await fetch(url);
+    if (!r.ok) throw new Error(`${asset}: ${url} answered ${r.status}`);
+    return r;
+  };
+  const files = keys.map((k) => path.join(dir, `${asset}-${k}.jpg`));
+  if (!fs.existsSync(info) || files.some((f) => !fs.existsSync(f))) {
+    const rec = await (await get(`https://api.polyhaven.com/info/${asset}`)).json();
+    const list = await (await get(`https://api.polyhaven.com/files/${asset}`)).json();
+    for (const [i, k] of keys.entries()) fs.writeFileSync(files[i], Buffer.from(await (await get(list[k]['2k'].jpg.url)).arrayBuffer()));
+    fs.writeFileSync(info, JSON.stringify(rec));
+  }
+  const rec = JSON.parse(fs.readFileSync(info, 'utf8'));
+  const date = new Date(rec.date_published * 1000).toISOString().slice(0, 10);
+  return { rec, files, credit: { source: 'Poly Haven', author: Object.keys(rec.authors).join(', '), licence: 'CC0', url: `https://polyhaven.com/a/${asset}`, date } };
+}
+
+// The mean of an image's pixels (those not see-through) in linear light, as a graphics card reads it, in
+// sRGB's bytes.
+function meanOf(img) {
+  const lin = (v) => ((v /= 255) <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
+  const srgb = (v) => Math.round(255 * (v <= 0.0031308 ? v * 12.92 : 1.055 * v ** (1 / 2.4) - 0.055));
+  const ch = img.channels ?? 3, sum = [0, 0, 0];
+  let n = 0;
+  for (let i = 0; i < img.data.length; i += ch) {
+    if (ch === 4 && img.data[i + 3] < 128) continue;
+    for (let c = 0; c < 3; c++) sum[c] += lin(img.data[i + c]);
+    n++;
+  }
+  return sum.map((v) => srgb(v / n));
+}
+
+// A tree's bark (task 019): a seamless photo of it from Poly Haven (CC0), spanning `metres` a side, to
+// wrap round its trunk.
+async function bark(t) {
+  const { rec, files, credit } = await polyHaven(t.asset, ['Diffuse']);
+  const img = await resize(await readRGB(files[0]), TREE.high, TREE.high);
+  return { img, place: { tree: t.tree, metres: +(Math.min(...rec.dimensions) / 1000).toFixed(2), mean: meanOf(img) }, credit };
+}
+
+// A tree's leaves (task 019): a spray of them, the leaves (or the twigs of needles) cut out of a Poly
+// Haven tree's photos (CC0) by their alpha and laid along twigs that fan up from the card's foot, as many
+// branches, leaves to a branch and as long as the recipe's `spray` says, and `fill` more over it; or,
+// for a palm (`frond`), the
+// leaflets along a frond's stem up the card. RGBA, row 0 at the top; what's see-through is in the
+// leaves' mean colour, so its mipmaps don't darken their edges.
+async function leaves(t) {
+  const { files, credit } = await polyHaven(t.asset, [t.diff, t.alpha]);
+  const d = await sharp(files[0]).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+  const a = await sharp(files[1]).greyscale().raw().toBuffer({ resolveWithObject: true });
+  const w = d.info.width, h = d.info.height, A = a.data, seen = new Int32Array(w * h), sprites = [];
+  const sp = t.spray, min = (sp.min ?? 0.0005) * w * h, max = (sp.max ?? 0.05) * w * h;
+  // Each leaf: what its alpha holds together, upright along its longest axis.
+  for (let s0 = 0; s0 < w * h; s0++) {
+    if (A[s0] < 128 || seen[s0]) continue;
+    const stack = [s0], px = [], id = s0 + 1;
+    seen[s0] = id;
+    while (stack.length) {
+      const k = stack.pop(), x = k % w, y = (k - x) / w;
+      px.push(k);
+      for (const q of [x > 0 ? k - 1 : -1, x < w - 1 ? k + 1 : -1, y > 0 ? k - w : -1, y < h - 1 ? k + w : -1]) if (q >= 0 && !seen[q] && A[q] >= 128) { seen[q] = id; stack.push(q); }
+    }
+    if (px.length < min || px.length > max) continue;
+    let x0 = w, y0 = h, x1 = 0, y1 = 0, mx = 0, my = 0, g = 0, r = 0;
+    for (const k of px) { const x = k % w, y = (k - x) / w; x0 = Math.min(x0, x); x1 = Math.max(x1, x); y0 = Math.min(y0, y); y1 = Math.max(y1, y); mx += x; my += y; r += d.data[k * 3]; g += d.data[k * 3 + 1]; }
+    // Green leaves only: a dead or a red one is left out.
+    if (sp.green && g < r * 1.05) continue;
+    mx /= px.length; my /= px.length;
+    let sxx = 0, syy = 0, sxy = 0;
+    for (const k of px) { const x = (k % w) - mx, y = (k - (k % w)) / w - my; sxx += x * x; syy += y * y; sxy += x * y; }
+    const cw = x1 - x0 + 1, ch = y1 - y0 + 1, rgba = Buffer.alloc(cw * ch * 4);
+    for (let y = y0; y <= y1; y++) for (let x = x0; x <= x1; x++) {
+      const k = y * w + x, o = ((y - y0) * cw + (x - x0)) * 4;
+      if (seen[k] !== id) continue;
+      rgba[o] = d.data[k * 3]; rgba[o + 1] = d.data[k * 3 + 1]; rgba[o + 2] = d.data[k * 3 + 2]; rgba[o + 3] = A[k];
+    }
+    const turn = 90 - (0.5 * Math.atan2(2 * sxy, sxx - syy) * 180) / Math.PI;
+    const up = await sharp(rgba, { raw: { width: cw, height: ch, channels: 4 } }).rotate(turn, { background: { r: 0, g: 0, b: 0, alpha: 0 } }).trim({ threshold: 1 }).png().toBuffer({ resolveWithObject: true });
+    sprites.push({ png: up.data, w: up.info.width, h: up.info.height });
+  }
+  if (!sprites.length) throw new Error(`${t.id}: no leaf found in the alpha of ${t.asset}`);
+  let seed = [...t.id].reduce((v, c) => (v * 31 + c.charCodeAt(0)) % 2147483647, 7) || 7;
+  const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  const S = TREE.high, inputs = [], twigs = [];
+  // A leaf l pixels long from (x, y), pointing at angle a (from x towards y, down the card).
+  const put = async (x, y, a, l, stretch = 1) => {
+    const s = sprites[Math.floor(rnd() * sprites.length)], k = l / s.h;
+    const img = await sharp(s.png).resize(Math.max(2, Math.round(s.w * k * (sp.thin ?? 1))), Math.max(2, Math.round(s.h * k * stretch)), { fit: 'fill' }).modulate({ brightness: 0.85 + rnd() * 0.3 }).rotate((a * 180) / Math.PI + 90, { background: { r: 0, g: 0, b: 0, alpha: 0 } }).png().toBuffer({ resolveWithObject: true });
+    const left = Math.round(x + (Math.cos(a) * l * stretch) / 2 - img.info.width / 2), top = Math.round(y + (Math.sin(a) * l * stretch) / 2 - img.info.height / 2);
+    if (left >= 0 && top >= 0 && left + img.info.width <= S && top + img.info.height <= S) inputs.push({ input: img.data, left, top });
+  };
+  const L = (v) => v * S;
+  if (sp.frond) {
+    // A palm's frond: its stem up the middle, bowing, its leaflets either side, longest in the middle.
+    const pts = [];
+    for (let k = 0; k <= 20; k++) { const f = k / 20; pts.push([S / 2 + Math.sin(f * Math.PI) * S * 0.04, S * (1 - f * 0.97)]); }
+    twigs.push(pts);
+    for (let k = 3; k < 20; k++) for (const side of [-1, 1]) {
+      const f = k / 20, [x, y] = pts[k], l = L(sp.len[0] + (sp.len[1] - sp.len[0]) * Math.sin(f * Math.PI)) * (0.85 + rnd() * 0.3);
+      await put(x, y, -Math.PI / 2 + (side * (sp.spread[0] + rnd() * (sp.spread[1] - sp.spread[0])) * Math.PI) / 180, l, sp.stretch ?? 1);
+    }
+  } else {
+    for (let b = 0; b < sp.branches; b++) {
+      let x = S / 2 + (rnd() - 0.5) * S * 0.08, y = S - S * 0.04, a = -Math.PI / 2 + (b / Math.max(1, sp.branches - 1) - 0.5) * 2.2 + (rnd() - 0.5) * 0.2;
+      const len = S * (0.55 + rnd() * 0.3), pts = [[x, y]];
+      for (let k = 1; k <= sp.per; k++) {
+        a += (rnd() - 0.5) * 0.25;
+        x += (Math.cos(a) * len) / sp.per; y += (Math.sin(a) * len) / sp.per;
+        pts.push([x, y]);
+        if (k < 2) continue;
+        for (const side of [-1, 1]) await put(x, y, a + (side * (sp.spread[0] + rnd() * (sp.spread[1] - sp.spread[0])) * Math.PI) / 180 + (sp.droop ?? 0), L(sp.len[0] + rnd() * (sp.len[1] - sp.len[0])), sp.stretch ?? 1);
+      }
+      twigs.push(pts);
+    }
+    // And `fill` more over the spray, every way, so it's as thick as a crown is.
+    for (let k = 0; k < (sp.fill ?? 0); k++) {
+      const r = Math.sqrt(rnd()), th = rnd() * Math.PI * 2;
+      await put(S / 2 + Math.cos(th) * r * S * 0.4, S * 0.46 + Math.sin(th) * r * S * 0.38, rnd() * Math.PI * 2, L(sp.len[0] + rnd() * (sp.len[1] - sp.len[0])), sp.stretch ?? 1);
+    }
+  }
+  const svg = Buffer.from(`<svg xmlns="http://www.w3.org/2000/svg" width="${S}" height="${S}">${(sp.twig === 'none' ? [] : twigs).map((p) => `<polyline points="${p.map((q) => q.map((v) => v.toFixed(1)).join(',')).join(' ')}" fill="none" stroke="${sp.twig ?? '#4e3d2c'}" stroke-width="${((S / 170) * (sp.frond ? 1.6 : 1)).toFixed(1)}" stroke-linecap="round"/>`).join('')}</svg>`);
+  inputs.sort(() => rnd() - 0.5);
+  const { data } = await sharp({ create: { width: S, height: S, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } }).composite([{ input: svg, left: 0, top: 0 }, ...inputs]).raw().toBuffer({ resolveWithObject: true });
+  const img = { w: S, h: S, data, channels: 4 }, mean = meanOf(img);
+  for (let i = 0; i < data.length; i += 4) if (data[i + 3] < 128) { data[i] = mean[0]; data[i + 1] = mean[1]; data[i + 2] = mean[2]; }
+  let cover = 0;
+  for (let i = 3; i < data.length; i += 4) if (data[i] >= 128) cover++;
+  return { img, place: { tree: t.tree, mean, cover: +(cover / (S * S)).toFixed(2) }, credit };
+}
+
 // ---- The indexes ----
 
 function writeIndexes(entries) {
   const byTile = new Map();
-  for (const e of entries.filter((e) => e.kind !== 'surface')) {
+  for (const e of entries.filter((e) => e.kind !== 'surface' && !['bark', 'leaves'].includes(e.kind))) {
     if (!byTile.has(e.tile)) byTile.set(e.tile, []);
     byTile.get(e.tile).push(e);
   }
@@ -248,9 +387,20 @@ function writeIndexes(entries) {
     });
     return `  ${e.place.ground}: { id: ${js(e.id)}, metres: ${e.place.metres}, mean: ${js(e.place.mean)},\n    files: { ${files.join(',\n      ')} },\n    credit: ${js(e.credit)} },`;
   });
+  // Each kind of tree's bark and leaves (task 019), by the kind they're of.
+  const trees = new Map();
+  for (const e of entries.filter((e) => ['bark', 'leaves'].includes(e.kind))) {
+    const files = LEVELS.map((l) => {
+      const f = `${e.id}-${l}.ktx2`, { w, h, bytes } = ktx2Size(path.join(OUT, 'trees', f));
+      return `${l}: { url: new URL('./textures/trees/${f}', import.meta.url).href, w: ${w}, h: ${h}, bytes: ${bytes} }`;
+    });
+    const { tree, ...place } = e.place;
+    if (!trees.has(tree)) trees.set(tree, []);
+    trees.get(tree).push(`    ${e.kind}: { id: ${js(e.id)}, ${Object.entries(place).map(([k, v]) => `${k}: ${js(v)}`).join(', ')},\n      files: { ${files.join(',\n        ')} },\n      credit: ${js(e.credit)} },`);
+  }
   fs.writeFileSync(
     path.join(ROOT, 'world', 'textures.js'),
-    `// Made by tools/textures.mjs: a loader for each tile's photo textures (task 007), so a game only\n// downloads the index of those it loads; each kind of ground's photo (task 016); and every source\n// they're made from, with its authors.\nexport const TEXTURES = {\n${tiles.map((t) => `  ${js(t)}: () => import('./textures/${t}.js'),`).join('\n')}\n};\nexport const SURFACES = {\n${surfaces.join('\n')}\n};\nexport const CREDITS = [\n${credits.map((c) => `  ${js(c)},`).join('\n')}\n];\n`,
+    `// Made by tools/textures.mjs: a loader for each tile's photo textures (task 007), so a game only\n// downloads the index of those it loads; each kind of ground's photo (task 016); each kind of tree's\n// bark and leaves (task 019); and every source they're made from, with its authors.\nexport const TEXTURES = {\n${tiles.map((t) => `  ${js(t)}: () => import('./textures/${t}.js'),`).join('\n')}\n};\nexport const SURFACES = {\n${surfaces.join('\n')}\n};\nexport const TREES = {\n${[...trees].map(([tree, parts]) => `  ${tree}: {\n${parts.join('\n')}\n  },`).join('\n')}\n};\nexport const CREDITS = [\n${credits.map((c) => `  ${js(c)},`).join('\n')}\n];\n`,
   );
 }
 
@@ -272,12 +422,13 @@ const m = map();
 const entries = [];
 for (const t of recipes) {
   const t0 = Date.now();
-  const tile = t.kind === 'ground' ? t.tile : t.kind === 'surface' ? 'surfaces' : m.tileAt((t.wall[0][0] + t.wall.at(-1)[0]) / 2, (t.wall[0][1] + t.wall.at(-1)[1]) / 2);
+  const tree = t.kind === 'bark' || t.kind === 'leaves';
+  const tile = t.kind === 'ground' ? t.tile : t.kind === 'surface' ? 'surfaces' : tree ? 'trees' : m.tileAt((t.wall[0][0] + t.wall.at(-1)[0]) / 2, (t.wall[0][1] + t.wall.at(-1)[1]) / 2);
   const make = !only.length || only.includes(t.id) || LEVELS.some((l) => !fs.existsSync(path.join(OUT, tile, `${t.id}-${l}.ktx2`)));
   if (!make) {
     // Only where it goes and whose it is: the files are already made.
-    if (t.kind === 'surface') {
-      const { place, credit } = await surface(t);
+    if (t.kind === 'surface' || tree) {
+      const { place, credit } = await (t.kind === 'surface' ? surface(t) : t.kind === 'bark' ? bark(t) : leaves(t));
       entries.push({ id: t.id, kind: t.kind, tile, place, credit });
     } else if (t.kind === 'ground') {
       const [i, j] = t.tile.match(/-?\d+/g).map(Number);
@@ -290,21 +441,21 @@ for (const t of recipes) {
     continue;
   }
   console.log(t.id);
-  const made = t.kind === 'ground' ? await ground(t, GROUND.high) : t.kind === 'surface' ? await surface(t) : await facade(t, world, photos);
+  const made = t.kind === 'ground' ? await ground(t, GROUND.high) : t.kind === 'surface' ? await surface(t) : t.kind === 'bark' ? await bark(t) : t.kind === 'leaves' ? await leaves(t) : await facade(t, world, photos);
   fs.mkdirSync(path.join(OUT, tile), { recursive: true });
   const sizes = [];
   for (const l of LEVELS) {
-    const k = t.kind === 'ground' ? GROUND[l] / GROUND.high : t.kind === 'surface' ? SURFACE[l] / SURFACE.high : FACADE[l] / FACADE.high;
+    const k = t.kind === 'ground' ? GROUND[l] / GROUND.high : t.kind === 'surface' ? SURFACE[l] / SURFACE.high : tree ? TREE[l] / TREE.high : FACADE[l] / FACADE.high;
     const img = await resize(made.img, four(made.img.w * k), four(made.img.h * k));
     const out = await ktx2(img);
     fs.writeFileSync(path.join(OUT, tile, `${t.id}-${l}.ktx2`), out);
     sizes.push(`${l} ${img.w}×${img.h} ${(out.length / 1024).toFixed(0)} KB`);
     if (compare) {
-      await sharp(img.data, { raw: { width: img.w, height: img.h, channels: 3 } }).webp({ quality: 80 }).toFile(path.join(WORK, 'compare', `${t.id}-${l}.webp`));
+      await sharp(img.data, { raw: { width: img.w, height: img.h, channels: img.channels ?? 3 } }).webp({ quality: 80 }).toFile(path.join(WORK, 'compare', `${t.id}-${l}.webp`));
       fs.writeFileSync(path.join(WORK, 'compare', `${t.id}-${l}.uastc.ktx2`), await ktx2(img, true));
     }
   }
-  if (check) await sharp(made.img.data, { raw: { width: made.img.w, height: made.img.h, channels: 3 } }).png().toFile(path.join(WORK, t.id + '.png'));
+  if (check) await sharp(made.img.data, { raw: { width: made.img.w, height: made.img.h, channels: made.img.channels ?? 3 } }).png().toFile(path.join(WORK, t.id + '.png'));
   console.log(`  ${sizes.join(', ')}${made.own ? `; its photo has ${made.own} px a metre` : ''} (${((Date.now() - t0) / 1000).toFixed(1)} s)`);
   entries.push({ id: t.id, kind: t.kind, tile, place: t.kind === 'facade' ? { ...made.place, wallColour: await wallColourOf(t, made.img, photos) } : made.place, credit: made.credit });
 }

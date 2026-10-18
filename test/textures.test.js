@@ -15,8 +15,9 @@ const LEVELS = ['high', 'medium', 'low'];
 const KTX2 = Buffer.from([0xab, 0x4b, 0x54, 0x58, 0x20, 0x32, 0x30, 0xbb, 0x0d, 0x0a, 0x1a, 0x0a]);
 
 test('every texture asked for is made at every level, and its index says what its files are', () => {
-  // A kind of ground's (task 016) is on no tile: test/cover.test.js has those.
-  assert.deepEqual(index.map((t) => t.id).sort(), textures.filter((t) => t.kind !== 'surface').map((t) => t.id).sort());
+  // A kind of ground's (task 016) is on no tile: test/cover.test.js has those; nor a tree's bark and
+  // leaves (task 019): test/trees.test.js has those.
+  assert.deepEqual(index.map((t) => t.id).sort(), textures.filter((t) => !['surface', 'bark', 'leaves'].includes(t.kind)).map((t) => t.id).sort());
   for (const t of index) {
     let last = Infinity;
     for (const l of LEVELS) {

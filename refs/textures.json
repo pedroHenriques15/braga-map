@@ -1,5 +1,5 @@
 {
-  "about": "Photo textures (task 007): what tools/textures.mjs makes, and from what. A ground texture is the 2025 orthophoto over a tile (tile; none is made since task 016 drew the ground from its classes, its option A, over the orthophoto, its option B). A surface is a kind of ground's photo (task 016), the one a game tiles over the ground tools/cover.mjs classes as that kind (ground): a Poly Haven asset (CC0, seamless, its size in metres in its record), by its id. A facade is a reference photo (refs/photos.json, by its id) straightened onto a wall: wall is the wall's points on the map, left to right as the photo sees it (along a building's footprint); quad its corners in the photo's own pixels, top left, top right, bottom right, bottom left; s the metres along the wall they span (from its first point, the whole wall if left out); y the metres above the building's ground (its y) at the quad's bottom and top. Read off the photo by eye.",
+  "about": "Photo textures (task 007): what tools/textures.mjs makes, and from what. A ground texture is the 2025 orthophoto over a tile (tile; none is made since task 016 drew the ground from its classes, its option A, over the orthophoto, its option B). A surface is a kind of ground's photo (task 016), the one a game tiles over the ground tools/cover.mjs classes as that kind (ground): a Poly Haven asset (CC0, seamless, its size in metres in its record), by its id. A tree's bark and leaves (task 019) are a kind of tree's (tree): its bark a Poly Haven texture (asset, CC0, seamless, its size in metres in its record); its leaves a spray composed from a Poly Haven tree's photos of its leaves or twigs (asset, and the files of it with their colour, diff, and their alpha, alpha), laid along twigs as spray says (branches, leaves to a branch per, fill more scattered over them, their length len as a share of the card, the angle they spread from the twig in degrees, droop, stretch and thin; or a palm's frond). A facade is a reference photo (refs/photos.json, by its id) straightened onto a wall: wall is the wall's points on the map, left to right as the photo sees it (along a building's footprint); quad its corners in the photo's own pixels, top left, top right, bottom right, bottom left; s the metres along the wall they span (from its first point, the whole wall if left out); y the metres above the building's ground (its y) at the quad's bottom and top. Read off the photo by eye.",
   "textures": [
     {
       "id": "facade-way-906140272",
@@ -135,6 +135,108 @@
       "ground": "gravel",
       "asset": "gravel_floor_02",
       "notes": "Light grey gravel."
+    },
+    {
+      "id": "tree-broadleaf-bark",
+      "kind": "bark",
+      "tree": "broadleaf",
+      "asset": "chinese_hackberry_bark",
+      "notes": "Smooth grey bark, a hackberry's: Braga's streets are lined with hackberries (lódãos), limes and planes, whose young bark is as grey and smooth."
+    },
+    {
+      "id": "tree-broadleaf-leaves",
+      "kind": "leaves",
+      "tree": "broadleaf",
+      "asset": "island_tree_02",
+      "diff": "leaves_diff",
+      "alpha": "leaves_alpha",
+      "spray": { "branches": 8, "per": 10, "len": [0.12, 0.18], "spread": [25, 70], "fill": 110 },
+      "notes": "Broad, glossy green leaves on fanning twigs: a street tree or an oak from a few metres off."
+    },
+    {
+      "id": "tree-pine-bark",
+      "kind": "bark",
+      "tree": "pine",
+      "asset": "pine_bark",
+      "notes": "A pine's plated, furrowed bark, as the maritime pines' on the hills."
+    },
+    {
+      "id": "tree-pine-leaves",
+      "kind": "leaves",
+      "tree": "pine",
+      "asset": "pine_tree_01",
+      "diff": "twig_diff",
+      "alpha": "twig_alpha",
+      "spray": { "branches": 7, "per": 4, "len": [0.26, 0.38], "spread": [20, 50], "min": 0.01, "max": 0.06, "twig": "none", "fill": 45 },
+      "notes": "Twigs of long needles fanning out from a branch."
+    },
+    {
+      "id": "tree-eucalyptus-bark",
+      "kind": "bark",
+      "tree": "eucalyptus",
+      "asset": "bark_bluegum",
+      "notes": "A blue gum's pale, peeling bark: Eucalyptus globulus is the eucalyptus of the Minho's woods."
+    },
+    {
+      "id": "tree-eucalyptus-leaves",
+      "kind": "leaves",
+      "tree": "eucalyptus",
+      "asset": "shrub_04",
+      "diff": "Diffuse",
+      "alpha": "Alpha",
+      "spray": { "branches": 7, "per": 7, "len": [0.13, 0.19], "spread": [40, 80], "droop": 0.6, "stretch": 1.5, "thin": 0.7, "green": true, "min": 0.0003, "fill": 70 },
+      "notes": "Long, narrow grey-green leaves hanging from the twigs, the dead ones left out."
+    },
+    {
+      "id": "tree-conifer-bark",
+      "kind": "bark",
+      "tree": "conifer",
+      "asset": "chinese_cedar_bark",
+      "notes": "A cedar's stringy, reddish bark, as the cypresses' and cedars' in Braga's gardens and churchyards."
+    },
+    {
+      "id": "tree-conifer-leaves",
+      "kind": "leaves",
+      "tree": "conifer",
+      "asset": "fir_tree_01",
+      "diff": "twig_diff",
+      "alpha": "twig_alpha",
+      "spray": { "branches": 7, "per": 5, "len": [0.26, 0.38], "spread": [15, 45], "min": 0.002, "max": 0.08, "twig": "none", "fill": 55 },
+      "notes": "Dense sprays of a fir's short needles, for the cypresses and cedars."
+    },
+    {
+      "id": "tree-poplar-bark",
+      "kind": "bark",
+      "tree": "poplar",
+      "asset": "bark_willow",
+      "notes": "A willow's furrowed grey bark, as a poplar's."
+    },
+    {
+      "id": "tree-poplar-leaves",
+      "kind": "leaves",
+      "tree": "poplar",
+      "asset": "island_tree_02",
+      "diff": "leaves_diff",
+      "alpha": "leaves_alpha",
+      "spray": { "branches": 8, "per": 10, "len": [0.09, 0.13], "spread": [20, 50], "fill": 150 },
+      "notes": "Smaller leaves, close along upright twigs."
+    },
+    {
+      "id": "tree-palm-bark",
+      "kind": "bark",
+      "tree": "palm",
+      "asset": "palm_tree_bark",
+      "notes": "A palm's trunk, ringed where its old fronds fell."
+    },
+    {
+      "id": "tree-palm-leaves",
+      "kind": "leaves",
+      "tree": "palm",
+      "asset": "island_tree_02",
+      "diff": "leaves_diff",
+      "alpha": "leaves_alpha",
+      "spray": { "frond": true, "len": [0.18, 0.34], "spread": [55, 75], "thin": 0.35 },
+      "notes": "A frond: leaflets either side of its stem, longest in its middle."
     }
   ]
 }

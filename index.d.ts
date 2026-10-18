@@ -341,11 +341,33 @@ export interface Wall {
   open?: boolean;
 }
 
-// filled: planted in a wood or a park, where the map has no trees of its own.
+// A tree (task 019, tools/trees.mjs): each one DGT's 2025 LiDAR found, where its point cloud was fetched
+// (the whole map but its far east and south edges), with what it measured of it; elsewhere the map's own
+// trees and its woods and parks filled in, at their kind's usual size.
+// - x, z: where its trunk stands: its crown's top, or where OpenStreetMap maps it when the map has two or
+//   more trees in one crown the LiDAR saw (they ran together, and each takes the part of it nearest it);
+//   moved to a street's edge where its top was over the carriageway (it leans out over it).
+// - kind: its species, as the map names it; else on the hills the main species of the wood it stands in
+//   (DGT's COS2025); else a broadleaf, but for the narrow and tall (a poplar where the photo sees a
+//   broadleaf's leaves, else a cypress or a cedar) and a tree taller than the town's with its crown held
+//   high (a eucalyptus). Palms only where the map has them.
+// - h: its height over the ground; crown: its crown's width (as a disc as big as the crown seen from
+//   above); foot: how high its crown's lowest leaves are (where its trunk goes into it), in metres.
+// - trunk: how thick its trunk is at a person's height, in metres: as thick as a tree that tall and that
+//   wide usually is (the LiDAR doesn't see a trunk).
+// - mapped: OpenStreetMap has it too (or only it does: planted since July 2025, or under 3 m then, at
+//   the height and crown the map gives or a young tree's); filled: planted in a wood or a park where
+//   neither the LiDAR nor the map has trees.
+export type TreeKind = 'broadleaf' | 'pine' | 'eucalyptus' | 'conifer' | 'poplar' | 'palm';
 export interface Tree {
   x: number;
   z: number;
-  pine: boolean;
+  kind: TreeKind;
+  h: number;
+  crown: number;
+  foot: number;
+  trunk: number;
+  mapped: boolean;
   filled: boolean;
 }
 
@@ -460,7 +482,7 @@ export interface PhotoCredit {
   source: string;
   licence: string;
   authors: string[];
-  kinds: ('ground' | 'facade' | 'surface')[];
+  kinds: ('ground' | 'facade' | 'surface' | 'bark' | 'leaves')[];
 }
 
 // What the ground is (task 016, tools/cover.mjs), every 50 cm over the Volta dos Amigos' box: asphalt,
@@ -484,6 +506,24 @@ export interface GroundTexture {
   credit: PhotoCreditOf;
 }
 // Each kind, in the order a GroundCover's cell has them: its photo, or null (water, a roof).
+// A kind of tree's bark and leaves (task 019, tools/textures.mjs, from Poly Haven, CC0):
+// - bark: a seamless photo of its bark, `metres` a side, to wrap round its trunk; mean its mean colour.
+// - leaves: a spray of its leaves (or twigs of needles, or a palm's frond: leaflets either side of its
+//   stem, up the card), RGBA, row 0 at the top, the twigs fanning up from the card's foot; what's
+//   see-through is in the leaves' mean colour (mean); cover: how much of the card is leaves.
+export interface TreeTexture {
+  id: string;
+  metres?: number;
+  mean: [number, number, number];
+  cover?: number;
+  files: Record<PhotoLevel, PhotoFile>;
+  credit: PhotoCreditOf;
+}
+export interface TreeKindOf {
+  kind: TreeKind;
+  bark: TreeTexture | null;
+  leaves: TreeTexture | null;
+}
 export interface GroundKindOf {
   kind: GroundKind;
   texture: GroundTexture | null;
@@ -526,6 +566,8 @@ export interface BragaMap {
   photoCredits: PhotoCredit[];
   // The kinds of ground a GroundCover's cells say, each with its photo (task 016).
   groundKinds: GroundKindOf[];
+  // Each kind of tree, in the order the tiles number them, with its bark's and its leaves' photos.
+  treeKinds: TreeKindOf[];
   elev0: number;
   ext: Box;
   tile: number;

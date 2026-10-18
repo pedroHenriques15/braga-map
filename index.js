@@ -5,7 +5,7 @@
 // roofs: informação geográfica cedida pela Direção-Geral do Território (CC BY 4.0).
 import BASE from './world/base.js';
 import { TILES } from './world/tiles.js';
-import { CREDITS, SURFACES, TEXTURES } from './world/textures.js';
+import { CREDITS, SURFACES, TEXTURES, TREES } from './world/textures.js';
 import { COVER, KINDS } from './world/cover.js';
 
 // A packed part of the map: a JSON header (where each part's numbers start, how many, and what
@@ -171,6 +171,10 @@ function sightsOf(list, nums, part) {
   });
 }
 
+// How thick a tree's trunk is at a person's height, in metres: as thick as a tree that tall with a crown
+// that wide usually is (the LiDAR doesn't see a trunk), or a palm's.
+const trunkOf = (kind, h, crown) => Math.round(100 * (kind === 'palm' ? 0.3 + 0.01 * h : Math.max(0.08, Math.min(1.6, 0.012 * h + 0.018 * crown)))) / 100;
+
 // What every game needs, whichever part of the map it's in: the extent, the tiles and the
 // sections, the relief everywhere and the horizon round it, the rivers, the landmarks and the
 // sights, the open world's area with the gates where the streets leave it, and the shooter's.
@@ -196,6 +200,7 @@ export function map() {
     credit: m.credit,
     photoCredits: CREDITS,
     groundKinds: KINDS.map((kind) => ({ kind, texture: SURFACES[kind] ?? null })),
+    treeKinds: m.treeKinds.map((kind) => ({ kind, bark: TREES[kind]?.bark ?? null, leaves: TREES[kind]?.leaves ?? null })),
     elev0: m.elev0,
     ext: m.ext,
     tile: m.tile,
@@ -363,8 +368,13 @@ export async function loadWorld(area) {
     }
     // The shops' signs: [x0, z0, x1, z1, y, h, colour, text] each, in the header.
     for (const [x0, z0, x1, z1, sy, sh, c, text] of head.signs?.list ?? []) signs.push({ text, colour: F.colours[c][0], from: [x0, z0], to: [x1, z1], y: sy, h: sh });
+    // The trees (tools/world.mjs): [x, z, kind | mapped << 3 | filled << 4 | height << 5, crown, foot]
+    // each, in half metres, then decimetres.
     const T = head.trees;
-    for (let i = T.at; i < T.at + T.n; i += 3) trees.push({ x: nums[i] / 2, z: nums[i + 1] / 2, pine: (nums[i + 2] & 1) === 1, filled: (nums[i + 2] & 2) === 2 });
+    for (let i = T.at; i < T.at + T.n; i += 5) {
+      const v = nums[i + 2], kind = m.treeKinds[v & 7].kind, h = (v >> 5) / 10, crown = nums[i + 3] / 10;
+      trees.push({ x: nums[i] / 2, z: nums[i + 1] / 2, kind, h, crown, foot: nums[i + 4] / 10, trunk: trunkOf(kind, h, crown), mapped: (v & 8) !== 0, filled: (v & 16) !== 0 });
+    }
     // The streets as surfaces, in the open world's tiles: each piece [what, ...] (tools/streets.mjs's
     // packStreets), points in decimetres, the first of each ring or line from the tile's corner and
     // each after it the step from the one before, and off the ground each point's height after them.

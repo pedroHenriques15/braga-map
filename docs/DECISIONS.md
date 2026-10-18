@@ -1202,3 +1202,39 @@ the hills' woods are in view), 5 MB of textures more, the city built 0.2 s slowe
 OpenStreetMap's trees and the filled woods with the LiDAR's heights only where they stood on one
 (the woods' made-up trees stay made up), and a crown's kind from its photo alone (the cloud's
 near-infrared tells a pine wood from a eucalyptus one in a quarter of its trees, no better).
+
+## 044 · The karts fly the jump's flight, and take it a little slower than planned, to land short of the street's turn
+
+*2026-10-18 · task 060 · adds to decision 042, for party-kart's autopilot and bots*
+
+Karts left the Volta dos Amigos' lip 4–6° left of the flight, as the run-up turns 8° onto the ramp at
+its foot and the grip turns a kart's velocity a tenth of a second after its nose, and came down about
+4 m left of the line, in the corner the race takes in (decision 042). On the line, they land where
+the landing street turns about 35° left and narrows from 5 m to 3.5 m: over 12 races of eight bots,
+the axis alone made the landing worse (81 hits and 60 respawns within 60 m of it, against 76 and 46),
+going wide onto the street's kerb or straight on to the end of the flight's overrun. How fast a kart
+leaves the lip decided it, not where across it: from 105–111 km/h, nine landings in ten were clean.
+
+- **The autopilot steers its velocity onto the ramp's axis** (party-kart's `autopilot.ts`), from 18 m
+  before the foot to 6 m past the lip, where the grip still turns it: off any line and caution it
+  leaves within 0.2° of the flight and comes down within 0.2 m of its line.
+- **It takes the ramp 2.1 m/s under `rampSpeed`** at its foot and lets the climb take what it takes,
+  as a slipstream's pull up the ramp put some bots 3 m/s over the others: off the lip at about
+  110 km/h, under the 119 braga-map plans (`v`), it comes down a metre or two short of the landing
+  street, in the corner, with room to turn (the owner's answer, task 060, over flying the line alone
+  or leaving the landing for another task). `v` stays the slowest that lands on the street's line.
+- **In the air it turns its nose to the landing street, and down it slows for the turn its velocity
+  still has to make,** to 60 m past the landing, through the street's second bend, 3 m wide.
+- **The bots drive the middle and pass nobody** from a jump's run-up to 30 m past its landing.
+
+What it did, on braga-map 1.23.0, over 48 races of eight bots: 21 wall hits and 36 respawns within
+60 m of the landing, where it was 206 and 98; from 45 m past the lip on, where the karts come down,
+2 hits and 1 respawn, where it was 146 and 46. What's left is in the flight: karts that come to the
+lip too slow, stopped by an item or a bump before it, falling short into the Rio Este, as decision
+027 has it (35 respawns, where it was 52). The autopilot's
+laps 302.1 and 300.1 s (301.7 and 299.9 before).
+
+The alternatives were the task's: the velocity onto the axis and the bots' line alone (more hits,
+above); the bots kept off the middle on the run-up (more respawns: they bump and draft less, but go
+wide more); a landing street taken wider, or a jump elsewhere, which are braga-map's track, out of the
+task's scope.

@@ -1071,6 +1071,59 @@
         [2928, 2208],
         [2928, 2208]
       ]
+    },
+    {
+      "id": "2026-10-18-after014",
+      "label": "As rotundas",
+      "date": "2026-10-18",
+      "tasks": [
+        "014"
+      ],
+      "note": "As rotundas como são (tarefa 014): o anel de cada rotunda e a sua ilha onde o LiDAR os mediu, e a ilha no chão que lá está, a relva de um verde de março; São João Baptista de pedra branca no seu pedestal na ilha de São João da Ponte, e o Comendador Santos da Cunha na dele; e em cada entrada a linha de cedência de passagem tracejada e os triângulos. Por cima de «O chão das ruas»: a estátua vê-se em sao-joao-da-ponte, as marcas da entrada e a relva da ilha em falperra; o chão do resto da cidade feito de novo, sem diferença que se veja.",
+      "made": "2026-10-18T18:18:07.101Z",
+      "game": "613db39 with changes",
+      "map": "1.28.0",
+      "shots": {
+        "fujacal-start": [960, 720, 1, 8, 8, "c277ed0e972c"],
+        "imaculada-conceicao": [960, 720, 1, 984, 8, "bde9ffd6b1c2"],
+        "liberdade": [960, 540, 1, 1960, 8, "ebb06c4ec4ea"],
+        "sao-joao-da-ponte": [960, 540, 1, 8, 744, "32c0cd84f207"],
+        "devesa": [960, 540, 1, 984, 744, "8c1c3dd65bb1"],
+        "alvaro-carneiro": [960, 720, 1, 1960, 744, "47199ac29e77"],
+        "porfirio-da-silva": [960, 720, 1, 8, 1480, "a4770d48fb5c"],
+        "31-de-janeiro": [960, 720, 1, 984, 1480, "303c4b982808"],
+        "bernardo-sequeira": [960, 720, 1, 1960, 1480, "dfd370cb3dfb"],
+        "bom-jesus": [960, 720, 2, 8, 8, "6b714f08e5b7"],
+        "pascoal-fernandes": [960, 720, 2, 984, 8, "85bd05c8cbf4"],
+        "egidio-guimaraes": [960, 720, 2, 1960, 8, "7d9792361656"],
+        "robert-smith": [960, 720, 2, 8, 744, "276a31776614"],
+        "robert-smith-picoto": [960, 720, 2, 984, 744, "554c1d3eb6c9"],
+        "falperra": [960, 720, 2, 1960, 744, "ad8fa1c4f483"],
+        "sameiro": [960, 720, 2, 8, 1480, "cf9a99dc28c1"],
+        "estadio": [960, 720, 2, 984, 1480, "916b502bd70d"],
+        "viriato-amaral-nunes": [960, 720, 3, 8, 8, "7a121a25e79b"],
+        "monte-da-forca": [960, 720, 3, 984, 8, "c56cf15fb1b6"],
+        "couteiro": [960, 720, 3, 1960, 8, "02a186d1434a"],
+        "conselheiro-lobato": [960, 720, 3, 8, 744, "c9bf6268f8f6"],
+        "fujacal-west": [960, 720, 3, 984, 744, "2f23824b45b7"],
+        "travessa-fujacal": [960, 720, 3, 1960, 744, "5eb1b42ff1ab"],
+        "alameda-fujacal": [960, 720, 3, 8, 1480, "ad5d93004393"],
+        "lobato-pavement": [960, 432, 3, 984, 1480, "6972218afcaa"],
+        "lobato-crossing": [960, 540, 4, 8, 8, "2ec0ba9081ce"],
+        "travessa-lobato": [960, 720, 4, 984, 8, "5af8815596f1"],
+        "lobato-east": [960, 720, 4, 1960, 8, "db3e0d93a4cc"],
+        "capela-sao-joao": [960, 540, 4, 8, 744, "4863f97e2d2a"],
+        "altice-forum": [960, 720, 4, 984, 744, "ae260bbb25aa"],
+        "picoto-top": [960, 720, 4, 1960, 744, "d8d5441e9a61"],
+        "capela-santa-justa": [960, 720, 4, 8, 1480, "453b917ef961"],
+        "capela-santo-adriao": [960, 720, 4, 984, 1480, "6f4d0e1139c2"]
+      },
+      "sheets": [
+        [2928, 2208],
+        [2928, 2208],
+        [2928, 2208],
+        [2928, 2208]
+      ]
     }
   ]
 }

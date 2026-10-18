@@ -1,5 +1,5 @@
 ---
-status: doing
+status: done
 priority: medium
 kind: code
 repo: both
@@ -122,8 +122,14 @@ Steps:
 - [x] braga-map's `npm test`, party-kart's `npm test` and `npm run check` pass.
   > braga-map 138 of 138; party-kart 66 of 66 on this map (the autopilot's laps 303.0 and 300.2 s,
   > no respawn; main's 302.4 and 300.3), `npm run check` clean.
-- [ ] The viewpoints round the route's roundabouts shot again and no worse: `sao-joao-da-ponte`
+- [x] The viewpoints round the route's roundabouts shot again and no worse: `sao-joao-da-ponte`
       above all, and `devesa`, `falperra`, `estadio` and `robert-smith` (within 50 m of a ring).
+  > The round "As rotundas" (`2026-10-18-after014`), after 045's "O chão das ruas": Claude's marks
+  > 2.94 over 33, none moved. `sao-joao-da-ponte` has São João Baptista on his plinth in the island
+  > where its photo has him; `falperra` the give-way line and triangles where its photo has the line,
+  > its island's lawn a darker green than the photo's bright one (it was a lighter green before: the
+  > owner's answer on the lawns); `estadio` its smaller island; `devesa` the tip of the zebra at its
+  > foot, as the photo has it. `robert-smith` and every other place as before.
 
 ## Out of scope
 
@@ -180,3 +186,23 @@ Steps:
   twice on the same world; why it moved since isn't checked). A long `cover.mjs` run twice failed reading a
   boiled-down tile of the point cloud ("incorrect data check") that reads fine on its own: made a few
   tiles a process instead.
+- **Their lawns' colour** (the owner's answer, 2026-10-18): in party-kart an island's grass is a
+  watered lawn's green in the orthophoto (the stadium's pitch, the Rua Cidade do Porto's island), not
+  the summer's beige; the city's other lawns: task 068.
+- **Merged with task 045** (braga-map 1.27.0, decision 049, landed while this was being shot): this
+  lands as 1.28.0 and decision 050, its round after 045's. On 045's ground the Rotunda Santos da
+  Cunha's ring took the tunnel mouth beside it (Notes above): it stays as the map has it.
+- **The markings:** 73 give-way lines and 80 triangles in the open world's tiles (sizes in
+  docs/STREET-DETAILS.md, from the orthophoto's 25 cm and the photos: the dashes aren't resolved in
+  the orthophoto, so they're the photos').
+- **The budget** (party-kart's `docs/architecture.md`): +4 draw calls on High and +3 on Low, about
+  2,000 more triangles, the same textures; the build's time the same, A/B on one desktop. The open
+  world's 53 tiles 3.329 → 3.330 MB gzipped.
+- **The round "As rotundas"** (`2026-10-18-after014`), after 045's "O chão das ruas", shot on party-kart
+  `613db39` with braga-map 1.28.0 (the statues baked with the chapels since: the same pictures, a draw
+  call fewer): 33 shots of its own in 4 sheets in `.cache/scorecard/rounds/`, and `refs/rounds.json`.
+  **Not published**, as 052's, 063's, 042's and 045's aren't: the sessions' account can't open the
+  scorecard (task 064). Claude's marks against "O chão das ruas" in
+  `.cache/scorecard/marks/2026-10-18-after014.json`: 2.94 over 33, none moved.
+- **Not checked:** the owner's marks; a phone; a race with friends round the rings measured; the
+  deploy (not asked). The Comendador Santos da Cunha's statue against a photo (none on the surface).

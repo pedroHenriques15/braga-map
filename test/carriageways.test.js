@@ -12,6 +12,7 @@ import { across, BIN, EASE, FILE, movesOf, OFF, overhangs, pastEdges, profile } 
 import { CACHE, readCache } from '../tools/geo.mjs';
 import { LEVEL, moveLine, onCarriageways, streetsOf } from '../tools/lines.mjs';
 import { OPEN, OPEN_BOX } from '../tools/sections.mjs';
+import { FILE as RINGS } from '../tools/roundabouts.mjs';
 import { Inside } from '../tools/osm.mjs';
 
 // The open world's streets where they were measured, for the tests at the end: read before any test is
@@ -22,6 +23,9 @@ const B = OPEN_BOX, M = 60, inBox = (x, z, m) => x >= B.x0 - M - m && x <= B.x1 
 const lines = measured ? streetsOf(readCache('osm/base.json'), inBox) : [];
 const moved = measured ? new Map(streetsOf(onCarriageways(readCache('osm/base.json')), inBox).map((l) => [l.id, l])) : new Map();
 const ground = measured ? await (await import('../tools/terrain.mjs')).terrain() : null;
+// The roundabouts' rings that roundabouts.mjs moved (task 014): each at the width it measured round it,
+// laid over this file's, and checked in test/roundabouts.test.js.
+const rings = new Set(fs.existsSync(RINGS) ? JSON.parse(fs.readFileSync(RINGS, 'utf8')).rings.filter((r) => r.moved).flatMap((r) => r.ways) : []);
 
 // ---- Made-up cross-sections ----
 
@@ -152,7 +156,7 @@ test('every street measured off its line for HOLD or more is drawn on its middle
   const off = [], wide = [];
   for (const l of lines) {
     const st = measured.ways[l.id], m = moved.get(l.id);
-    if (!st || !m) continue;
+    if (!st || !m || rings.has(l.id)) continue;
     const s = [0];
     for (let i = 1; i < l.pts.length; i++) s.push(s[i - 1] + Math.hypot(l.pts[i][0] - l.pts[i - 1][0], l.pts[i][1] - l.pts[i - 1][1]));
     const p = profile(st, s.at(-1), l.w), ends = l.nodes.map((q, i) => (junction.get(q) > 1 || i === 0 || i === l.nodes.length - 1 ? s[i] : null)).filter((v) => v !== null);

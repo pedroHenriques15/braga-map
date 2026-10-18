@@ -1394,3 +1394,40 @@ names, one on each wall, as Braga's do.
 The alternatives were the task's: the game working the corners out from the names on the lines
 (every game again, from lines cut at the tiles' edges, without the map's nodes), and the names drawn
 into atlases of plates.
+
+## 049 · A roundabout's ring is where the LiDAR measured it, and its island is what the ground is there
+
+*2026-10-18 · task 014 · as the streets' carriageways (decision 039)*
+
+Every roundabout's ring was a band round OpenStreetMap's line for it, at the width its kind of street
+usually is, and its island the hole the band left (task 033): task 026 measured almost no ring, as a
+ring is all junctions and it takes no station near one. At São João da Ponte the island was 8.6 m
+round where the LiDAR has 5.9, and the ring 6.5 m wide where it's 10.3. The owner chose to measure
+the rings (task 014's answers, 2026-10-18), to draw each island in what the ground is there, and to
+paint the give-way markings at their entries.
+
+- **Measured as a street is, out from the island** (`tools/roundabouts.mjs`): every 2 m round the
+  ring, 026's cross-section; the island's kerb all round, the outer kerb but in an arm's mouth. A
+  round island (most) is one circle fitted to its kerb, and its ring that circle half its width out;
+  an oval, or a ring round a square, moves out by the middle measured round it. The width is the one
+  measured, where five or more stations saw both kerbs; else the ring runs from the island's kerb to
+  the map's outer edge. Of the open world's box's 20 rings, 18 moved (15 round), 17 at a width
+  measured; the Praça Paulo Vidal's (cars parked along its island) and the Rotunda Lions Clube's
+  stay as the map has them. Its moves are laid over `carriageways.json`'s, a file of its own
+  (`.cache/roundabouts.json`), so every reader of the streets has them; and a corner's rounding never
+  fills a roundabout's island, however far it reaches (it filled one on the route, at (-109, 1678)).
+- **The island is the ground's:** a roundabout's island is `round` in the tiles, the cover classes it
+  from the LiDAR and the orthophoto as any ground, not as paving, and party-kart draws it in the
+  land's own material, its grass, flower beds and paving at the kerb's height.
+- **What stands in it is the map's:** OpenStreetMap's statues, fountains and monuments in an island
+  (`fetch.mjs art`), each as tall as DGT's point cloud has it, all its points but the ground's (São
+  João da Ponte's São João Baptista, 4.3 m, is classed as noise there): two statues, São João Baptista
+  and the Comendador Santos da Cunha. The signs on the islands are street furniture (task 020).
+- **The give-way markings** at every entry, where a street runs into the ring the way its traffic
+  goes: the dashed line across the side coming in, at the ring's edge, and a triangle's outline in
+  each lane behind it, their sizes from the orthophoto and the photos (docs/STREET-DETAILS.md): 73
+  lines and 80 triangles in the open world's tiles.
+
+The alternatives were the task's: checking the islands against the photos and keeping the map's
+rings, and the markings left to task 018. The race's road takes the rings measured: party-kart's
+peer prefix moves.

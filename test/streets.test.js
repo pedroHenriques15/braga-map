@@ -90,6 +90,25 @@ test("a roundabout keeps its island, kerbed, and its arms stop at the ring", () 
   const a = net(island);
   assert.ok(Math.abs(a - Math.PI * 49) < 6, `the island ${a.toFixed(1)} m², a circle of 7 m is ${(Math.PI * 49).toFixed(1)}`);
   assert.ok(got.kerbs.some((k) => k.pts.every(([x, z]) => Math.abs(Math.hypot(x - 50, z - 25) - 7) < 0.2)), 'a kerb round the island');
+  // A roundabout's island, for a game to draw in what the ground is (task 014).
+  assert.ok(island.every((p) => p.round), 'the island is a roundabout\'s');
+  // At each of the four entries (two-way arms), a give-way line across the side coming in, at the
+  // ring's edge (half its width out from its line, and 30 cm more), and a triangle behind it in that
+  // lane, its point away from the ring.
+  const give = got.markings.filter((m) => m.kind === 'giveway'), tri = got.markings.filter((m) => m.kind === 'yield');
+  assert.equal(give.length, 4, `${give.length} give-way lines`);
+  for (const m of give) {
+    assert.deepEqual(m.dash, [0.5, 0.5]);
+    const mid = [(m.pts[0][0] + m.pts.at(-1)[0]) / 2, (m.pts[0][1] + m.pts.at(-1)[1]) / 2], r = Math.hypot(mid[0] - 50, mid[1] - 25);
+    assert.ok(r > 15 && r < 15.6, `a give-way line ${r.toFixed(2)} m from the middle`);
+    assert.ok(Math.abs(Math.hypot(m.pts[0][0] - m.pts.at(-1)[0], m.pts[0][1] - m.pts.at(-1)[1]) - 3.05) < 0.1, 'across the side coming in');
+  }
+  assert.equal(tri.length, 4, `${tri.length} triangles`);
+  for (const m of tri) {
+    const d = m.pts.map(([x, z]) => Math.hypot(x - 50, z - 25));
+    assert.ok(m.pts.length === 4 && m.pts[0][0] === m.pts[3][0] && m.pts[0][1] === m.pts[3][1], 'a closed triangle');
+    assert.ok(d[1] > d[0] + 2.5 && d[1] > d[2] + 2.5 && Math.min(d[0], d[2]) > 16, 'behind the line, its point away from the ring');
+  }
 });
 
 test('a reservation between a road\'s two carriageways, the way each goes', () => {

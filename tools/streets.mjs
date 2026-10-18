@@ -14,7 +14,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import ClipperLib from 'clipper-lib';
-import { COBBLE, isOneway, lanesOf, openThin } from './osm.mjs';
+import { COBBLE, driven, isOneway, lanesOf, openThin } from './osm.mjs';
 
 const C = ClipperLib;
 const NZ = C.PolyFillType.pftNonZero;
@@ -30,8 +30,9 @@ const KERB = 0.15, PIECE = 4;
 const R_KERB = [10, 8, 8, 7, 6, 5, 3, 3, 3];
 // A hole between the carriageways is an island (kerbed, with nothing built on it) when it's smaller
 // than this, no building stands on it and it isn't the rows of a car park between its aisles, or
-// when a roundabout goes round it.
-const ISLAND = 600;
+// when a roundabout goes round it. A roundabout's island is kept whole up to ROUND_MAX (task 014: the
+// Rotunda Santos da Cunha's is 1,200 m², the biggest in the open world's area 1,800).
+const ISLAND = 600, ROUND_MAX = 5000;
 // A deck or a tunnel's road within this of the ground is at its level: nothing passes under it, so
 // nothing on the ground lies over it, nor its pavements on the ground's road (task 040).
 const GRADE = 2;
@@ -44,6 +45,12 @@ const TWIST = 0.5;
 // The lines painted: as wide as the track's (party-kart's road.ts), dashes 3 m on and 4 m off; a
 // zebra 4 m deep, a stop line 0.5 m.
 const LINE_W = 0.14, DASH = [3, 4], ZEBRA = 4, STOP = 0.5;
+// At a roundabout's entry (task 014), as the orthophoto (25 cm) and the photos show them at the
+// route's (docs/STREET-DETAILS.md): the give-way line GIVE_W wide, in dashes GIVE_DASH, GIVE_OFF
+// out from the ring's edge; and in each lane coming in, YIELD_BACK behind it, a triangle's outline,
+// YIELD_W wide, YIELD_BASE across its base and YIELD_LEN to its point, which points to the traffic
+// coming. A lane is YIELD_LANE wide at most.
+const GIVE_W = 0.3, GIVE_DASH = [0.5, 0.5], GIVE_OFF = 0.3, YIELD_W = 0.2, YIELD_BASE = 1.5, YIELD_LEN = 2.75, YIELD_BACK = 1, YIELD_LANE = 3.5;
 // The walls the streets end at (task 052): a street's edge, a pavement's or a path's stops FACE short
 // of a wall's line, as the tiles round to 10 cm and a wall on a carriageway or a path is cut there
 // (world.mjs). A carriageway comes back to a wall of the map's that runs along it, within ALONG of
@@ -246,6 +253,8 @@ export { band, grow, meet, minus, positive, shapes, toPath, toPts, union };
 // ---- Lines ----
 
 const dist = (a, b) => Math.hypot(b[0] - a[0], b[1] - a[1]);
+const segDist = (p, a, b) => { const dx = b[0] - a[0], dz = b[1] - a[1], f = Math.max(0, Math.min(1, ((p[0] - a[0]) * dx + (p[1] - a[1]) * dz) / (dx * dx + dz * dz || 1))); return Math.hypot(p[0] - a[0] - dx * f, p[1] - a[1] - dz * f); };
+const lineDist = (p, pts) => pts.reduce((m, q, i) => (i ? Math.min(m, segDist(p, pts[i - 1], q)) : m), Infinity);
 const lengthOf = (pts) => pts.reduce((s, p, i) => (i ? s + dist(pts[i - 1], p) : 0), 0);
 // A line moved o metres to its right (to its left if o is negative), its corners mitred; or each
 // point by its own, where o is a list. Right is as seen on the map, north up: x east, z south, so
@@ -491,10 +500,23 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height =
       for (let cx = Math.floor((x - r) / CELL); cx <= Math.floor((x + r) / CELL); cx++) for (let cz = Math.floor((z - r) / CELL); cz <= Math.floor((z + r) / CELL); cz++) for (const e of cells.get(cx + ',' + cz) ?? []) got.add(e);
       return [...got];
     };
+    // The roundabouts' islands (task 014): the holes the carriageways leave that a ring goes round (its
+    // ways the nearest along most of the hole's edge), whole, however far one reaches past a corner's
+    // reach below.
+    const rounds = shapes(U0).flatMap(([, ...holes]) => holes.filter((h) => {
+      if (Math.abs(C.Clipper.Area(h)) > ROUND_MAX * S * S) return false;
+      const pts = toPts(h).filter((_, i) => i % 4 === 0), ring = pts.filter((q) => {
+        let best = null, d = Infinity;
+        for (const e of around(q, 20)) { const v = lineDist(q, e.pts) - e.w / 2; if (v < d) { d = v; best = e; } }
+        return best?.t.junction === 'roundabout';
+      });
+      return ring.length > 0.6 * pts.length;
+    }).map(positive));
     // A corner where streets meet, or a street turns at a node, rounded as a kerb turns it: the
     // carriageways round the node closed (grown then shrunk) by the kerb's radius, which fills what's
     // between the arms there and no more. What they enclose stays open (a roundabout's island, one
-    // between a slip road and the corner), but for a sliver under 25 m².
+    // between a slip road and the corner), but for a sliver under 25 m²; and so does a roundabout's
+    // island that reaches past the corner's reach.
     const arms = new Map();
     for (const e of list) [[e.nodes[0], 0], [e.nodes.at(-1), e.pts.length - 1]].forEach(([n, i]) => { if (n != null) arms.set(n, [...(arms.get(n) ?? []), { e, i, dir: heading(e.pts, i, i > 0) }]); });
     const fills = [];
@@ -507,7 +529,7 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height =
       // Stopping where a street round it gives way to a wall, and at a wall of the map's in it, seen
       // from the junction (task 052).
       const shut = key === 'ground' ? behind(p, mapWalls.near({ x0: p[0] - R, x1: p[0] + R, z0: p[1] - R, z1: p[1] + R }).filter(([ax, az, bx, bz]) => !held.some((q) => dist(q.p, [(ax + bx) / 2, (az + bz) / 2]) < q.r)), R) : [];
-      const fill = minus(meet(grow(grow(local, r), -r), disc), [...local, ...enclosed, ...around(p, R).flatMap((e) => e.gives ?? []), ...shut]);
+      const fill = minus(meet(grow(grow(local, r), -r), disc), [...local, ...enclosed, ...rounds, ...around(p, R).flatMap((e) => e.gives ?? []), ...shut]);
       if (area(fill) > 0.05) fills.push({ n, p, paths: fill, surface: a.reduce((m, x) => (x.e.k < m.e.k ? x : m)).e.surface });
       stats.junctions += a.length > 2;
     }
@@ -775,6 +797,7 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height =
     // street it's the edge of. Islands: the holes the carriageways go round with nothing built in
     // them, small, or a roundabout's.
     let islands = [];
+    const ringed = [];
     if (level !== 'tunnel') for (const [, ...holes] of shapes(U)) for (const h of holes) {
       const a = Math.abs(area([h])), pts = toPts(h), inH = insideOf([h]);
       const xs = pts.map((p) => p[0]), zs = pts.map((p) => p[1]), hb = { x0: Math.min(...xs), x1: Math.max(...xs), z0: Math.min(...zs), z1: Math.max(...zs) };
@@ -782,6 +805,7 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height =
       const round = share((e) => e.t.junction === 'roundabout'), service = share((e) => e.k >= 7);
       const builtOn = buildings.some((r) => r.length && r[0][0] >= hb.x0 && r[0][0] <= hb.x1 && r[0][1] >= hb.z0 && r[0][1] <= hb.z1 && inH(r[0][0], r[0][1]) && inH(r[Math.floor(r.length / 2)][0], r[Math.floor(r.length / 2)][1]));
       if ((a < ISLAND && !builtOn && service < 0.5) || round > 0.6) islands.push(positive(h));
+      if (round > 0.6) ringed.push(positive(h));
     }
     stats.islands += islands.length;
     // As Clipper rounds them, kept off the carriageways, and on the ground off a deck or a tunnel's
@@ -914,7 +938,9 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height =
     pave = shapes(pave).filter((sh) => Math.abs(C.Clipper.Area(sh[0])) / (S * S) > 1).flat();
     addShapes('pavements', shapes(pave), { kind: 'pavement', level }, ys);
     addShapes('pavements', shapes(res), { kind: 'reservation', level }, ys);
-    addShapes('pavements', shapes(islands), { kind: 'island', level }, ys);
+    // A roundabout's island apart (task 014): a game draws it in what the ground is there.
+    addShapes('pavements', shapes(minus(islands, ringed)), { kind: 'island', level }, ys);
+    addShapes('pavements', shapes(meet(islands, ringed)), { kind: 'island', round: true, level }, ys);
     stats.m2.pavement = (stats.m2.pavement ?? 0) + area(meet(pave, boxPath));
 
     // The kerbs: the edge of the carriageway wherever a pavement, a reservation or an island is
@@ -1031,6 +1057,41 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height =
       const [a, b] = isOneway(e.t) || !['forward', 'backward'].includes(dir) ? [-hl, hr] : dir === 'forward' ? [0, hr] : [-hl, 0];
       addLines('markings', [toPath([[p[0] + across[0] * a, p[1] + across[1] * a], [p[0] + across[0] * b, p[1] + across[1] * b]])], { kind: 'stop', w: STOP, dash: null, level }, ys);
     });
+    // At each roundabout's entry (task 014): where a street runs into its ring the way its traffic
+    // goes, the give-way line across the side coming in (all of it, one way), at the ring's edge (half
+    // its widest way's width out from the node), and a triangle in each lane coming in behind it; but
+    // none on a zebra, nor where the street is too short for it.
+    const onZebra = insideOf(zebraZones);
+    for (const [n, a] of g.arms) {
+      const ring = a.filter((x) => x.e.t.junction === 'roundabout');
+      if (!ring.length || ring.length === a.length) continue;
+      const back = Math.max(...ring.map((x) => x.e.w)) / 2 + GIVE_OFF;
+      for (const { e, i } of a) {
+        if (e.t.junction === 'roundabout' || e.k > 7) continue;
+        const end = i === e.pts.length - 1, d = driven(e.t);
+        if (end ? d < 0 : d > 0) continue;
+        // From the node out along the street: where the line is, and the way out there.
+        const out = end ? [...e.pts].reverse() : e.pts, L = lengthOf(out);
+        if (L < back + 1) continue;
+        const at = (s) => { let r = s; for (let k = 1; k < out.length; k++) { const q = dist(out[k - 1], out[k]); if (r <= q || k === out.length - 1) { const u = Math.min(1, r / (q || 1)); return [[out[k - 1][0] + (out[k][0] - out[k - 1][0]) * u, out[k - 1][1] + (out[k][1] - out[k - 1][1]) * u], [(out[k][0] - out[k - 1][0]) / (q || 1), (out[k][1] - out[k - 1][1]) / (q || 1)]]; } r -= q; } return [out[0], [1, 0]]; };
+        const [p, o] = at(back), right = [o[1], -o[0]];
+        // The side coming in is to the right of its traffic, which runs against o: the street's own
+        // right where it's drawn into the ring, its left where it's drawn out of it.
+        const [l, r] = widthAt(e, i), [inR, inL] = end ? [r, l] : [l, r];
+        const [s0, s1] = d === 0 ? [0.15, inR - 0.3] : [-(inL - 0.3), inR - 0.3];
+        if (s1 - s0 < 1.5 || onZebra(...p)) continue;
+        addLines('markings', [toPath([[p[0] + right[0] * s0, p[1] + right[1] * s0], [p[0] + right[0] * s1, p[1] + right[1] * s1]])], { kind: 'giveway', w: GIVE_W, dash: GIVE_DASH, level }, ys);
+        if (L < back + YIELD_BACK + YIELD_LEN + 0.5) continue;
+        const lanes = Math.max(1, Math.round((s1 - s0) / YIELD_LANE));
+        for (let k = 0; k < lanes; k++) {
+          const c = s0 + ((k + 0.5) * (s1 - s0)) / lanes, [b, ob] = at(back + YIELD_BACK), [t] = at(back + YIELD_BACK + YIELD_LEN), rb = [ob[1], -ob[0]];
+          const base = [b[0] + rb[0] * c, b[1] + rb[1] * c], tip = [t[0] + rb[0] * c, t[1] + rb[1] * c];
+          const tri = [[base[0] - (rb[0] * YIELD_BASE) / 2, base[1] - (rb[1] * YIELD_BASE) / 2], tip, [base[0] + (rb[0] * YIELD_BASE) / 2, base[1] + (rb[1] * YIELD_BASE) / 2]];
+          if (tri.some((q) => onZebra(...q))) continue;
+          addLines('markings', [toPath([...tri, tri[0]])], { kind: 'yield', w: YIELD_W, dash: null, level }, ys);
+        }
+      }
+    }
   }
 
   // The footbridges' and the paths' tunnels' surfaces, each kind of each surface where none before it
@@ -1492,23 +1553,27 @@ function groundPaths(list, { U, kerbed, B, W, over, walled = null, boxPath = nul
 // ---- In the tiles ----
 
 // What each piece is, in a tile's `streets` part: its code, and 16 times its level.
-export const STREET = ['asphalt', 'setts', 'paving', 'dirt', 'pavement', 'reservation', 'island', 'kerb', 'lane', 'centre', 'zebra', 'stop'];
+// A roundabout's island is `roundabout` (task 014), read as an island that's `round`; and the
+// dashes, none, the lanes' or a give-way line's (DASHES).
+export const STREET = ['asphalt', 'setts', 'paving', 'dirt', 'pavement', 'reservation', 'island', 'kerb', 'lane', 'centre', 'zebra', 'stop', 'giveway', 'yield', 'roundabout'];
+const DASHES = [null, DASH, GIVE_DASH];
 const LEVELS = ['ground', 'bridge', 'tunnel'];
 
 // One tile's streets as 16-bit numbers, for index.js: each piece [what, ...], what its STREET code
 // and 16 times its level; points in decimetres, the first of each ring or line from the tile's
 // corner (x0, z0), each after it the step from the one before; and off the ground, the height of
 // each point after them, in decimetres above ELEV0.
-// - A carriageway, pavement, reservation or island: [what, rings, then each ring's n and points],
-//   its outline first, then its holes.
-// - A kerb: [what, its height in cm, 0, n, points]. A marking: [what, its width in cm, 1 if it's
-//   dashed (3 m on, 4 m off) or 0, n, points].
+// - A carriageway, pavement, reservation or island (a roundabout's its own code): [what, rings, then
+//   each ring's n and points], its outline first, then its holes.
+// - A kerb: [what, its height in cm, 0, n, points]. A marking: [what, its width in cm, its dashes
+//   (DASHES's index: 1 the lanes' 3 m on and 4 m off, 2 a give-way line's) or 0, n, points]; a
+//   give-way triangle's outline closed, its last point its first.
 export function packStreets(got, x0, z0) {
   const out = [], dmOf = (v) => Math.round(v * 10);
   const pts = (list) => { let px = 0, pz = 0; list.forEach(([x, z], i) => { const a = dmOf(x - x0), b = dmOf(z - z0); out.push(i ? a - px : a, i ? b - pz : b); px = a; pz = b; }); };
   const what = (name, level) => STREET.indexOf(name) + 16 * LEVELS.indexOf(level);
   for (const p of [...got.carriageways, ...got.pavements]) {
-    out.push(what(p.surface ?? p.kind, p.level), p.rings.length);
+    out.push(what(p.surface ?? (p.round ? 'roundabout' : p.kind), p.level), p.rings.length);
     for (const r of p.rings) { out.push(r.length); pts(r); }
     if (p.ys) for (const r of p.ys) for (const y of r) out.push(dmOf(y));
   }
@@ -1518,7 +1583,7 @@ export function packStreets(got, x0, z0) {
     if (k.ys) for (const y of k.ys) out.push(dmOf(y));
   }
   for (const m of got.markings) {
-    out.push(what(m.kind, m.level), Math.round(m.w * 100), m.dash ? 1 : 0, m.pts.length);
+    out.push(what(m.kind, m.level), Math.round(m.w * 100), Math.max(0, DASHES.findIndex((d) => d && m.dash && d[0] === m.dash[0] && d[1] === m.dash[1])), m.pts.length);
     pts(m.pts);
     if (m.ys) for (const y of m.ys) out.push(dmOf(y));
   }
@@ -1607,7 +1672,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   console.log(`${s.edges} edges, ${s.junctions} junctions, ${s.islands} islands, ${s.reservations} reservations, ${Math.round(s.slivers)} m² of slivers closed, ${Math.round(s.past)} m² of corners cut back past a deck's or a tunnel's end, in ${s.seconds} s`);
   console.log(`carriageways ${Object.entries(s.m2).filter(([k]) => k !== 'pavement').map(([k, v]) => `${k} ${Math.round(v)} m²`).join(', ')}; pavements ${Math.round(s.m2.pavement)} m²; kerbs ${s.km.kerb.toFixed(2)} km, ${s.km.dropped.toFixed(2)} km dropped`);
   console.log(`walls: ${s.walls.streets} streets brought back to the map's walls in them, giving way ${Math.round(s.walls.given)} m² of carriageway; ${Math.round(s.walls.behind)} m² of pavement and ${Math.round(s.walls.paths)} m² of paths behind a wall taken off`);
-  console.log(`${got.carriageways.length} carriageway pieces, ${got.pavements.length} pavements, ${got.kerbs.length} kerbs, ${got.markings.length} markings (${['lane', 'centre', 'zebra', 'stop'].map((k) => `${got.markings.filter((m) => m.kind === k).length} ${k}`).join(', ')})`);
+  console.log(`${got.carriageways.length} carriageway pieces, ${got.pavements.length} pavements, ${got.kerbs.length} kerbs, ${got.markings.length} markings (${['lane', 'centre', 'zebra', 'stop', 'giveway', 'yield'].map((k) => `${got.markings.filter((m) => m.kind === k).length} ${k}`).join(', ')})`);
   const ps = s.paths;
   console.log(`paths: ${got.paths.length} pieces, ${Object.entries(ps.m2).map(([k, v]) => `${k} ${Math.round(v)} m²`).join(', ')} (cycleways ${Math.round(ps.lanes)} m² beside the road, ${Math.round(ps.flush)} m² flush); ${ps.flights} flights in ${ps.treads} treads, ${ps.steep} rising over 0.3 m; ${got.handrails.length} handrails`);
   // Buildings on a carriageway: where the map's width, or its guess, is wider than the street.

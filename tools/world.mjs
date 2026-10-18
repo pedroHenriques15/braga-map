@@ -1078,6 +1078,13 @@ let standsDm = null; // the stadium's stands' heights, in decimetres, for the ba
     const x = f.x + wx * (f.L - 9), z = f.z + wz * (f.L - 9), y = yAt(x, z), top = roofs[hall.id]?.parts?.length ? Math.max(...roofs[hall.id].parts.map((p) => p.eaves)) - ELEV0 - y : 20;
     sights.push({ kind: 'altice', x: r1(x), z: r1(z), y, face: f.face, h: r1(top - 2.8) });
   }
+  // The statues the map has in a roundabout's island (task 014), each where DGT's point cloud has it
+  // and as tall (roundabouts.mjs): São João da Ponte's São João Baptista, the Rotunda Santos da
+  // Cunha's comendador.
+  const ringsFile = path.join(CACHE, 'roundabouts.json');
+  for (const q of fs.existsSync(ringsFile) ? JSON.parse(fs.readFileSync(ringsFile, 'utf8')).stands ?? [] : []) {
+    if (q.kind === 'statue') sights.push({ kind: 'statue', x: r1(q.x), z: r1(q.z), y: yAt(q.x, q.z), h: q.h, ...(q.name && { name: q.name }), ...(q.subject && { subject: q.subject }), ...(q.material && { material: q.material }) });
+  }
   const pitch = find(base.elements, 'way', 22660434);
   if (pitch) {
     const r = minRect(ringOf(pitch)), st = sightsMeasured?.stadium;

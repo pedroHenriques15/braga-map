@@ -14,11 +14,17 @@ import { carriageway, LINE } from './osm.mjs';
 // map's way stays the street, with its name, kind, junctions and direction; its nodes move. Every
 // reader of the map's streets reads them through onCarriageways: world.mjs (and through it the
 // tiles, the paths' joins and the ground held at the decks' ends), track.mjs's graph, open.mjs's
-// edge and gates, walls.mjs and the map page. Without the file, the map's lines as they are.
-const MOVES = path.join(CACHE, 'carriageways.json');
+// edge and gates, walls.mjs and the map page. Without the file, the map's lines as they are. And the
+// roundabouts' rings, which carriageways.mjs leaves (a ring is all junctions), measured by
+// roundabouts.mjs (task 014): .cache/roundabouts.json's moves, laid over the streets', each ring's
+// nodes and ways and its arms' ends taking its.
+const MOVES = path.join(CACHE, 'carriageways.json'), RINGS = path.join(CACHE, 'roundabouts.json');
 let moves;
 export function carriagewayMoves() {
-  if (moves === undefined) moves = fs.existsSync(MOVES) ? JSON.parse(fs.readFileSync(MOVES, 'utf8')).moves ?? null : null;
+  if (moves !== undefined) return moves;
+  const read = (f) => (fs.existsSync(f) ? JSON.parse(fs.readFileSync(f, 'utf8')).moves ?? null : null);
+  const streets = read(MOVES), rings = read(RINGS);
+  moves = streets && rings ? { nodes: { ...streets.nodes, ...rings.nodes }, inserts: { ...streets.inserts, ...rings.inserts }, widths: { ...streets.widths, ...rings.widths } } : streets ?? rings;
   return moves;
 }
 

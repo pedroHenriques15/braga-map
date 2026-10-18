@@ -69,7 +69,11 @@ export type Sight =
   | { kind: 'shrine'; id: 'bonfim' | 'boa-morte'; x: number; z: number; y: number; face: number; L: number; W: number; top: number }
   // São João da Ponte's bridge, an arch of dressed granite: where the road's middle crosses the river,
   // and how far its decks reach from there. A game draws the decks within r of (x, z) as the arch.
-  | { kind: 'arch'; x: number; z: number; r: number; y: number };
+  | { kind: 'arch'; x: number; z: number; r: number; y: number }
+  // A statue in a roundabout's island (task 014), as OpenStreetMap has it (tools/fetch.mjs art): where
+  // DGT's point cloud has it, h its top over y; its name, or the wikipedia article on its subject
+  // (São João da Ponte's: João Batista), and what it's made of, where the map says.
+  | { kind: 'statue'; x: number; z: number; y: number; h: number; name?: string; subject?: string; material?: string };
 
 // The stadium's stands, along spokes square to its track's oval. In the pitch's frame (s along its
 // long axis, (cos angle, sin angle), t across it, (-sin angle, cos angle)), the oval is two bends of
@@ -252,9 +256,12 @@ export interface Carriageway {
 // (task 052: any wall but a hedge DGT's LiDAR found, or a gate; 15 cm short of its line), 3.2 m at
 // most (none where the map says so, or out in the open, or by a fast road, a service road, a track
 // or a pedestrian street); a central reservation between a road's two carriageways; or an island they go
-// round (a roundabout's, or a small one with nothing built on it).
+// round (a roundabout's, or a small one with nothing built on it). round: a roundabout's island (task
+// 014), its kerb where DGT's LiDAR measured it, for a game to draw in what the ground is there
+// (`groundCover`): grass, flower beds, paving; and what stands on it is in `sights` (a statue).
 export interface Pavement {
   kind: 'pavement' | 'reservation' | 'island';
+  round?: true;
   level: StreetLevel;
   rings: [number, number][][];
   ys?: number[][];
@@ -271,9 +278,12 @@ export interface Kerb {
 
 // A line painted on a carriageway, w wide: between its lanes (lane), between its two ways (centre),
 // a zebra (its line runs across the road at the crossing, and w is how deep it is) or a stop line at
-// traffic lights. dash: [on, off] in metres, or null for a solid line.
+// traffic lights; and at a roundabout's entries (task 014), the give-way line across the lanes coming
+// in (giveway, dashed half a metre on and off), and behind it in each lane a triangle's outline, its
+// point to the traffic coming (yield, closed: its last point its first). dash: [on, off] in metres, or
+// null for a solid line.
 export interface Marking {
-  kind: 'lane' | 'centre' | 'zebra' | 'stop';
+  kind: 'lane' | 'centre' | 'zebra' | 'stop' | 'giveway' | 'yield';
   w: number;
   dash: [number, number] | null;
   level: StreetLevel;

@@ -128,11 +128,9 @@ Steps:
   in `.cache/scorecard/rounds/` and 2 the same as 063's, and `refs/rounds.json`. **Not published:** the
   scorecard opened from this session in the morning (062 republished it), but since the afternoon
   its account is another (the Artifact tool lists none of the scorecard's), as 052 found. Claude's
-  marks are ready in `.cache/scorecard/claude-marks-042.json`: the whole of `scores/claude` at its
-  version 13 with the three rounds added, 052's, 063's and this one (it supersedes
-  `claude-marks-052.json` and `claude-marks-063.json`): set it pinned to version 13. To publish the
-  three: the page (`scorecard/index.html`), the 12 sheets (`rounds/2026-10-18-after052-1…4.jpg`,
-  `-after063-1…4.jpg` and `-after042-1…4.jpg`), `data/rounds.json` and `data/viewpoints.json`
-  (`joao-xxi` marked `dropped`), all from `.cache/scorecard/`; the version then holds 110 files.
+  marks, against "Os troncos", are in `.cache/scorecard/marks/2026-10-18-after042.json` (2.94 over the
+  33, none moved), where task 064 takes them from, and `claude-marks-042.json` has the whole of
+  `scores/claude` at its version 13 with the three waiting rounds. Task 064 puts the three up (the
+  page, their 12 sheets, `data/rounds.json` and `data/viewpoints.json`: 110 files).
 - **Not checked:** the owner's marks; a phone (the plates' 90,000 triangles are always drawn, as
   one mesh); the deploy (not asked).

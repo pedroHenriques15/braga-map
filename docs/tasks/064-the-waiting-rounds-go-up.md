@@ -28,7 +28,7 @@ round. Waiting in `.cache/scorecard/` (shared by every worktree through its `.ca
 |---|---|---|---|
 | `2026-10-18-after052` "Até aos muros" | 052 | `rounds/2026-10-18-after052-1…4.jpg` | 2.88 over 33, none moved |
 | `2026-10-18-after063` "Os troncos" | 063 | `rounds/2026-10-18-after063-1…4.jpg` | 2.94, `capela-sao-joao` 3→4, `altice-forum` 2→3 |
-| `2026-10-18-after042` "As placas" | 042 | `rounds/2026-10-18-after042-1…4.jpg` | 2.88: shot again? see step 2 |
+| `2026-10-18-after042` "As placas" | 042 | `rounds/2026-10-18-after042-1…4.jpg` | 2.94 over 33, none moved: shot again with 063's renderer (step 2, done) |
 
 Claude's marks for each are in `.cache/scorecard/marks/<round>.json`, `{ <place>: { s, c, at } }`,
 taken from the files the sessions left (`claude-marks-052.json`, `-063.json`, `-042.json`: each the
@@ -49,6 +49,8 @@ are `test/scorecard.test.js`.
    `shots/2026-10-18-after042/` in place of the old shots), prepare it again
    (`node tools/round.mjs 2026-10-18-after042`, which keeps its label, tasks and note), mark it
    again against "Os troncos" into `marks/2026-10-18-after042.json`, and commit `refs/rounds.json`.
+   Done by 042's session (2026-10-18): shot on party-kart `cdf6867` (main's `9dcf456` merged, braga-map
+   1.26.0), prepared again (31 shots of its own, 2 the same as "Os troncos"), marked against it.
 3. **The lists from main.** In braga-map's main checkout at `origin/main`, clean:
    `node tools/round.mjs --pack` writes `.cache/scorecard/data/*.json` from main's
    `refs/rounds.json`; `git status` shows nothing changed. A session on a branch without a round

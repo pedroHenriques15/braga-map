@@ -1304,3 +1304,39 @@ The alternatives were the task's: the wall cut away as before, or kept standing 
 for the LiDAR's walls, all of them stopping a pavement, or only the map's and its retaining walls;
 for a street with no lanes painted, a lane each way it's driven (5 m for a two-way street, which
 would have kept 0.46 km of walls cut, the Travessa da Devesa's among them) or 026's narrowest, 2.4 m.
+
+## 047 · The streets' name plates stand where the map puts them: at every corner, on the corner building or on a post
+
+*2026-10-18 · task 042 · as the shops' signs (decision 036)*
+
+The tiles carry each street's name on its lines and the map's bus stops, and braga-map puts the
+streets' name plates itself (`tools/plates.mjs`), for every game, as it puts the shops' signs: at
+every corner in the open world's area where a named street meets a street of another name, its
+plate. A street begins at each of its junctions, so a corner building carries both its streets'
+names, one on each wall, as Braga's do.
+
+- **On the corner building's wall along the street**, near the corner, 2.6 m up or over a shop's
+  sign it would cover, where a building stands within 3 m of both kerbs (the owner's answer,
+  2026-10-15); **else on a post** half a metre past the rounded kerb, on a pavement or open ground,
+  a second name on the post over the first.
+- **The corners from the junctions and the kerbs as they're drawn:** the map's nodes where the
+  streets meet (every street but a link, a service road or a track without a name), and the corner
+  on the kerb as `world.streets` draws it, not as each line and its width put it, which can be a
+  metre or two out where a carriageway isn't centred on its line. None inside a wide junction's
+  carriageway, on a reservation or an island, or in a building; a wall's plate on the footprint as
+  the tiles hold it (in half metres), with open ground in front of it.
+- **What it came to:** 1,034 plates for 199 of the area's 205 named streets, 111 on a wall: most of
+  the area's corners have no building within 6 m of the kerb (its avenues, its roundabouts, houses
+  behind their gardens), and a building whose wall the carriageway as drawn overlaps has its plate on
+  a post. The six without one meet no street of another name at a corner in the area (on the Picoto,
+  or only by a link across their own median), or barely enter it. The bus stops: 516 on the map, 94
+  in the area.
+- **party-kart draws them as the signs are:** one empty plate, and each name's letters cut from one
+  canvas of every letter the names use: about 1 MB of textures for every name in the area, where
+  the route's 36 names, each on its own plate in one texture, took 10.5 MB, and the area's 205 would
+  have taken several textures past what some phones take. Every bus stop in the area stands on its
+  pavement, and the HUD names the street you drive onto from the lines' names, anywhere.
+
+The alternatives were the task's: the game working the corners out from the names on the lines
+(every game again, from lines cut at the tiles' edges, without the map's nodes), and the names drawn
+into atlases of plates.

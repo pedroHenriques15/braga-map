@@ -162,9 +162,9 @@ map().groundKinds; // the kinds it says, each with its photo: [{ kind, texture: 
   over the first. A corner building carries both its streets' names, one on each wall, as Braga's
   do. The corners are worked out from the streets' junctions (the map's nodes, every street but a
   link, a service road or a track without a name) and the kerbs as `world.streets` draws them: none
-  inside a wide junction's carriageway, on a reservation or an island, or in a building. 1,025
-  plates for 199 of the area's 205 named streets, 112 of them on a wall: most of the area's corners
-  have no building within 6 m of the kerb (avenues, roundabouts, houses behind gardens).
+  inside a wide junction's carriageway, on a reservation or an island, or in a building. 1,034
+  plates for 199 of the area's 205 named streets, 111 of them on a wall: most of the area's corners
+  have no building within 6 m of the kerb (avenues, roundabouts, houses behind gardens). Decision 047.
 - A track brings its race's road (`road`, decision 019): the route's own streets at their real
   widths, as `world.streets` draws them, and its jump's flight, with the corner between the flight
   and the landing street (task 057). Its outline is the race's walls, and where the street drawn

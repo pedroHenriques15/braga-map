@@ -1,5 +1,5 @@
 ---
-status: todo
+status: doing
 priority: medium
 kind: code
 repo: braga-map

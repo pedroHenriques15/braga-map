@@ -350,6 +350,98 @@ export function streetBumps(lines, ground, box, { over = 1, tall = 5, reach = 20
   };
 }
 
+// The carriageways of the streets on the ground in `box`, each its line's width either side of it, for
+// the tiles' 2 m ground (task 045). A grid point's square, wherever it reaches a carriageway, is the
+// mean over only the part of it on the carriageway, so the street keeps its own height, not that of a
+// wall, a cutting's floor or a bank beside it within a square of it (a street 2 to 4 m from a wall rode
+// up it, or rippled along it as the grid's points came nearer it and further off). And of the
+// carriageway, only where the ground is within OFF of the street's own surface: every metre along it,
+// the median of `at` (the ground as the tiles hold it at a tunnel's mouth, heldGround's, and
+// streetBumps', but not at a deck's end) over its middle half, carried across at that half's slope, as
+// streetBumps has it, but no steeper than TIP (none of the area's streets tips more; where something
+// not the street reaches into the middle half, it would). What's off it there is a wall the
+// carriageway's width reaches, its face's smear over the LiDAR's last half metre, or the cutting or the
+// island a tunnel's mouth opens under. A square with none of it on the street's surface (the top of a
+// wall the map's line puts in the street) is the mean of all of it, as before: the wall stays where it
+// is. Where the square reaches two streets at different heights side by side (a cutting's floor and a
+// lane along its top a metre apart), the point holds the one whose surface its own ground is within
+// SIDE of, the side of the wall it's on, so the step between them stays at the wall; on the wall's face,
+// within SIDE of neither, the one whose middle is nearest. Not where an outline the map tags as a
+// street (area:highway) is: it's no carriageway. `lines`: lines.mjs's streetsOf. `of(x, z, s)`: for the
+// square s metres a side round (x, z), sampled every half metre as terrain.mjs's mean samples it, a
+// function of a point (px, pz) and the ground's h there: h where it's on the carriageway the square is
+// held to and on its surface, else undefined; or null where the square reaches none, or reaches the
+// ground held at a deck's end (`deck(x, z)`, heldGround's atDeck), which is as task 043 has it: under
+// the deck's first metres and across its pavements, for a car that feels the land's slope over its
+// length. `near(x, z, r)`, whether a carriageway is within r of (x, z).
+export function streetBands(lines, box, at, deck = () => false, { S = 0.5, OFF = 0.3, TIP = 0.1, SIDE = 1 } = {}) {
+  const CELL = 8, cells = new Map(), key = (i, j) => i * 100003 + j;
+  const inBox = ([x, z]) => x >= box.x0 && x <= box.x1 && z >= box.z0 && z <= box.z1;
+  // Not an area's outline the map tags as a street (area:highway: the Rotunda Santos da Cunha's island,
+  // way 160389857, which the world draws as the map has it, decision 022).
+  const streets = lines.filter((l) => l.k <= 8 && (l.level === LEVEL.ground || l.level === LEVEL.under) && !l.t['area:highway'] && l.pts.some(inBox));
+  const median = (v) => { const s = v.sort((a, b) => a - b); return s[s.length >> 1]; };
+  // Each street's stretches, and on each its surface every metre: [y, slope across].
+  const segs = streets.map((l) => l.pts.slice(1).flatMap((b, i) => {
+    const [ax, az] = l.pts[i], [bx, bz] = b, L = Math.hypot(bx - ax, bz - az);
+    if (L < 1e-6) return [];
+    const tx = (bx - ax) / L, tz = (bz - az) / L, rx = -tz, rz = tx, ys = [], gs = [];
+    for (let k = 0; k <= Math.ceil(L); k++) {
+      const d = Math.min(k, L), x = ax + tx * d, z = az + tz * d, mid = [], slopes = [];
+      for (let o = 0; o <= l.w / 4 + 1e-9; o += S) {
+        const p = at(x + rx * o, z + rz * o), q = at(x - rx * o, z - rz * o);
+        mid.push(p);
+        if (o) { mid.push(q); slopes.push((p - q) / (2 * o)); }
+      }
+      ys.push(median(mid));
+      gs.push(slopes.length ? Math.max(-TIP, Math.min(TIP, median(slopes))) : 0);
+    }
+    return [{ ax, az, bx, bz, tx, tz, L, ys, gs }];
+  }));
+  streets.forEach((l, n) => segs[n].forEach(({ ax, az, bx, bz }) => {
+    const r = l.w / 2 + 2;
+    for (let i = Math.floor((Math.min(ax, bx) - r) / CELL); i <= Math.floor((Math.max(ax, bx) + r) / CELL); i++) for (let j = Math.floor((Math.min(az, bz) - r) / CELL); j <= Math.floor((Math.max(az, bz) + r) / CELL); j++) {
+      const k = key(i, j);
+      if (!cells.has(k)) cells.set(k, new Set());
+      cells.get(k).add(n);
+    }
+  }));
+  // How far (x, z) is from a street's line, and its surface there.
+  const segDist = (x, z, { ax, az, tx, tz, L }) => {
+    const f = Math.max(0, Math.min(L, (x - ax) * tx + (z - az) * tz));
+    return Math.hypot(x - ax - tx * f, z - az - tz * f);
+  };
+  const dist = (n, x, z) => Math.min(...segs[n].map((s) => segDist(x, z, s)));
+  const surface = (n, x, z) => {
+    let best = null, bd = Infinity;
+    for (const s of segs[n]) { const d = segDist(x, z, s); if (d < bd) { bd = d; best = s; } }
+    const { ax, az, tx, tz, L, ys, gs } = best, k = Math.round(Math.max(0, Math.min(L, (x - ax) * tx + (z - az) * tz)));
+    return ys[k] + gs[k] * ((x - ax) * -tz + (z - az) * tx);
+  };
+  return {
+    of(x, z, s) {
+      const m = Math.max(1, Math.round(s / S)), as = Array.from({ length: m }, (_, a) => ((a + 0.5) / m - 0.5) * s);
+      const pts = as.flatMap((a) => as.map((b) => [x + a, z + b]));
+      if (pts.some(([px, pz]) => deck(px, pz))) return null;
+      const on = (n, px, pz, h) => dist(n, px, pz) <= streets[n].w / 2 && Math.abs(h - surface(n, px, pz)) <= OFF;
+      // The streets with some of the square on them: of those whose surface the point's own ground is
+      // within SIDE of (the side of a wall it's on), the one whose middle is nearest; on a wall's face,
+      // within SIDE of none, of them all.
+      const hs = pts.map(([px, pz]) => at(px, pz)), y0 = at(x, z), got = [];
+      for (const n of cells.get(key(Math.floor(x / CELL), Math.floor(z / CELL))) ?? []) {
+        if (dist(n, x, z) <= streets[n].w / 2 + s && pts.some(([px, pz], i) => on(n, px, pz, hs[i]))) got.push({ n, side: Math.abs(surface(n, x, z) - y0) <= SIDE, d: dist(n, x, z) });
+      }
+      if (!got.length) return null;
+      const best = got.sort((a, b) => b.side - a.side || a.d - b.d)[0].n;
+      return (px, pz, h) => (on(best, px, pz, h) ? h : undefined);
+    },
+    near(x, z, r) {
+      for (let i = Math.floor((x - r) / CELL); i <= Math.floor((x + r) / CELL); i++) for (let j = Math.floor((z - r) / CELL); j <= Math.floor((z + r) / CELL); j++) if (cells.has(key(i, j))) return true;
+      return false;
+    },
+  };
+}
+
 // The ground held to the street where a street on a bridge or in a tunnel meets the streets on the
 // ground (meetings), at those `keep` keeps (task 043). The LiDAR's is the bare earth, so where a
 // street meets a bridge it has the embankment falling away under the deck, and at a tunnel's mouth
@@ -384,8 +476,8 @@ export function streetBumps(lines, ground, box, { over = 1, tall = 5, reach = 20
 //   straight to the LiDAR's 2 m further out; under the deck, as above from the deck's height at the
 //   end (task 047: the Rotunda Santos da Cunha's viaduct runs on 10 m past both its ends).
 //
-// `ends`, the meetings held; `at(x, z)`, the ground there where it's held, or undefined;
-// `near(x, z, r)`, whether any of it is within r of (x, z).
+// `ends`, the meetings held; `at(x, z)`, the ground there where it's held, or undefined; `atDeck(x, z)`,
+// whether it's held there at a bridge's end; `near(x, z, r)`, whether any of it is within r of (x, z).
 export function heldGround(lines, ground, keep = () => true, deck = null) {
   const HOLD = 2, BEYOND = [6, 3], DROP = 0.03, CAMBER = 0.05, CELL = 32;
   const all = meetings(lines), met = new Map(all.map((e) => [e.n, e.p])), ends = all.filter(keep);
@@ -462,7 +554,7 @@ export function heldGround(lines, ground, keep = () => true, deck = null) {
       const y = y0 + (a / HOLD) * (ground.at(...pt(HOLD, v)) - y0), h = ground.at(x, z);
       return { r: Math.abs(v) / W, y: bridge ? Math.max(y, h) : Math.min(y, h) };
     };
-    return { box, at };
+    return { box, at, bridge };
   });
   const cells = new Map();
   for (const z of zones) {
@@ -480,6 +572,10 @@ export function heldGround(lines, ground, keep = () => true, deck = null) {
       let best = null;
       for (const zone of of(x, z)) { const h = zone.at(x, z); if (h && (!best || h.r < best.r)) best = h; }
       return best?.y;
+    },
+    // Whether (x, z) is held at a bridge's end.
+    atDeck(x, z) {
+      return of(x, z).some((zone) => zone.bridge && zone.at(x, z));
     },
     near(x, z, r) {
       for (const dx of [-r, r]) for (const dz of [-r, r]) if (of(x + dx, z + dz).some(({ box: b }) => x + r >= b.x0 && x - r <= b.x1 && z + r >= b.z0 && z - r <= b.z1)) return true;

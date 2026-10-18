@@ -4,15 +4,17 @@
 // .cache/scorecard/, laid out as they're published beside the page:
 //
 //   photos/<id>.jpg           each viewpoint's photo, from .cache/refs/ (node tools/refs.mjs)
-//   rounds/<round>/<id>.jpg   the round's High shots
+//   rounds/<round>-<n>.jpg    the round's High shots, in a few sheets (task 062)
 //   data/viewpoints.json      the viewpoints: names, areas, and each photo's credit and size
 //   data/rounds.json          every round so far, oldest first
 //
 // The rounds are recorded in refs/rounds.json, which is committed: each one's label, the tasks it
-// shows, a note, and the commits it was shot on. Preparing a round again replaces its entry.
+// shows, a note, the commits it was shot on, its sheets and where each shot is in them. Preparing a
+// round again replaces its entry and its sheets.
 //
 // node tools/round.mjs 2026-10-13-baseline --label "Ponto de partida" --tasks 002 --note "…"
 // node tools/round.mjs <round> --shots ../party-kart-021/shots …   shot in another party-kart checkout
+// node tools/round.mjs --pack   only packs the rounds still kept a file a shot, rounds/<round>/<id>.jpg
 import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
@@ -32,13 +34,13 @@ const opt = (k) => {
   return i >= 0 ? args[i + 1] : undefined;
 };
 const SHOTS = path.resolve(ROOT, opt('shots') ?? '../party-kart/shots');
-const id = args.find((a, i) => !a.startsWith('--') && !args[i - 1]?.startsWith('--'));
-if (!id) {
+const id = args.find((a, i) => !a.startsWith('--') && !['--label', '--tasks', '--note', '--shots'].includes(args[i - 1]));
+if (!id && !args.includes('--pack')) {
   console.error('node tools/round.mjs <round> --label "…" [--tasks 002,009] [--note "…"]   a folder of ../party-kart/shots/');
   process.exit(1);
 }
-const dir = path.join(SHOTS, id);
-if (!fs.existsSync(path.join(dir, 'stats.json'))) throw new Error(`no round at ${dir}: shoot it with node scripts/shots.mjs in party-kart`);
+const dir = id && path.join(SHOTS, id);
+if (id && !fs.existsSync(path.join(dir, 'stats.json'))) throw new Error(`no round at ${dir}: shoot it with node scripts/shots.mjs in party-kart`);
 
 // A PNG's pixels as RGBA: 8 bits a channel, RGB or RGBA, not interlaced, as Playwright saves them.
 function readPng(file) {
@@ -161,61 +163,129 @@ function jpegSize(file) {
   throw new Error(`${file}: no size`);
 }
 
-// The round's High shots.
-const stats = JSON.parse(fs.readFileSync(path.join(dir, 'stats.json'), 'utf8'));
-const shots = {};
-for (const v of viewpoints) {
-  const src = path.join(dir, 'high', `${v.id}.png`);
-  if (!fs.existsSync(src)) {
-    console.log(`${v.id}: not in this round`);
-    continue;
+// A version of the page holds 511 files at most, so a round's shots go up in a few sheets, not a
+// file each (task 062): at most 9 to a sheet, three across, about 6 megapixels, which a phone
+// decodes. Each shot keeps 8 pixels of its own edge round it, so the page's scaling never reaches a
+// neighbour, and starts on a multiple of 8, on the JPEG's 8-pixel blocks as it is on its own: its
+// piece of the sheet is the same, pixel for pixel, as the shot's own JPEG would be.
+const PER_SHEET = 9;
+const ACROSS = 3;
+const EDGE = 8;
+const up8 = (n) => Math.ceil(n / 8) * 8;
+const digest = (bytes) => crypto.createHash('sha1').update(bytes).digest('hex').slice(0, 12);
+
+// Writes a round's own shots, [{ v, img }], into rounds/<round>-<n>.jpg, shared out evenly between as
+// few sheets as hold them, and returns where each shot is, [n, x, y], and the sheets' sizes.
+function pack(rid, own) {
+  const rounds = path.join(OUT, 'rounds');
+  fs.mkdirSync(rounds, { recursive: true });
+  for (const f of fs.readdirSync(rounds)) if (f.startsWith(`${rid}-`) && /^\d+\.jpg$/.test(f.slice(rid.length + 1))) fs.rmSync(path.join(rounds, f));
+  const at = {}, sheets = [], count = Math.ceil(own.length / PER_SHEET);
+  for (let n = 1, i = 0; n <= count; n++) {
+    const part = own.slice(i, (i += Math.ceil((own.length - i) / (count - n + 1))));
+    const cols = Math.min(ACROSS, part.length), cw = Math.max(...part.map(({ img }) => up8(img.width) + 2 * EDGE));
+    const rows = [];
+    for (let k = 0; k < part.length; k += cols) rows.push(Math.max(...part.slice(k, k + cols).map(({ img }) => up8(img.height) + 2 * EDGE)));
+    const width = cols * cw, height = rows.reduce((a, b) => a + b, 0), data = Buffer.alloc(width * height * 4, 255);
+    part.forEach(({ v, img }, k) => {
+      const ox = (k % cols) * cw, oy = rows.slice(0, Math.floor(k / cols)).reduce((a, b) => a + b, 0);
+      // The shot's cell, each pixel the shot's nearest.
+      for (let y = 0; y < rows[Math.floor(k / cols)]; y++) {
+        const row = Math.min(img.height - 1, Math.max(0, y - EDGE)) * img.width;
+        for (let x = 0; x < cw; x++) {
+          const s = (row + Math.min(img.width - 1, Math.max(0, x - EDGE))) * 4, d = ((oy + y) * width + ox + x) * 4;
+          data[d] = img.data[s];
+          data[d + 1] = img.data[s + 1];
+          data[d + 2] = img.data[s + 2];
+        }
+      }
+      at[v] = [n, ox + EDGE, oy + EDGE];
+    });
+    fs.writeFileSync(path.join(rounds, `${rid}-${n}.jpg`), jpeg.encode({ width, height, data }, QUALITY).data);
+    sheets.push([width, height]);
   }
-  shots[v.id] = writeJpeg(path.join(OUT, 'rounds', id, `${v.id}.jpg`), shrink(readPng(src), W));
+  return { at, sheets };
 }
 
 const log = fs.existsSync(LOG) ? JSON.parse(fs.readFileSync(LOG, 'utf8')) : { about: '', rounds: [] };
-log.about = 'The rounds of shots on the scorecard "Braga real" (task 003), oldest first: each one\'s label, the tasks it shows, a note, when it was shot, on which party-kart commit and braga-map version, and the size of each viewpoint\'s shot. The pictures are in party-kart\'s shots/<id>/; node tools/round.mjs <id> prepares them for the page.';
-const old = log.rounds.find((r) => r.id === id);
-const round = {
-  id,
-  label: opt('label') ?? old?.label ?? id,
-  date: id.slice(0, 10),
-  tasks: opt('tasks') !== undefined ? opt('tasks').split(',').filter(Boolean) : (old?.tasks ?? []),
-  note: opt('note') ?? old?.note ?? '',
-  made: stats.made,
-  game: stats.game,
-  map: stats.map,
-  shots,
-};
-log.rounds = [...log.rounds.filter((r) => r.id !== id), round].sort((a, b) => (a.made < b.made ? -1 : 1));
-// A shot the same, byte for byte, as an earlier round's of its viewpoint is that round's: its entry
-// says which, [w, h, round], and its file isn't kept twice (the page holds 511 files at most; task
-// 057 found 61 of the 451 the same as an earlier one). Those it finds print as the files to take off
-// the page.
-const holder = new Map(), shared = [];
-for (const r of log.rounds) {
-  for (const [v, size] of Object.entries(r.shots)) {
-    if (size[2]) continue;
-    const file = path.join(OUT, 'rounds', r.id, `${v}.jpg`);
-    if (!fs.existsSync(file)) continue;
-    const key = `${v}:${crypto.createHash('sha1').update(fs.readFileSync(file)).digest('hex')}`;
-    if (!holder.has(key)) {
-      holder.set(key, r.id);
+log.about = 'The rounds of shots on the scorecard "Braga real" (task 003), oldest first: each one\'s label, the tasks it shows, a note, when it was shot, on which party-kart commit and braga-map version, its sheets\' sizes, and each viewpoint\'s shot: [w, h, sheet, x, y, hash], its size, its sheet rounds/<id>-<sheet>.jpg and where it is in it, and the start of the SHA-1 of the shot on its own as a JPEG; or [w, h, round], the same as that earlier round\'s. The pictures are in party-kart\'s shots/<id>/; node tools/round.mjs <id> prepares them for the page.';
+
+// The round's High shots, each shrunk to 960 pixels across.
+const fresh = new Map();
+let round;
+if (id) {
+  const stats = JSON.parse(fs.readFileSync(path.join(dir, 'stats.json'), 'utf8'));
+  const shots = {}, own = [];
+  for (const v of viewpoints) {
+    const src = path.join(dir, 'high', `${v.id}.png`);
+    if (!fs.existsSync(src)) {
+      console.log(`${v.id}: not in this round`);
       continue;
     }
-    r.shots[v] = [size[0], size[1], holder.get(key)];
-    fs.rmSync(file);
-    shared.push(`rounds/${r.id}/${v}.jpg`);
+    const img = shrink(readPng(src), W);
+    own.push({ v: v.id, img, hash: digest(jpeg.encode(img, QUALITY).data) });
+    shots[v.id] = [img.width, img.height];
+  }
+  const old = log.rounds.find((r) => r.id === id);
+  round = {
+    id,
+    label: opt('label') ?? old?.label ?? id,
+    date: id.slice(0, 10),
+    tasks: opt('tasks') !== undefined ? opt('tasks').split(',').filter(Boolean) : (old?.tasks ?? []),
+    note: opt('note') ?? old?.note ?? '',
+    made: stats.made,
+    game: stats.game,
+    map: stats.map,
+    shots,
+  };
+  log.rounds = [...log.rounds.filter((r) => r.id !== id), round].sort((a, b) => (a.made < b.made ? -1 : 1));
+  fresh.set(id, own);
+}
+
+// A shot the same, byte for byte, as an earlier round's of its viewpoint is that round's (task 057
+// found 61 of 451): its entry says which, [w, h, round], and it isn't in this round's sheets. A round
+// prepared before task 062, a file a shot in rounds/<round>/, is packed from those files, which print
+// as the ones to take off the page.
+const holder = new Map(), packed = [], gone = [];
+for (const r of log.rounds) {
+  const folder = path.join(OUT, 'rounds', r.id);
+  let own = fresh.get(r.id);
+  if (!own && !r.sheets) {
+    own = Object.entries(r.shots).filter(([, e]) => typeof e[2] !== 'string').map(([v]) => {
+      const bytes = fs.readFileSync(path.join(folder, `${v}.jpg`));
+      return { v, img: jpeg.decode(bytes, { maxMemoryUsageInMB: 1024 }), hash: digest(bytes) };
+    });
+  }
+  if (!own) {
+    for (const [v, e] of Object.entries(r.shots)) if (e[5] && !holder.has(`${v}:${e[5]}`)) holder.set(`${v}:${e[5]}`, r.id);
+    continue;
+  }
+  const kept = own.filter(({ v, img, hash }) => {
+    if (holder.has(`${v}:${hash}`)) r.shots[v] = [img.width, img.height, holder.get(`${v}:${hash}`)];
+    else holder.set(`${v}:${hash}`, r.id);
+    return holder.get(`${v}:${hash}`) === r.id;
+  });
+  const { at, sheets } = pack(r.id, kept);
+  for (const { v, img, hash } of kept) r.shots[v] = [img.width, img.height, ...at[v], hash];
+  r.sheets = sheets;
+  packed.push(r);
+  if (fs.existsSync(folder)) {
+    gone.push(...fs.readdirSync(folder).map((f) => `rounds/${r.id}/${f}`));
+    fs.rmSync(folder, { recursive: true });
   }
 }
-fs.writeFileSync(LOG, JSON.stringify(log, null, 2).replace(/\[\s+(\d+),\s+(\d+)(?:,\s+("[^"]+"))?\s+\]/g, (_, w, h, r) => `[${w}, ${h}${r ? `, ${r}` : ''}]`) + '\n');
+fs.writeFileSync(LOG, JSON.stringify(log, null, 2).replace(/\[\s+(\d[^[\]{}]*?)\s+\]/g, (_, inner) => `[${inner.split(/,\s+/).join(', ')}]`) + '\n');
 
 fs.mkdirSync(path.join(OUT, 'data'), { recursive: true });
 fs.writeFileSync(path.join(OUT, 'data', 'viewpoints.json'), JSON.stringify({ credit, viewpoints: list }));
 fs.writeFileSync(path.join(OUT, 'data', 'rounds.json'), JSON.stringify({ rounds: log.rounds }));
 
-const kb = (d) => Math.round(fs.readdirSync(d).reduce((s, f) => s + fs.statSync(path.join(d, f)).size, 0) / 1024);
-const own = Object.values(round.shots).filter((q) => !q[2]).length;
-console.log(`${id}: ${own} shots of its own (${kb(path.join(OUT, 'rounds', id))} kB), ${Object.keys(shots).length - own} the same as an earlier round's, and ${list.length} photos (${kb(path.join(OUT, 'photos'))} kB) in ${path.relative(ROOT, OUT)}`);
-console.log(`publish beside the page: rounds/${id}/*.jpg, data/rounds.json${log.rounds.length === 1 ? ', photos/*.jpg, data/viewpoints.json' : ''}`);
-if (shared.length) console.log(`and take off the page, each now an earlier round's: ${shared.join(' ')}`);
+const kb = (files) => Math.round(files.reduce((s, f) => s + fs.statSync(path.join(OUT, f)).size, 0) / 1024);
+const sheetsOf = (r) => r.sheets.map((_, n) => `rounds/${r.id}-${n + 1}.jpg`);
+for (const r of packed) {
+  const own = Object.values(r.shots).filter((e) => typeof e[2] !== 'string').length, same = Object.keys(r.shots).length - own;
+  console.log(`${r.id}: ${own} shots of its own in ${r.sheets.length} sheet${r.sheets.length === 1 ? '' : 's'} (${kb(sheetsOf(r))} kB)${same ? `, ${same} the same as an earlier round's` : ''}`);
+}
+console.log(`${list.length} photos (${kb(list.map((v) => `photos/${v.id}.jpg`))} kB), all in ${path.relative(ROOT, OUT)}`);
+console.log(`publish beside the page: ${[...packed.flatMap(sheetsOf), 'data/rounds.json', ...(log.rounds.length === 1 ? ['photos/*.jpg', 'data/viewpoints.json'] : [])].join(' ')}`);
+if (gone.length) console.log(`and take off the page, each now in a sheet: ${gone.join(' ')}`);

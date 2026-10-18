@@ -237,7 +237,7 @@ node tools/refs.mjs    # the viewpoints' and the reference photos, into .cache/r
 node tools/buildings.mjs  # the buildings whose facades to look at (refs/buildings.json), and with `mark` their photos marked (2 minutes)
 node tools/textures.mjs  # the photo textures refs/textures.json asks for: world/textures/ (about a minute)
 node tools/cover.mjs   # what the ground is every 50 cm under the Volta dos Amigos' box, and the cars parked: world/cover/ (3 minutes, 10 the first time)
-node tools/round.mjs <round> --label "…" [--shots <party-kart>/shots]  # a round of party-kart's shots, for the scorecard
+node tools/round.mjs <round> --label "…" [--shots <party-kart>/shots]  # a round of party-kart's shots, in a few sheets, for the scorecard
 ```
 
 They need Node 22.18 or later. Run them in that order: `track.mjs` and `world.mjs` read the
@@ -545,10 +545,17 @@ streets; when a track moves enough to change the edge, run the three again until
   they're published beside the page. It records the round in `refs/rounds.json` (committed): its
   label, the tasks it shows, a note, and the commits it was shot on. The page keeps each person's
   ratings and comments in the artifact's database, one document each (`scores/<their id>`). A
-  round goes up by publishing the page again with the round's files and `data/rounds.json`
-  beside it; the files already up stay. A version holds 511 files at most, so a shot the same, byte
-  for byte, as an earlier round's of its place is that round's (its entry `[w, h, round]`, task
-  057): its file isn't kept twice, and those it finds print as the files to take off the page.
+  version holds 511 files at most, so a round's shots go up in a few sheets, not a file each (task
+  062): `rounds/<round>-<n>.jpg`, at most 9 shots a sheet, three across (about 6 megapixels, which
+  a phone decodes), so at most 4 sheets for a round of 34 places. Each shot keeps 8 pixels of its
+  own edge round it and starts on the JPEG's 8-pixel blocks, so its piece of the sheet is what its
+  own JPEG would be, and the page shows it through a window the shot's size over the sheet. A
+  shot's entry is `[w, h, sheet, x, y, hash]`: its size, its sheet and where it is in it, and the
+  start of its own JPEG's SHA-1. One the same, byte for byte, as an earlier round's of its place
+  is that round's (`[w, h, round]`, task 057) and isn't in a sheet twice. A round goes up by
+  publishing the page again with its sheets and `data/rounds.json` beside it; the files already up
+  stay. `--pack` packs the rounds prepared before 062, a file a shot, and prints those files as the
+  ones to take off the page.
 
 ### How a track is planned
 

@@ -1,5 +1,5 @@
 ---
-status: todo
+status: done
 priority: high
 kind: code
 repo: braga-map
@@ -51,13 +51,28 @@ outside the owner's organization, and the friends are.
 
 ## Done when
 
-- [ ] Every round on the page shows each of its places' shots beside the photo, with the slider and
+- [x] Every round on the page shows each of its places' shots beside the photo, with the slider and
   the round before's button, as before: checked in a browser at a desktop's width and at a phone's
   (390 px), every image loaded.
-- [ ] The page holds the photos, the page, its lists and at most 4 sheets a round; how many more
+  > The page from `.cache/scorecard/` in Chromium (Playwright) at 1280 px and at 390 px (3×, touch),
+  > scrolled through each of the 17 rounds: 34 cards each, every photo and every shot the round has
+  > loaded (a place a round didn't shoot says "Sem imagem do jogo nesta ronda", as before), each
+  > window over its sheet within a pixel and a half of where its entry puts it (1,038 pieces at
+  > each width), and each of the 424 "Ver a ronda anterior" buttons loading its piece and going
+  > back; no page error, no file missing, the page 390 px wide at 390. The slider and the cards
+  > looked at in screenshots. And each of the 458 pieces against party-kart's PNG it was made from,
+  > shrunk as `round.mjs` does: none worse than 35.5 dB (a JPEG's loss), and every recorded hash
+  > the PNG's.
+- [x] The page holds the photos, the page, its lists and at most 4 sheets a round; how many more
   rounds of 34 changed places fit, in Notes.
-- [ ] Every `scores/*` document reads back the same after the republish as before it.
-- [ ] `npm test` passes; README's `round.mjs` paragraph says how a round is now laid out.
+  > 98 files after the republish (the page, its two lists, the 34 photos and 61 sheets), from 495;
+  > `test/rounds.test.js` holds a round to 4 sheets.
+- [x] Every `scores/*` document reads back the same after the republish as before it.
+  > `scores/claude` (version 13) and the owner's (version 144), read before and after the three
+  > publishes: the same, byte for byte, at the same versions. Nothing was written to them.
+- [x] `npm test` passes; README's `round.mjs` paragraph says how a round is now laid out.
+  > 119 tests pass, the 4 new in `test/rounds.test.js` among them; README's paragraph has the
+  > sheets, the entries `[w, h, sheet, x, y, hash]` and `--pack`.
 
 ## Out of scope
 
@@ -73,3 +88,13 @@ outside the owner's organization, and the friends are.
   shares through its `.cache` junction.
 - Thinning old rounds instead would lose their pictures beside the marks given on them; a second
   page would split the rounds across two links for the friends.
+- Done (2026-10-18), decision 045. `node tools/round.mjs --pack` packed the 17 rounds already up
+  into 61 sheets (46.6 MB), the 458 shots of their own a round had; the 61 the same as an earlier
+  round's still point at it. The page went up in three publishes, as one carries 255 files at most
+  and a version holds 511: the page, the 61 sheets, `data/rounds.json` and 192 of the old files
+  off (version 18, 364 files, the page whole from then on), then 254 off (19), then the last 12
+  (20). The old files are in party-kart's `shots/<round>/high/` as PNGs, and in the page's
+  versions up to 17.
+- **Room:** 98 of 511 files, so 413 left: at most 4 sheets for a round of 34 changed places, about
+  100 more such rounds (103), and more where a round shares shots with the one before.
+- No round of its own: nothing in the game changed, and every round's shots are as they were.

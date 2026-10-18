@@ -84,6 +84,9 @@ select { background: var(--panel); border: 1px solid var(--line); border-radius:
 .compare .lab.l { left: 10px; }
 .compare .lab.r { right: 10px; }
 .compare .missing { position: absolute; inset: 0; display: grid; place-items: center; color: var(--dim); }
+/* A shot is a piece of its round's sheet: the sheet, placed under a window the shot's size. */
+.compare .shot { position: absolute; inset: 0; overflow: hidden; }
+.compare .shot img { inset: auto; max-width: none; object-fit: fill; }
 
 .below { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; justify-content: space-between; font-size: 13px; color: var(--dim); }
 .below small { min-width: 0; }
@@ -286,13 +289,27 @@ footer p { margin: 0; max-width: 90ch; }
     refresh();
   }
 
+  // Where a round's shot of a place is: its entry [w, h, sheet, x, y, …] is a piece of the sheet
+  // rounds/<round>-<sheet>.jpg; one the same as an earlier round's names that round, [w, h, round].
+  function piece(q, id) {
+    let e = q.shots[id];
+    if (e && typeof e[2] === 'string') {
+      q = S.rounds.find((x) => x.id === e[2]);
+      e = q?.shots[id];
+    }
+    if (!e) return null;
+    if (!q.sheets) return { src: `rounds/${q.id}/${id}.jpg`, style: '' }; // a round from before the sheets
+    const [sw, sh, n, x, y] = e, [W, H] = q.sheets[n - 1], pc = (a, b) => `${(100 * a) / b}%`;
+    return { src: `rounds/${q.id}-${n}.jpg`, style: `left: ${pc(-x, sw)}; top: ${pc(-y, sh)}; width: ${pc(W, sw)}; height: ${pc(H, sh)}` };
+  }
+  const place = (img, p) => { img.src = p.src; img.setAttribute('style', p.style); return img; };
+
   function card(v, r, before) {
     const size = r.shots[v.id] || [v.photo.w, v.photo.h];
-    // A shot the same as an earlier round's is that round's file: its entry names it third.
-    const file = (q) => (q.shots[v.id] ? `rounds/${q.shots[v.id][2] ?? q.id}/${v.id}.jpg` : null);
-    const shot = file(r);
-    const prev = before ? file(before) : null;
-    const game = shot ? h('img', { class: 'shot', src: shot, alt: `O jogo: ${v.nome}`, loading: 'lazy', decoding: 'async' }) : h('div', { class: 'missing' }, 'Sem imagem do jogo nesta ronda');
+    const shot = piece(r, v.id);
+    const prev = before ? piece(before, v.id) : null;
+    const img = shot && place(h('img', { alt: `O jogo: ${v.nome}`, loading: 'lazy', decoding: 'async' }), shot);
+    const game = shot ? h('div', { class: 'shot' }, img) : h('div', { class: 'missing' }, 'Sem imagem do jogo nesta ronda');
     const right = h('span', { class: 'lab r' }, 'Jogo');
     const slider = h('input', { type: 'range', min: 0, max: 100, value: 50, step: 1, 'aria-label': 'Mostrar mais da foto ou mais do jogo', id: `slide-${v.id}` });
     const frame = h('div', { class: 'compare', style: `aspect-ratio: ${size[0]} / ${size[1]}` },
@@ -304,12 +321,12 @@ footer p { margin: 0; max-width: 90ch; }
     for (const img of frame.querySelectorAll('img')) img.addEventListener('error', () => { img.hidden = true; });
 
     let back = null;
-    if (prev && shot && prev !== shot) {
+    if (prev && shot && (prev.src !== shot.src || prev.style !== shot.style)) {
       back = h('button', { class: 'link', type: 'button', 'aria-pressed': 'false' }, `Ver a ronda anterior (${before.label})`);
       back.addEventListener('click', () => {
         const on = back.getAttribute('aria-pressed') !== 'true';
         back.setAttribute('aria-pressed', String(on));
-        game.src = on ? prev : shot;
+        place(img, on ? prev : shot);
         right.textContent = on ? `Jogo, ${before.label}` : 'Jogo';
       });
     }

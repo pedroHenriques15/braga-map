@@ -1202,3 +1202,26 @@ the hills' woods are in view), 5 MB of textures more, the city built 0.2 s slowe
 OpenStreetMap's trees and the filled woods with the LiDAR's heights only where they stood on one
 (the woods' made-up trees stay made up), and a crown's kind from its photo alone (the cloud's
 near-infrared tells a pine wood from a eucalyptus one in a quarter of its trees, no better).
+
+## 045 · A round's shots go up in a few sheets, not a file each
+
+*2026-10-18 · task 062 · adds to decision 012*
+
+The scorecard (decision 012) carries its pictures as the page's own published files, and a version
+of an artifact holds 511 at most: after task 019's round it held 495, a file a shot. So each round's
+shots are packed into JPEG sheets (task 062), `rounds/<round>-<n>.jpg`, at most 9 shots a sheet,
+three across (about 6.5 megapixels, which a phone decodes), at most 4 for a round of 34 places, and
+the page shows each shot through a window its size over its sheet.
+
+- **Each shot as it was:** it keeps 8 pixels of its own edge round it, so the page's scaling never
+  reaches a neighbour, and starts on the JPEG's 8-pixel blocks, so its piece of the sheet is what
+  its own JPEG would be. The 17 rounds already up were packed from their files, a second JPEG at the
+  same quality on the same blocks: 50.5 dB from the files at worst, over the 458 shots.
+- **A shot the same as an earlier round's is still that round's** (task 057): found by the start of
+  its own JPEG's SHA-1, which `refs/rounds.json` keeps now that the files aren't.
+- **Room:** the page holds 98 files (the page, its two lists, the 34 photos and 61 sheets); a round
+  of 34 changed places adds 4, so about 100 more rounds fit.
+
+The alternatives were the artifact's assets (which may be refused to a viewer from outside the
+owner's organization, as the friends are: task 003), thinning the old rounds (their pictures lost
+beside the marks given on them), and a second page (the rounds split across two links).

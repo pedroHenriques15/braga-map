@@ -21,7 +21,7 @@ viewpoints.
 
 ## What
 
-Today (2026-10-18, braga-map 1.26.0 and task 061): `tools/trees.mjs`'s `matchOsm` puts each of
+Today (2026-10-18, braga-map 1.29.0, task 061's): `tools/trees.mjs`'s `matchOsm` puts each of
 OpenStreetMap's trees in the crown it stands in, or the nearest within 2.5 m; one in no crown is
 kept as a young tree (`young`, at the map's height and crown or 4 m and 3 m) where no tree the LiDAR
 found stands within 4 m. The hackberry: the LiDAR's crown at (-259.5, 735.5), 15.1 m tall, 12.5 m

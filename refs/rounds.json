@@ -1124,6 +1124,59 @@
         [2928, 2208],
         [2928, 2208]
       ]
+    },
+    {
+      "id": "2026-10-18-after061",
+      "label": "As espécies",
+      "date": "2026-10-18",
+      "tasks": [
+        "061"
+      ],
+      "note": "As árvores da espécie que as fotografias mostram (tarefa 061): cada árvore a menos de 60 m de sete pontos de vista é a da sua foto, as filas das avenidas que as fotos mostram e as tílias do Parque da Ponte (não plátanos); e três tipos novos, cada um com a sua casca, as suas folhas e a sua forma: o plátano, a tília e o vidoeiro. Por cima de «As rotundas»: a palmeira e as tílias em bola da Imaculada Conceição, as tílias do parque e o plátano junto da capela em capela-sao-joao e sao-joao-da-ponte, os vidoeiros da 31 de Janeiro e da Liberdade; o resto como estava.",
+      "made": "2026-10-18T19:34:01.790Z",
+      "game": "2e21899",
+      "map": "1.29.0",
+      "shots": {
+        "fujacal-start": [960, 720, 1, 8, 8, "631db1386521"],
+        "imaculada-conceicao": [960, 720, 1, 984, 8, "7f9223afda6c"],
+        "liberdade": [960, 540, 1, 1960, 8, "0c6e77d50ff7"],
+        "sao-joao-da-ponte": [960, 540, 1, 8, 744, "cefe29252e01"],
+        "devesa": [960, 540, 1, 984, 744, "a049ea2ebf02"],
+        "alvaro-carneiro": [960, 720, 1, 1960, 744, "df6276bcbb09"],
+        "porfirio-da-silva": [960, 720, 1, 8, 1480, "516e649ac299"],
+        "31-de-janeiro": [960, 720, 1, 984, 1480, "67969f017521"],
+        "bernardo-sequeira": [960, 720, 1, 1960, 1480, "faa42c3348bb"],
+        "bom-jesus": [960, 720, 2, 8, 8, "9652c72777bf"],
+        "pascoal-fernandes": [960, 720, 2, 984, 8, "76e4d2d6cabf"],
+        "egidio-guimaraes": [960, 720, 2, 1960, 8, "00ecc6a1c176"],
+        "robert-smith": [960, 720, 2, 8, 744, "ac4907051cb4"],
+        "robert-smith-picoto": [960, 720, 2, 984, 744, "346a12ffa809"],
+        "falperra": [960, 720, 2, 1960, 744, "768bb81726da"],
+        "sameiro": [960, 720, 2, 8, 1480, "c684e75589c0"],
+        "estadio": [960, 720, 2, 984, 1480, "8b9736570390"],
+        "viriato-amaral-nunes": [960, 720, 3, 8, 8, "d8e14d43b173"],
+        "monte-da-forca": [960, 720, 3, 984, 8, "073d764c95a5"],
+        "couteiro": [960, 720, 3, 1960, 8, "eea21f004c68"],
+        "conselheiro-lobato": [960, 720, 3, 8, 744, "9c2819cde5b4"],
+        "fujacal-west": [960, 720, 3, 984, 744, "f658009d41dc"],
+        "travessa-fujacal": [960, 720, 3, 1960, 744, "07fa7b8bc552"],
+        "alameda-fujacal": [960, 720, 3, 8, 1480, "6d3855a3ae71"],
+        "lobato-pavement": [960, 432, 3, 984, 1480, "6fd5dabbf4ab"],
+        "lobato-crossing": [960, 540, 4, 8, 8, "f802be2ca72e"],
+        "travessa-lobato": [960, 720, 4, 984, 8, "7739bd68fbbf"],
+        "lobato-east": [960, 720, 4, 1960, 8, "bb75ff402fbe"],
+        "capela-sao-joao": [960, 540, 4, 8, 744, "a2d4800e0a1c"],
+        "altice-forum": [960, 720, 4, 984, 744, "6f598f27922f"],
+        "picoto-top": [960, 720, 4, 1960, 744, "92d1a4955b40"],
+        "capela-santa-justa": [960, 720, 4, 8, 1480, "358ccc949b0d"],
+        "capela-santo-adriao": [960, 720, 4, 984, 1480, "dcf3c2b4ba38"]
+      },
+      "sheets": [
+        [2928, 2208],
+        [2928, 2208],
+        [2928, 2208],
+        [2928, 2208]
+      ]
     }
   ]
 }

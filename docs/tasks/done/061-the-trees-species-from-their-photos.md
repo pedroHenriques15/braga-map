@@ -1,5 +1,5 @@
 ---
-status: doing
+status: done
 priority: low
 kind: code
 repo: braga-map
@@ -46,11 +46,23 @@ six kinds, `KINDS`. party-kart draws each kind's shape in its photos (`render/tr
 
 ## Done when
 
-- [ ] Every tree in view of a viewpoint, within 60 m of its camera, is the species its photo shows,
+- [x] Every tree in view of a viewpoint, within 60 m of its camera, is the species its photo shows,
   checked at the viewpoints (`sao-joao-da-ponte`, `capela-sao-joao`, `imaculada-conceicao`,
-  `porfirio-da-silva`, `31-de-janeiro`, `joao-xxi`, `liberdade`).
-- [ ] The rows along the route's avenues are their species the length of the avenue.
-- [ ] What new kinds add is measured against the budget.
+  `porfirio-da-silva`, `31-de-janeiro`, `joao-xxi`, `liberdade`). `test/trees.test.js`'s "the trees
+  near the viewpoints are the species their photos show": each of the 87 trees in view of the seven
+  (`joao-xxi` from its photo's camera, as task 052 dropped it as a viewpoint) is in `refs/trees.json`,
+  matched, and of its species' kind in 1.29.0's tiles; on 1.26.0's, 39 of them weren't. Shot at the six
+  viewpoints in "As espécies" (`2026-10-18-after061`).
+- [x] The rows along the route's avenues are their species the length of the avenue: **as far as the
+  photos show them**, at the owner's choice (2026-10-18). Five rows are named (37 trees), each only as far as a photo shows it: the Imaculada
+  Conceição's limes (150 m) and hackberries (65 m), the Porfírio da Silva's hackberries (90 m), the
+  31 de Janeiro's hackberries (100 m) and robinias (80 m), each a stretch of its avenue; and no photo
+  read shows a row along the Liberdade. Naming the rest from one stretch would be a guess
+  (decision 051).
+- [x] What new kinds add is measured against the budget: party-kart's `docs/architecture.md`
+  (`6747516`), "As espécies" against "As rotundas": draw calls 154 → 161 on High at the median, 149 → 161
+  on Medium, 108 → 113 on Low; triangles 2.159 → 2.167 M on High; textures 130 → 132, 74 → 75 and 41 MB,
+  0.46 MB more to download on High; the open world's tiles the same 3.33 MB gzipped.
 
 ## Out of scope
 
@@ -109,23 +121,32 @@ the reference photos along the avenues (Mapillary's and Commons') for the rows.
   LiDAR's trunk under the crown's top, 6.5 m from the camera, and the map's tree as a 4 m young tree at
   the real trunk. Where to stand a trunk is task 063's kind of work, not this one's.
 
-### Where it stands (2026-10-18, not landed)
+### Landed (2026-10-18)
 
-- braga-map (worktree `../braga-map-061`, branch `task-061`, uncommitted): `refs/trees.json` (87 trees
-  seen, all matched; 5 rows, 37 trees; the Parque da Ponte's limes, 80 trees), `tools/species.mjs`,
-  `trees.mjs`'s `refsOf` and `kindOf`, nine kinds (`EVERGREEN`), the tree's word 16 bits in the tiles,
-  the new kinds' bark and leaves (`refs/textures.json`: a zelkova's bark toned to a plane's, a lime's
-  ridged bark, a cherry's toned to a birch's white; a plane's leaves five leaves to a stalk). Made with
-  `TREES=trees-061.json`; main's `trees.json` untouched. 136 tests pass; the new viewpoints test fails on
-  1.26.0's world (39 of the 87 trees in view another kind than seen).
-- party-kart (worktree `../party-kart-061`, uncommitted, braga-map installed from the worktree with
-  `--install-links`; the tag goes back before committing): the three kinds' shapes in `render/trees.ts`.
-  66 tests and `tsc` pass; laps 302.4 and 300.3 s, no respawn, as on main.
-- Shots `party-kart-061/shots/2026-10-18-try061`, High and Medium whole, Low to `egidio-guimaraes`: the
-  run was stopped by Claude Code, the machine short of memory. On High the Imaculada's fan palm and the
-  Liberdade's and 31 de Janeiro's birches show; the park's limes still stand on bare trunks to 14 m,
-  their feet as the LiDAR measured them under a thick crown (task 019's 60% at most), where the photos
-  have their leaves from 5–8 m: the trees' size is out of this task's scope.
-- Left: shoot again (try), then land: merge main, run the remake from the trees on, take the next
-  version in turn with 045 and 014, pin party-kart to it; shoot the round, mark it, add it to task
-  064's table; the budget; docs (decision, ROADMAP, 065 in it); finish.
+- **braga-map 1.29.0** (`84b9587`, tagged `v1.29.0`, in turn after 045's 1.27.0 and 014's 1.28.0):
+  `refs/trees.json` (87 trees seen, all matched; five rows, 37 trees; the Parque da Ponte's limes, 80
+  trees), `tools/species.mjs`, `trees.mjs`'s `refsOf` and `kindOf`, nine kinds (`EVERGREEN`, and
+  `map().treeKinds`' `evergreen`), the tree's word 16 bits in the tiles (the kind in 4), the new kinds'
+  bark and leaves (`refs/textures.json`: a zelkova's bark toned to a plane's, a lime's ridged bark, a
+  cherry's toned to a birch's white; a plane's leaves five to a stalk). Merged onto 014's roundabouts,
+  the trees made again on the merged code (the same 246,269: 164,963 broadleaf, 71,702 eucalyptus,
+  4,773 pine, 2,512 cypress or cedar, 2,191 poplar, 116 lime, 5 plane, 4 palm, 3 birch; 129 of
+  another kind than 1.28.0's), the world and the textures from them; `.cache/trees.json` is 061's
+  since. 142 tests pass. Decision 051.
+- **party-kart `2e21899`** pinned to it: the three kinds' shapes (`render/trees.ts`, `45d7fdf`); 66
+  tests and `tsc` pass; laps 302.8 and 299.9 s, no respawn. The peer prefix stays `pk38`: the race's
+  road is 1.28.0's, and a kind changes a trunk only for a palm (the Imaculada's, in a garden). The budget
+  in `docs/architecture.md` (`6747516`). Not deployed.
+- **The round "As espécies"** (`2026-10-18-after061`), after 014's "As rotundas", shot on party-kart
+  `2e21899` with braga-map 1.29.0: 33 shots in 4 sheets in `.cache/scorecard/rounds/`, and
+  `refs/rounds.json`. **Not published**, as the five before it aren't (task 064): Claude's marks in
+  `.cache/scorecard/marks/2026-10-18-after061.json`, 2.94 over 33, none moved. The park's limes are
+  darker and denser at `capela-sao-joao` and `sao-joao-da-ponte`, as the photos', but still stand on
+  bare trunks to 14 m, their feet as the LiDAR measured them under a thick crown (task 019's 60% at most)
+  where the photos have leaves from 5–8 m; the Imaculada's fan palm and clipped limes (darker than the
+  photo's bright green), the birches' white trunks at `31-de-janeiro` and `liberdade`; the plane by the
+  chapel doesn't stand out from the limes round it. A pixel diff against "As rotundas" shows nothing
+  else changed.
+- **Found:** task 065 (the Imaculada's hackberry: the map's tree at its trunk, the LiDAR's crown 15 m
+  back). The rows' item: the owner took the rows as far as the photos show them as done (2026-10-18),
+  rather than a task to find more photos along the avenues.

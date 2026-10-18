@@ -31,6 +31,7 @@ round. Waiting in `.cache/scorecard/` (shared by every worktree through its `.ca
 | `2026-10-18-after042` "As placas" | 042 | `rounds/2026-10-18-after042-1…4.jpg` | 2.94 over 33, none moved: shot again with 063's renderer (step 2, done) |
 | `2026-10-18-after045` "O chão das ruas" | 045 | `rounds/2026-10-18-after045-1…4.jpg` | 2.94 over 33, none moved (against "As placas"): shot on party-kart `b38c87e`, braga-map 1.27.0 |
 | `2026-10-18-after014` "As rotundas" | 014 | `rounds/2026-10-18-after014-1…4.jpg` | 2.94 over 33, none moved (against "O chão das ruas": São João da Ponte's statue and Falperra's give-way markings, its island's lawn darker than the photo's): shot on party-kart `613db39` with braga-map 1.28.0 |
+| `2026-10-18-after061` "As espécies" | 061 | `rounds/2026-10-18-after061-1…4.jpg` | 2.94 over 33, none moved (against "As rotundas": the Parque da Ponte's limes darker at `capela-sao-joao` and `sao-joao-da-ponte`, the Imaculada's palm, the birches at `31-de-janeiro` and `liberdade`): shot on party-kart `2e21899` with braga-map 1.29.0 |
 
 Claude's marks for each are in `.cache/scorecard/marks/<round>.json`, `{ <place>: { s, c, at } }`,
 taken from the files the sessions left (`claude-marks-052.json`, `-063.json`, `-042.json`: each the

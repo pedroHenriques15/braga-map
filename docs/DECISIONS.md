@@ -1492,8 +1492,8 @@ avenues' hackberries and limes one broadleaf. The viewpoints' photos show what t
   the orthophoto show, and what `world.mjs` keeps where it is, decision 047), its species and how sure
   of it; the stretches of avenue a photo shows lined with one species (a line, and how far from it a
   trunk stands); and the places one species fills (the Parque da Ponte's limes). 87 trees, five rows,
-  one place. A row is named only as far as a photo shows it: the same avenue further on may be
-  planted otherwise.
+  one place. A row is named only as far as a photo shows it (the owner's choice, 2026-10-18): the
+  same avenue further on may be planted otherwise.
 - **They come first** in `kindOf`: a tree seen is the species seen, whatever else names it; then
   OpenStreetMap's species or genus, where the map names one; then a row's or a place's; then 019's
   rules. A tree seen is the crown whose middle is nearest, within half its crown and 3 m at least;

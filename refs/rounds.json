@@ -912,6 +912,59 @@
         [2928, 2208],
         [2928, 2208]
       ]
+    },
+    {
+      "id": "2026-10-18-after063",
+      "label": "Os troncos",
+      "date": "2026-10-18",
+      "tasks": [
+        "063"
+      ],
+      "note": "Cada copa onde estão as suas folhas (tarefa 063): um ramo que o LiDAR vê sem tronco por baixo é da copa da sua árvore, e cada copa desenha-se no meio das suas folhas, com o tronco inclinado para ela quando ela está mais para um lado. Nenhuma folha desce abaixo do sítio onde a copa começa. Os troncos saem dos caminhos e das ciclovias, e dos passeios por cima dos quais só passa a copa de uma árvore de um quintal; as árvores de rua ficam nas suas caldeiras. Em capela-sao-joao já não há um tronco à frente da câmara; em altice-forum a câmara está debaixo da copa do salgueiro, como na foto.",
+      "made": "2026-10-18T14:21:56.103Z",
+      "game": "a62fd8b with changes",
+      "map": "1.25.0",
+      "shots": {
+        "fujacal-start": [960, 720, 1, 8, 8, "f48ce4d2a9f0"],
+        "imaculada-conceicao": [960, 720, 1, 984, 8, "e762b83d7026"],
+        "liberdade": [960, 540, 1, 1960, 8, "44f64ebbceb3"],
+        "sao-joao-da-ponte": [960, 540, 1, 8, 744, "f5e6fd48d999"],
+        "devesa": [960, 540, 1, 984, 744, "d51fb76c32d3"],
+        "alvaro-carneiro": [960, 720, 1, 1960, 744, "ed9c497bc8c7"],
+        "porfirio-da-silva": [960, 720, 1, 8, 1480, "3856142c2ddc"],
+        "31-de-janeiro": [960, 720, 1, 984, 1480, "c16f33f6268a"],
+        "bernardo-sequeira": [960, 720, 1, 1960, 1480, "27216aedf719"],
+        "bom-jesus": [960, 720, 2, 8, 8, "a4069db70ce7"],
+        "pascoal-fernandes": [960, 720, 2, 984, 8, "ab42b96631ab"],
+        "egidio-guimaraes": [960, 720, 2, 1960, 8, "ec6aa543cc10"],
+        "robert-smith": [960, 720, 2, 8, 744, "56c0242ea5ec"],
+        "robert-smith-picoto": [960, 720, 2, 984, 744, "e65beb420baf"],
+        "falperra": [960, 720, 2, 1960, 744, "9dc755afd701"],
+        "sameiro": [960, 720, 2, 8, 1480, "cb474cf8bba1"],
+        "estadio": [960, 720, 2, 984, 1480, "8192dfaa8f5b"],
+        "viriato-amaral-nunes": [960, 720, 3, 8, 8, "042549152974"],
+        "monte-da-forca": [960, 720, 3, 984, 8, "2c695c87eac2"],
+        "couteiro": [960, 720, 3, 1960, 8, "57fa28341742"],
+        "conselheiro-lobato": [960, 720, 3, 8, 744, "db3fad1edcac"],
+        "fujacal-west": [960, 720, 3, 984, 744, "c8e95a04c3e2"],
+        "travessa-fujacal": [960, 720, 3, 1960, 744, "423767e3bb3e"],
+        "alameda-fujacal": [960, 720, 3, 8, 1480, "fbba87912846"],
+        "lobato-pavement": [960, 432, 3, 984, 1480, "349bd8341117"],
+        "lobato-crossing": [960, 540, 4, 8, 8, "044b07e81f45"],
+        "travessa-lobato": [960, 720, 4, 984, 8, "9df549b03686"],
+        "lobato-east": [960, 720, 4, 1960, 8, "104d02d4328e"],
+        "capela-sao-joao": [960, 540, 4, 8, 744, "850b591c1652"],
+        "altice-forum": [960, 720, 4, 984, 744, "8623b95aafe9"],
+        "picoto-top": [960, 720, 4, 1960, 744, "a4be9c3d5410"],
+        "capela-santa-justa": [960, 720, 4, 8, 1480, "3fcdaf6058c6"],
+        "capela-santo-adriao": [960, 720, 4, 984, 1480, "5d9db1e265ec"]
+      },
+      "sheets": [
+        [2928, 2208],
+        [2928, 2208],
+        [2928, 2208],
+        [2928, 2208]
+      ]
     }
   ]
 }

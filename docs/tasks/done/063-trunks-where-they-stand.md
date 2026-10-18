@@ -1,5 +1,5 @@
 ---
-status: doing
+status: done
 priority: medium
 kind: code
 repo: both
@@ -71,14 +71,30 @@ Steps:
 
 ## Done when
 
-- [ ] `capela-sao-joao`'s and `altice-forum`'s trees are where their photos have them: no trunk in
+- [x] `capela-sao-joao`'s and `altice-forum`'s trees are where their photos have them: no trunk in
   front of the camera at the chapel, and no leaves round the camera at the Forum. Neither scores
   lower than in "As árvores" (Claude's 3 and 2).
-- [ ] The test that every viewpoint's camera is clear of the trees passes.
-- [ ] How many trunks moved off footways, paths and pavements, in Notes; no viewpoint scores lower
+  > The round "Os troncos" (`2026-10-18-after063`): at the chapel the trunk is gone and the Largo
+  > open between the park's trees, its canopy 17 m over the camera, the nearest trunk 13.9 m off
+  > (Claude 3 → 4); at the Forum the hall and its α show, the willow's leaves over the camera from
+  > 1.8 m above the eye, at the top right as in the photo (2 → 3).
+- [x] The test that every viewpoint's camera is clear of the trees passes.
+  > `test/trees.test.js`'s "no viewpoint's camera stands by a trunk or in a crown": none within 2.5 m
+  > of a trunk (1 m, as asked, passed at both places before: their trunks were 1.63 m and 1.75 m
+  > off), none between a crown's foot and its top within its radius of its middle. It passes on
+  > 1.25.0 and fails on 1.23.0's world; the nearest trunks now 13.9 m from the chapel's camera and
+  > 2.7 m from the Forum's (the willow's lobe, moved off the cycleway).
+- [x] How many trunks moved off footways, paths and pavements, in Notes; no viewpoint scores lower
   than the round before.
-- [ ] braga-map's `npm test`, and party-kart's `npm test` and `npm run check`, pass, with the
+  > On 1.24.0's streets: 675 moved (354 off a footway, path, cycleway or flight of steps, 321 off a
+  > pavement they only overhang), 40 with nowhere under their crowns to go, 2,875 street trees left in
+  > their pavements (below). Claude's marks for "Os troncos" against "Até aos muros": 2.88 → 2.94 over
+  > the 33 places, two up, none down; the other ten places that changed most are the same but for the
+  > crowns a little higher and a trunk or two leaning.
+- [x] braga-map's `npm test`, and party-kart's `npm test` and `npm run check`, pass, with the
   autopilot's laps as before and no respawn.
+  > braga-map: 123 tests on 1.25.0. party-kart pinned to 1.25.0: 64 tests and `tsc`; the autopilot's
+  > laps 302.4 and 300.3 s with no respawn, as on 1.24.0 (052's run, the same to the tenth).
 
 ## Out of scope
 
@@ -177,3 +193,24 @@ panorama too), the tiles' paths and 019's shots.
 - Left: wait for 062 to land; merge main, run the remake again (trees into `trees.json`, open,
   shooter, world, tracks, cover, textures, the page), take the next version, pin party-kart to it;
   shoot and post the round; the budget; docs (README, decision, ROADMAP); finish.
+
+### Done 2026-10-18 (braga-map 1.25.0, party-kart `9dcf456` pinned to it, decision 047)
+
+- **Landed** after 052 (1.24.0) and 062: main merged, the remake run again from the trees on (only
+  the tiles change: the track, the ground cover, the textures and the page don't read the trees),
+  `.cache/trees.json` replaced with this task's (`trees-063.json` until then), tagged `v1.25.0`.
+  party-kart pinned to it on top of 052's `a62fd8b`; its peer prefix stays `pk37` (neither the
+  track nor the messages changed).
+- **The budget** (party-kart's `docs/architecture.md`, `after063` against `after052`, the 33
+  viewpoints, High, Medium and Low): the same draw calls and textures, 5,000 to 16,000 fewer
+  triangles a viewpoint on High (2.06 → 2.05 M at the median); the download on High 9.43 → 9.56 MB
+  gzipped, the tiles' two numbers more a tree.
+- **The round "Os troncos"** (`2026-10-18-after063`) is made: 33 shots of its own in 4 sheets in
+  `.cache/scorecard/rounds/`, and `refs/rounds.json`. **Not published,** as 052's "Até aos muros"
+  isn't: this session's account can't open the scorecard either (the Artifact tool finds no such
+  artifact). Claude's marks are ready in `.cache/scorecard/claude-marks-063.json`: the whole of
+  `scores/claude` at its version 13 with both rounds added (052's from `claude-marks-052.json`, so
+  set this one, pinned to version 13, in its place). To publish: the page, 052's four sheets and these
+  four, `data/rounds.json` and `data/viewpoints.json`.
+- **Not checked:** the owner's marks; a phone; the deploy (not asked).
+

@@ -106,7 +106,7 @@ Steps:
 - Found in task 035 (2026-10-14): its step 4 asked for plates and stops on every street; the
   owner chose to draw the route's on the real pavements there and leave the rest to this task.
 - Done (2026-10-18), braga-map 1.26.0 (after 052's 1.24.0 and 063's 1.25.0, remade on both) and
-  party-kart PKHASH, not deployed. The tiles: every line's name (64 times its place in the tile's
+  party-kart `01e7b0d`, not deployed. The tiles: every line's name (64 times its place in the tile's
   names, in its `what`), the bus stops in each tile's header, and the plates; the open world's 53
   tiles 3.274 → 3.329 MB gzipped (54 kB more), the base the same. The HUD names the street you
   drive onto, anywhere, from the lines' names (party-kart's `world/names.ts`), and the city's sound

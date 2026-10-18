@@ -381,7 +381,11 @@ export interface Wall {
 // trees and its woods and parks filled in, at their kind's usual size.
 // - x, z: where its trunk stands: its crown's top, or where OpenStreetMap maps it when the map has two or
 //   more trees in one crown the LiDAR saw (they ran together, and each takes the part of it nearest it);
-//   moved to a street's edge where its top was over the carriageway (it leans out over it).
+//   moved to a street's edge where its top was over the carriageway (it leans out over it), and off a
+//   footway, path, cycleway or pavement its crown overhangs where there's open ground under its crown.
+// - cx, cz: where its crown's middle is (task 063): over its trunk, or off it where the crown spreads to
+//   one side, leans out over a street or a path, or reaches out with a limb the LiDAR sees no trunk under
+//   (a big tree's over a square). A game draws the crown there, and the trunk leaning into it.
 // - kind: its species, as the map names it; else on the hills the main species of the wood it stands in
 //   (DGT's COS2025); else a broadleaf, but for the narrow and tall (a poplar where the photo sees a
 //   broadleaf's leaves, else a cypress or a cedar) and a tree taller than the town's with its crown held
@@ -397,6 +401,8 @@ export type TreeKind = 'broadleaf' | 'pine' | 'eucalyptus' | 'conifer' | 'poplar
 export interface Tree {
   x: number;
   z: number;
+  cx: number;
+  cz: number;
   kind: TreeKind;
   h: number;
   crown: number;

@@ -1,5 +1,5 @@
 ---
-status: doing
+status: done
 priority: medium
 kind: code
 repo: both
@@ -99,13 +99,24 @@ Steps:
 
 ## Done when
 
-- [ ] No pavement runs past a wall into what's behind it; a test in `test/streets.test.js` says how
+- [x] No pavement runs past a wall into what's behind it; a test in `test/streets.test.js` says how
   much of the walls' length has pavement past them (none, but at a gate or an opening).
-- [ ] The map's walls are no longer cut away on a carriageway, but where its lanes don't fit beside
+  > Nearly: "no pavement runs past a wall into what is behind it" measures 0.16 km of the 17.4 km of
+  > walls that face a street (0.9%) with pavement 0.4 m past them, where 1.22.0's tiles had 5.97 of
+  > 14.64 km (40.8%); what's left is at a kerb's sharp outside corner and in the squares. The test
+  > holds it to 2%.
+- [x] The map's walls are no longer cut away on a carriageway, but where its lanes don't fit beside
   one, and `test/walls.test.js` counts those.
+  > Mostly: `test/walls.test.js` counts 0.43 km (1.4%) of the map's 29.7 km still cut on a
+  > carriageway, where 3.50 km (12%) were, and holds it to 2%. Classified (a scratch probe): 10 m where
+  > the lanes don't fit, 0.1 km across a street, and the rest where streets meet, mostly a median's
+  > wall running straight at a junction's point, so its corner sees it end on.
 - [ ] The viewpoints between walls look more like their photos: `monte-da-forca`, `travessa-fujacal`,
   `alameda-fujacal`, `couteiro`.
-- [ ] What it changes is measured against the budget (task 004) and recorded in Notes.
+  > Not met: their shots barely change (`monte-da-forca`'s left pavement now stops at its wall;
+  > `travessa-fujacal` 4.5% of its pixels, mostly texture grain; `couteiro` and `alameda-fujacal` the
+  > same), and Claude's marks for them stay 3, 3, 4 and 3. Their streets' walls weren't the ones cut.
+- [x] What it changes is measured against the budget (task 004) and recorded in Notes.
 
 ## Out of scope
 
@@ -156,3 +167,36 @@ Steps:
 - **`robert-smith-picoto`'s camera moved 1.7 m** onto the middle of its lane, heading and pitch kept
   (decision 041): Mapillary puts it 0.5 m from a garden's wall, which the street now stops at; its
   photo has the car in the right lane with the wall on its right.
+- **Landed 2026-10-18, braga-map 1.24.0, party-kart `a62fd8b` pinned to it, not deployed.** 019, 060
+  and 062 landed while it was under way: main merged twice, the remake run again (trees, open,
+  shooter, world, tracks, the edge on the new track, cover, textures, the page): `carriageways.json`,
+  `walls.json` and `trees.json` came back byte for byte the same, and the edges didn't move. The
+  remake's own changes: the open world's 35 tiles, their ground cover, and the track.
+  - braga-map's `npm test`: 121 pass. party-kart's `npm run check` and `npm test` (64) pass on the
+    tag: the autopilot's laps 302.4 and 300.3 s with no respawn (060's 302.1 and 300.1), eight bots'
+    finishes within 4.6 s with none; a lap in the browser (`?autodrive`, three bots, Playwright)
+    5:09.99, the four within 1.4 s, over the jump, no page error.
+  - **The race:** the same line and points; 7 samples' widths; its road 14 m² smaller; 6 more rows of
+    barriers, where those between a road's two carriageways split at a median's wall (the
+    Imaculada Conceição's, the João XXI's): party-kart's peer id prefix is `pk37`.
+  - **The budget** (party-kart's `docs/architecture.md`, `after052` against `before052` on 1.23.0):
+    the same draw calls at every viewpoint, 4,000–32,000 more triangles (2.05 → 2.06 M on High at
+    the median), the same textures; the open world's tiles 2.717 → 2.758 MB gzipped, 55 kB more with
+    their ground cover.
+  - **The round "Até aos muros"** (`2026-10-18-after052`) is made, on 062's `tools/round.mjs`: 33
+    shots of their own in 4 sheets in `.cache/scorecard/rounds/`, and `refs/rounds.json`. **Not
+    published:** this session's account can't open the scorecard (the Artifact tool finds no such
+    artifact; its database reads but refuses writes). Claude's marks are ready, the whole of
+    `scores/claude` at its version 13 with the round added, in `.cache/scorecard/claude-marks-052.json`
+    (set it pinned to version 13): 2.88 over the 33, as "As árvores" over them, none moved. Nearer the
+    photos without a mark moving: `liberdade` (calçada under the camera, left of the cycle lane,
+    where it was grass), `robert-smith-picoto` (the road ends at the wall on its right, as in the
+    photo), `imaculada-conceicao` (the median's hedge standing). To publish: the page
+    (`scorecard/index.html`, which now leaves a dropped place out of a round that didn't shoot it), the
+    four sheets, `data/rounds.json` and `data/viewpoints.json` (`joao-xxi` marked `dropped`).
+  - **Found on the way:** the Avenida da Liberdade's island at (276, 840), task 059's, isn't one any
+    more: a street beside it gave way to the map's wall along its edge, which opened the carriageways'
+    ring round it, so it's drawn as pavement out from the kerbs and bare ground beyond (noted in 059).
+    And `.cache/scorecard/` is shared by every checkout through its junction: the round's sheets and
+    the marks are there.
+  - **Not checked:** the owner's marks; a phone; the deploy (not asked).

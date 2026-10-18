@@ -33,7 +33,7 @@ import { decks } from './decks.mjs';
 import { carriagewayMoves, heldGround, isLine, isSquare, LEVEL, levelHeights, onCarriageways, pathLines, pathsOf, streetBumps, streetsOf } from './lines.mjs';
 import { packPaths, packStreets, streetSurfaces } from './streets.mjs';
 import { cutWalls, packWalls } from './walls.mjs';
-import { KINDS as TREE_KINDS, osmKind } from './trees.mjs';
+import { KINDS as TREE_KINDS, osmKind, TREES } from './trees.mjs';
 import { PLATE, platesOf } from './plates.mjs';
 import { BALCONIES, BALCONY, COLOUR, COLOURS, floorsOf, GROUND, GROUND_OF, guesser, MATERIAL, MATERIALS, TYPE, TYPES } from './facades.mjs';
 
@@ -702,9 +702,10 @@ let signs = 0;
 // crown as wide and its foot as high, and of its kind; and where the point cloud wasn't fetched, the
 // map's own trees, and its woods and parks filled in (one tree to so many square metres, pines among
 // the woods'), at a kind's usual size. None on a carriageway (a street taken at its own width): a tree
-// the LiDAR found there is a crown over the street, whose trunk is at its edge, so it's moved there
-// where that's within 3 m, else left out. Each is [x, z, kind | mapped << 3 | filled << 4 | height << 5,
-// crown, foot]: half metres, then decimetres; mapped where OpenStreetMap has it too.
+// the LiDAR found there is a crown over the street, whose trunk is at its edge, so its trunk is moved
+// there where that's within 3 m, its crown left where it is, else it's left out. Each is [x, z, kind |
+// mapped << 3 | filled << 4 | height << 5, crown, foot, dx, dz]: half metres, then decimetres; mapped
+// where OpenStreetMap has it too; dx, dz how far its crown's middle is from its trunk (task 063).
 
 let nTrees = 0;
 {
@@ -729,12 +730,12 @@ let nTrees = 0;
     }
     return best;
   };
-  const plant = (x, z, kind, h, crown, foot, flags) => { tileAt(x, z).trees.push(half(x), half(z), kind | (flags << 3) | (Math.min(1023, Math.round(h * 10)) << 5), Math.round(crown * 10), Math.round(foot * 10)); nTrees++; };
-  const found = fs.existsSync(path.join(CACHE, 'trees.json')) ? readCache('trees.json') : null;
-  if (!found) console.log("no .cache/trees.json: the map's trees, and its woods and parks filled in (node tools/trees.mjs)");
+  const plant = (x, z, kind, h, crown, foot, flags, cx = x, cz = z) => { tileAt(x, z).trees.push(half(x), half(z), kind | (flags << 3) | (Math.min(1023, Math.round(h * 10)) << 5), Math.round(crown * 10), Math.round(foot * 10), Math.round((cx - half(x) / 2) * 10), Math.round((cz - half(z) / 2) * 10)); nTrees++; };
+  const found = fs.existsSync(path.join(CACHE, TREES)) ? readCache(TREES) : null;
+  if (!found) console.log(`no .cache/${TREES}: the map's trees, and its woods and parks filled in (node tools/trees.mjs)`);
   const seen = new Set(found?.seen ?? []), lidarTrees = (x, z) => seen.has(tileKey(...toTM(x, z)));
   const why = { moved: 0, street: 0, planted: 0 };
-  for (const [x0, z0, kind, h, crown, foot, mapped] of found?.trees ?? []) {
+  for (const [x0, z0, kind, h, crown, foot, mapped, cx = x0, cz = z0] of found?.trees ?? []) {
     let x = x0, z = z0;
     const on = onStreet(x, z);
     if (on) {
@@ -745,7 +746,7 @@ let nTrees = 0;
       if (onStreet(x, z)) { why.street++; continue; }
       why.moved++;
     }
-    if (inExt(x, z)) { plant(x, z, kind, h, crown, foot, mapped); why.planted++; }
+    if (inExt(x, z)) { plant(x, z, kind, h, crown, foot, mapped, cx, cz); why.planted++; }
   }
   // Where the point cloud wasn't fetched: the map's trees and the woods and parks filled in.
   const SIZE = { [TREE_KINDS.indexOf('broadleaf')]: [9, 7, 2.5], [TREE_KINDS.indexOf('pine')]: [14, 6, 7], [TREE_KINDS.indexOf('eucalyptus')]: [22, 8, 11], [TREE_KINDS.indexOf('conifer')]: [12, 4, 1], [TREE_KINDS.indexOf('poplar')]: [16, 4, 3], [TREE_KINDS.indexOf('palm')]: [9, 5, 6.5] };
@@ -783,20 +784,23 @@ let nTrees = 0;
 const wallList = fs.existsSync(path.join(CACHE, 'walls.json')) ? readCache('walls.json').walls : null;
 if (!wallList) console.log('no .cache/walls.json: no walls (node tools/walls.mjs)');
 let nWalls = 0;
-const treesOff = { moved: 0, out: 0 };
+const treesOff = { moved: 0, out: 0, walked: 0, walking: 0, path: 0, pavement: 0, pits: 0 };
 {
   const nodes = onCarriageways(readCache('osm/street.json')).elements.filter((e) => e.type === 'node');
   const rings = (kind) => areas.filter(([k]) => k === AREA.indexOf(kind)).map(([, r]) => r);
   const B = OPEN_BOX, over = tilesOver(B).map((t) => ({ id: t.id, box: { x0: Math.max(t.box.x0, B.x0), x1: Math.min(t.box.x1, B.x1), z0: Math.max(t.box.z0, B.z0), z1: Math.min(t.box.z1, B.z1) } }));
+  // The buildings and the water, which a tree moved off a path isn't moved into.
+  const solid = [...outlines, ...rings('water')].map((r) => [r, bounds(r)]);
   const { cuts, stats } = streetSurfaces({ lines, heights, elev0: ELEV0, height: tileGround, nodes, buildings: outlines, squares: rings('plaza'), water: rings('water'), paths: walks, walls: wallList ?? [], box: B, cuts: over });
   for (const { id } of over) {
     const t = tiles.get(id);
     t.streets = packStreets(cuts.get(id), t.box.x0, t.box.z0);
     Object.assign(t, packPaths(cuts.get(id), t.box.x0, t.box.z0));
     // A tree the world draws a carriageway over (a junction's corners reach past the band round each
-    // street's line, which the trees were kept off): moved off it the nearest way within 3 m, half a
-    // metre past its edge, else left out.
-    const cw = new Inside(cuts.get(id).carriageways.filter((p) => p.level === 'ground' || p.level === 'under').flatMap((p) => p.rings)), kept = [];
+    // street's line, which the trees were kept off): its trunk moved off it the nearest way within 3 m,
+    // half a metre past its edge, its crown left where it is, else it's left out.
+    const onGround = (p) => p.level === 'ground' || p.level === 'under';
+    const cw = new Inside(cuts.get(id).carriageways.filter(onGround).flatMap((p) => p.rings)), kept = [];
     const wayOut = (x, z) => {
       for (let r = 0.25; r <= 3; r += 0.25) for (let a = 0; a < 16; a++) {
         const ux = Math.cos((a * Math.PI) / 8), uz = Math.sin((a * Math.PI) / 8);
@@ -804,22 +808,62 @@ const treesOff = { moved: 0, out: 0 };
       }
       return null;
     };
-    for (let i = 0; i < t.trees.length; i += 5) {
-      let [x, z] = [t.trees[i] / 2, t.trees[i + 1] / 2];
+    // And one the LiDAR puts on a footway, a path, a cycleway or a flight of steps, or on a pavement its
+    // crown only overhangs (a garden's tree reaching over its wall: nearer the pavement's back than its
+    // kerb, its crown's middle off the pavement and the carriageway; a street tree stands in its pit
+    // towards the kerb, its crown over the street or either side): its trunk moved off it the nearest
+    // way, half a metre clear, onto no carriageway, building or water, to where its crown still covers;
+    // else it stays (one a path through a wood goes round). Not one the map has where the map puts it
+    // (task 063).
+    const near = (pieces) => { const g = new Grid(10); for (const p of pieces) { const b = bounds(p.rings[0]); for (let i = Math.floor(b.x0 / 10); i <= Math.floor(b.x1 / 10); i++) for (let j = Math.floor(b.z0 / 10); j <= Math.floor(b.z1 / 10); j++) g.add(i * 10, j * 10, p); } return (x, z) => g.near(x, z, 0).some((p) => inside(p.rings[0], x, z) && !p.rings.slice(1).some((r) => inside(r, x, z))); };
+    const B2 = t.box, nearBox = ([, b]) => b.x1 > B2.x0 - 20 && b.x0 < B2.x1 + 20 && b.z1 > B2.z0 - 20 && b.z0 < B2.z1 + 20;
+    const onPath = near(cuts.get(id).paths.filter(onGround)), onPavement = near(cuts.get(id).pavements.filter(onGround)), walked = (x, z) => onPath(x, z) || onPavement(x, z);
+    const blocked = near(solid.filter(nearBox).map(([r]) => ({ rings: [r] })));
+    const clear = (x, z) => !cw.has(x, z) && !walked(x, z) && !blocked(x, z);
+    // Whether (x, z) on a pavement is no nearer its back than half a metre less than its kerb: how far
+    // the nearest way off it, within the tile, is over the kerb onto the carriageway (within 0.6 m of
+    // the pavement's edge), and how far it's onto anything else.
+    const byKerb = (x, z) => {
+      let kerb = Infinity, back = Infinity;
+      for (let a = 0; a < 16; a++) {
+        const ux = Math.cos((a * Math.PI) / 8), uz = Math.sin((a * Math.PI) / 8);
+        for (let r = 0.25; r <= 8; r += 0.25) {
+          const px = x + ux * r, pz = z + uz * r;
+          if (px < B2.x0 || px > B2.x1 || pz < B2.z0 || pz > B2.z1) break;
+          if (onPavement(px, pz)) continue;
+          if (cw.has(px, pz) || cw.has(x + ux * (r + 0.6), z + uz * (r + 0.6))) kerb = Math.min(kerb, r); else back = Math.min(back, r);
+          break;
+        }
+      }
+      return back + 0.5 >= kerb;
+    };
+    const offWalk = (x, z, cx, cz, R) => {
+      for (let r = 0.25; r <= 2 * R; r += 0.25) for (let a = 0; a < 16; a++) {
+        const ux = Math.cos((a * Math.PI) / 8), uz = Math.sin((a * Math.PI) / 8), nx = x + ux * (r + 0.5), nz = z + uz * (r + 0.5);
+        if (Math.hypot(nx - cx, nz - cz) <= R && clear(x + ux * r, z + uz * r) && clear(nx, nz)) return [nx, nz];
+      }
+      return null;
+    };
+    for (let i = 0; i < t.trees.length; i += 7) {
+      const [x0, z0] = [t.trees[i] / 2, t.trees[i + 1] / 2], cx = x0 + t.trees[i + 5] / 10, cz = z0 + t.trees[i + 6] / 10;
+      let [x, z] = [x0, z0];
       if (cw.has(x, z)) {
         const to = wayOut(x, z);
         if (!to || tileAt(...to) !== t) { treesOff.out++; nTrees--; continue; }
         [x, z] = to;
         treesOff.moved++;
-      }
-      kept.push(half(x), half(z), ...t.trees.slice(i + 2, i + 5));
+      } else if (!(t.trees[i + 2] & 24) && (onPath(x, z) || (onPavement(x, z) && !onPavement(cx, cz) && !cw.has(cx, cz) && !byKerb(x, z)))) {
+        const to = offWalk(x, z, cx, cz, t.trees[i + 3] / 20), on = onPath(x, z) ? 'path' : 'pavement';
+        if (to && tileAt(...to) === t) { [x, z] = to; treesOff.walked++; treesOff[on]++; } else treesOff.walking++;
+      } else if (onPavement(x, z)) treesOff.pits++;
+      kept.push(half(x), half(z), ...t.trees.slice(i + 2, i + 5), Math.round((cx - half(x) / 2) * 10), Math.round((cz - half(z) / 2) * 10));
     }
     t.trees = kept;
     if (!wallList) continue;
     // A wall on a carriageway or a path (a fence the map draws along a flight of steps, a hedge the
     // map's line for a ramp down to a tunnel runs along) stands at its edge: cut there; on a deck or a
     // tunnel's road, where it stands within 2 m of it.
-    const c = cuts.get(id), onGround = (p) => p.level === 'ground' || p.level === 'under';
+    const c = cuts.get(id);
     const road = new Inside([...c.carriageways, ...c.paths].filter(onGround).flatMap((p) => p.rings));
     const up = [...c.carriageways, ...c.paths].filter((p) => !onGround(p) && p.ys).map((p) => { const ys = p.ys.flat(); return { inside: new Inside(p.rings), lo: Math.min(...ys) - 2, hi: Math.max(...ys) + 2 }; });
     const mine = cutWalls(wallList, over.find((o) => o.id === id).box, (x, z, y) => road.has(x, z) || up.some((p) => y >= p.lo && y <= p.hi && p.inside.has(x, z)));
@@ -848,7 +892,7 @@ const treesOff = { moved: 0, out: 0 };
     console.log(`plates: ${plates.length} of ${new Set(plates.map((p) => p.name)).size} streets at ${ps.corners} corners, ${ps.wall} on a wall and ${ps.post} on a post (${ps.none} with no room, ${ps.twice} the same name again within 6 m); bus stops: ${nStops}`);
   }
   const ps = stats.paths;
-  console.log(`trees on a carriageway as it's drawn: ${treesOff.moved} moved off it, ${treesOff.out} left out`);
+  console.log(`trees on a carriageway as it's drawn: ${treesOff.moved} moved off it, ${treesOff.out} left out; the LiDAR's on a footway, path, cycleway or flight of steps, or overhanging a pavement: ${treesOff.walked} moved off it (${treesOff.path} off a path, ${treesOff.pavement} off a pavement), ${treesOff.walking} with nowhere under their crowns to go; ${treesOff.pits} street trees left in their pavements`);
   if (wallList) console.log(`walls: ${nWalls} pieces in the open world's tiles, of ${wallList.length}; ${stats.walls.streets} streets brought back to the map's walls in them, giving way ${Math.round(stats.walls.given)} m² of carriageway; ${Math.round(stats.walls.behind)} m² of pavement and ${Math.round(stats.walls.paths)} m² of paths behind a wall taken off`);
   console.log(`streets: ${stats.edges} stretches in the open world's ${over.length} tiles, ${stats.junctions} junctions, ${stats.islands} islands, ${stats.reservations} reservations, ${Math.round(stats.slivers)} m² of slivers closed, ${Math.round(stats.past)} m² of corners cut back past a deck's or a tunnel's end, ${Math.round(stats.km.kerb)} km of kerb, in ${Math.round(stats.seconds)} s`);
   console.log(`paths: ${walks.length} ways round the area, ${Object.entries(ps.m2).map(([k, v]) => `${k} ${Math.round(v)} m²`).join(', ')} (cycleways ${Math.round(ps.lanes)} m² beside the road and ${Math.round(ps.flush)} m² flush with a pavement); ${ps.flights} flights of steps in ${ps.treads} treads, ${ps.steep} rising more than 0.3 m`);

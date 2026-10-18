@@ -40,7 +40,7 @@ const world = await loadWorld({ open: true }); // the open world's area and the 
 world.height(x, z); // the ground: every 2 m or 10 m on the tiles loaded, every 50 m elsewhere
 world.buildings; // [{ kind, roof, ends, dir, pitch, y, h, ridge, floors, roofColor, facade, … pts }], and areas, lines…
 world.lines; // every street and the railway: [{ kind, level, w, name, pts, heights? }], name the map's or null
-world.trees; // every tree: [{ x, z, kind, h, crown, foot, trunk, mapped, filled }], as DGT's LiDAR measured it
+world.trees; // every tree: [{ x, z, cx, cz, kind, h, crown, foot, trunk, mapped, filled }], as DGT's LiDAR measured it
 map().treeKinds; // each kind of tree with its bark's and its leaves' photos: [{ kind, bark, leaves }]
 world.signs; // the shops' signs: [{ text, colour, from, to, y, h }], on their buildings' walls
 world.stops; // every bus stop: [{ x, z, shelter }]
@@ -164,7 +164,7 @@ map().groundKinds; // the kinds it says, each with its photo: [{ kind, texture: 
   link, a service road or a track without a name) and the kerbs as `world.streets` draws them: none
   inside a wide junction's carriageway, on a reservation or an island, or in a building. 1,034
   plates for 199 of the area's 205 named streets, 111 of them on a wall: most of the area's corners
-  have no building within 6 m of the kerb (avenues, roundabouts, houses behind gardens). Decision 047.
+  have no building within 6 m of the kerb (avenues, roundabouts, houses behind gardens). Decision 048.
 - A track brings its race's road (`road`, decision 019): the route's own streets at their real
   widths, as `world.streets` draws them, and its jump's flight, with the corner between the flight
   and the landing street (task 057). Its outline is the race's walls, and where the street drawn
@@ -175,10 +175,11 @@ map().groundKinds; // the kinds it says, each with its photo: [{ kind, texture: 
   itself knows nothing of a road: the trees stand off every carriageway (taken at its own width), the
   houses it fills in on empty frontages (where the LiDAR wasn't fetched) clear of every street taken
   at least 9 m wide (`W_MIN`), and the real buildings stand where they are.
-- **The trees** (task 019, decision 043): every tree DGT's 2025 LiDAR sees over the map, 251,000 of
+- **The trees** (task 019, decision 043): every tree DGT's 2025 LiDAR sees over the map, 246,000 of
   them (`tools/trees.mjs`), each where it stands (its crown's top), as tall as it is, its crown as
-  wide (as a disc as big as it is from above) and its foot as high (where its trunk goes into it), and
-  of its kind: a broadleaf, a pine, a eucalyptus, a cypress or a cedar, a poplar or a palm. Its kind is
+  wide (as a disc as big as it is from above) and its foot as high (where its trunk goes into it),
+  its crown's middle where its leaves are (`cx`, `cz`: off its trunk where it spreads to one side,
+  task 063), and of its kind: a broadleaf, a pine, a eucalyptus, a cypress or a cedar, a poplar or a palm. Its kind is
   OpenStreetMap's where the map names a species, a genus or a leaf type (its trees are matched to the
   crowns, and where it maps two or more in one crown the LiDAR saw, the crowns ran together and each
   takes the part of it nearest it); else, on the hills, the main species of the wood it stands in, as
@@ -186,8 +187,14 @@ map().groundKinds; // the kinds it says, each with its photo: [{ kind, texture: 
   broadleaf's leaves, else a cypress or a cedar), a tree taller than the town's that holds its crown
   high (a eucalyptus), and a tall tree that holds its crown high and is dark in the near-infrared, as
   needles are (a pine). Palms only where the map has them. OpenStreetMap's trees in no crown (planted
-  since July 2025, or under 3 m then) are kept as young trees. None stands on a carriageway: a crown's
-  top over one has its trunk moved to the edge, within 3 m, else it's left out. Its trunk's thickness
+  since July 2025, or under 3 m then) are kept as young trees. A crown with no trunk under it (narrow,
+  its leaves in its upper half) that meets a taller one is a limb of that tree, reaching out over a
+  square or a path, and part of its crown (decision 047). None stands on a carriageway: a crown's top
+  over one has its trunk moved to the edge, within 3 m, its crown left over the street, else it's left
+  out. In the open world's area none stands on a footway, a path, a cycleway or a flight of steps, nor
+  on a pavement its crown only overhangs from behind (nearer the pavement's back than its kerb, its
+  crown's middle off the pavement and the street), where there's open ground under its crown to move
+  its trunk to; a street tree stands in its pavement. Its trunk's thickness
   is what a tree that tall and that wide usually has (`trunk`; the LiDAR doesn't see a trunk). Each
   kind has a photo of its bark and a spray of its leaves (`map().treeKinds`, from Poly Haven, CC0),
   as the ground's kinds have theirs. Where the point cloud wasn't fetched (nowhere on the map today),
@@ -240,7 +247,7 @@ node tools/decks.mjs   # the bridges' decks DGT's point cloud saw: .cache/decks.
 node tools/carriageways.mjs  # where each street's carriageway really is, and the moves that put the map's lines there: .cache/carriageways.json (20 s, 4 minutes the first time)
 node tools/walls.mjs   # the walls, fences, railings, hedges and gates round the open world's area: .cache/walls.json (2 minutes, and 3 more the first time)
 node tools/sights.mjs  # the Estádio 1.º de Maio's stands and floodlights, the chapels' and shrines' tops, from the point cloud: .cache/sights.json (two minutes)
-node tools/trees.mjs   # every tree the LiDAR sees, its height, crown, foot and kind: .cache/trees.json (40 s, 25 minutes the first time)
+node tools/trees.mjs   # every tree the LiDAR sees, its height, crown, foot and kind: .cache/trees.json (40 s, 25 minutes the first time; TREES=<name>.json writes .cache/<name>.json, which world.mjs then reads given the same)
 npm run page     # the map page's map/braga.json
 npm run tracks   # every track: tracks/<id>.js, and map/tracks.json for the page
 npm run open     # the open world's edge, round the Volta dos Amigos: tools/open.json (seconds)
@@ -414,16 +421,21 @@ streets; when a track moves enough to change the edge, run the three again until
   two meet, the lower is a bump on the higher if its top stands less than 6% of its height (1 m at
   least) over where they meet and within a third of the higher's height of its top; a crown much
   narrower than its height that mostly meets other crowns is a sliver of their canopy, and joins the
-  one it meets most. Each crown with its top on the tile, 3 m tall or more: its height (its highest
-  point), its width (the cells a quarter of its height up and more, as a disc), its foot (the 5th
+  one it meets most; and a crown as narrow as a cypress (its height 2.8 times its width or more) whose
+  foot is in its upper half, and that a taller crown borders along a fifth of its edge or more, is a
+  limb of the taller (nothing of it comes down to where a trunk would be), and joins the one it meets
+  most (`mergeStemless`, task 063). Each crown with its top on the tile, 3 m tall or more: its height
+  (its highest point), its width (the cells a quarter of its height up and more, as a disc), its
+  middle (where it's drawn), its foot (the 5th
   percentile of its cells' lowest points, no higher than 60% of it: under a thick crown the laser seldom
   reaches its lowest leaves), and its colour. Left out: what the photo sees no leaf in (no more
   near-infrared than red: a wall's edge, a roof, a crane) or that's mostly over a roof, but where the
   map has a tree. OpenStreetMap's trees are matched to the crowns (the one each stands in, or the
   nearest within 2.5 m), and its kinds as the README's trees say, COS2025's woods from its classes 4
   and 5. `--check x,z[,r] …` draws the orthophoto round each point with each crown outlined in its
-  kind's colour, into `.cache/trees/`. `test/trees.test.js` checks it on crowns made up as the LiDAR
-  sees them, and the trees in the tiles.
+  kind's colour, its trunk and its middle marked, into `.cache/trees/`. `test/trees.test.js` checks it on
+  crowns made up as the LiDAR sees them, the trees in the tiles, and that no viewpoint's camera stands
+  within 2.5 m of a trunk or in a crown.
 - `open.mjs` works out the open world's edge (task 032) from the streets and the buildings, on a
   grid of 1 m: near the loop is within 120 m of it and what that closes round (its inside, and a
   pocket between two of its arms), and the Picoto's top; every street that comes near is in, from

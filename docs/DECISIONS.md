@@ -1298,14 +1298,68 @@ the garden behind. In Braga a street ends at its walls. The owner chose (task 05
 - **The LiDAR's walls on a carriageway are still cut** (1.40 km of its retaining walls, mostly the
   steps in the ground at a carriageway's edge it took for walls): the task gave the map's.
 
-What it did, braga-map 1.24.0: …
+What it did, braga-map 1.24.0: 181 streets brought back to the map's walls, giving way 3,204 m² of
+carriageway; 39,800 m² of pavement and 700 m² of paths behind a wall taken off. Of the 17.4 km of
+walls a pavement stops at that face a street, 0.16 km (0.9%) have pavement past them, where 40.8% had
+on 1.22.0 (at a kerb's sharp outside corner, and in the squares); of the map's 29.7 km of barriers,
+0.43 km (1.4%) are still cut on a carriageway, where 3.50 km were (12%): mostly where a median's wall
+runs straight at a junction's point, so its corner sees it end on, then across a street, and 10 m
+where the lanes don't fit. One viewpoint dropped (`joao-xxi`, the owner's answer) and one camera moved
+onto its lane (`robert-smith-picoto`, decision 041). The race the same line, its road 14 m² smaller
+and its barriers split where a median's wall stands; in party-kart the autopilot's laps 302.4 and
+300.3 s with no respawn, eight bots within 4.6 s, and a lap in the browser with three bots 310.0 s.
 
 The alternatives were the task's: the wall cut away as before, or kept standing in the street; and
 for the LiDAR's walls, all of them stopping a pavement, or only the map's and its retaining walls;
 for a street with no lanes painted, a lane each way it's driven (5 m for a two-way street, which
 would have kept 0.46 km of walls cut, the Travessa da Devesa's among them) or 026's narrowest, 2.4 m.
 
-## 047 · The streets' name plates stand where the map puts them: at every corner, on the corner building or on a post
+## 047 · A tree's crown is where its leaves are: a limb with no trunk under it is its tree's, and a trunk stands off the paths
+
+*2026-10-18 · task 063 · adds to decision 043*
+
+Decision 043 stood each tree's trunk under its crown's top. At two viewpoints the camera ran into a
+tree its photo doesn't have there, and step 1 of task 063 found neither was a leaning tree: at São João
+da Ponte's chapel, the "tree" 1.6 m ahead (29 m tall, its leaves from 17 m) was the park's canopy
+reaching out over the Largo, with no point of high vegetation under it below 16 m and no trunk within
+8–10 m in the photo's panorama; at the Altice Forum, the camera stands under its willow's crown as
+its photo does, but the willow was three trees (a lobe over the cycleway, another 5 m ahead, each
+with a trunk), and the game hung its leaves to the eye. The task's rules for finding a trunk (the
+stem's points, the cell with the lowest leaves, the crown's middle) would have put both further into
+the open: there's no stem to find. The owner chose (task 063's answers, 2026-10-18):
+
+- **A crown with no trunk under it is a limb of the taller crown it meets,** and joins it
+  (`mergeStemless` in `tools/trees.mjs`): as narrow as a cypress (its height 2.8 times its width or
+  more), but its leaves in its upper half, where a cypress's and a poplar's come down near the
+  ground, and a taller crown borders it along a fifth of its edge or more. 10,468 over the point
+  cloud; 246,269 trees on the map, where there were 251,738.
+- **The crown is drawn where its leaves are:** each tree carries its crown's middle (`cx`, `cz`)
+  beside its trunk (`x`, `z`), off it where the crown spreads to one side, a limb reaches out, or its
+  trunk was moved to a street's edge (the crown stays over the street). party-kart draws the crown
+  there and leans the trunk into it only past half the crown's radius, up to 25° (a crown spread to
+  one side stands on an upright trunk); the middle is a metre or more off the trunk on 57% of the
+  trees, past the crown's radius on 5%.
+- **No card of leaves hangs below a crown's foot** (party-kart): a broadleaf's cards are up to
+  4.5 m, and the lowest hung 2 m under its foot, to a person's eye under the willow.
+- **A trunk stands off what people walk on** where it can (in the open world's area, by the
+  surfaces the world draws): off a footway, a path, a cycleway or a flight of steps, and off a
+  pavement its crown only overhangs from behind (nearer the pavement's back than its kerb, by half a
+  metre, its crown's middle off the pavement and the street), to the nearest open ground under its
+  crown, half a metre clear, onto no carriageway, building or water; else it stays. A street tree
+  stands in its pit: moving every trunk off the pavements (1,359 then) took `alameda-fujacal`'s out
+  of the pavement its photo has it in, and one whose crown spreads over the garden behind,
+  `31-de-janeiro`'s, was taken for a garden's until the kerb was asked about. On 1.24.0's streets: 675 moved
+  (354 off a path, 321 off a pavement), 40 with nowhere to go, 2,875 street trees left in their
+  pavements. Not a tree the map has, where the map puts it.
+- **No viewpoint's camera stands within 2.5 m of a trunk or in a crown** (`test/trees.test.js`):
+  at 1 m, as the task had it, both cameras passed before (their trunks 1.63 m and 1.75 m off).
+
+What it cost: two numbers more a tree in the tiles, 0.13 MB more to download gzipped for the Volta dos
+Amigos' box (3.03 to 3.16 MB). The alternatives were each limb drawn as a crown with no trunk (leaves
+floating 16 m up, nothing holding them), the task's rules for a trunk, and every trunk off the
+pavements.
+
+## 048 · The streets' name plates stand where the map puts them: at every corner, on the corner building or on a post
 
 *2026-10-18 · task 042 · as the shops' signs (decision 036)*
 

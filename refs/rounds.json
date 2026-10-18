@@ -859,6 +859,59 @@
         [2928, 2208],
         [2928, 2208]
       ]
+    },
+    {
+      "id": "2026-10-18-after052",
+      "label": "Até aos muros",
+      "date": "2026-10-18",
+      "tasks": [
+        "052"
+      ],
+      "note": "As ruas acabam nos seus muros (tarefa 052): o passeio vai do lancil até ao primeiro muro atrás dele, e a faixa de rodagem recua até um muro do mapa que estava dentro dela, sem ficar mais estreita do que as suas vias (uma de 2,5 m onde não há nenhuma pintada); os cantos dos cruzamentos param nos muros também. Os muros do mapa cortados numa faixa passam de 3,5 km a 0,4 km. A câmara de robert-smith-picoto passa para a sua faixa, e joao-xxi sai dos lugares (as rondas antes desta mantêm-no).",
+      "made": "2026-10-18T12:32:50.308Z",
+      "game": "52dec10 with changes",
+      "map": "1.24.0",
+      "shots": {
+        "fujacal-start": [960, 720, 1, 8, 8, "418c83181b24"],
+        "imaculada-conceicao": [960, 720, 1, 984, 8, "d22042bafb87"],
+        "liberdade": [960, 540, 1, 1960, 8, "599a2a72eab4"],
+        "sao-joao-da-ponte": [960, 540, 1, 8, 744, "31712b7178c2"],
+        "devesa": [960, 540, 1, 984, 744, "8e371b4c8c77"],
+        "alvaro-carneiro": [960, 720, 1, 1960, 744, "cb50d7cfb8e2"],
+        "porfirio-da-silva": [960, 720, 1, 8, 1480, "0bf8a0f02966"],
+        "31-de-janeiro": [960, 720, 1, 984, 1480, "80dc09a3d6f4"],
+        "bernardo-sequeira": [960, 720, 1, 1960, 1480, "812a678b6923"],
+        "bom-jesus": [960, 720, 2, 8, 8, "3e90fe61924a"],
+        "pascoal-fernandes": [960, 720, 2, 984, 8, "c62f14436102"],
+        "egidio-guimaraes": [960, 720, 2, 1960, 8, "609521612703"],
+        "robert-smith": [960, 720, 2, 8, 744, "c25a5bfdaf03"],
+        "robert-smith-picoto": [960, 720, 2, 984, 744, "b4c943cf420c"],
+        "falperra": [960, 720, 2, 1960, 744, "04991366ab48"],
+        "sameiro": [960, 720, 2, 8, 1480, "9c9b682a6164"],
+        "estadio": [960, 720, 2, 984, 1480, "7b0cae688bf9"],
+        "viriato-amaral-nunes": [960, 720, 3, 8, 8, "491f11b989f6"],
+        "monte-da-forca": [960, 720, 3, 984, 8, "a64ee7fe52e1"],
+        "couteiro": [960, 720, 3, 1960, 8, "5ff8204126fb"],
+        "conselheiro-lobato": [960, 720, 3, 8, 744, "0521676058ce"],
+        "fujacal-west": [960, 720, 3, 984, 744, "4a2b5cc78191"],
+        "travessa-fujacal": [960, 720, 3, 1960, 744, "9ed6a6f95e02"],
+        "alameda-fujacal": [960, 720, 3, 8, 1480, "a122761d9eda"],
+        "lobato-pavement": [960, 432, 3, 984, 1480, "25165c92c971"],
+        "lobato-crossing": [960, 540, 4, 8, 8, "540aef8dfdae"],
+        "travessa-lobato": [960, 720, 4, 984, 8, "fad181f2b153"],
+        "lobato-east": [960, 720, 4, 1960, 8, "4a3dd0f83b21"],
+        "capela-sao-joao": [960, 540, 4, 8, 744, "12f5ef459807"],
+        "altice-forum": [960, 720, 4, 984, 744, "655ac6995145"],
+        "picoto-top": [960, 720, 4, 1960, 744, "c2ef22b5a467"],
+        "capela-santa-justa": [960, 720, 4, 8, 1480, "1d87e57d2637"],
+        "capela-santo-adriao": [960, 720, 4, 984, 1480, "34551682a57d"]
+      },
+      "sheets": [
+        [2928, 2208],
+        [2928, 2208],
+        [2928, 2208],
+        [2928, 2208]
+      ]
     }
   ]
 }

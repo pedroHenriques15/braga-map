@@ -19,9 +19,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import zlib from 'node:zlib';
-import { CACHE, P, readCache } from './geo.mjs';
+import { CACHE, P, readCache, ROOT } from './geo.mjs';
 import { pathToFileURL } from 'node:url';
 import { CLASS, DGT, mapToTM, orthoGrid, points, readModel, tileKey, tileToMap, toTM } from './dgt.mjs';
+import { inside } from './osm.mjs';
 import { EXT } from './sections.mjs';
 
 // ---------------------------------------------------------------------------------------------
@@ -391,8 +392,13 @@ export async function treesOn(key, osm) {
 // eucalyptus; and a tall tree that holds its crown high and is dark in the near-infrared, as needles are,
 // a pine (a quarter of the trees in COS2025's pine woods are, against 3 to 10% in its other woods).
 
-export const KINDS = ['broadleaf', 'pine', 'eucalyptus', 'conifer', 'poplar', 'palm'];
-const [BROADLEAF, PINE, EUCALYPTUS, CONIFER, POPLAR, PALM] = KINDS.keys();
+// Nine kinds since task 061, each a shape and a bark and leaves of its own: the plane (pale, mottled bark,
+// big leaves, an open crown), the lime (a dense round crown of heart-shaped leaves, clipped into a ball on
+// the Imaculada Conceição) and the birch (white bark, fine twigs hanging) as the photos show them.
+// EVERGREEN: the kinds that keep their leaves in winter, for the seasons ("Later" in the roadmap).
+export const KINDS = ['broadleaf', 'pine', 'eucalyptus', 'conifer', 'poplar', 'palm', 'plane', 'lime', 'birch'];
+const [BROADLEAF, PINE, EUCALYPTUS, CONIFER, POPLAR, PALM, PLANE, LIME, BIRCH] = KINDS.keys();
+export const EVERGREEN = new Set(['pine', 'eucalyptus', 'conifer', 'palm']);
 
 // The kind OpenStreetMap's tags name, or -1.
 export function osmKind(tags) {
@@ -400,6 +406,9 @@ export function osmKind(tags) {
   if (/eucalyptus|eucalipto/.test(name)) return EUCALYPTUS;
   if (/pinus|pinheiro/.test(name)) return PINE;
   if (/populus|choupo|álamo/.test(name)) return POPLAR;
+  if (/platanus|plátano/.test(name)) return PLANE;
+  if (/tilia|tília/.test(name)) return LIME;
+  if (/betula|bétula|vidoeiro/.test(name)) return BIRCH;
   if (/phoenix|washingtonia|trachycarpus|chamaerops|butia|syagrus|palm|cordyline/.test(name) || tags.leaf_type === 'palm') return PALM;
   if (/cupressus|chamaecyparis|cedrus|taxus|thuja|cryptomeria|sequoia|abies|picea|araucaria|juniperus|cipreste|cedro|teixo/.test(name)) return CONIFER;
   if (tags.leaf_type === 'needleleaved') return CONIFER;
@@ -432,9 +441,14 @@ export function woods() {
   return (x, z) => { const i = Math.floor((x - X0) / S), j = Math.floor((z - Z0) / S); return i >= 0 && j >= 0 && i < NX && j < NZ ? grid[j * NX + i] : -1; };
 }
 
-export function kindOf(t, wood) {
-  const named = t.osm ? osmKind(t.osm.tags) : -1;
-  if (named === CONIFER && t.osm.tags.leaf_type === 'needleleaved' && !t.osm.tags.species && !t.osm.tags.genus) return wood === PINE || t.foot > 0.45 * t.h ? PINE : CONIFER;
+// A tree's kind: as a session saw it (refs/trees.json, `ref.seen`); else the species the map names;
+// else its row's or its place's (`ref`, the trees of a row seen along the same street); else as below.
+export function kindOf(t, wood, ref = null) {
+  if (ref?.seen) return ref.kind;
+  const tags = t.osm?.tags ?? {}, named = t.osm ? osmKind(tags) : -1, specific = tags.species || tags.genus || tags.taxon || tags['species:pt'] || tags['genus:pt'];
+  if (named >= 0 && specific) return named;
+  if (ref) return ref.kind;
+  if (named === CONIFER && tags.leaf_type === 'needleleaved') return wood === PINE || t.foot > 0.45 * t.h ? PINE : CONIFER;
   if (named >= 0) return named;
   if (wood >= 0) return wood;
   const leafy = (t.colour[0] - t.colour[1]) / (t.colour[0] + t.colour[1]);
@@ -445,10 +459,59 @@ export function kindOf(t, wood) {
 }
 
 // ---------------------------------------------------------------------------------------------
+// The trees seen (task 061, refs/trees.json), each matched to the tree of the map it is: the one whose
+// crown's middle is nearest where it was seen, within half its crown's width or 3 m. Then each row's
+// trees, those whose trunks stand within its `within` of its line, and each place's, those whose trunks
+// are in its ring, but those seen. For each tree it names, what kindOf takes as `ref`: its kind, whether
+// it was seen, its species; the trees seen that no tree of the map is (unmatched); the trees looked at,
+// those seen hidden among them; and how many a row or a place named.
+
+export const SEEN = path.join(ROOT, 'refs', 'trees.json');
+
+export function refsOf(trees, seen = JSON.parse(fs.readFileSync(SEEN, 'utf8'))) {
+  const kindOfSpecies = (s) => KINDS.indexOf(seen.species[s].kind);
+  const refs = new Map(), C = 10, cells = new Map(), key = (i, j) => i * 100000 + j;
+  const mid = (t) => [t.mx ?? t.x, t.mz ?? t.z];
+  for (const t of trees) {
+    const [x, z] = mid(t), k = key(Math.floor(x / C), Math.floor(z / C));
+    if (!cells.has(k)) cells.set(k, []);
+    cells.get(k).push(t);
+  }
+  const unmatched = [], looked = new Set();
+  for (const s of seen.trees) {
+    const [x, z] = s.at;
+    let best = null, bd = Infinity;
+    for (let i = -2; i <= 2; i++) for (let j = -2; j <= 2; j++) for (const t of cells.get(key(Math.floor(x / C) + i, Math.floor(z / C) + j)) ?? []) {
+      const [mx, mz] = mid(t), d = Math.hypot(mx - x, mz - z);
+      if (d <= Math.max(3, t.crown / 2) && d < bd) { bd = d; best = t; }
+    }
+    if (!best) { unmatched.push(s); continue; }
+    looked.add(best);
+    if (s.species) refs.set(best, { kind: kindOfSpecies(s.species), seen: true, species: s.species });
+  }
+  const segDist = (x, z, [ax, az], [bx, bz]) => { const dx = bx - ax, dz = bz - az, L = dx * dx + dz * dz, u = L ? Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / L)) : 0; return Math.hypot(x - ax - u * dx, z - az - u * dz); };
+  const boxOf = (pts, m) => ({ x0: Math.min(...pts.map((p) => p[0])) - m, x1: Math.max(...pts.map((p) => p[0])) + m, z0: Math.min(...pts.map((p) => p[1])) - m, z1: Math.max(...pts.map((p) => p[1])) + m });
+  const inBox = (b, x, z) => x >= b.x0 && x <= b.x1 && z >= b.z0 && z <= b.z1;
+  let rows = 0, areas = 0;
+  for (const r of seen.rows ?? []) {
+    const b = boxOf(r.line, r.within), kind = kindOfSpecies(r.species);
+    for (const t of trees) {
+      if (looked.has(t) || refs.has(t) || !inBox(b, t.x, t.z)) continue;
+      for (let i = 1; i < r.line.length; i++) if (segDist(t.x, t.z, r.line[i - 1], r.line[i]) <= r.within) { refs.set(t, { kind, seen: false, species: r.species }); rows++; break; }
+    }
+  }
+  for (const a of seen.areas ?? []) {
+    const b = boxOf(a.ring, 0), kind = kindOfSpecies(a.species);
+    for (const t of trees) if (!looked.has(t) && !refs.has(t) && inBox(b, t.x, t.z) && inside(a.ring, t.x, t.z)) { refs.set(t, { kind, seen: false, species: a.species }); areas++; }
+  }
+  return { refs, unmatched, looked, rows, areas };
+}
+
+// ---------------------------------------------------------------------------------------------
 // --check: the orthophoto round a point, with each crown found outlined in its kind's colour and its
 // top marked, as .cache/trees/<x>_<z>.png.
 
-const SHOW = [[255, 255, 255], [255, 60, 60], [80, 160, 255], [255, 220, 0], [120, 255, 120], [255, 0, 255]];
+const SHOW = [[255, 255, 255], [255, 60, 60], [80, 160, 255], [255, 220, 0], [120, 255, 120], [255, 0, 255], [255, 140, 0], [0, 255, 255], [190, 190, 190]];
 async function check(x, z, r, osm, wood) {
   const { default: sharp } = await import('sharp');
   const box = { x0: x - r, x1: x + r, z0: z - r, z1: z + r }, step = 0.25, o = orthoGrid(box, step), tm = mapToTM(box);
@@ -456,7 +519,7 @@ async function check(x, z, r, osm, wood) {
   const keys = [...new Set([[box.x0, box.z0], [box.x1, box.z0], [box.x0, box.z1], [box.x1, box.z1]].map(([px, pz]) => tileKey(...tm(px, pz))))];
   const found = new Map();
   for (const key of keys) {
-    const t = await treesOn(key, osm), kinds = new Map(t.trees.map((u) => [u.r, kindOf(u, wood(u.x, u.z))]));
+    const t = await treesOn(key, osm), { refs } = refsOf(t.trees), kinds = new Map(t.trees.map((u) => [u.r, kindOf(u, wood(u.x, u.z), refs.get(u))]));
     found.set(key, { ...t, kinds });
   }
   const { nx, nz } = o, lab = new Float64Array(nx * nz).fill(-1), kindAt = new Map(), px = Buffer.from(o.rgb);
@@ -482,7 +545,7 @@ async function check(x, z, r, osm, wood) {
   const file = path.join(CACHE, 'trees', `${x}_${z}.png`);
   fs.mkdirSync(path.dirname(file), { recursive: true });
   await sharp(px, { raw: { width: nx, height: nz, channels: 3 } }).png().toFile(file);
-  console.log(`  ${path.relative(CACHE, file)}: ${KINDS.map((k, i) => `${k} ${['white', 'red', 'blue', 'yellow', 'green', 'magenta'][i]}`).join(', ')}`);
+  console.log(`  ${path.relative(CACHE, file)}: ${KINDS.map((k, i) => `${k} ${['white', 'red', 'blue', 'yellow', 'green', 'magenta', 'orange', 'cyan', 'grey'][i]}`).join(', ')}`);
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -520,10 +583,12 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     young.push({ x: t.at[0], z: t.at[1], h, crown, foot: h * 0.4, osm: t, colour: [1, 0, 0, 0], young: true });
   }
   const inMap = (t) => t.x >= EXT.x0 && t.x <= EXT.x1 && t.z >= EXT.z0 && t.z <= EXT.z1;
-  const trees = [...found, ...young].filter(inMap).map((t) => [+t.x.toFixed(1), +t.z.toFixed(1), kindOf(t, wood(t.x, t.z)), +t.h.toFixed(1), +t.crown.toFixed(1), +Math.min(t.foot, t.h - 0.5).toFixed(1), t.osm ? 1 : 0, +(t.mx ?? t.x).toFixed(1), +(t.mz ?? t.z).toFixed(1)]);
+  // What the photos show of them (task 061).
+  const all = [...found, ...young].filter(inMap), named = refsOf(all);
+  const trees = all.map((t) => [+t.x.toFixed(1), +t.z.toFixed(1), kindOf(t, wood(t.x, t.z), named.refs.get(t)), +t.h.toFixed(1), +t.crown.toFixed(1), +Math.min(t.foot, t.h - 0.5).toFixed(1), t.osm ? 1 : 0, +(t.mx ?? t.x).toFixed(1), +(t.mz ?? t.z).toFixed(1)]);
   trees.sort((a, b) => a[1] - b[1] || a[0] - b[0]);
   const counts = Object.fromEntries(KINDS.map((k, i) => [k, trees.filter((t) => t[2] === i).length]));
   fs.writeFileSync(path.join(CACHE, TREES), JSON.stringify({ about: 'tools/trees.mjs: every tree on the map, [x, z, kind, height, crown, foot, mapped, cx, cz] each (KINDS by index; metres; its trunk at x, z, its crown\'s middle at cx, cz; mapped 1 where OpenStreetMap has it), and the tiles of the point cloud they were found on (seen)', kinds: KINDS, counts, seen: keys, trees }));
   const off1 = trees.filter((t) => Math.hypot(t[7] - t[0], t[8] - t[1]) >= 1).length;
-  console.log(`trees: ${trees.length} on the map (${found.filter(inMap).length} the LiDAR found, ${young.filter(inMap).length} of OpenStreetMap's in no crown kept as young trees, ${off} more within 4 m of one found left out); ${limbs} crowns with no trunk joined the taller crown they meet; ${off1} crowns' middles 1 m or more off their trunks; ${Object.entries(counts).map(([k, n]) => `${n} ${k}`).join(', ')}; OpenStreetMap's ${osm.length}, ${trees.filter((t) => t[6]).length} of them on the map matched or kept, into .cache/${TREES} (${((Date.now() - t0) / 1000).toFixed(0)} s)`);
+  console.log(`trees: ${trees.length} on the map (${found.filter(inMap).length} the LiDAR found, ${young.filter(inMap).length} of OpenStreetMap's in no crown kept as young trees, ${off} more within 4 m of one found left out); ${limbs} crowns with no trunk joined the taller crown they meet; ${off1} crowns' middles 1 m or more off their trunks; ${Object.entries(counts).map(([k, n]) => `${n} ${k}`).join(', ')}; OpenStreetMap's ${osm.length}, ${trees.filter((t) => t[6]).length} of them on the map matched or kept; of refs/trees.json's ${named.looked.size + named.unmatched.length} trees seen ${named.looked.size} matched (${named.unmatched.length ? 'not ' + named.unmatched.map((s) => s.at.join(', ')).join('; ') : 'all'}), ${named.rows} more in its rows and ${named.areas} in its places; into .cache/${TREES} (${((Date.now() - t0) / 1000).toFixed(0)} s)`);
 }

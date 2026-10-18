@@ -200,7 +200,7 @@ export function map() {
     credit: m.credit,
     photoCredits: CREDITS,
     groundKinds: KINDS.map((kind) => ({ kind, texture: SURFACES[kind] ?? null })),
-    treeKinds: m.treeKinds.map((kind) => ({ kind, bark: TREES[kind]?.bark ?? null, leaves: TREES[kind]?.leaves ?? null })),
+    treeKinds: m.treeKinds.map(({ kind, evergreen }) => ({ kind, evergreen, bark: TREES[kind]?.bark ?? null, leaves: TREES[kind]?.leaves ?? null })),
     elev0: m.elev0,
     ext: m.ext,
     tile: m.tile,
@@ -377,12 +377,13 @@ export async function loadWorld(area) {
     // each, the name its place in the tile's names (task 042).
     for (const [x, z, shelter] of head.stops?.list ?? []) stops.push({ x, z, shelter: shelter === 1 });
     for (const [n, x, z, face, py, on] of head.plates?.list ?? []) plates.push({ name: names[n - 1], on: on ? 'post' : 'wall', x, z, face, y: py });
-    // The trees (tools/world.mjs): [x, z, kind | mapped << 3 | filled << 4 | height << 5, crown, foot,
-    // dx, dz] each, in half metres, then decimetres (dx, dz: its crown's middle from its trunk).
+    // The trees (tools/world.mjs): [x, z, kind | mapped << 4 | filled << 5 | height << 6, crown, foot,
+    // dx, dz] each, in half metres, then decimetres (dx, dz: its crown's middle from its trunk); the
+    // third read as 16 bits unsigned.
     const T = head.trees;
     for (let i = T.at; i < T.at + T.n; i += 7) {
-      const v = nums[i + 2], kind = m.treeKinds[v & 7].kind, h = (v >> 5) / 10, crown = nums[i + 3] / 10, x = nums[i] / 2, z = nums[i + 1] / 2;
-      trees.push({ x, z, cx: Math.round(x * 10 + nums[i + 5]) / 10, cz: Math.round(z * 10 + nums[i + 6]) / 10, kind, h, crown, foot: nums[i + 4] / 10, trunk: trunkOf(kind, h, crown), mapped: (v & 8) !== 0, filled: (v & 16) !== 0 });
+      const v = nums[i + 2] & 0xffff, kind = m.treeKinds[v & 15].kind, h = (v >> 6) / 10, crown = nums[i + 3] / 10, x = nums[i] / 2, z = nums[i + 1] / 2;
+      trees.push({ x, z, cx: Math.round(x * 10 + nums[i + 5]) / 10, cz: Math.round(z * 10 + nums[i + 6]) / 10, kind, h, crown, foot: nums[i + 4] / 10, trunk: trunkOf(kind, h, crown), mapped: (v & 16) !== 0, filled: (v & 32) !== 0 });
     }
     // The streets as surfaces, in the open world's tiles: each piece [what, ...] (tools/streets.mjs's
     // packStreets), points in decimetres, the first of each ring or line from the tile's corner and

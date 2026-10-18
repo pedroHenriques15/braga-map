@@ -252,16 +252,31 @@ function meanOf(img) {
 }
 
 // A tree's bark (task 019): a seamless photo of it from Poly Haven (CC0), spanning `metres` a side, to
-// wrap round its trunk.
+// wrap round its trunk; or, where the recipe gives it a `tone` (task 061: a birch's white bark, which Poly
+// Haven hasn't, from a cherry's with the same bands of lenticels), greyed and lifted to that mean
+// brightness, its contrast `contrast` times the photo's, tinted as `tint` (sRGB) says.
 async function bark(t) {
   const { rec, files, credit } = await polyHaven(t.asset, ['Diffuse']);
   const img = await resize(await readRGB(files[0]), TREE.high, TREE.high);
+  if (t.tone) {
+    const d = img.data, n = d.length / 3, lum = new Float32Array(n);
+    let mean = 0;
+    for (let i = 0; i < n; i++) mean += lum[i] = 0.299 * d[i * 3] + 0.587 * d[i * 3 + 1] + 0.114 * d[i * 3 + 2];
+    mean /= n;
+    const [r, g, b] = t.tone.tint ?? [255, 255, 255];
+    for (let i = 0; i < n; i++) {
+      const v = Math.max(0, Math.min(255, t.tone.mean + (lum[i] - mean) * t.tone.contrast)) / 255;
+      d[i * 3] = Math.round(v * r); d[i * 3 + 1] = Math.round(v * g); d[i * 3 + 2] = Math.round(v * b);
+    }
+  }
   return { img, place: { tree: t.tree, metres: +(Math.min(...rec.dimensions) / 1000).toFixed(2), mean: meanOf(img) }, credit };
 }
 
 // A tree's leaves (task 019): a spray of them, the leaves (or the twigs of needles) cut out of a Poly
 // Haven tree's photos (CC0) by their alpha and laid along twigs that fan up from the card's foot, as many
-// branches, leaves to a branch and as long as the recipe's `spray` says, and `fill` more over it; or,
+// branches, leaves to a branch and as long as the recipe's `spray` says, and `fill` more over it; each
+// leaf `lobes` of them fanned from one stalk where it says (task 061: a plane's, which Poly Haven hasn't),
+// the middle one longest; or,
 // for a palm (`frond`), the
 // leaflets along a frond's stem up the card. RGBA, row 0 at the top; what's see-through is in the
 // leaves' mean colour, so its mipmaps don't darken their edges.
@@ -305,6 +320,13 @@ async function leaves(t) {
   const S = TREE.high, inputs = [], twigs = [];
   // A leaf l pixels long from (x, y), pointing at angle a (from x towards y, down the card).
   const put = async (x, y, a, l, stretch = 1) => {
+    if (!sp.lobes) return one(x, y, a, l, stretch);
+    for (let k = 0; k < sp.lobes; k++) {
+      const f = k / (sp.lobes - 1) - 0.5;
+      await one(x, y, a + f * 2.2, l * (1 - 0.8 * Math.abs(f)), stretch);
+    }
+  };
+  const one = async (x, y, a, l, stretch = 1) => {
     const s = sprites[Math.floor(rnd() * sprites.length)], k = l / s.h;
     const img = await sharp(s.png).resize(Math.max(2, Math.round(s.w * k * (sp.thin ?? 1))), Math.max(2, Math.round(s.h * k * stretch)), { fit: 'fill' }).modulate({ brightness: 0.85 + rnd() * 0.3 }).rotate((a * 180) / Math.PI + 90, { background: { r: 0, g: 0, b: 0, alpha: 0 } }).png().toBuffer({ resolveWithObject: true });
     const left = Math.round(x + (Math.cos(a) * l * stretch) / 2 - img.info.width / 2), top = Math.round(y + (Math.sin(a) * l * stretch) / 2 - img.info.height / 2);

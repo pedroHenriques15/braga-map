@@ -1,5 +1,5 @@
 {
-  "about": "Photo textures (task 007): what tools/textures.mjs makes, and from what. A ground texture is the 2025 orthophoto over a tile (tile; none is made since task 016 drew the ground from its classes, its option A, over the orthophoto, its option B). A surface is a kind of ground's photo (task 016), the one a game tiles over the ground tools/cover.mjs classes as that kind (ground): a Poly Haven asset (CC0, seamless, its size in metres in its record), by its id. A tree's bark and leaves (task 019) are a kind of tree's (tree): its bark a Poly Haven texture (asset, CC0, seamless, its size in metres in its record); its leaves a spray composed from a Poly Haven tree's photos of its leaves or twigs (asset, and the files of it with their colour, diff, and their alpha, alpha), laid along twigs as spray says (branches, leaves to a branch per, fill more scattered over them, their length len as a share of the card, the angle they spread from the twig in degrees, droop, stretch and thin; or a palm's frond). A facade is a reference photo (refs/photos.json, by its id) straightened onto a wall: wall is the wall's points on the map, left to right as the photo sees it (along a building's footprint); quad its corners in the photo's own pixels, top left, top right, bottom right, bottom left; s the metres along the wall they span (from its first point, the whole wall if left out); y the metres above the building's ground (its y) at the quad's bottom and top. Read off the photo by eye.",
+  "about": "Photo textures (task 007): what tools/textures.mjs makes, and from what. A ground texture is the 2025 orthophoto over a tile (tile; none is made since task 016 drew the ground from its classes, its option A, over the orthophoto, its option B). A surface is a kind of ground's photo (task 016), the one a game tiles over the ground tools/cover.mjs classes as that kind (ground): a Poly Haven asset (CC0, seamless, its size in metres in its record), by its id. A tree's bark and leaves (task 019) are a kind of tree's (tree): its bark a Poly Haven texture (asset, CC0, seamless, its size in metres in its record); its leaves a spray composed from a Poly Haven tree's photos of its leaves or twigs (asset, and the files of it with their colour, diff, and their alpha, alpha), laid along twigs as spray says (branches, leaves to a branch per, fill more scattered over them, their length len as a share of the card, the angle they spread from the twig in degrees, droop, stretch and thin, and lobes, as many leaves fanned from one stalk as a plane's lobes, task 061; or a palm's frond); a bark with a tone (task 061, a birch's, which Poly Haven hasn't) is greyed and lifted to its mean brightness, contrast times as contrasted, tinted by its tint. A facade is a reference photo (refs/photos.json, by its id) straightened onto a wall: wall is the wall's points on the map, left to right as the photo sees it (along a building's footprint); quad its corners in the photo's own pixels, top left, top right, bottom right, bottom left; s the metres along the wall they span (from its first point, the whole wall if left out); y the metres above the building's ground (its y) at the quad's bottom and top. Read off the photo by eye.",
   "textures": [
     {
       "id": "facade-way-906140272",
@@ -237,6 +237,59 @@
       "alpha": "leaves_alpha",
       "spray": { "frond": true, "len": [0.18, 0.34], "spread": [55, 75], "thin": 0.35 },
       "notes": "A frond: leaflets either side of its stem, longest in its middle."
+    },
+    {
+      "id": "tree-plane-bark",
+      "kind": "bark",
+      "tree": "plane",
+      "asset": "japanese_zelkova_bark",
+      "tone": { "mean": 150, "contrast": 1.5, "tint": [232, 240, 214] },
+      "notes": "A plane's pale bark, flaking in patches of grey, green and cream (capela-sao-joao's): a zelkova's, which flakes the same way, greyed to a plane's olive grey, its patches cream. Poly Haven's bark_platanus is an old plane's dark, rough foot."
+    },
+    {
+      "id": "tree-plane-leaves",
+      "kind": "leaves",
+      "tree": "plane",
+      "asset": "island_tree_01",
+      "diff": "leaves_diff",
+      "alpha": "leaves_alpha",
+      "spray": { "branches": 7, "per": 5, "len": [0.11, 0.15], "spread": [35, 75], "lobes": 5, "fill": 30 },
+      "notes": "A plane's broad, palmate leaves: each five leaves of a Poly Haven tree fanned from one stalk, as Poly Haven has no plane."
+    },
+    {
+      "id": "tree-lime-bark",
+      "kind": "bark",
+      "tree": "lime",
+      "asset": "bark_brown_02",
+      "notes": "A lime's grey-brown bark in shallow ridges, as the Parque da Ponte's old limes'."
+    },
+    {
+      "id": "tree-lime-leaves",
+      "kind": "leaves",
+      "tree": "lime",
+      "asset": "tree_small_02",
+      "diff": "leaves_diff",
+      "alpha": "leaves_alpha",
+      "spray": { "branches": 8, "per": 10, "len": [0.09, 0.13], "spread": [30, 70], "fill": 140 },
+      "notes": "Small rounded leaves, close and many: a lime's dense crown of heart-shaped leaves from a few metres off."
+    },
+    {
+      "id": "tree-birch-bark",
+      "kind": "bark",
+      "tree": "birch",
+      "asset": "sakura_bark",
+      "tone": { "mean": 205, "contrast": 2.8, "tint": [255, 252, 246] },
+      "notes": "A birch's white bark with dark bands of lenticels: Poly Haven has no birch, so a cherry's, whose lenticels run in the same bands, greyed and lifted to white."
+    },
+    {
+      "id": "tree-birch-leaves",
+      "kind": "leaves",
+      "tree": "birch",
+      "asset": "tree_small_02",
+      "diff": "leaves_diff",
+      "alpha": "leaves_alpha",
+      "spray": { "branches": 9, "per": 9, "len": [0.06, 0.09], "spread": [20, 50], "droop": 1.1, "fill": 50 },
+      "notes": "Small leaves along fine twigs hanging from the branch, as a weeping birch's."
     }
   ]
 }

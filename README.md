@@ -41,7 +41,7 @@ world.height(x, z); // the ground: every 2 m or 10 m on the tiles loaded, every 
 world.buildings; // [{ kind, roof, ends, dir, pitch, y, h, ridge, floors, roofColor, facade, … pts }], and areas, lines…
 world.lines; // every street and the railway: [{ kind, level, w, name, pts, heights? }], name the map's or null
 world.trees; // every tree: [{ x, z, cx, cz, kind, h, crown, foot, trunk, mapped, filled }], as DGT's LiDAR measured it
-map().treeKinds; // each kind of tree with its bark's and its leaves' photos: [{ kind, bark, leaves }]
+map().treeKinds; // each kind of tree with its bark's and its leaves' photos: [{ kind, evergreen, bark, leaves }]
 world.signs; // the shops' signs: [{ text, colour, from, to, y, h }], on their buildings' walls
 world.stops; // every bus stop: [{ x, z, shelter }]
 world.plates; // in the open world's area, the streets' name plates: [{ name, on, x, z, face, y }], map().plateSize [w, h]
@@ -179,14 +179,21 @@ map().groundKinds; // the kinds it says, each with its photo: [{ kind, texture: 
   them (`tools/trees.mjs`), each where it stands (its crown's top), as tall as it is, its crown as
   wide (as a disc as big as it is from above) and its foot as high (where its trunk goes into it),
   its crown's middle where its leaves are (`cx`, `cz`: off its trunk where it spreads to one side,
-  task 063), and of its kind: a broadleaf, a pine, a eucalyptus, a cypress or a cedar, a poplar or a palm. Its kind is
-  OpenStreetMap's where the map names a species, a genus or a leaf type (its trees are matched to the
+  task 063), and of its kind: a broadleaf, a pine, a eucalyptus, a cypress or a cedar, a poplar, a palm, a
+  plane, a lime or a birch. Its kind is the species a session saw in the photos (task 061,
+  `refs/trees.json`): every tree within 60 m of seven viewpoints' cameras and in their view, the rows
+  along the route's avenues the photos show (the hackberries of the Imaculada Conceição, the Porfírio da
+  Silva and the 31 de Janeiro, the Imaculada's limes clipped into balls, the 31 de Janeiro's robinias),
+  and the Parque da Ponte's limes. Else it's OpenStreetMap's where the map names a species, a genus or a
+  leaf type (its trees are matched to the
   crowns, and where it maps two or more in one crown the LiDAR saw, the crowns ran together and each
   takes the part of it nearest it); else, on the hills, the main species of the wood it stands in, as
   DGT's COS2025 has it; else a broadleaf, but for the narrow and tall (a poplar where the photo sees a
   broadleaf's leaves, else a cypress or a cedar), a tree taller than the town's that holds its crown
   high (a eucalyptus), and a tall tree that holds its crown high and is dark in the near-infrared, as
-  needles are (a pine). Palms only where the map has them. OpenStreetMap's trees in no crown (planted
+  needles are (a pine). Planes, limes, birches and palms only where a photo or the map has them. Each kind
+  says whether it keeps its leaves in winter (`map().treeKinds`' `evergreen`: the pines, eucalyptus,
+  cypresses and cedars, and palms). OpenStreetMap's trees in no crown (planted
   since July 2025, or under 3 m then) are kept as young trees. A crown with no trunk under it (narrow,
   its leaves in its upper half) that meets a taller one is a limb of that tree, reaching out over a
   square or a path, and part of its crown (decision 047). None stands on a carriageway: a crown's top
@@ -261,6 +268,7 @@ node tools/heights.mjs # the buildings checked against the map's own heights and
 node tools/levels.mjs  # the streets that cross on two levels round the track, and the room between them
 node tools/refs.mjs    # the viewpoints' and the reference photos, into .cache/refs/ (with Mapillary's free token)
 node tools/buildings.mjs  # the buildings whose facades to look at (refs/buildings.json), and with `mark` their photos marked (2 minutes)
+node tools/species.mjs mark  # each viewpoint's photo with the trees within 60 m of its camera numbered, and its orthophoto, for refs/trees.json (task 061, 10 s)
 node tools/textures.mjs  # the photo textures refs/textures.json asks for: world/textures/ (about a minute)
 node tools/cover.mjs   # what the ground is every 50 cm under the Volta dos Amigos' box, and the cars parked: world/cover/ (3 minutes, 10 the first time)
 node tools/round.mjs <round> --label "…" [--shots <party-kart>/shots]  # a round of party-kart's shots, in a few sheets, for the scorecard
@@ -553,7 +561,12 @@ streets; when a track moves enough to change the edge, run the three again until
   against the buildings and the ground) with their photos, into `.cache/buildings/todo.json`, and
   `node tools/buildings.mjs mark` outlines and numbers them on each photo, from where its camera was,
   for looking at. `test/facades.test.js` checks every one listed has an entry, in the words
-  `tools/facades.mjs` lists. party-kart's
+  `tools/facades.mjs` lists. `refs/trees.json` says what species each tree near a viewpoint is, as a
+  session saw it (task 061): `node tools/species.mjs mark` outlines and numbers the trees within 60 m
+  of a viewpoint's camera (or a reference photo's) on its photo and on the orthophoto round it, into
+  `.cache/species/`; each tree seen is recorded by its crown's middle, and the rows along the avenues
+  and the places a species fills by their line or ring. `test/trees.test.js` checks every tree within
+  60 m of the seven viewpoints read is in it and drawn of its species' kind. party-kart's
   `node scripts/shots.mjs <label>` shoots its city from every viewpoint, at the photo's field of
   view and shape, into a round beside the photos and the round before (task 002, decision 011).
 - `textures.mjs` makes the photo textures (task 007) that `refs/textures.json` asks for, into

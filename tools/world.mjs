@@ -33,7 +33,7 @@ import { decks } from './decks.mjs';
 import { carriagewayMoves, heldGround, isLine, isSquare, LEVEL, levelHeights, onCarriageways, pathLines, pathsOf, streetBumps, streetsOf } from './lines.mjs';
 import { packPaths, packStreets, streetSurfaces } from './streets.mjs';
 import { cutWalls, packWalls } from './walls.mjs';
-import { KINDS as TREE_KINDS, osmKind, TREES } from './trees.mjs';
+import { EVERGREEN as TREE_EVERGREEN, KINDS as TREE_KINDS, osmKind, TREES } from './trees.mjs';
 import { PLATE, platesOf } from './plates.mjs';
 import { BALCONIES, BALCONY, COLOUR, COLOURS, floorsOf, GROUND, GROUND_OF, guesser, MATERIAL, MATERIALS, TYPE, TYPES } from './facades.mjs';
 
@@ -704,8 +704,9 @@ let signs = 0;
 // the woods'), at a kind's usual size. None on a carriageway (a street taken at its own width): a tree
 // the LiDAR found there is a crown over the street, whose trunk is at its edge, so its trunk is moved
 // there where that's within 3 m, its crown left where it is, else it's left out. Each is [x, z, kind |
-// mapped << 3 | filled << 4 | height << 5, crown, foot, dx, dz]: half metres, then decimetres; mapped
-// where OpenStreetMap has it too; dx, dz how far its crown's middle is from its trunk (task 063).
+// mapped << 4 | filled << 5 | height << 6, crown, foot, dx, dz]: half metres, then decimetres; mapped
+// where OpenStreetMap has it too; dx, dz how far its crown's middle is from its trunk (task 063). The
+// third is 16 bits since the kinds were nine (task 061), written as a signed 16-bit number.
 
 let nTrees = 0;
 {
@@ -730,7 +731,7 @@ let nTrees = 0;
     }
     return best;
   };
-  const plant = (x, z, kind, h, crown, foot, flags, cx = x, cz = z) => { tileAt(x, z).trees.push(half(x), half(z), kind | (flags << 3) | (Math.min(1023, Math.round(h * 10)) << 5), Math.round(crown * 10), Math.round(foot * 10), Math.round((cx - half(x) / 2) * 10), Math.round((cz - half(z) / 2) * 10)); nTrees++; };
+  const plant = (x, z, kind, h, crown, foot, flags, cx = x, cz = z) => { tileAt(x, z).trees.push(half(x), half(z), (((kind | (flags << 4) | (Math.min(1023, Math.round(h * 10)) << 6)) << 16) >> 16), Math.round(crown * 10), Math.round(foot * 10), Math.round((cx - half(x) / 2) * 10), Math.round((cz - half(z) / 2) * 10)); nTrees++; };
   const found = fs.existsSync(path.join(CACHE, TREES)) ? readCache(TREES) : null;
   if (!found) console.log(`no .cache/${TREES}: the map's trees, and its woods and parks filled in (node tools/trees.mjs)`);
   const seen = new Set(found?.seen ?? []), lidarTrees = (x, z) => seen.has(tileKey(...toTM(x, z)));
@@ -749,7 +750,7 @@ let nTrees = 0;
     if (inExt(x, z)) { plant(x, z, kind, h, crown, foot, mapped, cx, cz); why.planted++; }
   }
   // Where the point cloud wasn't fetched: the map's trees and the woods and parks filled in.
-  const SIZE = { [TREE_KINDS.indexOf('broadleaf')]: [9, 7, 2.5], [TREE_KINDS.indexOf('pine')]: [14, 6, 7], [TREE_KINDS.indexOf('eucalyptus')]: [22, 8, 11], [TREE_KINDS.indexOf('conifer')]: [12, 4, 1], [TREE_KINDS.indexOf('poplar')]: [16, 4, 3], [TREE_KINDS.indexOf('palm')]: [9, 5, 6.5] };
+  const SIZE = { [TREE_KINDS.indexOf('broadleaf')]: [9, 7, 2.5], [TREE_KINDS.indexOf('pine')]: [14, 6, 7], [TREE_KINDS.indexOf('eucalyptus')]: [22, 8, 11], [TREE_KINDS.indexOf('conifer')]: [12, 4, 1], [TREE_KINDS.indexOf('poplar')]: [16, 4, 3], [TREE_KINDS.indexOf('palm')]: [9, 5, 6.5], [TREE_KINDS.indexOf('plane')]: [18, 14, 5], [TREE_KINDS.indexOf('lime')]: [14, 10, 4], [TREE_KINDS.indexOf('birch')]: [12, 5, 3] };
   const guessed = (x, z, kind, flags) => { if (!inExt(x, z) || lidarTrees(x, z) || onStreet(x, z) || (flags & 2 && onPath(x, z))) return; const [h, crown, foot] = SIZE[kind]; plant(x, z, kind, h, crown, foot, flags); };
   for (const e of treesOsm.elements) {
     const named = osmKind(e.tags ?? {});
@@ -852,7 +853,7 @@ const treesOff = { moved: 0, out: 0, walked: 0, walking: 0, path: 0, pavement: 0
         if (!to || tileAt(...to) !== t) { treesOff.out++; nTrees--; continue; }
         [x, z] = to;
         treesOff.moved++;
-      } else if (!(t.trees[i + 2] & 24) && (onPath(x, z) || (onPavement(x, z) && !onPavement(cx, cz) && !cw.has(cx, cz) && !byKerb(x, z)))) {
+      } else if (!(t.trees[i + 2] & 48) && (onPath(x, z) || (onPavement(x, z) && !onPavement(cx, cz) && !cw.has(cx, cz) && !byKerb(x, z)))) {
         const to = offWalk(x, z, cx, cz, t.trees[i + 3] / 20), on = onPath(x, z) ? 'path' : 'pavement';
         if (to && tileAt(...to) === t) { [x, z] = to; treesOff.walked++; treesOff[on]++; } else treesOff.walking++;
       } else if (onPavement(x, z)) treesOff.pits++;
@@ -1201,7 +1202,7 @@ out.header.meta = {
   sections: SECTIONS,
   areas: AREA,
   roofColors: PALETTE,
-  treeKinds: TREE_KINDS,
+  treeKinds: TREE_KINDS.map((kind) => ({ kind, evergreen: TREE_EVERGREEN.has(kind) })),
   storey: [STOREY, BASE],
   plate: [PLATE.w, PLATE.h],
   facades: { types: TYPES, colours: COLOURS, materials: MATERIALS, ground: GROUND, balconies: BALCONIES },

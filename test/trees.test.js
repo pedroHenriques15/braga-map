@@ -5,7 +5,9 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { test } from 'node:test';
-import { CELL, M, W, canopyOf, crowns, kindOf, KINDS, layers, measure, mergeSlivers, mergeStemless, osmKind } from '../tools/trees.mjs';
+import { CELL, M, W, canopyOf, crowns, EVERGREEN, kindOf, KINDS, layers, measure, mergeSlivers, mergeStemless, osmKind, refsOf } from '../tools/trees.mjs';
+import { inView, NEAR } from '../tools/species.mjs';
+import { viewCamera } from '../tools/buildings.mjs';
 import { loadWorld, map } from '../index.js';
 import { CREDITS, TREES } from '../world/textures.js';
 import amigos from '../tracks/amigos.js';
@@ -76,9 +78,13 @@ test("a limb with no trunk under it is its tree's; a narrow tree with its own tr
   assert.equal(found.length, 2, found.map((t) => `${t.h.toFixed(1)} m, ${t.crown.toFixed(1)} m`).join('; '));
 });
 
-test("a tree's kind: the map's name for it, else its wood's, else its shape's", () => {
-  const [BROADLEAF, PINE, EUCALYPTUS, CONIFER, POPLAR, PALM] = KINDS.keys();
-  assert.deepEqual(KINDS, ['broadleaf', 'pine', 'eucalyptus', 'conifer', 'poplar', 'palm']);
+test("a tree's kind: as it was seen, else the map's name for it, else its row's, else its wood's, else its shape's", () => {
+  const [BROADLEAF, PINE, EUCALYPTUS, CONIFER, POPLAR, PALM, PLANE, LIME, BIRCH] = KINDS.keys();
+  assert.deepEqual(KINDS, ['broadleaf', 'pine', 'eucalyptus', 'conifer', 'poplar', 'palm', 'plane', 'lime', 'birch']);
+  assert.deepEqual([...EVERGREEN].sort(), ['conifer', 'eucalyptus', 'palm', 'pine']);
+  assert.equal(osmKind({ genus: 'Platanus' }), PLANE);
+  assert.equal(osmKind({ species: 'Tilia cordata' }), LIME);
+  assert.equal(osmKind({ 'species:pt': 'Bétula' }), BIRCH);
   assert.equal(osmKind({ species: 'Eucalyptus globulus' }), EUCALYPTUS);
   assert.equal(osmKind({ genus: 'Pinus' }), PINE);
   assert.equal(osmKind({ species: 'Washingtonia robusta' }), PALM);
@@ -96,11 +102,38 @@ test("a tree's kind: the map's name for it, else its wood's, else its shape's", 
   assert.equal(kindOf(t(16, 4, 3, 0.05), -1), CONIFER);
   assert.equal(kindOf(t(26, 10, 14, 0.15), -1), EUCALYPTUS);
   assert.equal(kindOf({ ...t(14, 7, 7, 0.15), colour: [140, 104, 120, 125] }, -1), PINE);
+  // What was seen comes first; a row's or a place's after the species the map names, before anything else.
+  assert.equal(kindOf(t(26, 10, 14, 0.15, { species: 'Quercus robur' }), EUCALYPTUS, { kind: LIME, seen: true }), LIME);
+  assert.equal(kindOf(t(12, 8, 4, 0.2, { species: 'Quercus robur' }), -1, { kind: PLANE, seen: false }), BROADLEAF);
+  assert.equal(kindOf(t(12, 8, 4, 0.2, { leaf_type: 'broadleaved' }), -1, { kind: PLANE, seen: false }), PLANE);
+  assert.equal(kindOf(t(26, 10, 14, 0.15), EUCALYPTUS, { kind: LIME, seen: false }), LIME);
+});
+
+// refs/trees.json (task 061): a tree seen names the tree whose crown's middle is nearest, within half its
+// crown or 3 m; a row the trees along its line; a place those in its ring; none twice.
+test('the trees seen are matched to the trees of the map, and the rows and places name the rest', () => {
+  const LIME = KINDS.indexOf('lime'), PLANE = KINDS.indexOf('plane');
+  const tree = (x, z, crown, mx = x, mz = z) => ({ x, z, mx, mz, crown });
+  const a = tree(0, 0, 8, 3, 0), b = tree(10, 0, 4), c = tree(40, 0, 6), d = tree(100, 100, 6), e = tree(0, 30, 6);
+  const seen = {
+    species: { lime: { kind: 'lime' }, plane: { kind: 'plane' } },
+    trees: [{ at: [2.5, 0.5], species: 'plane' }, { at: [10.4, 0], species: null }, { at: [70, 0], species: 'lime' }],
+    rows: [{ species: 'lime', line: [[-20, 0], [60, 0]], within: 2 }],
+    areas: [{ species: 'plane', ring: [[90, 90], [110, 90], [110, 110], [90, 110]] }],
+  };
+  const { refs, unmatched, looked, rows, areas } = refsOf([a, b, c, d, e], seen);
+  assert.deepEqual(refs.get(a), { kind: PLANE, seen: true, species: 'plane' });
+  assert.equal(refs.get(b), undefined, 'seen hidden, so neither the row nor its own kind is changed');
+  assert.deepEqual(refs.get(c), { kind: LIME, seen: false, species: 'lime' });
+  assert.deepEqual(refs.get(d), { kind: PLANE, seen: false, species: 'plane' });
+  assert.equal(refs.get(e), undefined);
+  assert.deepEqual([unmatched.map((s) => s.at), looked.size, rows, areas], [[[70, 0]], 2, 1, 1]);
 });
 
 test("the trees under the Volta dos Amigos' box are the LiDAR's, each sized, of its kind, off the carriageways", async () => {
   const m = map(), w = await loadWorld(amigos.box);
   assert.deepEqual(m.treeKinds.map((k) => k.kind), KINDS);
+  assert.deepEqual(m.treeKinds.filter((k) => k.evergreen).map((k) => k.kind), KINDS.filter((k) => EVERGREEN.has(k)));
   assert.ok(w.trees.length > 40000, `${w.trees.length} trees`);
   for (const t of w.trees) {
     assert.ok(KINDS.includes(t.kind), t.kind);
@@ -109,8 +142,9 @@ test("the trees under the Volta dos Amigos' box are the LiDAR's, each sized, of 
     assert.ok(t.foot >= 0 && t.foot < t.h, `(${t.x}, ${t.z}): its crown from ${t.foot} m, ${t.h} m tall`);
     assert.ok(t.trunk >= 0.08 && t.trunk <= 1.6, `(${t.x}, ${t.z}): a trunk ${t.trunk} m thick`);
   }
-  // Every kind but the palms, which only the map names, is common.
+  // Every kind but the palms, planes, limes and birches, which only the map and the photos name, is common.
   for (const k of KINDS.slice(0, 5)) assert.ok(w.trees.filter((t) => t.kind === k).length > 100, k);
+  for (const k of KINDS.slice(5)) assert.ok(w.trees.some((t) => t.kind === k), k);
   // In the open world's area, a trunk on a carriageway as the world draws it is moved off or left out:
   // a few stay, where its half metres round it onto the edge.
   const inRing = (r, x, z) => { let c = false; for (let i = 0, j = r.length - 1; i < r.length; j = i++) if (r[i][1] > z !== r[j][1] > z && x < ((r[j][0] - r[i][0]) * (z - r[i][1])) / (r[j][1] - r[i][1]) + r[i][0]) c = !c; return c; };
@@ -134,6 +168,37 @@ test("no viewpoint's camera stands by a trunk or in a crown", async () => {
       assert.ok(Math.hypot(t.cx - v.x, t.cz - v.z) >= t.crown / 2 || up <= t.foot || up >= t.h, `${v.id}: its camera in the crown of the tree at (${t.x}, ${t.z}), ${up.toFixed(1)} m up, its leaves from ${t.foot} m`);
     }
   }
+});
+
+// Task 061: every tree within 60 m of the cameras of the viewpoints whose photos were read for it, in their
+// view (tools/species.mjs), is in refs/trees.json, and the world draws each seen of its species' kind; and
+// the trees the rows and the places name are their species' kind too.
+const READ = ['sao-joao-da-ponte', 'capela-sao-joao', 'imaculada-conceicao', 'porfirio-da-silva', '31-de-janeiro', 'joao-xxi', 'liberdade'];
+test('the trees near the viewpoints are the species their photos show', async () => {
+  const views = JSON.parse(fs.readFileSync(new URL('../refs/viewpoints.json', import.meta.url), 'utf8'));
+  const seen = JSON.parse(fs.readFileSync(new URL('../refs/trees.json', import.meta.url), 'utf8'));
+  const kindOfSpecies = (s) => seen.species[s].kind;
+  for (const id of READ) {
+    const v = [...views.viewpoints, ...views.dropped].find((u) => u.id === id);
+    const w = await loadWorld({ x0: v.x - NEAR - 30, x1: v.x + NEAR + 30, z0: v.z - NEAR - 30, z1: v.z + NEAR + 30 });
+    const trees = w.trees.map((t) => ({ ...t, mx: t.cx, mz: t.cz, of: t }));
+    const { refs, looked, unmatched } = refsOf(trees, { ...seen, rows: [], areas: [] });
+    const near = unmatched.filter((s) => Math.hypot(s.at[0] - v.x, s.at[1] - v.z) < NEAR);
+    assert.deepEqual(near.map((s) => s.at), [], `${id}: trees seen there that the world hasn't`);
+    const byTree = new Map(trees.map((t) => [t.of, t]));
+    // A panorama's viewpoint photo is cut 16:9, the others are 4:3 (tools/refs.mjs).
+    for (const { t } of inView(viewCamera(v, v.photo.pano ? 16 / 9 : 4 / 3), w.trees, w.height)) {
+      const m = byTree.get(t);
+      assert.ok(looked.has(m), `${id}: the tree at (${t.cx}, ${t.cz}), ${t.h} m tall, in view and not looked at`);
+      if (refs.has(m)) assert.equal(t.kind, kindOfSpecies(refs.get(m).species), `${id}: the tree at (${t.cx}, ${t.cz})`);
+    }
+  }
+  const w = await loadWorld(amigos.box), trees = w.trees.map((t) => ({ ...t, mx: t.cx, mz: t.cz }));
+  const { refs, rows, areas } = refsOf(trees, seen);
+  let off = 0;
+  for (const [t, r] of refs) if (!r.seen && t.kind !== kindOfSpecies(r.species)) off++;
+  assert.ok(rows > 30 && areas > 50, `${rows} trees in rows, ${areas} in places`);
+  assert.equal(off, 0, `${off} trees of a row or a place not of its kind`);
 });
 
 test("each kind of tree has its bark and its leaves at every level, credited", () => {

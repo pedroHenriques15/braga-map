@@ -386,10 +386,12 @@ export interface Wall {
 // - cx, cz: where its crown's middle is (task 063): over its trunk, or off it where the crown spreads to
 //   one side, leans out over a street or a path, or reaches out with a limb the LiDAR sees no trunk under
 //   (a big tree's over a square). A game draws the crown there, and the trunk leaning into it.
-// - kind: its species, as the map names it; else on the hills the main species of the wood it stands in
-//   (DGT's COS2025); else a broadleaf, but for the narrow and tall (a poplar where the photo sees a
-//   broadleaf's leaves, else a cypress or a cedar) and a tree taller than the town's with its crown held
-//   high (a eucalyptus). Palms only where the map has them.
+// - kind: its species, as a session saw it in the photos round the viewpoints (refs/trees.json, task
+//   061: each tree seen, the rows along the avenues, the Parque da Ponte's limes); else as the map names
+//   it; else on the hills the main species of the wood it stands in (DGT's COS2025); else a broadleaf,
+//   but for the narrow and tall (a poplar where the photo sees a broadleaf's leaves, else a cypress or a
+//   cedar) and a tree taller than the town's with its crown held high (a eucalyptus). The planes, limes,
+//   birches and palms only where a photo or the map has them.
 // - h: its height over the ground; crown: its crown's width (as a disc as big as the crown seen from
 //   above); foot: how high its crown's lowest leaves are (where its trunk goes into it), in metres.
 // - trunk: how thick its trunk is at a person's height, in metres: as thick as a tree that tall and that
@@ -397,7 +399,7 @@ export interface Wall {
 // - mapped: OpenStreetMap has it too (or only it does: planted since July 2025, or under 3 m then, at
 //   the height and crown the map gives or a young tree's); filled: planted in a wood or a park where
 //   neither the LiDAR nor the map has trees.
-export type TreeKind = 'broadleaf' | 'pine' | 'eucalyptus' | 'conifer' | 'poplar' | 'palm';
+export type TreeKind = 'broadleaf' | 'pine' | 'eucalyptus' | 'conifer' | 'poplar' | 'palm' | 'plane' | 'lime' | 'birch';
 export interface Tree {
   x: number;
   z: number;
@@ -560,8 +562,11 @@ export interface TreeTexture {
   files: Record<PhotoLevel, PhotoFile>;
   credit: PhotoCreditOf;
 }
+// evergreen: whether the kind keeps its leaves in winter (task 061): the pines, eucalyptus, cypresses and
+// cedars, and palms; the broadleaves, poplars, planes, limes and birches lose theirs.
 export interface TreeKindOf {
   kind: TreeKind;
+  evergreen: boolean;
   bark: TreeTexture | null;
   leaves: TreeTexture | null;
 }

@@ -76,14 +76,14 @@ export function finder(list) {
 const unit = (v) => { const l = Math.hypot(...v); return v.map((c) => c / l); };
 const cross = (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
 // A viewpoint's: from (x, y, z) towards (tx, ty, tz), its vertical field of view, as wide as `aspect`.
-function viewCamera(v, aspect) {
+export function viewCamera(v, aspect) {
   const f = unit([v.tx - v.x, v.ty - v.y, v.tz - v.z]), r = unit([-f[2], 0, f[0]]), up = cross(r, f);
   const ty = Math.tan((v.fov * Math.PI) / 360);
   return { o: [v.x, v.y, v.z], f, r, d: up.map((c) => -c), tx: ty * aspect, ty };
 }
 // A photo's, from its compass heading, pitch and roll (refs.mjs's frame, in east, north and up), its
 // field of view across and its shape; standing `eye` metres over the ground at its place.
-function photoCamera(photo, heading, pitch, roll, fov, aspect, height, eye) {
+export function photoCamera(photo, heading, pitch, roll, fov, aspect, height, eye) {
   const R = Math.PI / 180, h = heading * R, p = pitch * R, q = roll * R;
   const f = [Math.sin(h) * Math.cos(p), Math.cos(h) * Math.cos(p), Math.sin(p)];
   const r0 = [Math.cos(h), -Math.sin(h), 0], u0 = cross(r0, f);

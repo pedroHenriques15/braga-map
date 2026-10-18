@@ -66,8 +66,10 @@ From the map as it is (2026-10-15):
   steps (4 to 17) and a handrail.
 - **47 crossings,** 3 traffic lights, 10 bus stops; kerbs tagged lowered (11), raised (6) and flush
   (3) at the crossings.
-- **184 trees** OpenStreetMap maps; two parks and a pitch between the blocks, 25 gardens, grass by
-  the river.
+- **765 trees** the LiDAR sees (task 019, 2026-10-18), 183 of them the 184 OpenStreetMap maps: 690
+  broadleaves, 63 cypresses and cedars, 9 poplars, 3 eucalyptus, up to 23 m tall, each where it stands
+  at its height, crown and foot. Two parks and a pitch between the blocks, 25 gardens, grass by the
+  river.
 - **Walls** (task 013, 2026-10-16): OpenStreetMap maps 87 walls here (1.4 km), 16 retaining walls
   (0.5 km) and 39 gates; the LiDAR finds 33 walls more (0.3 km), 54 retaining walls (0.5 km) and 98
   hedges (0.8 km). The walls are 1.85 m high at the median, the houses' and the flats' along the Rua

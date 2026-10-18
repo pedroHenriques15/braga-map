@@ -38,7 +38,9 @@ import amigos from 'braga-map/tracks/amigos.js';
 const world = await loadWorld({ open: true }); // the open world's area and the city round it
 // or loadWorld(amigos.box), loadWorld({ sections: ['centro'] }), loadWorld({ sections: ['fujacal'] })
 world.height(x, z); // the ground: every 2 m or 10 m on the tiles loaded, every 50 m elsewhere
-world.buildings; // [{ kind, roof, ends, dir, pitch, y, h, ridge, floors, roofColor, facade, … pts }], and areas, lines, trees…
+world.buildings; // [{ kind, roof, ends, dir, pitch, y, h, ridge, floors, roofColor, facade, … pts }], and areas, lines…
+world.trees; // every tree: [{ x, z, kind, h, crown, foot, trunk, mapped, filled }], as DGT's LiDAR measured it
+map().treeKinds; // each kind of tree with its bark's and its leaves' photos: [{ kind, bark, leaves }]
 world.signs; // the shops' signs: [{ text, colour, from, to, y, h }], on their buildings' walls
 map().facadeTypes; // each kind of facade's proportions; map().facadeColours its colours
 world.streets; // in the open world's area: { carriageways, pavements, kerbs, markings, paths, handrails }, each piece at its level
@@ -151,9 +153,26 @@ map().groundKinds; // the kinds it says, each with its photo: [{ kind, texture: 
   game stands a row of barriers for a race (`closures`); round that corner, across ground that's no
   street, the road works' boards (`boards`). Within 20 m of the landing (`cleared`) a race takes
   the world's walls down while it runs: there, the corner of a walled lot (decision 042). The world
-  itself knows nothing of a road: the trees, and the houses it fills in on empty frontages (where
-  the LiDAR wasn't fetched), stand clear of every street taken at least 9 m wide (`W_MIN`), and the
-  real buildings stand where they are.
+  itself knows nothing of a road: the trees stand off every carriageway (taken at its own width), the
+  houses it fills in on empty frontages (where the LiDAR wasn't fetched) clear of every street taken
+  at least 9 m wide (`W_MIN`), and the real buildings stand where they are.
+- **The trees** (task 019, decision 043): every tree DGT's 2025 LiDAR sees over the map, 251,000 of
+  them (`tools/trees.mjs`), each where it stands (its crown's top), as tall as it is, its crown as
+  wide (as a disc as big as it is from above) and its foot as high (where its trunk goes into it), and
+  of its kind: a broadleaf, a pine, a eucalyptus, a cypress or a cedar, a poplar or a palm. Its kind is
+  OpenStreetMap's where the map names a species, a genus or a leaf type (its trees are matched to the
+  crowns, and where it maps two or more in one crown the LiDAR saw, the crowns ran together and each
+  takes the part of it nearest it); else, on the hills, the main species of the wood it stands in, as
+  DGT's COS2025 has it; else a broadleaf, but for the narrow and tall (a poplar where the photo sees a
+  broadleaf's leaves, else a cypress or a cedar), a tree taller than the town's that holds its crown
+  high (a eucalyptus), and a tall tree that holds its crown high and is dark in the near-infrared, as
+  needles are (a pine). Palms only where the map has them. OpenStreetMap's trees in no crown (planted
+  since July 2025, or under 3 m then) are kept as young trees. None stands on a carriageway: a crown's
+  top over one has its trunk moved to the edge, within 3 m, else it's left out. Its trunk's thickness
+  is what a tree that tall and that wide usually has (`trunk`; the LiDAR doesn't see a trunk). Each
+  kind has a photo of its bark and a spray of its leaves (`map().treeKinds`, from Poly Haven, CC0),
+  as the ground's kinds have theirs. Where the point cloud wasn't fetched (nowhere on the map today),
+  the map's trees and its woods and parks filled in, at their kind's usual size (`filled`).
 - **What the ground is** (task 016, decision 034), every 50 cm under the Volta dos Amigos' box (48
   tiles, the shooter's area and the open world's among them): asphalt, paving, setts, grass, bare
   soil, gravel, water, or a roof, and where a tree's crown is over it. The hard ground is told apart
@@ -171,7 +190,8 @@ map().groundKinds; // the kinds it says, each with its photo: [{ kind, texture: 
   of their own (`parking`, task 016).
 - **Photo textures** (task 007, decision 030) belong to the place, so they're in the world too,
   in `world/textures/`: ten facades, the only photos found good enough (task 017 drew every other
-  building from its kind's kit), and the kinds of ground's photos (task 016). `world.photos` lists those on the tiles loaded: what each is (`facade`,
+  building from its kind's kit), the kinds of ground's photos (task 016) and the kinds of trees' bark
+  and leaves (task 019). `world.photos` lists those on the tiles loaded: what each is (`facade`,
   straightened onto its `wall`; or `ground`, over its tile's `box`, which `textures.mjs` can still
   make, though since decision 034 none is), and a file for each graphics level, `files.high`, `.medium` and `.low`,
   each with its `url`, which the game's bundler serves as an asset (Vite does: in its dev server
@@ -201,6 +221,7 @@ node tools/decks.mjs   # the bridges' decks DGT's point cloud saw: .cache/decks.
 node tools/carriageways.mjs  # where each street's carriageway really is, and the moves that put the map's lines there: .cache/carriageways.json (20 s, 4 minutes the first time)
 node tools/walls.mjs   # the walls, fences, railings, hedges and gates round the open world's area: .cache/walls.json (2 minutes, and 3 more the first time)
 node tools/sights.mjs  # the Estádio 1.º de Maio's stands and floodlights, the chapels' and shrines' tops, from the point cloud: .cache/sights.json (two minutes)
+node tools/trees.mjs   # every tree the LiDAR sees, its height, crown, foot and kind: .cache/trees.json (40 s, 20 minutes the first time)
 npm run page     # the map page's map/braga.json
 npm run tracks   # every track: tracks/<id>.js, and map/tracks.json for the page
 npm run open     # the open world's edge, round the Volta dos Amigos: tools/open.json (seconds)
@@ -226,7 +247,8 @@ draws the edges (run `npm run page` again after `npm run open` or `npm run shoot
 `audit.mjs`, which reads the world's tiles), `textures.mjs` lays each facade on its building in
 the world and takes its colour (after `world.mjs`; `test/textures.test.js` says if a building moved from under one),
 and `build.mjs` and `world.mjs` take the buildings'
-heights and roofs from `roofs.mjs`'s measurements, and `world.mjs` the walls from `walls.mjs` (run it
+heights and roofs from `roofs.mjs`'s measurements, `world.mjs` the trees from `trees.mjs` (run it after
+`fetch.mjs trees`), and the walls from `walls.mjs` (run it
 after `roofs.mjs`, `npm run open` and `fetch.mjs barriers`), and the streets on their carriageways from `carriageways.mjs`
 (run it before `walls.mjs`, `npm run open`, `npm run shooter`, `npm run world` and `npm run tracks`, which
 all take the streets moved, and `cover.mjs` again after `world.mjs`), and the facades from `refs/buildings.json` and the shops from `fetch.mjs shops`. All of them need the LiDAR. `track.mjs` also reads
@@ -285,8 +307,8 @@ streets; when a track moves enough to change the edge, run the three again until
   at its width and level, the railway, every building on the ground at its lowest corner, with its
   height and roof as `roofs.mjs` measured them (in parts where they step or turn; guessed from the
   map where the LiDAR didn't see it), those the map lacks as `roofs.mjs` found them, houses filled
-  in where the map has none on a built-up street and the LiDAR wasn't fetched, the trees (woods and
-  parks filled in), the rivers with their water level (the lowest ground within 4 m of their
+  in where the map has none on a built-up street and the LiDAR wasn't fetched, the trees as
+  `trees.mjs` found them (woods and parks filled in where the point cloud wasn't fetched), the rivers with their water level (the lowest ground within 4 m of their
   course), and the sights (Bom Jesus, the Sameiro, the cross on the Picoto, the stadium, the Altice
   Forum's α, Makro, the Tourigalo with the way its head points and its restaurant's front, São
   João da Ponte's chapel and bridge, and since task 056 the route's chapels of Santa Justa, Santo
@@ -363,6 +385,25 @@ streets; when a track moves enough to change the edge, run the three again until
   it would stand on a carriageway or a path (`cutWalls`, `packWalls`). `test/walls.test.js` checks
   the tiles carry every barrier the map has but where it opens, every gate, each piece whole and off
   the carriageways, and a retaining wall's higher ground on its left.
+- `trees.mjs` finds every tree in DGT's point cloud (task 019). It boils each tile down once to 50 cm
+  cells (`.cache/dgt/trees/`, 15 s a tile): the highest and the lowest point of high vegetation (class
+  5, 2 m and more up) over the terrain, how many there are and their colour (the cloud's near-infrared,
+  red, green and blue), and how many points are the ground's and a building's. Then, a tile at a time
+  with 20 m round it: the canopy's height in each cell, its gaps filled and smoothed; every cell from
+  the highest down joins the crown of the highest cell beside it or starts one of its own, and where
+  two meet, the lower is a bump on the higher if its top stands less than 6% of its height (1 m at
+  least) over where they meet and within a third of the higher's height of its top; a crown much
+  narrower than its height that mostly meets other crowns is a sliver of their canopy, and joins the
+  one it meets most. Each crown with its top on the tile, 3 m tall or more: its height (its highest
+  point), its width (the cells a quarter of its height up and more, as a disc), its foot (the 5th
+  percentile of its cells' lowest points, no higher than 60% of it: under a thick crown the laser seldom
+  reaches its lowest leaves), and its colour. Left out: what the photo sees no leaf in (no more
+  near-infrared than red: a wall's edge, a roof, a crane) or that's mostly over a roof, but where the
+  map has a tree. OpenStreetMap's trees are matched to the crowns (the one each stands in, or the
+  nearest within 2.5 m), and its kinds as the README's trees say, COS2025's woods from its classes 4
+  and 5. `--check x,z[,r] …` draws the orthophoto round each point with each crown outlined in its
+  kind's colour, into `.cache/trees/`. `test/trees.test.js` checks it on crowns made up as the LiDAR
+  sees them, and the trees in the tiles.
 - `open.mjs` works out the open world's edge (task 032) from the streets and the buildings, on a
   grid of 1 m: near the loop is within 120 m of it and what that closes round (its inside, and a
   pocket between two of its arms), and the Picoto's top; every street that comes near is in, from

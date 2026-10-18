@@ -1157,3 +1157,48 @@ The alternatives were the task's: the street as it is with nothing taken in (the
 bots respawning 10–14 times a race); party-kart's autopilot and bots lining up with the flight (two
 tries didn't: from the run-up they miss the ramp, from its foot they still fly 3 m left); the jump's
 streets kept as the map has them; another jump, which the owner would see first.
+
+## 043 · The trees are the LiDAR's: each one found, measured and of its kind, in its photos near and its kind's billboard far
+
+*2026-10-18 · task 019 · replaces the woods and parks filled with made-up trees, as decision 025 did the houses*
+
+Every tree on the map is one DGT's 2025 LiDAR sees (`tools/trees.mjs`): a crown in its point
+cloud's high vegetation, a top that stands out of the canopy round it (6% of its height, 1 m at least,
+over where it meets a higher one), 3 m tall or more. 251,000 on the map, 55,000 under the Volta dos
+Amigos' box, 765 in the shooter's area, where the map had 10,800 of its own and woods and parks
+filled at a tree to so many square metres. Each is where it stands (its top), as tall as the laser
+measured it, its crown as wide as it covers and its foot where its lowest leaves are (under a thick
+crown, no higher than 60% of the tree, as the laser seldom reaches them). Nothing is filled in where
+the point cloud was fetched, which is the whole map; OpenStreetMap's trees in no crown are kept, as
+young trees (1,300).
+
+- **A tree's kind is the map's where it names one,** its species, genus or leaf type; **else its
+  wood's,** the main species COS2025 gives a wood of 1 ha or more (eucalyptus, maritime or stone
+  pine, other conifers, oaks, acacias, other broadleaves); **else its shape's:** a broadleaf, but
+  for the narrow and tall (a poplar where the photo sees a broadleaf's leaves, else a cypress or a
+  cedar), a tree taller than the town's with its crown held high (a eucalyptus), and a tall tree
+  with its crown held high that's dark in the near-infrared, as needles are (a pine). Six kinds:
+  broadleaf (167,000), eucalyptus (73,500), pine (4,900), cypress or cedar (3,500), poplar (2,700),
+  palm (3, the map's). The photos (task 008) weren't read tree by tree: a broadleaf is any of the
+  avenues' hackberries, limes, planes and oaks, and the Parque da Ponte's planes are eucalyptus, as
+  COS2025 has its wood.
+- **No tree stands on a carriageway:** a crown's top over one has its trunk at the street's edge,
+  within 3 m (4,700 moved), else it's left out (800). The 9 m the houses filled in keep from a street
+  (`W_MIN`) isn't the trees'.
+- **Each kind is drawn in photos of its own** (decision 002's, made as decision 030's): its bark, a
+  Poly Haven bark photo (a hackberry's, a pine's, a blue gum's, a cedar's, a willow's, a palm's), and
+  a spray of its leaves composed from a Poly Haven tree's photos of them (CC0), in the world as the
+  ground's are. A game tints them the green of Braga's trees in summer.
+- **party-kart draws every tree in the box,** near the camera (260 m on High, 180 on Medium, 120 on
+  Low) as a trunk in its bark and a crown of cards of its leaves in its kind's shape, each card the
+  same size whatever the crown's; further off as its kind's billboard, baked from the near tree; the
+  two dithered into each other over 25 m. A kart hits its trunk, as thick as a tree that tall and
+  wide usually is.
+
+What it cost, on party-kart's 34 viewpoints on High (the median): 2 draw calls fewer (the trees
+were 800 m tiles of instances a kind), 0.25 M triangles more (1.79 to 2.04 M; up to 0.48 M where
+the hills' woods are in view), 5 MB of textures more, the city built 0.2 s slower, and the download
+1.3 MB more gzipped (the trees' textures 0.9 MB, the tiles 0.45). The alternatives were keeping
+OpenStreetMap's trees and the filled woods with the LiDAR's heights only where they stood on one
+(the woods' made-up trees stay made up), and a crown's kind from its photo alone (the cloud's
+near-infrared tells a pine wood from a eucalyptus one in a quarter of its trees, no better).

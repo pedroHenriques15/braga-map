@@ -121,7 +121,10 @@ millimetre (the test).
   what the ground is under the Volta dos Amigos' box (task 016: `tools/cover.mjs` boils each LAZ
   tile down to the ground's echo, its intensity, and the points over it, `.cache/dgt/cover/`: the
   echo tells asphalt from paving and grass in the sun or a shadow, and the points over the ground
-  are the trees' crowns and the parked cars).
+  are the trees' crowns and the parked cars); and every tree on the map (task 019: `tools/trees.mjs`
+  boils each LAZ tile down to 50 cm cells of its high vegetation's highest and lowest points over the
+  terrain and their colour, `.cache/dgt/trees/`, and finds each crown in them: where it stands, its
+  height, its width, its foot).
 - **Its sea level:** the Cascais datum, the one DGT publishes its own heights on: the LiDAR is
   within 0.15–0.85 m of DGT's geodetic marks on the Sameiro (whose heights may be the marks', not
   the ground's) and 0.2 m of the one at Pedroso; within 0.3–1.1 m of the old maps' spot heights,
@@ -171,6 +174,10 @@ millimetre (the test).
 - **May be used for:** everything, with the credit.
 - **Fetched:** the 855 polygons that touch the map's box, whole, as GeoJSON
   (`.cache/dgt/cos2025.json`, 18 MB).
+- **Used for:** the kind of each tree in its woods (task 019, `tools/trees.mjs`): the main species of
+  the wood a tree stands in (classes 4 and 5: eucalyptus, maritime and stone pine, other conifers;
+  oaks, cork oaks, acacias and other broadleaves), where OpenStreetMap doesn't name it. Credited with
+  DGT's LiDAR in `world/base.js`'s `credit`.
 
 ### Microsoft's building footprints
 
@@ -267,26 +274,35 @@ their lists are committed; `node tools/refs.mjs` fetches the photos into `.cache
 - **KartaView** (`https://api.openstreetcam.org/2.0/photo/`): every query near Braga timed out or
   answered "Restricted access" on 2026-10-13.
 
-## For the ground's photos
+## For the ground's and the trees' photos
 
 ### Poly Haven
 
-- **What:** seamless photo textures of surfaces, scanned at a known size, by named authors
-  (https://polyhaven.com).
+- **What:** seamless photo textures of surfaces, scanned at a known size, by named authors, and
+  scanned plants with photos of their leaves and twigs (https://polyhaven.com).
 - **Access:** open, no account: each asset's record at `https://api.polyhaven.com/info/<id>` (its
   authors, its size in metres, its date) and its files at `https://api.polyhaven.com/files/<id>`.
 - **Licence:** CC0 1.0, every asset (https://polyhaven.com/license).
 - **Credit:** none owed; each is credited to its authors all the same, in `world/textures.js`
-  (`SURFACES`), and `map().photoCredits` lists them.
+  (`SURFACES`, `TREES`), and `map().photoCredits` lists them.
 - **May be used for:** everything.
-- **Fetched:** by `node tools/textures.mjs`, each asset's record and its 2k diffuse photo, into
-  `.cache/textures/sources/`, checked on 2026-10-16.
+- **Fetched:** by `node tools/textures.mjs`, each asset's record and its 2k diffuse photo (a plant's
+  photos of its leaves or twigs, with their alpha), into `.cache/textures/sources/`, checked on
+  2026-10-16 and 2026-10-18.
 - **Used for:** each kind of ground's photo (task 016, decision 034), tiled at its real size and
   tinted with the place's colour: `asphalt_04` (Jenelle van Heerden, Sergej Majboroda, 4.04 m),
   `concrete_floor_01` for paving (Rob Tuytel, 2 m), `cobblestone_floor_03` for setts (Rob Tuytel,
   2.4 m), `grass_ground` (Charlotte Baglioni, 2.51 m), `dirt_floor` for bare soil (eye-candy.xyz,
   2.07 m) and `gravel_floor_02` (Jenelle van Heerden, Dimitrios Savva, 2 m), in
-  `world/textures/surfaces/`.
+  `world/textures/surfaces/`. And each kind of tree's bark and leaves (task 019, decision 043), in
+  `world/textures/trees/`: the barks `chinese_hackberry_bark` for the broadleaves and
+  `chinese_cedar_bark` for the cypresses and cedars (Charlotte Baglioni), `pine_bark` and
+  `bark_bluegum` for the eucalyptus (Dimitrios Savva), `bark_willow` for the poplars (Dario Barresi,
+  Dimitrios Savva), `palm_tree_bark` (Dimitrios Savva, Rico Cilliers); and the leaves cut out of the
+  photos of `island_tree_02`'s leaves (the broadleaves', the poplars', the palms' leaflets),
+  `pine_tree_01`'s twigs (the pines'), `fir_tree_01`'s twigs (the cypresses' and cedars'; all three
+  Rob Tuytel, Rico Cilliers) and `shrub_04`'s (the eucalyptus's, Rico Cilliers), laid along twigs
+  into a spray by `tools/textures.mjs`.
 
 ## Sounds
 

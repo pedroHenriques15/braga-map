@@ -104,12 +104,41 @@ export interface Area {
 // own level, open either side (a building over it, or a bridge's deck). heights: a bridge's or a
 // tunnel's, at each point, above elev0: straight between the ground where it ends (`height(x, z)`'s;
 // a tunnel's end on the cutting's floor, the lowest of it from its mouth to 4 m out).
+// name: the street's name, as the map has it (task 042), or null where it has none.
 export interface Line {
   kind: number;
   level: 'ground' | 'bridge' | 'tunnel' | 'under';
   w: number;
+  name: string | null;
   pts: [number, number][];
   heights?: number[];
+}
+
+// A bus stop (task 042): every one OpenStreetMap has (highway=bus_stop), where it stands (by the
+// kerb, or on the street's line where the map puts it there), and whether it has a shelter (the map's
+// shelter=yes; it doesn't always say).
+export interface Stop {
+  x: number;
+  z: number;
+  shelter: boolean;
+}
+
+// A street's name plate (task 042, tools/plates.mjs), in the open world's area: at every corner where
+// a named street meets a street of another name, its plate, on the corner building's wall along it
+// where a building stands within 3 m of both kerbs (the owner's answer), else on a post off the
+// rounded kerb, on a pavement or open ground. A corner building carries both its streets' names, one
+// on each wall. Each 1.2 m wide and 0.3 m high (the map leaves room for that: plateSize), blue and
+// white. on 'wall': (x, z) its middle, 5 cm out from its wall, which faces (cos face, sin face), its
+// bottom at y over elev0 (2.6 m over the pavement, or over a shop's sign it would cover). on 'post':
+// (x, z) the post's foot, the plate along its street, facing it (cos face, sin face) and the other
+// way, its bottom at y (2.2 m over the ground; a second name on the same post 35 cm over it).
+export interface Plate {
+  name: string;
+  on: 'wall' | 'post';
+  x: number;
+  z: number;
+  face: number;
+  y: number;
 }
 
 // A building, or a part of one where its roof steps by a storey or more or turns a corner, each part
@@ -582,6 +611,8 @@ export interface BragaMap {
   // the slab on top), in metres, over the whole map (OpenStreetMap's floors against the LiDAR's eaves).
   // A building's own floors are its `floors`.
   storey: [number, number];
+  // A street's name plate's width and height, in metres (task 042): Plate.
+  plateSize: [number, number];
   // Each kind of facade's proportions, and each facade colour's [r, g, b] (sRGB, as it looks in even
   // daylight) by its name.
   facadeTypes: Record<FacadeType, FacadeProportions>;
@@ -618,6 +649,9 @@ export interface World extends BragaMap {
   buildings: Building[];
   // The shops' signs on the tiles loaded (task 017).
   signs: Sign[];
+  // The bus stops on the tiles loaded, and the streets' name plates (task 042).
+  stops: Stop[];
+  plates: Plate[];
   trees: Tree[];
   // Every street as surfaces, and every path, on the open world's tiles loaded (empty on the others).
   streets: Streets;

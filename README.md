@@ -39,9 +39,12 @@ const world = await loadWorld({ open: true }); // the open world's area and the 
 // or loadWorld(amigos.box), loadWorld({ sections: ['centro'] }), loadWorld({ sections: ['fujacal'] })
 world.height(x, z); // the ground: every 2 m or 10 m on the tiles loaded, every 50 m elsewhere
 world.buildings; // [{ kind, roof, ends, dir, pitch, y, h, ridge, floors, roofColor, facade, … pts }], and areas, lines…
+world.lines; // every street and the railway: [{ kind, level, w, name, pts, heights? }], name the map's or null
 world.trees; // every tree: [{ x, z, kind, h, crown, foot, trunk, mapped, filled }], as DGT's LiDAR measured it
 map().treeKinds; // each kind of tree with its bark's and its leaves' photos: [{ kind, bark, leaves }]
 world.signs; // the shops' signs: [{ text, colour, from, to, y, h }], on their buildings' walls
+world.stops; // every bus stop: [{ x, z, shelter }]
+world.plates; // in the open world's area, the streets' name plates: [{ name, on, x, z, face, y }], map().plateSize [w, h]
 map().facadeTypes; // each kind of facade's proportions; map().facadeColours its colours
 world.streets; // in the open world's area: { carriageways, pavements, kerbs, markings, paths, handrails }, each piece at its level
 world.walls; // in the open world's area: [{ kind, material, on, h, w, level, source, pts, ys, open? }], the walls, fences, railings, hedges and gates
@@ -146,6 +149,19 @@ map().groundKinds; // the kinds it says, each with its photo: [{ kind, texture: 
   (no logos) on its sign's colour (the photo's, where a photo showed it), over its building's ground
   floor on the wall nearest it that faces a street; and the signs the photos show where the map has
   no shop. None for a shop in a shopping centre, more than 12 m in from every outside wall.
+- **The streets' names, the bus stops and the name plates** (task 042): each line carries its
+  street's name as OpenStreetMap has it (`name`, null where it has none), and each tile the map's bus
+  stops (`world.stops`, with whether the map says they have a shelter). In the open world's area,
+  `tools/plates.mjs` puts a plate at every corner where a named street meets a street of another name
+  (`world.plates`): on the corner building's wall along it, near the corner, 2.6 m up (over a shop's
+  sign there), where a building stands within 3 m of both kerbs (the owner's answer); else on a post
+  half a metre past the rounded kerb, on a pavement or open ground, a second name on the same post
+  over the first. A corner building carries both its streets' names, one on each wall, as Braga's
+  do. The corners are worked out from the streets' junctions (the map's nodes, every street but a
+  link, a service road or a track without a name) and the kerbs as `world.streets` draws them: none
+  inside a wide junction's carriageway, on a reservation or an island, or in a building. 1,025
+  plates for 199 of the area's 205 named streets, 112 of them on a wall: most of the area's corners
+  have no building within 6 m of the kerb (avenues, roundabouts, houses behind gardens).
 - A track brings its race's road (`road`, decision 019): the route's own streets at their real
   widths, as `world.streets` draws them, and its jump's flight, with the corner between the flight
   and the landing street (task 057). Its outline is the race's walls, and where the street drawn

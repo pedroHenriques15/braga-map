@@ -211,6 +211,7 @@ export function map() {
     areaKinds: m.areas,
     roofColors: m.roofColors,
     storey: m.storey,
+    plateSize: m.plate,
     facadeTypes: Object.fromEntries(m.facades.types.map(({ id, ...t }) => [id, t])),
     facadeColours: Object.fromEntries(m.facades.colours),
     far: grid(nums, head.far),
@@ -267,6 +268,8 @@ export async function loadWorld(area) {
   const lines = [];
   const buildings = [];
   const signs = [];
+  const stops = [];
+  const plates = [];
   const trees = [];
   const streets = { carriageways: [], pavements: [], kerbs: [], markings: [], paths: [], handrails: [] };
   const walls = [];
@@ -293,13 +296,15 @@ export async function loadWorld(area) {
       areas.push({ rank: nums[i] * 32768 + nums[i + 1], kind: m.areaKinds[what & 15], pts: points(nums, i + 4, n), holes });
       i = j;
     }
-    // Each line: [what, width, n, ...points, ...heights]: what is its kind and 16 times its level;
-    // a bridge's or a tunnel's has each point's height after them (tools/world.mjs).
+    // Each line: [what, width, n, ...points, ...heights]: what is its kind, 16 times its level and 64
+    // times its name's place in the tile's names (from 1, 0 for none); a bridge's or a tunnel's has
+    // each point's height after them (tools/world.mjs).
+    const names = head.names?.list ?? [];
     const L = head.lines;
     for (let i = L.at; i < L.at + L.n; ) {
-      const level = nums[i] >> 4;
+      const level = (nums[i] >> 4) & 3;
       const n = nums[i + 2];
-      const line = { kind: nums[i] & 15, level: LEVELS[level], w: nums[i + 1] / 10, pts: points(nums, i + 3, n) };
+      const line = { kind: nums[i] & 15, level: LEVELS[level], w: nums[i + 1] / 10, name: names[(nums[i] >> 6) - 1] ?? null, pts: points(nums, i + 3, n) };
       i += 3 + n * 2;
       if (level === 1 || level === 2) {
         line.heights = Array.from(nums.subarray(i, i + n), (v) => v / 10);
@@ -368,6 +373,10 @@ export async function loadWorld(area) {
     }
     // The shops' signs: [x0, z0, x1, z1, y, h, colour, text] each, in the header.
     for (const [x0, z0, x1, z1, sy, sh, c, text] of head.signs?.list ?? []) signs.push({ text, colour: F.colours[c][0], from: [x0, z0], to: [x1, z1], y: sy, h: sh });
+    // The bus stops, [x, z, shelter] each; and the streets' name plates, [name, x, z, face, y, on]
+    // each, the name its place in the tile's names (task 042).
+    for (const [x, z, shelter] of head.stops?.list ?? []) stops.push({ x, z, shelter: shelter === 1 });
+    for (const [n, x, z, face, py, on] of head.plates?.list ?? []) plates.push({ name: names[n - 1], on: on ? 'post' : 'wall', x, z, face, y: py });
     // The trees (tools/world.mjs): [x, z, kind | mapped << 3 | filled << 4 | height << 5, crown, foot]
     // each, in half metres, then decimetres.
     const T = head.trees;
@@ -480,6 +489,8 @@ export async function loadWorld(area) {
     lines,
     buildings,
     signs,
+    stops,
+    plates,
     trees,
     streets,
     walls,

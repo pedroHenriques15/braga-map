@@ -34,6 +34,7 @@ import { carriagewayMoves, heldGround, isLine, isSquare, LEVEL, levelHeights, on
 import { packPaths, packStreets, streetSurfaces } from './streets.mjs';
 import { cutWalls, packWalls } from './walls.mjs';
 import { KINDS as TREE_KINDS, osmKind } from './trees.mjs';
+import { PLATE, platesOf } from './plates.mjs';
 import { BALCONIES, BALCONY, COLOUR, COLOURS, floorsOf, GROUND, GROUND_OF, guesser, MATERIAL, MATERIALS, TYPE, TYPES } from './facades.mjs';
 
 // The streets on their carriageways where the LiDAR measured them (lines.mjs's onCarriageways, task 026),
@@ -53,7 +54,7 @@ const places = fs.existsSync(path.join(CACHE, 'places.json')) ? readCache('place
 const ground = await terrain();
 const inExt = (x, z, m = 0) => x >= EXT.x0 - m && x <= EXT.x1 + m && z >= EXT.z0 - m && z <= EXT.z1 + m;
 
-const tiles = new Map(allTiles().map(([i, j]) => [tileId(i, j), { id: tileId(i, j), box: tileBox(i, j), areas: [], lines: [], buildings: [], trees: [], streets: [], paths: [], rails: [], walls: [], signs: [] }]));
+const tiles = new Map(allTiles().map(([i, j]) => [tileId(i, j), { id: tileId(i, j), box: tileBox(i, j), areas: [], lines: [], buildings: [], trees: [], streets: [], paths: [], rails: [], walls: [], signs: [], names: [], nameAt: new Map(), stops: [], plates: [] }]));
 const tileAt = (x, z) => tiles.get(tileId(...tileOf(x, z)));
 const tilesOver = (b, m = 0) => [...tiles.values()].filter((t) => overlaps(t.box, b, m));
 
@@ -182,15 +183,29 @@ for (const e of [...base.elements, ...parkingOsm]) {
 // The streets on the ground and over it, for the buildings, the trees and the sights.
 const streets = lines.filter((l) => l.level !== LEVEL.tunnel);
 
+// A name's place in a tile's list of them (task 042), from 1.
+const nameIn = (t, name) => {
+  if (!t.nameAt.has(name)) t.nameAt.set(name, t.names.push(name));
+  return t.nameAt.get(name);
+};
+
 // Every street at its width, and the railway: the stretches of each that cross a tile, each [what,
-// width, n, ...points, ...heights]: what is its kind and its level (16 times it), and a bridge or a
-// tunnel has the height of each point after them, in decimetres above ELEV0.
+// width, n, ...points, ...heights]: what is its kind, its level (16 times it) and its name's place in
+// the tile's list of them (64 times it, 0 for none: task 042), and a bridge or a tunnel has the height
+// of each point after them, in decimetres above ELEV0.
 for (const s of lines) {
   const pts = openThin(s.pts, 0.8), up = s.level === LEVEL.bridge || s.level === LEVEL.tunnel;
   for (const t of tilesOver(bounds(pts), s.w)) {
     const b = t.box, m = s.w / 2 + 2;
     let run = [];
-    const flush = () => { if (run.length > 1) t.lines.push(s.k + 16 * s.level, Math.round(s.w * 10), run.length, ...packPts(run), ...(up ? run.map((p) => dm((heights.get(p) ?? ground.at(...p)) - ELEV0)) : [])); run = []; };
+    const flush = () => {
+      if (run.length > 1) {
+        const name = s.t.name ? nameIn(t, s.t.name) : 0;
+        if (name > 511) throw new Error(`${t.id}: more than 511 names`);
+        t.lines.push(s.k + 16 * s.level + 64 * name, Math.round(s.w * 10), run.length, ...packPts(run), ...(up ? run.map((p) => dm((heights.get(p) ?? ground.at(...p)) - ELEV0)) : []));
+      }
+      run = [];
+    };
     for (let i = 1; i < pts.length; i++) {
       const a = pts[i - 1], c = pts[i];
       if (overlaps(bounds([a, c]), b, m)) { if (!run.length) run.push(a); run.push(c); }
@@ -198,6 +213,16 @@ for (const s of lines) {
     }
     flush();
   }
+}
+// The bus stops (task 042): every one the map has (highway=bus_stop), where it stands, and whether it
+// has a shelter, in its tile's header: [x, z, shelter] each, in metres, shelter 1 or 0.
+let nStops = 0;
+for (const e of onCarriageways(readCache('osm/street.json')).elements) {
+  if (e.type !== 'node' || e.tags?.highway !== 'bus_stop') continue;
+  const [x, z] = P(e);
+  if (!inExt(x, z)) continue;
+  tileAt(x, z).stops.push([Math.round(x * 10) / 10, Math.round(z * 10) / 10, e.tags.shelter === 'yes' ? 1 : 0]);
+  nStops++;
 }
 // Where the streets leave the open world's area (open.mjs), and the shooter's (shooter.mjs), and the
 // paths (task 050): each one's crossing, with the height of its road there above ELEV0, on the
@@ -798,6 +823,27 @@ const treesOff = { moved: 0, out: 0 };
     t.walls = packWalls(mine, t.box.x0, t.box.z0, ELEV0);
     nWalls += mine.length;
   }
+  // The streets' name plates (plates.mjs, task 042), at the corners in the open world's area, kept off
+  // the carriageways, the reservations and islands, the buildings and the shops' signs as they're
+  // drawn, on the buildings' walls as the tiles hold them (in half metres). In its tile's header, each
+  // [its name's place in the tile's names, x, z, face, y, on]: x and z in metres, face in radians, y over
+  // elev0, on 0 a wall or 1 a post.
+  {
+    const all = [...cuts.values()], onGround = (p) => p.level === 'ground' || p.level === 'under';
+    const road = new Inside(all.flatMap((c) => c.carriageways.filter(onGround).flatMap((p) => p.rings)));
+    const between = new Inside(all.flatMap((c) => c.pavements.filter((p) => onGround(p) && p.kind !== 'pavement').flatMap((p) => p.rings)));
+    const rounded = outlines.map((r) => r.map(([x, z]) => [half(x) / 2, half(z) / 2])), built = new Inside(rounded);
+    const { plates, stats: ps } = platesOf({
+      lines, inArea: (x, z) => inside(OPEN, x, z), buildings: rounded, built: (x, z) => built.has(x, z), road: (x, z) => road.has(x, z), between: (x, z) => between.has(x, z),
+      ground: (x, z) => tileGround(x, z) - ELEV0, signs: [...tiles.values()].flatMap((t) => t.signs),
+    });
+    const r2 = (v) => Math.round(v * 100) / 100;
+    for (const p of plates) {
+      const t = tileAt(p.x, p.z);
+      t.plates.push([nameIn(t, p.name), r2(p.x), r2(p.z), r2(p.face), r2(p.y), p.on === 'post' ? 1 : 0]);
+    }
+    console.log(`plates: ${plates.length} of ${new Set(plates.map((p) => p.name)).size} streets at ${ps.corners} corners, ${ps.wall} on a wall and ${ps.post} on a post (${ps.none} with no room, ${ps.twice} the same name again within 6 m); bus stops: ${nStops}`);
+  }
   const ps = stats.paths;
   console.log(`trees on a carriageway as it's drawn: ${treesOff.moved} moved off it, ${treesOff.out} left out`);
   if (wallList) console.log(`walls: ${nWalls} pieces in the open world's tiles, of ${wallList.length}`);
@@ -1083,6 +1129,9 @@ for (const t of tiles.values()) {
   if (t.rails.length) p.part('rails', t.rails);
   if (t.walls.length) p.part('walls', t.walls);
   if (t.signs.length) p.part('signs', [], { list: t.signs });
+  if (t.names.length) p.part('names', [], { list: t.names });
+  if (t.stops.length) p.part('stops', [], { list: t.stops });
+  if (t.plates.length) p.part('plates', [], { list: t.plates });
   const b64 = p.encode();
   fs.writeFileSync(path.join(dir, 'tiles', t.id + '.js'), `${HEAD}export default '${b64}';\n`);
   bytes += b64.length;
@@ -1107,6 +1156,7 @@ out.header.meta = {
   roofColors: PALETTE,
   treeKinds: TREE_KINDS,
   storey: [STOREY, BASE],
+  plate: [PLATE.w, PLATE.h],
   facades: { types: TYPES, colours: COLOURS, materials: MATERIALS, ground: GROUND, balconies: BALCONIES },
   landmarks,
   sights,

@@ -1,5 +1,5 @@
 ---
-status: todo
+status: done
 priority: high
 kind: code
 repo: party-kart
@@ -74,14 +74,20 @@ Steps:
 
 ## Done when
 
-- [ ] With `index-*.js` or `photos-*.js` failing, the loading screen says the game couldn't be
+- [x] With `index-*.js` or `photos-*.js` failing, the loading screen says the game couldn't be
       downloaded within 5 s and offers the reload (Playwright, on the built site).
-- [ ] With a tile's chunk failing, it still says the city failed to build. With nothing failing, the
+      > In 0.03–0.3 s in Chromium, Firefox and WebKit, and the button opens the game once the
+      > failure is lifted (Notes). Since task 070 there is no `photos-*.js`: it's part of `index-*.js`.
+- [x] With a tile's chunk failing, it still says the city failed to build. With nothing failing, the
       game opens with no message.
-- [ ] With the build held back past 90 s, the spinner stays and the line saying it's taking long
+      > In all three browsers, on 069's build and again on 070's (Notes).
+- [x] With the build held back past 90 s, the spinner stays and the line saying it's taking long
       shows.
-- [ ] `docs/releasing.md` says what a page from before a deploy does.
-- [ ] `npm test` and `npm run check` pass.
+      > A tile's chunk unanswered: the spinner alone at 80 s, the line and the button under it at 95 s.
+- [x] `docs/releasing.md` says what a page from before a deploy does.
+      > Its step 4, and "Players keep the old build until they reload".
+- [x] `npm test` and `npm run check` pass.
+      > 66 pass, and `tsc` clean; braga-map's `npm test` 141 pass, 0 fail.
 
 ## Out of scope
 
@@ -96,3 +102,37 @@ Steps:
 Found 2026-10-18 by the planning session, from the owner's report of a friend's endless spinner.
 Not verified: what happened on the friend's computer. What they can try meanwhile: reload with
 Ctrl+Shift+R (Cmd+Shift+R on a Mac), then a private window, then send what the console (F12) shows.
+
+Done 2026-10-19 on party-kart `6747516` (braga-map 1.29.0, the live `index-DafcRN-n.js`), committed
+and deployed with task 070. Decision 052. `index.html`'s script moved into `<head>`, ahead of the tags the build puts at its end,
+as the preload's error fires before `<body>` is parsed. A capture listener on `window` hears a
+`<script>` with a `src` failing and says "Não foi possível descarregar o jogo. Verifica a ligação à
+internet e volta a tentar.", the button and, in the `<small>` line, the script's file name and any
+`modulepreload` that failed before it. A 90 s timer adds "Está a demorar mais do que devia. Se não
+avançar, volta a tentar." and the button, under the spinner. `docs/releasing.md`'s step 4 and its
+"players keep the old build" now say what a page from before a deploy does.
+
+Checked with Playwright on `npm run build` and `npx vite preview` (Chromium unless said):
+- Before: `index-*.js` aborted, still spinning after 30 s, no message. A tile's chunk: the message in
+  1.3 s.
+- After: `index-*.js` aborted, the message in 0.03 s (Firefox 0.2 s, WebKit 0.05 s), `small`
+  "index-DafcRN-n.js". `photos-*.js` aborted, 0.05 s (Firefox 0.3 s; WebKit shows it too), `small`
+  "index-DafcRN-n.js, photos-D_TLtHRC.js": the `<link>`'s error comes first, then the `<script>`'s,
+  in all three. The button, with the failure lifted, opens the game in 7–11 s (but WebKit after
+  `photos-*.js`: task 070).
+- A tile's chunk (`x1z1-*.js`) aborted: still "Algo correu mal a construir Braga", in 0.2 s (Firefox
+  and WebKit 0.8 s).
+- Nothing failing: the game opens in 9.5 s (Firefox 13 s, WebKit 11 s), no message, the welcome in
+  the feed.
+- A tile's chunk held back unanswered: at 80 s the spinner alone; at 95 s the spinner, the line and
+  the button.
+- With a server answering a real 404 to `photos-*.js` once: Chromium's button opens the game;
+  Firefox asks again on its own and opens with no message.
+- party-kart `npm run check` and `npm test` (66 pass); braga-map `npm test` (141 pass, 0 fail).
+
+Found along the way: task 070. WebKit (Playwright's, on Windows) keeps a failed
+`modulepreload` for as long as the browser process lasts, so after `photos-*.js` fails, "Tentar
+outra vez" fails again at once. After a deploy it doesn't matter, as the new `index.html` names new
+files. Task 070 made the game one script, so there's nothing left to preload.
+
+Viewpoints: none, as nothing the city shows changed; no round, no budget.

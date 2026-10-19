@@ -1514,3 +1514,29 @@ avenues' hackberries and limes one broadleaf. The viewpoints' photos show what t
 
 The alternatives: a species for every one of the 246,000 trees (no photo shows most of them), or
 each avenue's row named the length of the avenue from one photo of it.
+
+## 052 · When the game can't be downloaded the loading screen says so, and the game is one script with nothing preloaded
+
+*2026-10-19 · tasks 069 and 070 · party-kart's `index.html`, a friend's endless spinner after a deploy*
+
+A deploy force-pushes a `gh-pages` that holds the new build alone, and Pages serves `index.html` for
+10 minutes from a browser's cache, so a page from before a deploy asks for a script that's gone. Its
+`<script>`'s error doesn't reach `window`, and the loading screen spun for ever.
+
+- **The loading screen hears a `<script>` fail** (a capture listener on `window`, in the `<head>`,
+  ahead of the tags the build puts at its end), and says the game couldn't be downloaded, with
+  "Tentar outra vez", which reloads and so fetches the new `index.html`, and the file's name in small
+  print. Past 90 s with the city not up, it adds a line that it's taking longer than it should, with
+  the same button, and keeps the spinner.
+- **The previous build's files are not kept** at a deploy: a page from before it would open the old
+  build, which shares no room with the new one whenever the peer prefix moved.
+- **The game is one script, and its `index.html` preloads nothing.** WebKit keeps a
+  `<link rel="modulepreload">` that failed until the browser closes, and fails the reloaded page's
+  script from it at once. `photos.ts`, imported dynamically since it was behind `?photos`, made a
+  chunk of its own and one of three.js it shared, both preloaded; it's imported statically now, as
+  `cover.ts` did already: the same bytes, one file, the load as fast. Code that's split off again
+  should be fetched by a dynamic import only, which WebKit fetches again on a reload.
+
+The alternatives: keep each build's files on `gh-pages` (a page from before a deploy would open, in a
+room of its own); `build.modulePreload: false` (a shared chunk would come after the game's script,
+one round trip later); or a service worker (a build step and a cache to keep right).

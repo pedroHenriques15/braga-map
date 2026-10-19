@@ -279,6 +279,7 @@ node tools/buildings.mjs  # the buildings whose facades to look at (refs/buildin
 node tools/species.mjs mark  # each viewpoint's photo with the trees within 60 m of its camera numbered, and its orthophoto, for refs/trees.json (task 061, 10 s)
 node tools/textures.mjs  # the photo textures refs/textures.json asks for: world/textures/ (about a minute)
 node tools/cover.mjs   # what the ground is every 50 cm under the Volta dos Amigos' box, and the cars parked: world/cover/ (3 minutes, 10 the first time)
+npm run minecraft  # the world as a Minecraft world (Java, 26.3): .cache/minecraft/Braga (30 s; --out, --box and --force: "A Minecraft world" below)
 node tools/round.mjs <round> --label "…" [--shots <party-kart>/shots]  # a round of party-kart's shots, in a few sheets, for the scorecard
 node tools/scorecard.mjs files <listing>      # what the scorecard lacks of .cache/scorecard/, in publishes inside their limits
 node tools/scorecard.mjs marks <claude.json>  # Claude's waiting marks added to its document, to set pinned to its version
@@ -753,6 +754,29 @@ eggs stand on the houses themselves: each egg in `tracks/<id>.js` is at its hous
 the side of the road it's on (`test/eggs.test.js` checks it), and the games' drivers are the
 friends by first name. Never a surname, a street name or a door number in a commit, a task or a
 doc.
+
+### A Minecraft world
+
+`tools/minecraft.mjs` makes the world a Minecraft world (Java Edition, 26.3) from what `loadWorld`
+gives a game: a block to the metre, x and z the map's own (the Praça da República at 0, 0), and y
+the height above the sea, so F3 shows the real altitude. A data pack in it makes the world 704
+blocks tall from y = 0, for the Sameiro's top. The ground covered as the map says, the streets, the
+water and the bridges' decks, the walls round the open world's area, every building with its
+windows, floors and roof, and every tree. The chunks are 1.21.1's, which the game upgrades as it
+opens them (it asks first); the data pack is 26.3's, so a later version may need it changed.
+
+After the map changes, make it again:
+
+```sh
+npm run minecraft    # the whole map, into .cache/minecraft/Braga (30 s, 477 MB)
+npm run minecraft -- --out "$APPDATA/.minecraft/saves/Braga" --force  # straight into the game's saves, replacing the world there
+npm run minecraft -- --box -300,-300,300,300  # just a box of it, in the map's metres (x0,z0,x1,z1)
+```
+
+`--force` replaces a world already in `--out` (without it, it stops). In PowerShell the saves are
+`"$env:APPDATA\.minecraft\saves\Braga"`; in cmd, `"%APPDATA%\.minecraft\saves\Braga"`. Copy
+`.cache/minecraft/Braga` into the saves by hand otherwise. With it go a `preview.png`, the world
+from above, and its icon. Close the world in the game before replacing it.
 
 ## What's on it
 

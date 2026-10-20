@@ -85,9 +85,12 @@ if (!deck) console.log('no .cache/decks.json: the decks straight between their e
 const held = heldGround(lines, ground, (e) => FINE.has(tileAt(...e.p)?.id), deck);
 // And over the open world's area, where a street's carriageway would climb something the LiDAR classed
 // as ground (a tree's crown, a roof) more than a metre over it, the street's own height; and where that
-// stands more than 5 m over it, the whole crown or roof, beside the street too (task 026).
+// stands more than 5 m over it, the whole crown or roof, beside the street too (task 026); and where
+// the street's own height rises more than 4 m and falls again within 24 m, a lump across its whole
+// width, the street straight under it (task 067).
 const bumps = streetBumps(lines, ground, OPEN_BOX);
 console.log(`crowns and roofs the LiDAR took for ground, taken off the streets: ${bumps.blobs.map((b) => `(${b.x}, ${b.z}) ${b.over} m`).join(', ') || 'none'}`);
+console.log(`lumps across a street the LiDAR took for ground, the street straight under them: ${bumps.lumps.map((b) => `(${b.x}, ${b.z}) ${b.over} m`).join(', ') || 'none'}`);
 const holds = (x, z) => held.at(x, z) ?? bumps.at(x, z);
 // And over the open world's area, a 2 m square that reaches a street's carriageway is the mean over the
 // part of it on the carriageway alone, and of that, what's within 30 cm of the street's own surface: not

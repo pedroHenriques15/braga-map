@@ -28,8 +28,20 @@ whole area. Free roam went live with task 036 before the race moved onto the str
 - **038** The city streamed tile by tile, when the area grows.
 - **066** A car on a street beside a wall tilts by the street, not by the drop past its edge: the
   race's hops on the Avenida João XXI's upper lane (party-kart, found by 045).
-- **067** The Rua Padre Francisco de Almeida over its 9 m lump, at its own height: a lump the LiDAR
-  has across the whole street, which the tiles follow (found by 045).
+
+## Games · More tracks and the shooter
+
+The map is good enough to play more on (the owner, 2026-10-19): more kart tracks, inside the open
+world's area as it is, and the first shooter, a realistic deathmatch among friends, played on foot in
+Fujacal inside Party Kart's open world, in first person, each player the friend's figure they picked,
+on a keyboard and mouse or twin sticks on a touch screen, a kit chosen at each spawn, and bots from the
+start (the owner's answers, 2026-10-19). braga-map stays data (decision 031); the game is party-kart's.
+The host picks the track since 071, and the Volta de Lamaçães is the second (072, decision 053). A
+player gets out of the kart and walks the open world in first person since 073 (decision 055).
+
+- **074** The deathmatch in Fujacal: a kit at each spawn, shots, hits and the score (party-kart).
+- **075** Bots on foot: the deathmatch's empty places filled, as the race's are (party-kart); live
+  with 074.
 
 ## Phase 1 · See it: references, the scorecard and the budget
 
@@ -67,6 +79,15 @@ decision 050).
   squares (found by 006's audit).
 - **059** A pavement the map has on an island drawn as a pavement, not the island's grass: the
   Avenida da Liberdade's at (276, 840), where `liberdade`'s photo is taken (found by 058).
+- **076** The land at a flight of steps, never drawn over its treads nor far under them: 565 of
+  1,896 treads have it 15 cm or more over them, the Travessa do Fujacal's 17 steps among them, and 96
+  stand 2 m or more over it (found on foot by 073; after 051).
+- **077** The land at a wall's level: 13 of the shooter's area's 153 retaining walls have their lower
+  side drawn within a step or a jump of their top, and 4 walls stand 4 to 7 m in the air (found on
+  foot by 073).
+- **078** A passage under the houses open at both its ends: one of the shooter's area's two is shut
+  by the outlines of the buildings past it, and the courtyard's narrowed at its mouth (found on foot
+  by 073).
 
 ## Phase 3 · Surfaces and colours
 
@@ -176,6 +197,11 @@ alongside them in worktrees of their own.
   works in a git worktree of its own, with `.cache/` linked to the main checkout's (a junction on
   Windows: it's 7.5 GB and not in git), and the two take turns at merging and tagging. In
   party-kart, never two sessions on the same file.
+- **More tracks and the shooter** (set 2026-10-19), one at a time in party-kart, as each changes
+  `main.ts` and `session.ts`: **074** and **075**, the deathmatch going live with its bots
+  (071, 072 and 073 are done). 073 made party-kart's wall test public (`circle` in `ground.ts`),
+  which stream 1's 044 changes too: not at the same time. What the shooter needs of the map at
+  walking distance is still stream 1's 044 and 051, and 018 and 020 (the parked cars are cover).
 - **The shooter's area** goes first in every task of Phases 2–4, to the bar
   [SHOOTER-AREA.md](SHOOTER-AREA.md) sets (015, decision 031).
 - **The sound** is done (023–025); what's next of it is in "Later".

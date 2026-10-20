@@ -254,7 +254,7 @@ section { display: flex; flex-direction: column; gap: 10px; }
 
     <section aria-labelledby="hTrack" id="trackBox" hidden>
       <div class="head"><h2 id="hTrack">Volta dos Amigos</h2><span class="note" id="trackLen"></span></div>
-      <p class="note">A pista do jogo: as ruas reais, à largura que têm, a passar pelas cinco casas. Partida na Rua do Fujacal, sobe ao Picoto, vai pela Avenida 31 de Janeiro e pela Avenida João XXI até Lamaçães e volta pelo Estádio 1.º de Maio. No jogo, os easter eggs (🐕 🦷 🛒 🚬) ficam um pouco à frente de cada casa, nunca à porta.</p>
+      <p class="note" id="trackAbout">A pista do jogo: as ruas reais, à largura que têm, a passar pelas cinco casas. Partida na Rua do Fujacal, sobe ao Picoto, vai pela Avenida 31 de Janeiro e pela Avenida João XXI até Lamaçães e volta pelo Estádio 1.º de Maio. No jogo, os easter eggs (🐕 🦷 🛒 🚬) ficam um pouco à frente de cada casa, nunca à porta.</p>
       <div class="btns"><button class="btn ghost" type="button" id="showTrack">Ver a pista no mapa</button></div>
     </section>
 
@@ -1733,8 +1733,15 @@ section { display: flex; flex-direction: column; gap: 10px; }
     fetch('tracks.json').then((r) => (r.ok ? r.json() : {})).catch(() => ({})),
   ]).then(([data, tracks]) => {
     D = data;
-    TRACKS = tracks;
-    COURSE = TRACKS.amigos || null;
+    // ?track=<id> shows that track on its own (task 072): in the panel, and no other on the map.
+    const only = new URLSearchParams(location.search).get('track');
+    TRACKS = only && tracks[only] ? { [only]: tracks[only] } : tracks;
+    COURSE = TRACKS[only] || TRACKS.amigos || null;
+    // Another track's panel says only where it goes: the words below are the Volta's.
+    if (COURSE && COURSE !== tracks.amigos) {
+      $('hTrack').textContent = COURSE.name;
+      $('trackAbout').textContent = 'Uma pista pelas ruas reais do mundo aberto, à largura que têm.';
+    }
     LM = D.landmarks;
     build();
     panel();

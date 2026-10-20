@@ -19,8 +19,8 @@ import { fileURLToPath } from 'node:url';
 import { CACHE, ELEV0, P, readCache, ROOT } from './geo.mjs';
 import { heights } from './dgt.mjs';
 import { blur, carriageway, carsMay, COBBLE, driven, footprints, Inside, isOneway, lanesOf, LINE, openThin, segDist, simplify } from './osm.mjs';
-import { loadWorld } from '../index.js';
-import { onCarriageways } from './lines.mjs';
+import { loadWorld, map as worldMap } from '../index.js';
+import { flattenLumps, onCarriageways } from './lines.mjs';
 import { EXT, sectionOf } from './sections.mjs';
 import { band, grow, meet, minus, positive, shapes, toPath, toPts, union } from './streets.mjs';
 import { terrain } from './terrain.mjs';
@@ -110,6 +110,57 @@ if (cfg.sections) {
   for (const n of nodes.values()) n.adj = n.adj.filter((e) => nodes.has(e.to));
 }
 
+// The places a track keeps away from (`keepOff`, [x, z, r]): no junction of its within r of them.
+for (const [x, z, r] of cfg.keepOff ?? []) for (const [id, n] of nodes) if (Math.hypot(n.x - x, n.z - z) < r) nodes.delete(id);
+for (const n of nodes.values()) n.adj = n.adj.filter((a) => nodes.has(a.to));
+
+// A track in the open world (`open`, decision 019) keeps to its area's streets, and off those within
+// EDGE_M of its edge where it can: a metre of them costs EDGE times as much, as the race's walls and
+// barriers want the city built round them (test/open.test.js asks the Volta for 100 m).
+const EDGE = Number(process.env.EDGE || 1.5), EDGE_M = 100;
+const hugging = new Set();
+if (cfg.open) {
+  const { inOpen, open } = worldMap();
+  const e = open.pts;
+  const toEdge = (x, z) => Math.min(...e.map(([ax, az], k) => segDist(x, z, { x: ax, z: az }, { x: e[(k + 1) % e.length][0], z: e[(k + 1) % e.length][1] })));
+  for (const [id, n] of nodes) if (!inOpen(n.x, n.z)) nodes.delete(id);
+  for (const n of nodes.values()) {
+    n.adj = n.adj.filter((a) => nodes.has(a.to));
+    n.edge = toEdge(n.x, n.z);
+  }
+  for (const a of nodes.values()) for (const ed of a.adj) if (Math.min(a.edge, nodes.get(ed.to).edge) < EDGE_M) hugging.add(a.id + '>' + ed.to);
+  console.log(`in the open world's area: ${nodes.size} junctions, ${hugging.size} stretches within ${EDGE_M} m of its edge cost ${EDGE} times as much`);
+}
+
+// The streets of the tracks this one keeps off (`avoid`): a metre of them costs AVOID times as much, so
+// the loop takes them only where it has to. A stretch is theirs where its ends and its middle are all
+// within 12 m of their centre lines.
+const AVOID = Number(process.env.AVOID || 2.5);
+const avoided = new Set();
+for (const id of cfg.avoid ?? []) {
+  const other = (await import(`../tracks/${id}.js`)).default;
+  const cells = new Map();
+  const cellKey = (x, z) => Math.floor(x / 20) + ',' + Math.floor(z / 20);
+  const pts = other.points.map(({ p }) => p);
+  pts.forEach((p, k) => {
+    const q = pts[(k + 1) % pts.length];
+    for (let f = 0; f <= 1; f += 0.25) {
+      const x = p[0] + (q[0] - p[0]) * f, z = p[2] + (q[2] - p[2]) * f, key = cellKey(x, z);
+      if (!cells.has(key)) cells.set(key, []);
+      cells.get(key).push([x, z]);
+    }
+  });
+  const near = (x, z) => {
+    for (let a = -1; a <= 1; a++) for (let b = -1; b <= 1; b++) for (const [px, pz] of cells.get(Math.floor(x / 20) + a + ',' + (Math.floor(z / 20) + b)) ?? []) if (Math.hypot(px - x, pz - z) < 12) return true;
+    return false;
+  };
+  for (const a of nodes.values()) for (const e of a.adj) {
+    const b = nodes.get(e.to);
+    if (near(a.x, a.z) && near(b.x, b.z) && near((a.x + b.x) / 2, (a.z + b.z) / 2)) avoided.add(a.id + '>' + b.id);
+  }
+  console.log(`keeping off ${other.name}: ${avoided.size} stretches cost ${AVOID} times as much`);
+}
+
 // The street a waypoint is on: the nearest stretch of road, and the nearer of its two ends.
 function snap(x, z) {
   let best = null, bd = Infinity;
@@ -166,7 +217,7 @@ function route(from, prev, to, notFrom, extra, after) {
     const N = nodes.get(n);
     for (const e of N.adj) {
       if (e.to === p || !e.legal || e.jump?.disabled) continue; // no turning back, nor against the traffic
-      let cost = e.len * COST[e.kind] + (e.jump ? JUMP.price : 0) + extra(n, e.to);
+      let cost = e.len * COST[e.kind] * (avoided.has(n + '>' + e.to) ? AVOID : 1) * (hugging.has(n + '>' + e.to) ? EDGE : 1) + (e.jump ? JUMP.price : 0) + extra(n, e.to);
       if (p != null && p !== '') {
         const th = turn(nodes.get(p), N, nodes.get(e.to));
         if (th > 2.4) continue; // a hairpin a kart can't make in a street
@@ -204,7 +255,7 @@ function loopThrough(order, flips) {
   const ids = order.map((p) => p.node);
   const ends = order.map((p, k) => (flips[k] ? [...through(p)].reverse() : through(p)));
   // Each waypoint's street driven the right way, by a turn that's allowed.
-  if (ends.some(([a, b], k) => !edgeOf(a, ids[k]).legal || !mayGo(a, ids[k], b))) return null;
+  if (ends.some(([a, b], k) => !edgeOf(a, ids[k]).legal || !mayGo(a, ids[k], b))) { if (process.env.DEBUG_LOOP) console.log('  through: not legal at', order.filter((p, k) => !edgeOf(ends[k][0], ids[k]).legal || !mayGo(ends[k][0], ids[k], ends[k][1])).map((p) => p.id).join(',')); return null; }
   const used = new Set(), near = new Map();
   const cellOf = (x, z) => Math.floor(x / 30) + ',' + Math.floor(z / 30);
   const mark = (id) => {
@@ -229,7 +280,7 @@ function loopThrough(order, flips) {
   for (let k = 0; k < ids.length; k++) {
     const [, out] = ends[k], [into] = ends[(k + 1) % ids.length], next = ids[(k + 1) % ids.length];
     const r = route(out, ids[k], into, next, extra, next);
-    if (!r) return null;
+    if (!r) { if (process.env.DEBUG_LOOP) console.log(`  no way from ${order[k].id} to ${order[(k + 1) % ids.length].id}`); return null; }
     for (let i = 1; i < r.path.length; i++) use(r.path[i - 1], r.path[i]);
     path.push(ids[k], ...r.path);
     cost += r.cost;
@@ -827,8 +878,11 @@ const cross = line.map(([x, z], i) => {
   const slopes = [];
   for (let a = 0; a < pts.length; a++) for (let b = a + 2; b < pts.length; b++) slopes.push((pts[b][1] - pts[a][1]) / (pts[b][0] - pts[a][0]));
   const slope = median(slopes);
-  return { y: median(pts.map(([l, h]) => h - slope * l)), slope };
+  return { y: median(pts.map(([l, h]) => h - slope * l)), slope, l: ground.at(x - rx * (hw + 3.75), z - rz * (hw + 3.75)), r: ground.at(x + rx * (hw + 3.75), z + rz * (hw + 3.75)) };
 });
+// Something across the whole street the LiDAR took for ground (task 067: the crowns meeting over the
+// Rua Padre Francisco de Almeida), the street straight under it, as the world lays it (lines.mjs).
+for (const { a, b, over } of flattenLumps(cross, 2)) console.log(`a lump across the street at (${line[(a + b) >> 1].map(Math.round)}), ${over.toFixed(1)} m: the road straight under it`);
 const onBridge = onStreet.map((e) => !!e.tags?.bridge && e.tags.bridge !== 'no');
 {
   const runsOf = (f) => { const out = []; for (let i = 0; i < n2; i++) if (f(i) && !f((i - 1 + n2) % n2)) { let j = i; while (f((j + 1) % n2) && j - i < n2) j++; out.push([i, j]); } return out; };
@@ -1016,11 +1070,13 @@ const main = (e) => ['primary', 'secondary', 'tertiary'].includes(e.kind);
 // The start: the straightest stretch of a main road, 120 m before the line and 80 m after, on the
 // track's own street (`start`) while the loop still goes along it.
 const START_ON = cfg.start;
+// The houses: a track's own waypoints when they're the friends' houses, and theirs for any other track.
+const homes = cfg.waypoints === 'private' || !fs.existsSync(path.join(CACHE, 'places.json')) ? places : [...places, ...readCache('places.json').places];
 const startStreet = onStreet.some((e) => e.name === START_ON);
 let start = 0, startScore = Infinity;
 for (let i = 0; i < n2; i++) {
   // Not by anyone's house: the start is where everyone looks.
-  if (places.some((p) => Math.hypot(line[i][0] - p.x, line[i][1] - p.z) < 250) || nearJump(i)) continue;
+  if (homes.some((p) => Math.hypot(line[i][0] - p.x, line[i][1] - p.z) < 250) || nearJump(i)) continue;
   if (startStreet && onStreet[i].name !== START_ON) continue;
   const sc = maxCurve(i, 60, 40) + (main(onStreet[i]) ? 0 : 0.01);
   if (sc < startScore) { startScore = sc; start = i; }

@@ -17,10 +17,10 @@ const NEAR = 150;
 
 const heading = (v) => ((Math.atan2(v.tx - v.x, -(v.tz - v.z)) * 180) / Math.PI + 360) % 360;
 const turn = (a, b) => Math.abs(((a - b + 540) % 360) - 180);
-// The nearest point of any track: how far, and which way the race goes there.
-function onRoute(x, z) {
+// The nearest point of any track (or of those given): how far, and which way the race goes there.
+function onRoute(x, z, of = tracks) {
   let best = { d: Infinity };
-  for (const t of tracks) {
+  for (const t of of) {
     const pts = t.points.map(({ p }) => p);
     pts.forEach(([ax, , az], i) => {
       const [bx, , bz] = pts[(i + 1) % pts.length], dx = bx - ax, dz = bz - az, L = dx * dx + dz * dz || 1;
@@ -59,10 +59,13 @@ test('there are 20 along the route, 6 on foot in the shooter\'s area and 2 of th
   assert.ok(views.filter((v) => v.kind === 'skyline').length >= 2);
 });
 
+// Two tracks can take a street opposite ways (the Volta dos Amigos and the Volta de Lamaçães the Rua
+// Álvaro Carneiro, task 072): a viewpoint looks the way one of those within 12 m of it goes.
 test('a kart\'s viewpoint is on the route, looking the way the race goes', () => {
   for (const v of views.filter((q) => q.kind === 'kart' && q.route !== false)) {
-    const r = onRoute(v.x, v.z);
-    assert.ok(r.d < 12, `${v.id} is ${r.d.toFixed(0)} m from the route`);
+    const near = tracks.map((t) => onRoute(v.x, v.z, [t])).filter((q) => q.d < 12);
+    assert.ok(near.length, `${v.id} is ${onRoute(v.x, v.z).d.toFixed(0)} m from the route`);
+    const r = near.sort((a, b) => turn(heading(v), a.race) - turn(heading(v), b.race))[0];
     assert.ok(turn(heading(v), r.race) < 35, `${v.id} looks ${turn(heading(v), r.race).toFixed(0)}° off the race`);
   }
 });

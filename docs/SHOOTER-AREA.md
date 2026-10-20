@@ -175,10 +175,11 @@ the old town house, the blocks of the 1970s–1990s, and the corner block with s
 
 ## Data only
 
-braga-map gives the shooter the same data it gives Party Kart, and no ready-made meshes: the
-shooter's engine isn't chosen (the owner, 2026-10-14). What this page asks for goes into the
-tiles as data (where each wall, step, lamp and tree is, at what height, of what kind), and each game
-draws it. If the shooter turns out to use three.js, sharing Party Kart's renderer is a task then.
+braga-map gives the shooter the same data it gives Party Kart, and no ready-made meshes. What this
+page asks for goes into the tiles as data (where each wall, step, lamp and tree is, at what height, of
+what kind), and each game draws it. The shooter is played inside Party Kart's open world, on foot, in
+first person (decision 055, task 073): it draws Fujacal with Party Kart's renderer and walks it on
+Party Kart's ground, so there is no second engine to feed.
 
 ## Privacy
 

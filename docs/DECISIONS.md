@@ -1540,3 +1540,90 @@ A deploy force-pushes a `gh-pages` that holds the new build alone, and Pages ser
 The alternatives: keep each build's files on `gh-pages` (a page from before a deploy would open, in a
 room of its own); `build.modulePreload: false` (a shared chunk would come after the game's script,
 one round trip later); or a service worker (a build step and a cache to keep right).
+
+## 053 · More tracks in the open world as it is, the host picks one, and the Volta dos Amigos keeps its place
+
+*2026-10-19 · tasks 071 and 072 · the owner's answers: more tracks, inside today's area, two or three planned to pick from*
+
+The owner wanted more kart tracks, inside the open world's area as it is (decision 019): every street
+there is already drawn, measured and driven on, so a new track needs no new city.
+
+- **The host picks the track** on the race screen ("Pista"), with each one's name and length; the
+  lobby carries its id, the guests race it, and a race's time limit follows its length. Party Kart's
+  tracks are a list (`src/tracks.ts`): a new one is braga-map's file and a line there. Each track's
+  race (its walls, barriers and ramp in a ground of its own, and the marks it puts on the streets) is
+  built with the city at load, about 85 ms a track on a desktop at High, so a race starts with
+  nothing to build.
+- **The Volta dos Amigos keeps its place in the world**, whatever is raced: the city is loaded round
+  it, its plinth stands at its start, the friends' eggs on their houses (decision 014) and the brown
+  signs to its landmarks. Only it may take the world's walls down (`cleared`, task 057): they're drawn
+  apart for it alone. The eggs go off only in its race. A sign names the track raced, never the
+  Volta's name on another.
+- **A new track keeps off the Volta's streets** where a legal loop can (the planner's `avoid`: its
+  streets cost 2.5 times as much), keeps to the area and off its last 100 m where it can (`open`), and
+  never jumps (only the owner asks for a departure from the real streets, decision 004). Any loop of
+  7 km or more in the area shares some of the Volta's streets: the area is the Volta and about 150 m
+  round it.
+- **The owner picks from loops planned and shown**, not an area they name: of an east loop (8.9 km,
+  27% on the Volta's streets) and a west one (9.0 km, 39%), they kept the east and named it the Volta
+  de Lamaçães. To race cleanly it then left the Rua Professor Machado Vilela's 3 m bend, where eight
+  karts still together pushed each other through its inside: 9.2 km, 35%.
+- **A track is raceable** when Party Kart's tests pass over it, as over the Volta: a closed loop of
+  7–10.5 km with 5 checkpoints inside the area, two autopilot laps with no respawn at 25–60 m/s on
+  average (a street loop's corners make it slower than the Volta's 170–310 s scaled), a race closed
+  by its walls and barriers, every row of barriers holding, and eight bots finishing a lap with items
+  within 60 s of each other.
+
+The alternatives: a track picked by vote in the room (the host starts the race anyway); each track's
+race built when it starts (a hitch at the countdown, and its marks' materials compiled then); tracks
+outside the area, which would grow it (not chosen); the owner naming an area to plan in.
+
+## 054 · No street rises and falls 4 m within 24 m: a lump across one is the LiDAR's, and the street goes straight under it
+
+*2026-10-19 · task 067, found by task 045 · the Rua Padre Francisco de Almeida at (874, 1098), on the Volta de Lamaçães*
+
+Five broadleaved trees 25–28 m tall stand either side of the Rua Padre Francisco de Almeida there,
+their crowns 17 m across meeting over it, their undersides about 8 m up; DGT's terrain model has them as ground, 9 m
+over the street across its whole width, and the street rose with them. Task 026's `streetBumps` takes
+off a crown or a roof only where it stands over the street's own height, and here it was that height.
+
+- **Along each street every metre**, where its own height stands more than 4 m over the chord from up
+  to 12 m back to as far on, and the ground 3 m past its kerbs either side doesn't stand half as much
+  over its own, the street is laid straight from a little before to a little after (`flattenLumps` in
+  `lines.mjs`): in the world's ground (`streetBumps`) and in a planned track's heights (`track.mjs`),
+  the same way. No real street does it: a crest that steep would be a 33% change of grade.
+- It takes off five in the open world's tiles and round them: (875, 1096) 9.3 m, the Rua Victor de
+  Sá's two of 5.4 and 5.5 m at (1610, 1440), and two of 4.6 m at (-72, -55) and (-818, 1018) whose
+  ground barely changes. Lumps of 1 to 3.3 m are left: ramps into garages, and the streets round the
+  Praça do Condestável's underpass, which may be what they look like.
+
+The alternatives: a tree's crown taken off wherever the trees' file has one over a street (it would
+lower a street that really runs under a bank); a lower threshold (it would lay straight the streets
+over the underpass, which may really rise).
+
+## 055 · The shooter lives in Party Kart's open world, on foot, in first person, each player the figure they picked
+
+*2026-10-20 · task 073 · the owner's answers, 2026-10-19 · settles decision 031's "the shooter's engine isn't chosen"*
+
+The first shooter isn't a game of its own: a player gets out of the kart in Party Kart's open world
+and walks, and the deathmatch (task 074) is a round played that way in Fujacal. The city, its
+renderer, the rooms, the invite links and the menus are already there, and braga-map stays data
+(decision 031) with one game drawing it.
+
+- **On foot anywhere in the open world,** not only in Fujacal: F, or "🚶 A pé", gets out beside the
+  kart, which waits empty where it stopped, and F again is back in it. Not in a race.
+- **A person on the world's ground** (`walker.ts`): 1.75 m tall, the eye at 1.65 m, a circle 0.3 m
+  round, walking 1.5 m/s and running 5 m/s, a short jump; up a kerb or a tread, down any drop, never up
+  a retaining wall. The walls, hedges, gates, trunks and buildings that stop a kart stop a walker at
+  its own radius, through the one circle test the kart uses (`circle` in `ground.ts`), so the kart
+  drives as it did.
+- **First person:** on a computer the mouse looks round with the pointer locked, and Esc, which
+  releases it, still opens the menu; on a touch screen, twin sticks (the left walks, the right half
+  looks) and a jump button. No head bob.
+- **Seen by the others as the driver they picked, standing,** on legs, walking and running (the
+  owner's answer): the friends' cartoon figures of decision 014, never a likeness. Their kart stands
+  empty where it waits.
+
+The alternatives: a game of its own on the same map (a second renderer, rooms and menus to make and
+keep, which decision 031 left open by keeping braga-map data only); third person (the owner chose
+first); a generic soldier for every player (the owner chose the friends' figures).

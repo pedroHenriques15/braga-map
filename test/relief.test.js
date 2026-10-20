@@ -41,3 +41,39 @@ test("each track crosses its bridges at their decks' height", { skip: !lidar && 
   assert.ok(checked.decks.length > 0, 'no bridge with the point cloud under it');
   for (const d of checked.decks) assert.ok(Math.abs(d.diff) < 0.3, `${d.track} at ${d.at} m: the track is at ${d.track_y} m, the deck at ${d.deck} m`);
 });
+
+// A lump across a street the LiDAR took for ground (task 067): the crowns of the trees either side of
+// the Rua Padre Francisco de Almeida meeting over it at (874, 1098), 9 m over the street. The street goes straight under
+// them, at its height either side, as the world takes it (lines.mjs's streetBumps); and no street on the
+// ground in the open world's area rises more than 4 m and falls again within 24 m (none could), where
+// the ground past its kerbs doesn't.
+test('the Rua Padre Francisco de Almeida at its own height under the crowns at (874, 1098), and no lump across a street', async () => {
+  const { loadWorld } = await import('../index.js');
+  const w = await loadWorld({ open: true });
+  // Along its line from 4 m past the lump on one side to 4 m past it on the other: through the lump,
+  // within 15 cm of the street's heights over those last 4 m either side (it was 9 m over them).
+  const [a, b] = [[872.8, 1111.7], [877.5, 1080.5]], at = (f) => w.height(a[0] + (b[0] - a[0]) * f, a[1] + (b[1] - a[1]) * f);
+  const fs = Array.from({ length: 32 }, (_, k) => k / 31), ends = fs.filter((f) => f < 4 / 31.4 || f > 1 - 4 / 31.4).map(at), mid = fs.filter((f) => f >= 4 / 31.4 && f <= 1 - 4 / 31.4).map(at);
+  const lo = Math.min(...ends) - 0.15, hi = Math.max(...ends) + 0.15;
+  assert.ok(mid.every((y) => y >= lo && y <= hi), `through the lump ${Math.min(...mid).toFixed(2)}–${Math.max(...mid).toFixed(2)} m, either side ${(lo + 0.15).toFixed(2)}–${(hi - 0.15).toFixed(2)} m`);
+  const lumps = [];
+  for (const l of w.lines) {
+    if (l.kind > 8 || l.level !== 'ground') continue;
+    const s = [];
+    for (let i = 1; i < l.pts.length; i++) {
+      const [ax, az] = l.pts[i - 1], [bx, bz] = l.pts[i], L = Math.hypot(bx - ax, bz - az);
+      for (let d = 0; d < L; d += 1) s.push({ x: ax + ((bx - ax) * d) / L, z: az + ((bz - az) * d) / L, rx: -(bz - az) / L, rz: (bx - ax) / L });
+    }
+    const y = s.map((p) => w.height(p.x, p.z)), o = l.w / 2 + 3;
+    const side = (k, sg) => w.height(s[k].x + s[k].rx * o * sg, s[k].z + s[k].rz * o * sg);
+    for (let k = 3; k < s.length - 3; k++) {
+      if (!w.inOpen(s[k].x, s[k].z)) continue;
+      for (let h = 3; h <= 12 && k - h >= 0 && k + h < s.length; h++) {
+        const bump = y[k] - (y[k - h] + y[k + h]) / 2;
+        const sides = Math.min(...[1, -1].map((sg) => side(k, sg) - (side(k - h, sg) + side(k + h, sg)) / 2));
+        if (bump > 4 && sides < bump / 2) { lumps.push(`(${s[k].x.toFixed(0)}, ${s[k].z.toFixed(0)}) ${l.name ?? ''} ${bump.toFixed(1)} m`); break; }
+      }
+    }
+  }
+  assert.deepEqual(lumps, []);
+});

@@ -11,7 +11,8 @@ it. Party Kart races on it, and the games after it (a shooter, say) use the same
   they cover all of it. Fujacal, the shooter's area, loads like one, with the tiles round it
   ([docs/SHOOTER-AREA.md](docs/SHOOTER-AREA.md)).
 - **The tracks** (`tracks/`) are the kart tracks planned on the map's streets. Party Kart races
-  the Volta dos Amigos, through Centro, Picoto and Lamaçães.
+  the Volta dos Amigos, through Centro, Picoto and Lamaçães, and the Volta de Lamaçães (task 072),
+  both in the open world's area; the host picks one.
 - **The map page** (`map/`) draws it all, for planning, every building coloured by the height
   the LiDAR measured (task 010): `npm run map` and open http://localhost:5180/map/. The shared
   copy, where the zones and landmarks were voted on and approved and where the friends' houses
@@ -683,7 +684,13 @@ streets; when a track moves enough to change the edge, run the three again until
    every order of the waypoints unless the track gives one (`order`): then only that order, round
    one way and the other, and the direction through each. To add a waypoint without reshuffling
    the loop, put it in the order between the two it falls between. A track with `sections` only
-   has those sections' streets.
+   has those sections' streets. A track with `open` keeps to the open world's area (decision 019),
+   and a metre within 100 m of its edge costs `EDGE` (1.5) times as much, as a race's walls want
+   the city built round them; `avoid: [ids]` makes another track's streets cost `AVOID` (2.5) times
+   as much, so a new loop shares as little of them as a legal loop can (task 072); and `keepOff:
+   [[x, z, r]]` keeps it r metres from a place a kart can't race (no junction of it nearer).
+   `DEBUG_LOOP=1` prints, when no loop is found, which waypoint's street is never driven the right
+   way through it and which leg has no way from one waypoint to the next.
 2. **The race's road and its centre line.** The race's road is the route's own streets at their real
    widths, as the open world's tiles draw them (`npm run world` makes those, and they don't depend
    on a track): each street's band round the map's line, the corners between them rounded as a
@@ -703,7 +710,11 @@ streets; when a track moves enough to change the edge, run the three again until
    surface, from the LiDAR: at each point a line across the carriageway (the median of the slopes
    between every two heights on it, so a kerb or a drop beside the street doesn't tip it) gives
    the height in the middle and how much the street tips sideways (`bank`, up to 8%). A bridge is
-   crossed straight from end to end, as the LiDAR's ground has what's under its deck. Both are
+   crossed straight from end to end, as the LiDAR's ground has what's under its deck. Where the
+   street's own height rises more than 4 m and falls again within 24 m and the ground past its
+   kerbs doesn't, something across it the LiDAR took for ground (trees' crowns meeting over it,
+   task 067), the road runs straight under it, as the world lays the street (`flattenLumps` in
+   `lines.mjs`); it prints each. Both are
    smoothed over about 10 m. It prints the corners it had to make tighter, the widths, the
    steepest grade, the sharpest crest, how much of it tips sideways, the bridges, and any place the
    road comes too close to itself.
@@ -716,7 +727,7 @@ streets; when a track moves enough to change the edge, run the three again until
    `sidewalk` says no, or out in the open), a central reservation where a one-way carriageway runs
    alongside, and a gap wherever a side street joins.
 4. **Where things go.** The start on the track's `start` street, on the straightest stretch at
-   least 250 m from every waypoint, 5 checkpoints evenly spaced, a row of item boxes every 820 m,
+   least 250 m from every waypoint and every friend's house, 5 checkpoints evenly spaced, a row of item boxes every 820 m,
    boost pads 30 m into the longest straights, and the easter eggs on their waypoints.
 5. **What's along it.** The street names as it turns into each, the landmarks within 220 m, and
    from the map the zebra crossings and traffic lights on its streets and the bus stops beside it;
@@ -737,10 +748,16 @@ needs a new peer id prefix for it, and its tests must still pass.
 ### A new track
 
 Add it to `tools/tracks.mjs`: an id, a name, its waypoints on the map (read them off the map
-page), and `sections` to keep it to some sections' streets. Run `npm run tracks` and look at it on
-the map page. Then a game races it by importing `braga-map/tracks/<id>.js`. Party Kart's tests
-say what makes a track raceable: a loop of 7–10.5 km, an autopilot lap without respawns, a race
-closed by its walls and barriers, and so on.
+page), each on a street that goes on both ways, and `open` and `avoid` to keep it in the open world
+and off the other tracks' streets (or `sections` to keep it to some sections' streets). Run `node
+tools/track.mjs <id>` and look at it on its own on the map page, `?track=<id>` (`npm run map`, then
+http://localhost:5180/map/?track=<id>). The world's ground is every 2 m within 60 m of every track,
+so run `npm run world` after a track outside the open world's area. Then a game races it by
+importing `braga-map/tracks/<id>.js`: in Party Kart, a line in its `src/tracks.ts`, which puts it on
+the race screen, and its tests run over it. They say what makes a track raceable: a loop of
+7–10.5 km inside the open world, an autopilot lap at 25–60 m/s on average without respawns, a race
+closed by its walls and barriers, every row of barriers holding, and eight bots finishing a lap
+within 60 s of each other. Only the Volta dos Amigos may take the world's walls down (`cleared`).
 
 ### The friends' houses
 
@@ -832,9 +849,13 @@ from above, and its icon. Close the world in the game before replacing it.
   in `world/cover/` at the three levels: all 48 tiles are 4.5 MB on High (the classes 3.5, the
   colours 1.0), 2.1 on Medium and 0.8 on Low, already compressed; and the six kinds' photos, 1.9 MB
   at the three levels.
-- **The Volta dos Amigos**, Party Kart's track: 10.1 km round, through five friends'
+- **The Volta dos Amigos**, Party Kart's first track: 10.1 km round, through five friends'
   neighbourhoods, the way the traffic goes, and over the Rio Este by a ramp into one of them, a
   dead end (decision 027).
+- **The Volta de Lamaçães** (task 072), Party Kart's second: 9.2 km round the streets east of the
+  Avenida da Liberdade, Santa Tecla, Lamaçães and the Picoto's foot, with no jump, a third of it on
+  the Volta dos Amigos' streets (any loop of 7 km in the open world shares some). Of the two loops
+  planned, the one the owner kept and named.
 - **The first track** ("Pista antiga"), Party Kart's cartoon Braga Grand Prix, drawn at its real
   size with its fountain on the real one in the Praça da República (`tools/first-track.json`).
   It's 2.5 km round and fits in 851 × 414 m. The real Bom Jesus is 3.9 km from that fountain; on

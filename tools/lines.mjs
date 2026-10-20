@@ -280,6 +280,30 @@ export function meetings(lines) {
   return ends.filter((e) => !ends.some((o) => o.n === e.n && o.level === e.level && o.u[0] * e.u[0] + o.u[1] * e.u[1] < -0.5));
 }
 
+// A street's lumps, along its heights every `step` metres ([{ y, l, r }]: its own height, and the
+// ground past its kerbs on its left and right): where it stands more than `lump` over the chord from up
+// to `span` metres back to as far on, and the ground either side doesn't stand half as much over its
+// own (task 067: the crowns meeting over the Rua Padre Francisco de Almeida, 9 m; no street rises and
+// falls 4 m within 24 m). Each taken from the widest such chord and 2 m more either way, those that
+// overlap as one, and the street's height laid straight across it. Returns them, [{ a, b, over }], by
+// index.
+export function flattenLumps(at, step, { lump = 4, span = 12 } = {}) {
+  const runs = [], pad = Math.ceil(2 / step);
+  for (let k = 1; k < at.length - 1; k++) {
+    let best = null;
+    for (let h = Math.ceil(3 / step); h * step <= span && k - h >= 0 && k + h < at.length; h++) {
+      const bump = (f) => f(at[k]) - (f(at[k - h]) + f(at[k + h])) / 2, b = bump((p) => p.y);
+      if (b > lump && Math.min(bump((p) => p.l), bump((p) => p.r)) < b / 2) best = { a: Math.max(0, k - h - pad), b: Math.min(at.length - 1, k + h + pad), over: b };
+    }
+    if (!best) continue;
+    const last = runs[runs.length - 1];
+    if (last && best.a <= last.b) Object.assign(last, { b: Math.max(last.b, best.b), over: Math.max(last.over, best.over) });
+    else runs.push(best);
+  }
+  for (const { a, b } of runs) for (let k = a + 1; k < b; k++) at[k].y = at[a].y + ((at[b].y - at[a].y) * (k - a)) / (b - a);
+  return runs;
+}
+
 // The ground held to a street on the ground where DGT's terrain stands more than `over` above it within
 // its carriageway: a tree's crown or a roof the LiDAR classed as ground, which a street the tiles drape
 // on their ground would climb (task 026: the Avenida Doutor Porfírio da Silva's at (755, 653), 18 m
@@ -288,16 +312,23 @@ export function meetings(lines) {
 // more than `over` above that, within the street's width, the street's height. And where it stands
 // more than `tall` over the street on its carriageway, the whole of what stands more than `over` over
 // it there, if that ends within `reach` of where it's on the street (a crown, a roof: not a hill or a
-// terrace, which runs on), at the ground's height round it. `lines`: lines.mjs's streetsOf, those in
-// `box`; `at(x, z)`, the height held there, or undefined; `near(x, z, r)`, whether any of it is
-// within r; `blobs`, those taken off beside the streets ({ x, z, cells, over }).
-export function streetBumps(lines, ground, box, { over = 1, tall = 5, reach = 20 } = {}) {
-  const S = 0.5, cells = new Map(), coarse = new Set(), key = (i, j) => i * 100003 + j;
+// terrace, which runs on), at the ground's height round it. And where a street's own height itself
+// rises more than `lump` over the chord from up to `span` metres back to as far on, and the ground
+// `side` metres past its kerbs either side doesn't, something across its whole width the LiDAR classed
+// as ground (task 067: the crowns of the trees either side of the Rua Padre Francisco de Almeida
+// meeting over it at (874, 1098), 9 m): the street straight under it, from a little before to after.
+// `lines`: lines.mjs's streetsOf, those in `box`; `at(x, z)`, the height held there, or undefined;
+// `near(x, z, r)`, whether any of it is within r; `blobs`, those taken off beside the streets ({ x, z,
+// cells, over }); `lumps`, those taken off across them ({ x, z, over }).
+export function streetBumps(lines, ground, box, { over = 1, tall = 5, reach = 20, lump = 4, span = 12, side = 3 } = {}) {
+  const S = 0.5, cells = new Map(), coarse = new Set(), key = (i, j) => i * 100003 + j, across = [];
   const mid = (i) => (i + 0.5) * S;
   const median = (v) => { const s = v.sort((a, b) => a - b); return s[s.length >> 1]; };
   for (const l of lines) {
     if (l.k > 8 || l.level !== LEVEL.ground || !l.pts.some(([x, z]) => x >= box.x0 && x <= box.x1 && z >= box.z0 && z <= box.z1)) continue;
     const hw = l.w / 2;
+    // Its own height every metre along it, and the ground past its kerbs either side.
+    const at = [];
     for (let i = 1; i < l.pts.length; i++) {
       const [ax, az] = l.pts[i - 1], [bx, bz] = l.pts[i], L = Math.hypot(bx - ax, bz - az);
       if (L < 1e-6) continue;
@@ -309,12 +340,18 @@ export function streetBumps(lines, ground, box, { over = 1, tall = 5, reach = 20
           mid.push(p);
           if (o) { mid.push(q); slopes.push((p - q) / (2 * o)); }
         }
-        const y = median(mid), g = slopes.length ? median(slopes) : 0;
-        for (let a = -0.5; a <= 0.5; a += S) for (let o = -hw; o <= hw + 1e-9; o += S) {
-          const px = x + tx * a + rx * o, pz = z + tz * a + rz * o, k = key(Math.floor(px / S), Math.floor(pz / S)), was = cells.get(k);
-          if (!was || Math.abs(o) < was.o) cells.set(k, { y: y + g * o, o: Math.abs(o), i: Math.floor(px / S), j: Math.floor(pz / S) });
-          coarse.add(key(Math.floor(px / 4), Math.floor(pz / 4)));
-        }
+        at.push({ x, z, tx, tz, rx, rz, y: median(mid), g: slopes.length ? median(slopes) : 0, l: ground.at(x + rx * (hw + side), z + rz * (hw + side)), r: ground.at(x - rx * (hw + side), z - rz * (hw + side)) });
+      }
+    }
+    for (const { a, b, over: o } of flattenLumps(at, 1, { lump, span })) {
+      const m = at[(a + b) >> 1];
+      across.push({ x: Math.round(m.x), z: Math.round(m.z), over: Math.round(o * 10) / 10 });
+    }
+    for (const { x, z, tx, tz, rx, rz, y, g } of at) {
+      for (let a = -0.5; a <= 0.5; a += S) for (let o = -hw; o <= hw + 1e-9; o += S) {
+        const px = x + tx * a + rx * o, pz = z + tz * a + rz * o, k = key(Math.floor(px / S), Math.floor(pz / S)), was = cells.get(k);
+        if (!was || Math.abs(o) < was.o) cells.set(k, { y: y + g * o, o: Math.abs(o), i: Math.floor(px / S), j: Math.floor(pz / S) });
+        coarse.add(key(Math.floor(px / 4), Math.floor(pz / 4)));
       }
     }
   }
@@ -344,6 +381,7 @@ export function streetBumps(lines, ground, box, { over = 1, tall = 5, reach = 20
   }
   return {
     blobs,
+    lumps: across,
     at(x, z) {
       const k = key(Math.floor(x / S), Math.floor(z / S)), c = cells.get(k);
       if (c) return ground.at(x, z) > c.y + over ? c.y : undefined;

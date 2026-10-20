@@ -68,3 +68,8 @@ Steps:
 - Found in task 050, 2026-10-15: 51 of 236 flights more than a step over what's at their lowest
   tread (median 0.11 m, 90% under 0.54 m); the terrain's height at a flight's end is within 4 cm of
   the tiles' ground for half the ends, but 27 of 308 differ by more than 0.3 m.
+- Walked on foot in task 073, 2026-10-20 (party-kart's walker, a step of 0.3 m, a jump of 0.4 m):
+  in the shooter's area, of 13 flights, two have ends that miss what they lead to. The 10 steps at
+  (-228.7, 930.4): the top tread (5.94 m) 1.07 m over the path past it, so they can be walked down
+  but not up from the top. The 8 steps at (-223.2, 947.0): the lowest tread 0.6 m over the street
+  (a jump up), the top 0.85 m over the path past it. Treads drawn over or under the land: task 076.

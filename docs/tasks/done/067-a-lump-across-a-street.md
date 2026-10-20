@@ -1,5 +1,5 @@
 ---
-status: todo
+status: done
 priority: medium
 kind: code
 repo: braga-map
@@ -48,8 +48,9 @@ Steps:
 
 ## Done when
 
-- [ ] The Rua Padre Francisco de Almeida through (874, 1098) at its own height, within 15 cm of the
-  street's either side of the lump; braga-map's `npm test` passes.
+- [x] The Rua Padre Francisco de Almeida through (874, 1098) at its own height, within 15 cm of the
+  street's either side of the lump; braga-map's `npm test` passes. (30.76–31.24 m through it, the
+  street either side 30.85–31.24 m; it was 40.3 m. `test/relief.test.js`; 142 pass.)
 
 ## Out of scope
 
@@ -59,3 +60,26 @@ Steps:
 
 - Found by task 045 (2026-10-18), in its survey of the ground under every street: on 1.26.0 as on
   1.27.0.
+
+Done 2026-10-20 (braga-map 1.30.0), for task 072, whose Volta de Lamaçães runs down this street:
+
+1. **What it is:** the map's trees (`.cache/trees.json`, from the LiDAR): five broadleaved trees 25–28 m
+   tall either side of the street within 15 m, crowns 17–18 m across meeting over it, their undersides
+   about 8 m up; the lump is 9 m. Not checked in the orthophoto or the point cloud's classes. The map
+   has no footbridge or building over the street there.
+2. **The fix:** `flattenLumps` in `tools/lines.mjs`. Along a street, where its own height (the median
+   over its middle half, as `streetBumps` has it) stands more than 4 m over the chord from up to 12 m
+   back to as far on, and the ground 3 m past its kerbs either side doesn't stand half as much over its
+   own, the street is laid straight from 2 m before the widest such chord to 2 m after it.
+   `streetBumps` does it every metre for the world's ground, and `track.mjs` every 2 m for a track's
+   heights, which come from the raw terrain. `npm run world` prints them.
+3. **Every street like it**, in the world's heights (scratch survey, then the test): over 4 m, five,
+   all taken off: (875, 1096) 9.3 m; the Rua Victor de Sá's two at (1610, 1440), 5.4 and 5.5 m, south of
+   the area; (-72, -55) and (-818, 1018), 4.6 m, whose ground barely changes (a 10 m tile, and the
+   street over the Praça do Condestável's underpass). From 1 to 3.3 m, 21 left: service ramps, and the
+   streets round that underpass, which may be what they look like.
+4. **The test:** `test/relief.test.js`, the street at its height through the lump, and no lump over 4 m
+   on the area's streets. Three tiles changed; the Volta's file and its tests didn't (its tracks.json
+   entry is identical).
+
+Decision 054.

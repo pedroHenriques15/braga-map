@@ -40,7 +40,8 @@ The host picks the track since 071, and the Volta de Lamaçães is the second (0
 player gets out of the kart and walks the open world in first person since 073 (decision 055), and
 the deathmatch is a round of it in Fujacal since 074 (decision 056), with bots since 075, in one of
 three small arenas, most of their buildings with a ground floor to walk into and two with every floor
-and the roof, since 079 (decision 057).
+and the roof, since 079 (decision 057). No key or mouse button leaves the game by mistake, and a hit
+shows where it came from, since 080.
 
 - **075** Bots on foot: the deathmatch's empty places filled, as the race's are (party-kart); live
   with 074 and 079 since 2026-10-20, open till the owner has played them at each level.

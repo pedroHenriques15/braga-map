@@ -1627,3 +1627,59 @@ renderer, the rooms, the invite links and the menus are already there, and braga
 The alternatives: a game of its own on the same map (a second renderer, rooms and menus to make and
 keep, which decision 031 left open by keeping braga-map data only); third person (the owner chose
 first); a generic soldier for every player (the owner chose the friends' figures).
+
+## 056 · The deathmatch: a round started as a race, a kit at each spawn, and the shooter's browser decides a hit
+
+*2026-10-20 · task 074 · the owner's answers, 2026-10-19 (a realistic deathmatch, a kit chosen at each spawn, twin sticks on a touch screen); the rest taken as defaults*
+
+The first shooter is a round in Party Kart's open world (decision 055): the host starts it from the
+menu ("🎯 Tiroteio"), as a race, for 3, 5 or 10 minutes; everyone in the room is put on foot in
+Fujacal, their kart waiting where it was, and whoever has the most kills when the time runs out wins.
+Then the results, and everyone is back in their kart.
+
+- **A shot is decided by the shooter's browser,** against the others as it draws them (110 ms
+  behind), and the victim's browser takes the damage and says when it's down; the host keeps the
+  kills and deaths. A bullet is instant, so the items' rule (the victim decides, as for
+  Party Kart's items) would have shots that hit on the shooter's screen miss. What hit on your screen
+  hit; a victim just round a corner can still be hit for a tenth of a second, as in most shooters.
+  Every browser draws a shot from its aim, cone and seed, so its marks are the same everywhere.
+- **Four kits, chosen at each spawn,** none best everywhere (the tests' duels): the carabina, the
+  shotgun, the sniper's rifle with its scope, the pistol. Health 100, back slowly after 5 s unhurt; a
+  hit on the head counts more. After going down, 4 s and back at the spawn none of the others can see,
+  safe for 2 s.
+- **What stops a shot is what you'd hide behind:** buildings and their roofs, walls, hedges, parapets,
+  trunks, waiting karts and the ground. Fences, railings, gates' bars, handrails and the trees' crowns
+  let it through.
+- **The area's edge is barriers and a railing, not an invisible wall** (decision 019): a railing where
+  someone on foot can reach the edge, road-works barriers across its streets and paths, up only during
+  a round.
+- **No gore:** a figure put down falls and fades. No names over the others and nobody on the minimap in
+  a round: both would show where they are through the walls.
+
+The alternatives: the victim deciding, as with the items (shots that hit on screen missing); teams or
+other modes (out of scope for the first); an invisible wall at the edge (decision 019 has barriers).
+
+## 057 · A round in one of three small arenas, and the buildings in them with insides made up
+
+*2026-10-20 · task 079 · the owner's answers, 2026-10-20 (two or three arenas, very small; very simple
+insides, a ground floor in most buildings and every floor and the roof in one or two of the most
+strategic and tallest; arenas only, for now)*
+
+The shooter's area (decision 031) is 21.5 ha: a round of a few players in it is mostly walking. A
+round is played in one of three arenas in it instead, about 80 m across each (`tools/arenas.mjs`,
+`world.arenas`): Topo do Fujacal, Doutor José Vilaça and Santa Justa, the host choosing which. The
+area itself stays what's loaded and seen round them.
+
+- **The arenas are the map's** (braga-map, like the area: places, with their gates); **the insides are
+  the game's** (party-kart's `src/world/interiors.ts`): made up, as nobody knows what's behind those
+  walls, and kept out of the map, which holds what's real (decision 002's realism).
+- **Very simple insides:** in each arena most buildings wholly in it have their ground floor as one
+  room, its doors and windows open where the facade draws them; in two arenas the tallest flat-roofed
+  block near the middle has a stairwell to its roof, every storey an open floor, its windows open, a
+  parapet round the roof. Plain plaster and concrete, no furniture.
+- **They're the world's, not only a round's:** walkable on foot round the city too, and drawn always;
+  a kart can't get through a door.
+
+The alternatives: the whole area with more bots (still mostly walking); arenas of their own geometry
+(not Braga); insides in the map (made-up data in a map of what's real).
+

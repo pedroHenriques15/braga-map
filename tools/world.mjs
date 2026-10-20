@@ -28,6 +28,7 @@ import { tileKey, toTM } from './dgt.mjs';
 import { AREA, AREA_OF, blur, bounds, dm, footprints, Grid, half, hash, Inside, inside, memberRings, minRect, openThin, overlaps, Packer, packGrid, packPts, rectAxis, STOREY, STOREY_BASE as BASE, ringArea, ringOf, seeded, segDist, simplify, W_MIN } from './osm.mjs';
 import { allTiles, EXT, OPEN, OPEN_BOX, OPEN_SEEN, OPEN_TILES, SECTIONS, sectionOf, SHOOTER, SHOOTER_BOX, SHOOTER_ID, SHOOTER_NAME, SHOOTER_SEEN, SHOOTER_TILES, TILE, tileBox, tileId, tileOf } from './sections.mjs';
 import { gatesOf } from './open.mjs';
+import { ARENAS } from './arenas.mjs';
 import { terrain } from './terrain.mjs';
 import { decks } from './decks.mjs';
 import { carriagewayMoves, heldGround, isLine, isSquare, LEVEL, levelHeights, onCarriageways, pathLines, pathsOf, streetBands, streetBumps, streetsOf } from './lines.mjs';
@@ -252,6 +253,8 @@ const roadAt = (l, i, t) => {
 };
 const gates = gatesOf(OPEN, [...lines, ...walks], roadAt).map(({ x, z, heading, w, k, level, y }) => ({ x, z, heading, w, k, level, y }));
 const shooterGates = gatesOf(SHOOTER, [...lines, ...walks], roadAt).map(({ x, z, heading, w, k, level, y }) => ({ x, z, heading, w, k, level, y }));
+// The shooter's arenas (arenas.mjs, task 079), each with its gates as the shooter's area has them.
+const arenas = ARENAS.map((a) => ({ id: a.id, name: a.name, pts: a.pts, gates: gatesOf(a.pts, [...lines, ...walks], roadAt).map(({ x, z, heading, w, k, level, y }) => ({ x, z, heading, w, k, level, y })) }));
 console.log(`ground: ${areas.length} areas, ${lines.length} streets and railways (${lines.filter((l) => l.level === LEVEL.bridge).length} on bridges, ${lines.filter((l) => l.level === LEVEL.tunnel).length} in tunnels, ${lines.filter((l) => l.level === LEVEL.under).length} under something, ${open} of them tunnels the map has under a bridge)`);
 
 // ---------------------------------------------------------------------------------------------
@@ -1227,6 +1230,7 @@ out.header.meta = {
   sights,
   open: { pts: OPEN, gates, tiles: OPEN_TILES, seen: OPEN_SEEN },
   shooter: { id: SHOOTER_ID, name: SHOOTER_NAME, pts: SHOOTER, gates: shooterGates, tiles: SHOOTER_TILES, seen: SHOOTER_SEEN },
+  arenas,
 };
 const b64 = out.encode();
 fs.writeFileSync(path.join(dir, 'base.js'), `${HEAD}export default '${b64}';\n`);
@@ -1236,3 +1240,4 @@ console.log(`sections: ${SECTIONS.map((s) => `${s.id} ${s.tiles.length}`).join('
 console.log(`the ground every 2 m on ${FINE.size} tiles: ${[...FINE].sort().join(' ')}`);
 console.log(`the open world: ${OPEN_TILES.length} tiles under it and ${OPEN_SEEN.length} round it, ${gates.length} gates (${Object.entries(Object.groupBy(gates, (g) => g.level)).map(([l, g]) => `${g.length} ${l}`).join(', ')})`);
 console.log(`the shooter's area: ${SHOOTER_TILES.length} tiles under it and ${SHOOTER_SEEN.length} round it, ${shooterGates.length} gates`);
+console.log(`its arenas: ${arenas.map((a) => `${a.name} ${a.gates.length} gates`).join(', ')}`);

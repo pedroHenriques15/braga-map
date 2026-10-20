@@ -225,6 +225,11 @@ export function map() {
     inOpen: (x, z) => x >= ob.x0 && x <= ob.x1 && z >= ob.z0 && z <= ob.z1 && inRing(open.pts, x, z),
     shooter,
     inShooter: (x, z) => x >= sb.x0 && x <= sb.x1 && z >= sb.z0 && z <= sb.z1 && inRing(shooter.pts, x, z),
+    arenas: m.arenas,
+    inArena: (id, x, z) => {
+      const a = m.arenas.find((q) => q.id === id);
+      return !!a && inRing(a.pts, x, z);
+    },
     tileAt: (x, z) => `x${Math.floor(x / m.tile)}z${Math.floor(z / m.tile)}`,
     sectionAt: (x, z) => sectionOfTile.get(`x${Math.floor(x / m.tile)}z${Math.floor(z / m.tile)}`) ?? null,
   };

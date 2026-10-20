@@ -37,11 +37,13 @@ Fujacal inside Party Kart's open world, in first person, each player the friend'
 on a keyboard and mouse or twin sticks on a touch screen, a kit chosen at each spawn, and bots from the
 start (the owner's answers, 2026-10-19). braga-map stays data (decision 031); the game is party-kart's.
 The host picks the track since 071, and the Volta de Lamaçães is the second (072, decision 053). A
-player gets out of the kart and walks the open world in first person since 073 (decision 055).
+player gets out of the kart and walks the open world in first person since 073 (decision 055), and
+the deathmatch is a round of it in Fujacal since 074 (decision 056), with bots since 075, in one of
+three small arenas, most of their buildings with a ground floor to walk into and two with every floor
+and the roof, since 079 (decision 057).
 
-- **074** The deathmatch in Fujacal: a kit at each spawn, shots, hits and the score (party-kart).
 - **075** Bots on foot: the deathmatch's empty places filled, as the race's are (party-kart); live
-  with 074.
+  with 074 and 079 since 2026-10-20, open till the owner has played them at each level.
 
 ## Phase 1 · See it: references, the scorecard and the budget
 
@@ -198,8 +200,8 @@ alongside them in worktrees of their own.
   Windows: it's 7.5 GB and not in git), and the two take turns at merging and tagging. In
   party-kart, never two sessions on the same file.
 - **More tracks and the shooter** (set 2026-10-19), one at a time in party-kart, as each changes
-  `main.ts` and `session.ts`: **074** and **075**, the deathmatch going live with its bots
-  (071, 072 and 073 are done). 073 made party-kart's wall test public (`circle` in `ground.ts`),
+  `main.ts` and `session.ts`: **075**, the deathmatch's bots, the owner's to play (071 to 074 and
+  079 are done). 073 made party-kart's wall test public (`circle` in `ground.ts`),
   which stream 1's 044 changes too: not at the same time. What the shooter needs of the map at
   walking distance is still stream 1's 044 and 051, and 018 and 020 (the parked cars are cover).
 - **The shooter's area** goes first in every task of Phases 2–4, to the bar
@@ -222,7 +224,8 @@ alongside them in worktrees of their own.
   and the old town's, the Sé's bells up close.
 - **The rest of the map** at the route's level of detail, as more tracks and games use it, and
   the open world grown over it a section at a time (decision 019).
-- **Inside the buildings,** if the shooter needs it: shops and cafés on the ground floor first.
+- **Inside the buildings,** beyond the arenas' plain rooms (079): shops and cafés on the ground
+  floor, furnished.
 - **The Rio Este** with its real banks, walls and weirs, and the streams the map fetches but
   doesn't draw.
 - **The railway** with its rails, sleepers and catenary, the station, and a train.

@@ -39,7 +39,28 @@ import { loadWorld, map } from 'braga-map';
 const world = await loadWorld({ sections: ['fujacal'] }); // the 3 tiles under it, and the 12 round it
 world.shooter; // { id: 'fujacal', name, pts, gates, tiles, seen }
 world.inShooter(x, z);
+world.arenas; // [{ id, name, pts, gates }]: the three arenas (below)
+world.inArena('topo', x, z);
 ```
+
+### The arenas
+
+The whole area is far too big for a round of a few players (the owner, 2026-10-20, task 079,
+decision 057): a round is played in one of three arenas in it, about 80 m across each, drawn by hand
+in `tools/arenas.mjs` along the backs of the buildings round them where they can, across a street or a
+path where they must, each with its gates (`world.mjs`, as the area's):
+
+- **Topo do Fujacal** (`topo`, 66 × 108 m, 8 gates): the Rua do Fujacal by the race's start, round the
+  block of flats standing alone in its loop of street, the houses south-west of it, and the Rua
+  Conselheiro Lobato below.
+- **Doutor José Vilaça** (`vilaca`, 77 × 83 m, 9 gates): the end of the driveway and the flats'
+  courtyard round it, the houses along the Rua Monsenhor Airosa, and that street.
+- **Santa Justa** (`santa-justa`, 87 × 62 m, 7 gates): the Rua de Santa Justa between its flats and the
+  long block by the river, down to the Ecovia; its edge on the south is the area's.
+
+A building the edge runs through stays whole and shut. Party Kart makes most of the buildings wholly
+in an arena a ground floor to walk into, and two of them every floor and the roof (its
+`src/world/interiors.ts`): made up, the map knowing nothing of what's inside.
 
 `fujacal` loads like a section, but it isn't one of the six that share the map out: it overlaps
 Centro and Picoto, and `sectionAt` never answers it. The ground is every 2 m on every tile under it.
@@ -114,7 +135,8 @@ from. The task that does it does this area first.
   pavements and carriageways, the Ecovia, the parks and the pitch between the blocks, the courtyard
   of the flats behind the Rua Monsenhor Airosa through its passage, and every footway and flight of
   steps.
-- **Not in:** the inside of any building; private gardens and back yards behind their walls; the
+- **Not in:** the inside of any building but, in the arenas, the ground floors Party Kart opens and
+  its two towers (task 079, the owner's answer of 2026-10-20); private gardens and back yards behind their walls; the
   school's grounds behind their fence. Every building is closed and solid to its roof.
 - **Gates:** a gate into a courtyard is open if the photos show it open or it has none; one that's
   shut in the photos stays shut. Task 013 records each: the 39 here are the houses' and the flats'
@@ -179,7 +201,9 @@ braga-map gives the shooter the same data it gives Party Kart, and no ready-made
 page asks for goes into the tiles as data (where each wall, step, lamp and tree is, at what height, of
 what kind), and each game draws it. The shooter is played inside Party Kart's open world, on foot, in
 first person (decision 055, task 073): it draws Fujacal with Party Kart's renderer and walks it on
-Party Kart's ground, so there is no second engine to feed.
+Party Kart's ground, so there is no second engine to feed. The deathmatch is a round of it here
+(decision 056, task 074): Party Kart stands a railing along the edge wherever it can be walked up to,
+and barriers across its gates, from `world.shooter`'s edge and gates, only while a round is on.
 
 ## Privacy
 

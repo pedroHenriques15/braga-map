@@ -138,3 +138,26 @@ test('a gate wherever a path crosses the edge, and nowhere else', { skip: !fs.ex
   // its corners, where the edge, worked out from the streets, isn't straight across it.
   assert.ok(wrong.length <= own.length / 10, `${wrong.length} of ${own.length} gates don't point out: ${wrong.join(', ')}`);
 });
+
+// The shooter's arenas (task 079, tools/arenas.mjs): three small places in its area, about 80 m across,
+// where a round is played, each with a gate wherever a street or a path crosses its edge.
+test('three arenas in the area, each a small closed ring with its gates on its edge', () => {
+  assert.deepEqual(m.arenas.map((a) => a.id), ['topo', 'vilaca', 'santa-justa']);
+  for (const a of m.arenas) {
+    const k = a.pts.length;
+    const sideOf = (i) => [a.pts[i], a.pts[(i + 1) % k]];
+    for (let i = 0; i < k; i++) for (let j = i + 2; j < k; j++) if (!(i === 0 && j === k - 1)) assert.ok(!cross(...sideOf(i), ...sideOf(j)), `${a.name}'s sides cross`);
+    const xs = a.pts.map((p) => p[0]), zs = a.pts.map((p) => p[1]);
+    const w = Math.max(...xs) - Math.min(...xs), h = Math.max(...zs) - Math.min(...zs);
+    assert.ok(w > 50 && w < 110 && h > 50 && h < 110, `${a.name} ${w.toFixed(0)} by ${h.toFixed(0)} m`);
+    for (const [x, z] of a.pts) assert.ok(m.inShooter(x, z), `${a.name}'s corner ${x}, ${z} out of the shooter's area`);
+    assert.ok(a.gates.length >= 3, `${a.name}: ${a.gates.length} gates`);
+    for (const g of a.gates) {
+      let d = Infinity;
+      for (let i = 0; i < k; i++) d = Math.min(d, toSeg([g.x, g.z], ...sideOf(i)));
+      assert.ok(d < 0.5, `${a.name}'s gate at ${g.x}, ${g.z} ${d.toFixed(1)} m off its edge`);
+    }
+    const [cx, cz] = [xs.reduce((s, v) => s + v, 0) / k, zs.reduce((s, v) => s + v, 0) / k];
+    assert.ok(m.inArena(a.id, cx, cz) && !m.inArena(a.id, cx + 200, cz), 'inArena');
+  }
+});

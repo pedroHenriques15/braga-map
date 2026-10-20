@@ -11,6 +11,7 @@ import { memberRings as rings, storeys } from './osm.mjs';
 import { CORE, EXT, OPEN, SECTIONS, SHOOTER, TILE } from './sections.mjs';
 import { onCarriageways, pathsOf, streetLines } from './lines.mjs';
 import { gatesOf } from './open.mjs';
+import { ARENAS } from './arenas.mjs';
 import { terrain } from './terrain.mjs';
 
 const outFile = path.join(ROOT, 'map/braga.json');
@@ -304,6 +305,7 @@ const data = {
   game,
   open: { pts: OPEN, gates: openGates, area: Math.round(openArea) },
   shooter: { pts: SHOOTER, gates: shooterGates, area: Math.round(shooterArea) },
+  arenas: ARENAS.map((a) => ({ name: a.name, pts: a.pts, area: Math.round(areaOf(a.pts)) })),
   ...(audit && { audit }),
   len: { core: km(lenCore), ext: km(lenExt) },
 };

@@ -465,6 +465,17 @@ export interface Open {
 // and on the west half way between the streets in it and those out, round the buildings between
 // them. gates: where every street and path crosses it. tiles: the tiles it touches; seen: those round
 // it, within 500 m, for the city seen past its edge.
+// One of the shooter's arenas (task 079, tools/arenas.mjs): a small place in its area, about 80 m
+// across, its edge a ring of [x, z] points (closed) drawn along the backs of the buildings round it
+// where it can and across a street or a path where it must, with a gate wherever one crosses it (as
+// the shooter's area's). Its tiles are the shooter's area's.
+export interface Arena {
+  id: string;
+  name: string;
+  pts: [number, number][];
+  gates: Gate[];
+}
+
 export interface ShooterArea {
   id: string;
   name: string;
@@ -658,6 +669,10 @@ export interface BragaMap {
   shooter: ShooterArea;
   // Whether (x, z) is inside the shooter's area.
   inShooter(x: number, z: number): boolean;
+  // The shooter's arenas (task 079), where a round is played: three small places in its area.
+  arenas: Arena[];
+  // Whether (x, z) is inside the arena with that id.
+  inArena(id: string, x: number, z: number): boolean;
   tileAt(x: number, z: number): string;
   sectionAt(x: number, z: number): string | null;
 }

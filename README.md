@@ -52,6 +52,7 @@ world.walls; // in the open world's area: [{ kind, material, on, h, w, level, so
 world.open.gates; // where each street or path leaves the area: [{ x, z, heading, w, k, level, y }]
 world.inOpen(x, z); // inside its edge?
 world.shooter; // the shooter's area, Fujacal: { id: 'fujacal', name, pts, gates, tiles, seen }, and world.inShooter(x, z)
+world.arenas; // its three arenas, where a round is played: [{ id, name, pts, gates }], and world.inArena(id, x, z)
 world.photos; // the photo textures on the tiles loaded: [{ id, kind, box | wall, s, y, files: { high, medium, low }, credit }]
 world.groundCover; // what the ground is, every 50 cm under the Volta dos Amigos' box: [{ tile, box, classes, colour, cars, credit }]
 map().groundKinds; // the kinds it says, each with its photo: [{ kind, texture: { id, metres, mean, files, credit } | null }]

@@ -266,7 +266,7 @@ section { display: flex; flex-direction: column; gap: 10px; }
 
     <section aria-labelledby="hShooter" id="shooterBox" hidden>
       <div class="head"><h2 id="hShooter">Fujacal, a pé</h2><span class="note" id="shooterSize"></span></div>
-      <p class="note">Onde se joga o primeiro shooter: as cinco ruas (a Rua, a Travessa e a Alameda do Fujacal, a Rua e a Travessa Conselheiro Lobato) e um quarteirão de cada lado. O limite é o lancil da Avenida Imaculada Conceição e da Avenida da Liberdade e a margem do Rio Este: dá para ver as avenidas e o rio, mas não para os atravessar. Para lá da Rua Monsenhor Airosa entra o quarteirão de trás, com o pátio dos prédios da Rua Doutor José Vilaça, até à Rua de Santa Justa, junto ao rio; aí o limite passa a meio caminho entre as ruas de dentro e as de fora, pelas traseiras dos prédios. Anda-se nas ruas, nas praças e nos pátios abertos; nos prédios não se entra.</p>
+      <p class="note">Onde se joga o primeiro shooter: as cinco ruas (a Rua, a Travessa e a Alameda do Fujacal, a Rua e a Travessa Conselheiro Lobato) e um quarteirão de cada lado. O limite é o lancil da Avenida Imaculada Conceição e da Avenida da Liberdade e a margem do Rio Este: dá para ver as avenidas e o rio, mas não para os atravessar. Para lá da Rua Monsenhor Airosa entra o quarteirão de trás, com o pátio dos prédios da Rua Doutor José Vilaça, até à Rua de Santa Justa, junto ao rio; aí o limite passa a meio caminho entre as ruas de dentro e as de fora, pelas traseiras dos prédios. Anda-se nas ruas, nas praças e nos pátios abertos. Joga-se numa de três arenas pequenas dentro dele (a tracejado), de uns 80 m cada: o Topo do Fujacal, o Doutor José Vilaça e Santa Justa; nelas entra-se no rés-do-chão da maior parte dos prédios, e num prédio alto de cada uma das duas primeiras sobe-se por uma escada até ao telhado.</p>
       <div class="btns"><button class="btn ghost" type="button" id="showShooter">Ver no mapa</button></div>
     </section>
 
@@ -908,6 +908,22 @@ section { display: flex; flex-direction: column; gap: 10px; }
     const [sx, sy] = toScreen(...top);
     ctx.font = LABEL(14, 700); ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
     haloText(`FUJACAL A PÉ · ${fmt(S.area / 1e4)} ha`, sx, sy - 8, '#00695c');
+    // Its arenas (task 079), where a round is played: each edge dashed, its name over it.
+    for (const a of D.arenas ?? []) {
+      worldTransform();
+      const p = new Path2D();
+      a.pts.forEach(([x, z], i) => (i ? p.lineTo(x, z) : p.moveTo(x, z)));
+      p.closePath();
+      ctx.fillStyle = 'rgba(0,121,107,.18)'; ctx.fill(p);
+      ctx.setLineDash([6 / view.s, 4 / view.s]);
+      ctx.strokeStyle = '#004d40'; ctx.lineWidth = 2 / view.s; ctx.stroke(p);
+      ctx.setLineDash([]);
+      ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
+      const t = a.pts.reduce((m, q) => (q[1] < m[1] ? q : m));
+      const [ax, ay] = toScreen(...t);
+      ctx.font = LABEL(12, 700); ctx.textAlign = 'center'; ctx.textBaseline = 'bottom';
+      haloText(a.name, ax, ay - 4, '#004d40');
+    }
   }
 
   function drawGame() {

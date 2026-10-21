@@ -59,8 +59,10 @@ path where they must, each with its gates (`world.mjs`, as the area's):
   long block by the river, down to the Ecovia; its edge on the south is the area's.
 
 A building the edge runs through stays whole and shut. Party Kart makes most of the buildings wholly
-in an arena a ground floor to walk into, and two of them every floor and the roof (its
-`src/world/interiors.ts`): made up, the map knowing nothing of what's inside.
+in an arena a ground floor to walk into, split into rooms and furnished, and one in each arena every
+floor and the roof (its `src/world/interiors.ts`): made up, the map knowing nothing of what's inside.
+In a round it lays cover on each arena too (decision 060, its `src/world/cover.ts`): the cars the LiDAR
+saw parked there, and road works' things placed to break the long looks down its streets.
 
 `fujacal` loads like a section, but it isn't one of the six that share the map out: it overlaps
 Centro and Picoto, and `sectionAt` never answers it. The ground is every 2 m on every tile under it.

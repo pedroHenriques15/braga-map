@@ -312,6 +312,10 @@ Only CC0, which owes no credit; each is on record here all the same, with what w
 They live in the game that plays them, not in the map: party-kart's `src/sounds/`, for the city
 round the track (task 025). The karts' engine is synthesized (task 024).
 
+The deathmatch's models and recordings (decision 060: its guns, figure, props, shots, reloads,
+grenades, impacts and footsteps, all CC0) are on record in party-kart's `src/fight/ASSETS.md`, beside
+them, rather than here: they're the game's, not the place's.
+
 ### In use: the city round the track
 
 All CC0 1.0, on Freesound, had from each page's 128 kbps MP3 preview (the originals need an

@@ -1745,3 +1745,46 @@ The alternatives: retaining walls moved onto the terrain's step (decision 033's 
 and the step is often a bank, not a line); the land carved to the wall at 50 cm (a 2 m grid can't hold
 it, and the game draws the land at 2 m); the river's bed narrowed everywhere (the race's jump needs its
 gap).
+
+## 060 · The deathmatch after Counter-Strike 2's: its arsenal and buy menu, two teams, cover on the arenas, and CC0 models and recordings for it
+
+*2026-10-21 · the owner's answers, 2026-10-21 ("100x better… inspired in CS2… a buy menu (unlimited
+money for deathmatch), animations, weapon changing, noscopes, everything"; real arenas with cover over
+hand-built maps; CC0 models and sounds allowed; core gunplay, grenades, the full arsenal and a team
+mode all in) · replaces decision 056's four kits and its health coming back, adds to decisions 016,
+057 and 058*
+
+The first deathmatch was four kits on a real street; the owner wants it to play like Counter-Strike 2.
+In party-kart:
+
+- **The arsenal is Counter-Strike 2's** (`src/game/arsenal.ts`): twenty guns in six families, with
+  their damage, armour penetration, range falloff, rate of fire, magazines, reloads (a shotgun's a
+  shell at a time), draw times and running speeds; a spray pattern each automatic climbs and sways
+  along, the same every time; accuracy that depends on moving, crouching and being in the air
+  (counter-strafing works, the walker braking as Counter-Strike's does); scopes with zoom levels, the
+  AWP's no-scope wild and its quick-scope true once the scope's up; the knife's slash and stab, worth
+  more from behind; four grenades (HE, flash, smoke, molotov), whose throw is their whole flight so
+  every browser draws it alike; a vest and a helmet. Health doesn't come back. A head shot counts four
+  times, the legs three quarters, as Counter-Strike's do — so the figures in a round are a person's
+  proportions (a CC0 figure in the friend's colours), not the friends' big-headed ones.
+- **A buy menu, the money unlimited,** as in Counter-Strike's deathmatch: what's bought is kept from
+  one life to the next and changed in the first 15 s of one (else for the next).
+- **Two teams, as the host chooses,** or everyone for themselves: no damage to a team-mate, the bots
+  shared out too, the team's kills its score.
+- **The arenas stay the real three (decision 057), with cover laid on them:** the cars the LiDAR saw
+  parked there where they stood, and road works' things (skips, hoardings, a scaffold, pallets,
+  sandbags, a site office, a van, toilets, barriers), placed by party-kart's `src/world/cover.ts` to
+  break the long looks down the streets and give a corner to fight round, up only during a round —
+  as the edge's barriers are, and like them a departure from what's there (decision 004). The
+  insides (decision 057) get partitions, back doors, furniture to hide behind and a third tower; and
+  some thirty spawns an arena, sheltered, indoors as well, never one a foe can see.
+- **CC0 models and recordings, for the deathmatch only** (adds to decision 016): the guns, the knife,
+  the grenades, the figure and the props are CC0 models, the shots, reloads, grenades, impacts and
+  footsteps CC0 recordings, all in party-kart's `src/fight/` and on record in its `ASSETS.md`
+  (source, author, what was done). About 4.4 MB of models and 0.4 MB of sound, fetched when a round
+  needs them; the shapes made in code stand in until they're in. One gun pack's itch.io page shows
+  CC-BY where its own description and its other pages say CC0: its author is credited, which either
+  asks.
+
+The alternatives: hand-built maps after Counter-Strike's (more like the game, not Braga); keeping the
+models and sounds made in code (no assets, but guns that look and sound like a game's of 2005).

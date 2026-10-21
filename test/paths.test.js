@@ -224,3 +224,65 @@ test('the paths are cut to the tiles, in the open world\'s area', () => {
     for (const r of p.rings) assert.ok(r.length >= 3);
   }
 });
+
+test('a walker gets through every passage under a building, both ways, as a game cuts the buildings back to it', { skip }, () => {
+  // A game cuts a building back where a carriageway on the ground, a passage under it or a flight's
+  // tread runs (Party Kart's ground.ts `trimmed`): its outline's edges but where they're in one, and
+  // the passage's sides in the building. A walker 30 cm round along each passage's line, from a metre before it to a
+  // metre past it (but not into a building it ends at), meets none of them (task 078).
+  const cuts = [...S.carriageways.filter((p) => p.level === 'ground'), ...S.paths.filter((p) => p.level === 'under' || (p.level === 'ground' && p.kind === 'steps'))];
+  const inCut = index(cuts);
+  const ring = (r) => r.map((p, k) => [...p, ...r[(k + 1) % r.length]]);
+  const cross = ([ax, az, bx, bz], [cx, cz, dx, dz]) => {
+    const ex = bx - ax, ez = bz - az, fx = dx - cx, fz = dz - cz, den = ex * fz - ez * fx;
+    if (!den) return null;
+    const t = ((cx - ax) * fz - (cz - az) * fx) / den, u = ((cx - ax) * ez - (cz - az) * ex) / den;
+    return t > 0 && t < 1 && u >= 0 && u <= 1 ? t : null;
+  };
+  // A segment's pieces between where it crosses others, those whose middle `keep` says.
+  const pieces = (s, others, keep) => {
+    const ts = [0, 1, ...others.map((o) => cross(s, o)).filter((t) => t !== null)].sort((a, b) => a - b), out = [];
+    for (let k = 1; k < ts.length; k++) {
+      const m = (ts[k - 1] + ts[k]) / 2;
+      if (ts[k] - ts[k - 1] > 1e-6 && keep(s[0] + (s[2] - s[0]) * m, s[1] + (s[3] - s[1]) * m)) out.push([s[0] + (s[2] - s[0]) * ts[k - 1], s[1] + (s[3] - s[1]) * ts[k - 1], s[0] + (s[2] - s[0]) * ts[k], s[1] + (s[3] - s[1]) * ts[k]]);
+    }
+    return out;
+  };
+  const toSeg = (x, z, [ax, az, bx, bz]) => { const dx = bx - ax, dz = bz - az, L = dx * dx + dz * dz, t = L ? Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / L)) : 0; return Math.hypot(ax + dx * t - x, az + dz * t - z); };
+  const shut = [];
+  let n = 0;
+  for (const p of ways.filter((q) => q.level === LEVEL.under && q.kind !== 'steps')) {
+    const pts = p.pts, m = pts.length;
+    // A passage the map has on a street's carriageway (a street under a building) is the street's.
+    const mid = along(pts)[Math.floor(along(pts).length / 2)];
+    if (m < 2 || !pts.every(inOpen) || !along(pts).some(([x, z]) => inBuilding(x, z).length) || (mid && onStreet(...mid).some((q) => 'surface' in q && q.level === 'ground'))) continue;
+    // A metre out past each end, unless that's in a building.
+    const out = ([ax, az], [bx, bz]) => { const L = Math.hypot(ax - bx, az - bz) || 1, at = (d) => [ax + ((ax - bx) / L) * d, az + ((az - bz) / L) * d]; return [0.25, 0.5, 0.75, 1].some((d) => inBuilding(...at(d)).length) ? null : at(1); };
+    const a = out(pts[0], pts[1]), b = out(pts[m - 1], pts[m - 2]), line = [...(a ? [a] : []), ...pts, ...(b ? [b] : [])];
+    const x0 = Math.min(...line.map((q) => q[0])) - 3, x1 = Math.max(...line.map((q) => q[0])) + 3, z0 = Math.min(...line.map((q) => q[1])) - 3, z1 = Math.max(...line.map((q) => q[1])) + 3;
+    const near = (pts) => pts.some(([x, z]) => x > x0 - 60 && x < x1 + 60 && z > z0 - 60 && z < z1 + 60);
+    const segs = [], cutEdges = cuts.filter((c) => near(c.rings[0])).flatMap((c) => c.rings.flatMap(ring));
+    for (const bd of w.buildings) {
+      if (!near(bd.pts) || !bd.pts.some(([x, z]) => x > x0 - 40 && x < x1 + 40 && z > z0 - 40 && z < z1 + 40)) continue;
+      const edges = ring(bd.pts);
+      for (const e of edges) segs.push(...pieces(e, cutEdges, (x, z) => !inCut(x, z).length));
+      const inB = (x, z) => { let odd = false; for (let i = 0, j = bd.pts.length - 1; i < bd.pts.length; j = i++) if (bd.pts[i][1] > z !== bd.pts[j][1] > z && x < bd.pts[i][0] + ((z - bd.pts[i][1]) / (bd.pts[j][1] - bd.pts[i][1])) * (bd.pts[j][0] - bd.pts[i][0])) odd = !odd; return odd; };
+      // A passage's sides: the cuts' edges in the building with the building on their other side, not
+      // another cut (a passage's floor meeting a carriageway's, or a tile's).
+      for (const e of cutEdges) {
+        if (!e.some((v, k) => (k % 2 ? v > z0 && v < z1 : v > x0 && v < x1))) continue;
+        const L = Math.hypot(e[2] - e[0], e[3] - e[1]) || 1, nx = (-(e[3] - e[1]) / L) * 0.02, nz = ((e[2] - e[0]) / L) * 0.02;
+        segs.push(...pieces(e, edges, (x, z) => inB(x, z) && inCut(x + nx, z + nz).length % 2 !== inCut(x - nx, z - nz).length % 2));
+      }
+    }
+    n++;
+    const hit = along(line, 0.1).find(([x, z]) => segs.some((s) => toSeg(x, z, s) < 0.3));
+    if (hit) shut.push(`${p.kind} ${p.id} at (${hit.map((v) => v.toFixed(1))})`);
+  }
+  console.log(`${n} passages under a building in the area, ${n - shut.length} walked through${shut.length ? `; shut: ${shut.join(', ')}` : ''}`);
+  assert.ok(n > 30, `${n} passages`);
+  // The map's passage at (710, 360) runs along the seam between two of its buildings, and at its south
+  // end the seam goes straight on: there's no open ground it comes out into.
+  const LEFT = ['footway 1543796091'];
+  assert.deepEqual(shut.filter((s) => !LEFT.some((l) => s.startsWith(l + ' '))), []);
+});

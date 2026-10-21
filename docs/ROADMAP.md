@@ -41,10 +41,8 @@ player gets out of the kart and walks the open world in first person since 073 (
 the deathmatch is a round of it in Fujacal since 074 (decision 056), with bots since 075, in one of
 three small arenas, most of their buildings with a ground floor to walk into and two with every floor
 and the roof, since 079 (decision 057). No key or mouse button leaves the game by mistake, and a hit
-shows where it came from, since 080.
-
-- **075** Bots on foot: the deathmatch's empty places filled, as the race's are (party-kart); live
-  with 074 and 079 since 2026-10-20, open till the owner has played them at each level.
+shows where it came from, since 080. The bots, the host's to run and knowing only what a player
+could, played by the owner at each level (075, decision 058).
 
 ## Phase 1 · See it: references, the scorecard and the budget
 
@@ -74,7 +72,9 @@ decision 044); and the streets ending at their walls: a pavement at the first on
 carriageway brought back to the map's, no narrower than its lanes (052, decision 046); and the
 roundabouts as they are: each ring and island where the LiDAR measured them, the island in what the
 ground is there, the statues the map has in them, and the give-way markings at their entries (014,
-decision 050).
+decision 050); and on foot, a retaining wall measured along its length and never climbed from below,
+the river's bed stopped at the walls on its bank, and the passages under the houses open at their
+ends (077, 078, decision 059).
 
 - **051** A flight of steps meets the street, the path or the land at its foot and its top: 51 of
   236 stand more than a kart's step over what's at their foot (found by 050).
@@ -85,12 +85,6 @@ decision 050).
 - **076** The land at a flight of steps, never drawn over its treads nor far under them: 565 of
   1,896 treads have it 15 cm or more over them, the Travessa do Fujacal's 17 steps among them, and 96
   stand 2 m or more over it (found on foot by 073; after 051).
-- **077** The land at a wall's level: 13 of the shooter's area's 153 retaining walls have their lower
-  side drawn within a step or a jump of their top, and 4 walls stand 4 to 7 m in the air (found on
-  foot by 073).
-- **078** A passage under the houses open at both its ends: one of the shooter's area's two is shut
-  by the outlines of the buildings past it, and the courtyard's narrowed at its mouth (found on foot
-  by 073).
 
 ## Phase 3 · Surfaces and colours
 
@@ -201,8 +195,7 @@ alongside them in worktrees of their own.
   Windows: it's 7.5 GB and not in git), and the two take turns at merging and tagging. In
   party-kart, never two sessions on the same file.
 - **More tracks and the shooter** (set 2026-10-19), one at a time in party-kart, as each changes
-  `main.ts` and `session.ts`: **075**, the deathmatch's bots, the owner's to play (071 to 074 and
-  079 are done). 073 made party-kart's wall test public (`circle` in `ground.ts`),
+  `main.ts` and `session.ts`: 071 to 075, 079 and 080 are done. 073 made party-kart's wall test public (`circle` in `ground.ts`),
   which stream 1's 044 changes too: not at the same time. What the shooter needs of the map at
   walking distance is still stream 1's 044 and 051, and 018 and 020 (the parked cars are cover).
 - **The shooter's area** goes first in every task of Phases 2–4, to the bar

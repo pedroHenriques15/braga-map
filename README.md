@@ -114,7 +114,8 @@ map().groundKinds; // the kinds it says, each with its photo: [{ kind, texture: 
   `world.streets.paths`), but the pavements, crossings and islands it draws as footways, which are
   the streets' own, and what's indoors: each at the map's width or its kind's (a footway 2 m, a path
   1.5 m, a cycleway 2.5 m, or 1.5 m one way, steps 2 m), in what it's paved with, cut back to the
-  carriageways, the buildings (but a passage under one, `under`), the water and the walls either side
+  carriageways, the buildings (but a passage under one, `under`, which reaches a metre past each
+  mouth, flush with a pavement it opens onto: task 078), the water and the walls either side
   of its line (but where it passes through one). A footway gives way
   to the pavements, where it meets a street; the pavements give way to a cycleway, which runs in one
   flush with it (`raised`), or along the carriageway's edge as a lane at the road's level with a kerb
@@ -127,7 +128,8 @@ map().groundKinds; // the kinds it says, each with its photo: [{ kind, texture: 
 - So are its walls, fences, railings, hedges and gates (task 013, `world.walls`): every barrier
   OpenStreetMap has there, and the walls, hedges and retaining walls it lacks where DGT's LiDAR sees
   them (`source`), each as high as the LiDAR measured it (else the map's `height`), its top's height
-  at each point; a wall of the map's where the terrain steps across it is a retaining wall. Each opens
+  at each point; a wall of the map's where the terrain steps across it is a retaining wall, measured
+  along it, cut where its higher ground changes side or its step its height (task 077). Each opens
   where a street or a path passes through it and is cut where it would stand on a carriageway or a
   path, but a street gives way to the map's where its lanes fit beside one (task 052); a gate where the map has one, where a driveway crosses a wall, and in a door's or a car's gap
   in a wall the LiDAR found. What each is made of is the map's where it says, else by what's round it
@@ -445,15 +447,19 @@ streets; when a track moves enough to change the edge, run the three again until
   building or street, a retaining wall in a wood or a field far from any building, a wall along a
   retaining wall's top that's its face or its parapet (taller, a fence on it), a hedge over 1.5 m
   within 3 m of one (the bank's growth). Then the map's barriers, each measured along its line (where the terrain steps across a
-  wall of the map's, a retaining wall), and what the LiDAR found along one dropped (but a hedge along
-  a wall). The gates: the map's, across the street or the path each is on or along its wall; where a
+  wall of the map's, a retaining wall, then measured again along it every half metre, `stepsOf`:
+  cut where its higher ground changes side, turned, or where its step changes height, each piece its
+  own, and as low as the terrain where it doesn't step), and what the LiDAR found along one dropped
+  (but a hedge along a wall). The gates: the map's, across the street or the path each is on or along its wall; where a
   driveway crosses a wall; and in a door's or a car's gap in a wall the LiDAR found. Each wall opens
   where a street or a path crosses it (a way the map stops 3 m short of a wall goes through it), and
   gets what it's made of by what's round it (`dress`). `world.mjs` cuts each to the tiles and where
   it would stand on a carriageway or a path (`cutWalls`, `packWalls`). `test/walls.test.js` checks
   the tiles carry every barrier the map has but where it opens (and how much is still cut on a
   carriageway: where its lanes don't fit beside it, across it, or where streets meet), every gate,
-  each piece whole and off the carriageways, and a retaining wall's higher ground on its left.
+  each piece whole and off the carriageways, a retaining wall's higher ground on its left, and in the
+  shooter's area the land on a retaining wall's lower side under its top and no wall over the land
+  (task 077).
 - `trees.mjs` finds every tree in DGT's point cloud (task 019). It boils each tile down once to 50 cm
   cells (`.cache/dgt/trees/`, 35 s a tile): the highest and the lowest point of high vegetation (class
   5, 2 m and more up) over the terrain, how many there are and their colour (the cloud's near-infrared,

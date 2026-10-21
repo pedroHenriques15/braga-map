@@ -1506,20 +1506,53 @@ function groundPaths(list, { U, kerbed, B, W, over, walled = null, boxPath = nul
   // The cycleways: in a pavement, flush with it or a lane beside the road; else on the ground.
   const groups = new Map(); // `${kind}:${level}:${surface}:${where}` → paths
   const add = (k, ps) => { if (ps.length) groups.set(k, [...(groups.get(k) ?? []), ...ps]); };
+  // A passage under a building (task 078) goes on MOUTH past each end that comes out in the open:
+  // the map draws one from a corner of the building's outline to another, so its floor ended on the
+  // outline, and a game cutting the building back to the passage left the outline's edge across its
+  // mouth (and the tiles hold a building's points to half a metre, so the edge stood anywhere within
+  // 25 cm of it); short of a metre where another building stands there. And one the map ends short of
+  // the outline, inside the building, within OUT of coming out, is drawn on out of it.
+  const MOUTH = 1, OUT = 3;
+  const built = (x, z) => { const q = { X: Math.round(x * S), Y: Math.round(z * S) }; return nearB({ x0: x, x1: x, z0: z, z1: z }).some((r) => C.Clipper.PointInPolygon(q, r) !== 0); };
+  // Its line drawn on, and the stretches added at its ends.
+  const mouths = (p) => {
+    const pts = [...p.pts], n = pts.length;
+    if (p.level !== 3 || n < 2) return { pts, ends: [] };
+    const on = ([ax, az], [bx, bz]) => {
+      const L = Math.hypot(ax - bx, az - bz) || 1, u = [(ax - bx) / L, (az - bz) / L], at = (d) => built(ax + u[0] * d, az + u[1] * d);
+      let e = 0;
+      while (e <= OUT && at(e)) e += 0.25;
+      if (e > OUT) return null;
+      // As far as MOUTH past it, short of another building there (a neighbour's corner at its mouth).
+      let d = e;
+      while (d < e + MOUTH && !at(d + 0.25)) d += 0.25;
+      return d > 0 ? [ax + u[0] * d, az + u[1] * d] : null;
+    };
+    const a = on(pts[0], pts[1]), b = on(pts[n - 1], pts[n - 2]);
+    return { pts: [...(a ? [a] : []), ...pts, ...(b ? [b] : [])], ends: [...(a ? [[a, pts[0]]] : []), ...(b ? [[pts[n - 1], b]] : [])] };
+  };
   const ofKind = (kind, also) => {
     for (const p of list.filter((q) => q.kind === kind && (q.level === 0 || q.level === 3))) {
-      let A = cut(band([toPath(p.pts)], p.w / 2), p);
+      const m = mouths(p);
+      let A = cut(band([toPath(m.pts)], p.w / 2), p);
       const b = boundsOfPaths(A);
       A = minus(A, [...nearT(b), ...also.flatMap((n) => n(b))]);
+      // What's left of a passage beside a carriageway under its building, narrower than a walker
+      // (under 70 cm), isn't a way through: a game would stand its sides in the street's way.
+      if (p.level === 3) A = shapes(A).filter((sh) => opened(sh, 0.35).length).flat();
       const K = nearK(b);
       if (kind === 'cycleway') add(`${kind}:${p.level}:${p.surface}:in`, meet(A, K));
+      // A passage's mouth in a pavement is its own, flush with the pavement, which gives way to it.
+      else if (m.ends.length) add(`${kind}:${p.level}:${p.surface}:in`, meet(meet(A, K), band(m.ends.map(toPath), p.w / 2 + 0.05, true)));
       add(`${kind}:${p.level}:${p.surface}:out`, minus(A, K));
     }
   };
-  // Each kind's pieces of each level and surface, the first of two that overlap keeping its own.
+  // Each kind's pieces of each level and surface, the first of two that overlap keeping its own; a
+  // passage under a building first, so its mouth is its own where the path outside meets it.
+  const rank = (k) => (k.split(':')[1] === '3' ? '0' : '1') + k;
   const ownPlace = (kind) => {
     let mine = [];
-    for (const [k, ps] of [...groups].filter(([k]) => k.startsWith(kind + ':')).sort(([a], [b]) => (a < b ? -1 : 1))) {
+    for (const [k, ps] of [...groups].filter(([k]) => k.startsWith(kind + ':')).sort(([a], [b]) => (rank(a) < rank(b) ? -1 : 1))) {
       const piece = minus(union(ps), mine);
       mine = union(mine, piece);
       groups.set(k, piece);

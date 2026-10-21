@@ -462,11 +462,12 @@ function measureLine(m, mk, pts, toTM) {
 // house's; the LiDAR measures them to the railing's top); a long wall by a tertiary street or a bigger one, concrete; any other, granite.
 
 export function dress(w, near) {
-  const L = w.pts.reduce((s, p, k) => (k ? s + Math.hypot(p[0] - w.pts[k - 1][0], p[1] - w.pts[k - 1][1]) : 0), 0);
+  // A retaining wall measured in pieces (task 077) is made of what the whole of it is.
+  const L = w.stepped?.L ?? w.pts.reduce((s, p, k) => (k ? s + Math.hypot(p[0] - w.pts[k - 1][0], p[1] - w.pts[k - 1][1]) : 0), 0);
   const big = near.street != null && near.street <= 4;
   if (!w.material) {
     if (w.kind === 'fence' || w.kind === 'railing' || w.kind === 'guard_rail' || w.kind === 'gate' || w.kind === 'bar') w.material = 'metal';
-    else if (w.kind === 'retaining') w.material = w.h >= 2 && L >= 20 && near.street != null ? 'concrete' : 'granite';
+    else if (w.kind === 'retaining') w.material = (w.stepped?.h ?? w.h) >= 2 && L >= 20 && near.street != null ? 'concrete' : 'granite';
     else if (w.kind === 'wall') w.material = w.hedged ? 'granite' : near.building === 'house' || near.building === 'flats' ? 'rendered' : L >= 20 && big ? 'concrete' : 'granite';
   }
   if (w.kind === 'wall' && w.material === 'rendered' && (near.building === 'house' || near.building === 'flats') && w.h <= 3 && !w.hedged) w.on = 'railing';
@@ -931,6 +932,46 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
       if (q.d < 0.75) cutAt(w, x, z, g.span / 2);
     }
   }
+  // A retaining wall of the map's, measured, along it (task 077): the map gives a way one height, but a
+  // retaining wall's face tapers out at its ends, and a way can run on past it, or round a corner where
+  // the higher ground changes side. Every half metre, the terrain's step across it, from 1.75 m out
+  // either side (as measureLine), the middle of it over 2 m; cut where its higher ground changes side
+  // or the step isn't there, and where its height changes, each piece its own: [s0, s1, h, turned].
+  // Where the terrain doesn't step (under FLAT), a piece as low as it does, its higher ground where the
+  // way had it.
+  const FLAT = 0.3;
+  const stepsOf = (w) => {
+    const L = lengthOf(w.pts), n = Math.max(1, Math.round(L / 0.5)), raw = [];
+    for (let k = 0; k < n; k++) {
+      const p = pointAt(w.pts, ((k + 0.5) * L) / n), [sx, sz] = seenAt(p.x, p.z);
+      raw.push(ground.at(sx + p.uz * 1.75, sz - p.ux * 1.75) - ground.at(sx - p.uz * 1.75, sz + p.ux * 1.75));
+    }
+    const d = raw.map((_, k) => quantile(raw.slice(Math.max(0, k - 2), k + 3).filter((v) => v === v), 0.5));
+    const sign = d.map((v) => (v >= FLAT ? 1 : v <= -FLAT ? -1 : 0));
+    // A change of side or of step for under 1.5 m is the terrain's noise: the run before it goes on.
+    for (let k = 0, s = 0; k <= n; k++) {
+      if (k < n && sign[k] === sign[s]) continue;
+      if ((k - s) * 0.5 < 1.5 && s > 0) for (let j = s; j < k; j++) sign[j] = sign[s - 1];
+      s = k;
+    }
+    const out = [];
+    for (let k = 0, s = 0; k <= n; k++) {
+      if (k < n && sign[k] === sign[s]) continue;
+      // The run from s to k, in pieces as long as the step stays within a third (and 40 cm) of the
+      // piece's so far.
+      for (let a = s; a < k; ) {
+        let b = a + 1;
+        while (b < k) { const m = quantile(d.slice(a, b).map(Math.abs), 0.5), next = Math.abs(d[b]); if (b - a >= 6 && Math.abs(next - m) > Math.max(0.4, m / 3)) break; b++; }
+        const h = Math.max(0.1, quantile(d.slice(a, b).map(Math.abs), 0.75));
+        out.push([(a * L) / n, (b * L) / n, sign[s] ? h : Math.min(h, FLAT), sign[s] < 0]);
+        a = b;
+      }
+      s = k;
+    }
+    return out;
+  };
+  const stepped = { turned: 0, flat: 0, pieces: 0 };
+
   // The walls, each cut where it opens: its pieces of 0.5 m or more.
   const out = [];
   for (const w of walls) {
@@ -939,8 +980,24 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     const spans = [];
     for (const [c, half] of cs) { if (c - half > s) spans.push([s, c - half]); s = Math.max(s, c + half); }
     if (L > s) spans.push([s, L]);
+    if (w.kind === 'retaining' && w.measured && w.source === 'osm') {
+      const steps = stepsOf(w);
+      for (const [s0, s1] of spans) {
+        for (const [a, b, h, turned] of steps) {
+          const p0 = Math.max(s0, a), p1 = Math.min(s1, b);
+          if (p1 - p0 < 0.5) continue;
+          const pts = piece(w.pts, p0, p1);
+          out.push({ ...w, h, pts: turned ? pts.reverse() : pts, ys: null, from: p0, whole: L, ysWhole: null, ptsWhole: w.pts, stepped: { h: w.h, L } });
+          stepped.pieces++;
+          if (turned) stepped.turned += p1 - p0;
+          if (h <= FLAT) stepped.flat += p1 - p0;
+        }
+      }
+      continue;
+    }
     for (const [s0, s1] of spans) if (s1 - s0 >= 0.5) out.push({ ...w, pts: cs.length ? piece(w.pts, s0, s1) : w.pts, ys: w.ys && cs.length ? null : w.ys, from: s0, whole: L, ysWhole: w.ys, ptsWhole: w.pts });
   }
+  console.log(`walls: the map's retaining walls measured along them, in ${stepped.pieces} pieces: ${(stepped.turned / 1000).toFixed(2)} km turned (their higher ground on the other side), ${(stepped.flat / 1000).toFixed(2)} km where the terrain doesn't step`);
 
   // ---- What each is, how thick, and its top's height at each point. ----
   const final = [];

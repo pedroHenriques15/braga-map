@@ -1683,3 +1683,65 @@ area itself stays what's loaded and seen round them.
 The alternatives: the whole area with more bots (still mostly walking); arenas of their own geometry
 (not Braga); insides in the map (made-up data in a map of what's real).
 
+
+## 058 · The deathmatch's bots: the host's browser runs them, and they know only what a player could
+
+*2026-10-20 · task 075 · the owner's answer, 2026-10-19 (bots from the start); played by the owner at
+each level, 2026-10-20*
+
+A round's empty places are filled by bots on foot, the drivers nobody picked (as in a race, decision
+014), at a level the host sets: Fácil, Médio or Difícil ("Nível", beside "Bots").
+
+- **The host's browser runs them** and decides their shots, as a player's browser decides theirs
+  (decision 056): it sends their snapshots as its own and draws them 110 ms behind, as everyone does,
+  so it shoots at them where it draws them.
+- **A bot knows only what a player could:** it sees what the round's line of sight lets it see, hears
+  shots and footsteps placed only roughly, and fires only at someone in its sight as it fires. Its level
+  is its reaction, its aim's error and tremble, how fast it turns, how far it sees and when it backs off.
+- **After 8 s of seeing and hearing nothing, a bot makes for somewhere 30–60 m from someone,** as
+  far-off footsteps would tell a player: without it a round with few players was mostly walking. It
+  never lets a bot see or shoot anyone it couldn't.
+- **They walk a graph of the round's ground** (party-kart's `src/world/paths.ts`), made when the host
+  opens the round's settings, keeping only the points every spawn reaches.
+
+The alternatives: each browser running some of the bots (a bot's shots would need deciding twice);
+bots that know where everyone is (no hiding from them); bots that only wander (a round of walking).
+
+## 059 · A retaining wall is measured along its length, the land at a wall stands under it, and a passage comes out past its mouths
+
+*2026-10-20 · tasks 077 and 078, found on foot by task 073*
+
+On foot a wall is something a player can't climb or walk under, and a passage under the houses is a
+way through. Walking Fujacal found retaining walls stepped over from below, walls walked under, and
+both of its passages shut or narrowed. The causes were in the data and in the game:
+
+- **A retaining wall of the map's is measured along it** (`walls.mjs`, `stepsOf`): the map gives a way
+  one height, but a retaining wall's face tapers out at its ends, and a way runs on past it or round a
+  corner where its higher ground changes side. Every half metre, the terrain's step across it from
+  1.75 m out either side; cut where its higher ground changes side (turned, so it's on its left) and
+  where its step changes height, each piece its own `h`; where the terrain doesn't step, a piece as low
+  as it does. Of the map's 23 km round the open world, 3 km were the wrong way round and 5 km have no
+  step. Nothing is moved (decision 033 holds): the map's lines are about 0.75 m off the terrain's step
+  either way (the median, not the buildings' shift), so a wall's face and the land's step don't meet.
+- **So on foot a retaining wall stands as high over its top as for a kart** (party-kart's `overTop`),
+  from its lower side, where its face is more than a step: the land at its foot is a 2 m grid's, which
+  ramps up to its top (and a line 0.75 m off puts the step past it), and would let a walker run up it
+  and jump over. A low one (no step there) is climbed.
+- **The river's bed is cut no further than a wall standing on its bank** (party-kart's `land.ts`): the
+  Rio Este's bed was cut 12 m wider than the river either side, under the walls along it by Fujacal,
+  which a walker walked under. A retaining wall along it is the channel's side, cut down past as
+  before: the race's jump by Ponte Pedrinha flies that gap (task 039).
+- **A passage under a building reaches a metre past each mouth** (`streets.mjs`, `mouths`), flush with
+  a pavement it opens onto, which gives way to it; and one the map ends inside the building within 3 m
+  of its outline is drawn out of it: the map draws a passage from a corner of the outline to another,
+  so its floor ended on the outline, and the edge across its mouth was left standing (anywhere within
+  25 cm, the tiles holding a building's points to half a metre). A game cuts a building back at a
+  flight's treads on the ground too, and stands a cut's edges inside a building only where the building
+  is on their other side, not where a passage's floor meets a carriageway's (party-kart's `trimmed`).
+  39 of the open world's 40 passages are walked through (the last runs along a seam between two of the
+  map's buildings, with no open ground at its end).
+
+The alternatives: retaining walls moved onto the terrain's step (decision 033's "nothing is moved",
+and the step is often a bank, not a line); the land carved to the wall at 50 cm (a 2 m grid can't hold
+it, and the game draws the land at 2 m); the river's bed narrowed everywhere (the race's jump needs its
+gap).

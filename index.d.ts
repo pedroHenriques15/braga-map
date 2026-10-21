@@ -310,7 +310,9 @@ export interface Marking {
 //   other way from the map's incline, it climbs to something the terrain doesn't have (a door's
 //   landing): from its foot at the ground, 16 cm a step. The pavements give way to it.
 // level: on the ground (the ground's height), under something at the ground's level (a passage under
-// a building, which a game opens as a carriageway's is), a footbridge's deck or a tunnel, those two
+// a building, which a game opens as a carriageway's is; it reaches a metre past each mouth into the
+// open, and out of the building where the map ends it within 3 m of its outline: task 078, so a
+// building cut back to it is open at its ends), a footbridge's deck or a tunnel, those two
 // with ys, each point's height above elev0 (a footbridge's ends on the deck DGT's point cloud saw,
 // where it's over the ground, as on stairs up to it).
 export type PathLevel = 'ground' | 'under' | 'bridge' | 'tunnel';
@@ -354,7 +356,10 @@ export interface Streets {
 //   the higher ground on their left, (dz, -dx) of each step (dx, dz)); 'fence' (see-through, wire or
 //   mesh); 'railing' (metal bars); 'hedge'; 'guard_rail' (a road's steel barrier); 'gate' (a gate
 //   across a drive, a path or a street, or in a wall's line) or 'bar' (a lift gate or a chain).
-//   A wall of the map's where the terrain steps across it is a retaining wall.
+//   A wall of the map's where the terrain steps across it is a retaining wall, measured along it
+//   (task 077): cut where its higher ground changes side (each piece with it on its left) and where its
+//   step changes height, each piece its own h; where the terrain doesn't step, a piece as low as it
+//   does (0.1 to 0.3 m).
 //   A wall the LiDAR finds on a retaining wall's top, higher than a parapet, is a fence on it.
 // - material: what a wall, a retaining wall or a gate is made of: the map's where it says; else by
 //   what's round it (the owner's answer, checked against the viewpoints' photos): a retaining wall

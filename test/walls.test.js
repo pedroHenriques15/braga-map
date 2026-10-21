@@ -163,3 +163,43 @@ test("a retaining wall's higher ground is on its left", () => {
   console.log(`retaining walls 1.5 m or more: ${up} of ${n} stretches with the ground higher on their left`);
   assert.ok(up >= n * 0.85, `only ${up} of ${n}`);
 });
+
+// What's left in the shooter's area, and why (task 077): each [x, z] of a stretch's middle, to 0.5 m.
+const LEFT = {
+  retaining: [
+    // The map's wall along a garden's edge at (-275, 778), measured a retaining wall: the terrain drops
+    // 2.8 m into a pit 3 m wide under its line, then rises past its top. One side of the pit.
+    [-275, 778.5, "one side of a pit 3 m wide the map draws a single wall along"],
+  ],
+  over: [],
+};
+test("a retaining wall's lower side is drawn under its top, and a wall stands on the land, in the shooter's area", () => {
+  // On foot (Party Kart's task 073) a retaining wall is climbed where the land drawn on its lower side
+  // is within a step of its top, and a wall walked under where it stands over the land. For each
+  // stretch of a retaining wall 0.75 m high or more (a face a walker can't step up), the land 3 m out on
+  // its lower side (the tiles' ground every 2 m ramps up to its top nearer); for each wall, hedge or
+  // fence, its foot (its top less its height) against the land under it.
+  const STEP = 0.3, near = (x, z, list) => list.find(([a, b, why]) => Math.hypot(a - x, b - z) < 0.5)?.[2];
+  const low = [], over = [];
+  let n = 0, m = 0;
+  for (const x of w.walls) {
+    for (let i = 1; i < x.pts.length; i++) {
+      const [ax, az] = x.pts[i - 1], [bx, bz] = x.pts[i], L = Math.hypot(bx - ax, bz - az), mx = (ax + bx) / 2, mz = (az + bz) / 2, top = (x.ys[i - 1] + x.ys[i]) / 2;
+      if (L < 1 || !w.inShooter(mx, mz)) continue;
+      const [nx, nz] = [-(bz - az) / L, (bx - ax) / L];
+      if (x.kind === 'retaining' && x.h >= 0.75) {
+        n++;
+        const land = w.height(mx + nx * 3, mz + nz * 3);
+        if (land > top - STEP) low.push([Math.round(mx * 2) / 2, Math.round(mz * 2) / 2, `${x.h} m high, the land ${(top - land).toFixed(2)} m under its top`]);
+      } else if (x.kind === 'wall' || x.kind === 'hedge' || x.kind === 'fence') {
+        m++;
+        const foot = top - x.h, land = w.height(mx, mz);
+        if (foot > land + 1.5) over.push([Math.round(mx * 2) / 2, Math.round(mz * 2) / 2, `${x.kind} ${x.h} m high, its foot ${(foot - land).toFixed(2)} m over the land`]);
+      }
+    }
+  }
+  console.log(`the shooter's area: ${n} stretches of retaining walls, ${low.length} with the land on their lower side within a step of their top; ${m} of walls, ${over.length} standing over the land`);
+  const why = (list, left) => list.map(([x, z, what]) => `(${x}, ${z}) ${what}: ${near(x, z, left) ?? 'no cause recorded'}`);
+  assert.deepEqual(why(low, LEFT.retaining).filter((s) => s.endsWith('no cause recorded')), []);
+  assert.deepEqual(why(over, LEFT.over).filter((s) => s.endsWith('no cause recorded')), []);
+});

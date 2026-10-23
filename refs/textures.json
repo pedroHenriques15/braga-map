@@ -29,7 +29,7 @@
       "ground": "setts",
       "generator": "setts",
       "metres": 2.4,
-      "params": { "row": 0.11, "width": [0.07, 0.15], "joint": 0.01 },
+      "params": { "row": 0.11, "width": [0.07, 0.15], "joint": 0.016 },
       "ref": { "photo": "closeup-pavement-setts-1", "box": [0, 330, 960, 720] },
       "match": { "mean": [91, 86, 81], "contrast": 24.1 },
       "notes": "Braga's granite setts (cubos) as closeup-pavement-setts-1 and -2 show them: about 11 cm, irregular, worn round, in rows that wander, set in dark grit; only where the map says a street or a path is setts."

@@ -1,5 +1,5 @@
 ---
-status: doing
+status: done
 priority: high
 kind: code
 repo: both
@@ -64,13 +64,30 @@ already within the rule.
 
 ## Done when
 
-- [ ] `world/textures/` holds no texture made from a photograph, and a test says so.
-- [ ] party-kart draws no photograph: `grep -rn "polyhaven\|Poly Haven" src` finds only history in
+- [x] `world/textures/` holds no texture made from a photograph, and a test says so.
+  > `test/textures.test.js`: no recipe names a photo, a Poly Haven asset, a quad, a wall or a tile;
+  > each names a generator of `tools/made.mjs`; `world/textures/` holds `surfaces/` and `trees/` and
+  > exactly the recipes' 72 files; `map().photoCredits` is `[]`.
+- [x] party-kart draws no photograph: `grep -rn "polyhaven\|Poly Haven" src` finds only history in
   comments, and the credits list none.
+  > `render/photos.ts` is gone (its KTX2 loader is `render/ktx2.ts` now); the grep finds one
+  > comment, `trees.ts`'s on what the leaves are matched to. The credits list none, as
+  > `photoCredits` is empty, but How to play's line still ends "Fotografias: .": `src/main.ts` was
+  > task 081's session's to edit today, so task 102 drops it.
 - [ ] Every viewpoint shot again, at High and Low, and rated no lower: above all those that see
   the ten photo facades (the `facade-*` entries in `refs/textures.json` before this task; which
   viewpoints see them isn't worked out yet), and the ground and trees everywhere.
-- [ ] `npm test` here and `npm test` and `npm run check` in party-kart pass.
+  > Shot, not rated. `shots/2026-10-23-task082/` (all 33, High and Low, on 1.33.0) and
+  > `2026-10-23-task082b/` (capela-sao-joao, sao-joao-da-ponte, fujacal-start and
+  > robert-smith-picoto, on 1.33.1's setts and paving), against `2026-10-18-after063`, the last
+  > full round (`after079` has only some). The viewpoints within 100 m of a photo facade:
+  > robert-smith-picoto, devesa, sao-joao-da-ponte, capela-sao-joao, fujacal-start, fujacal-west,
+  > lobato-crossing and liberdade; in none is one large enough to tell the photo from the kit.
+  > Claude's look: the asphalt, the pavements and the trees much as before; the crowns flatter up
+  > close (less in each leaf than a photo has); the setts lost at Low in 1.33.0's thin joints, back
+  > in 1.33.1. Not posted on the scorecard yet: the owner's marks are to come.
+- [x] `npm test` here and `npm test` and `npm run check` in party-kart pass.
+  > Here 144 of 145 (one skipped, as before); party-kart 136 of 136, and `tsc` clean.
 
 ## Out of scope
 
@@ -84,3 +101,21 @@ already within the rule.
   018 (no new photos taken) stands.
 - Priority `high`, not `critical`: the rule is new, nothing private is exposed. The owner may
   raise it.
+- **How it went.** `tools/made.mjs` draws each texture from seeded noise and cells that wrap both
+  ways (six grounds, nine barks, nine kinds of leaf); `textures.mjs --measure` reads each one's
+  mean colour and contrast off its references (the Poly Haven textures that were drawn until now,
+  and `closeup-pavement-setts-1` for the setts, the only Braga close-up fit to measure) into
+  `refs/textures.json`, and each texture is brought to them. Decision 061.
+- **The facades:** the ten photo facades are gone, `world.photos` with them (a breaking change for
+  a game that read it; party-kart's `city.ts` doesn't any more). Five of their buildings had no
+  entry in `refs/buildings.json`, or none seen: they have one now, read off their photos, and every
+  one's notes say what the kit lacks of it. `npm run world` again: 652 guessed facades in the
+  compared box changed with the shares of those seen, and two buildings' floors; nothing else.
+- **The budget:** the textures' download on High 2.50 MB, was 3.29 (the facades' 0.78 MB at their
+  three levels gone, the rest a little smaller); Medium 0.86, was 1.12; Low 0.26, was 0.32. The
+  same sizes in pixels, ten fewer textures on the card. Each round's `stats.json` has the draw
+  calls and frame times.
+- **Two tags:** 1.33.0 drew the setts' joints so thin they vanished at Low; 1.33.1 widens them to
+  1.6 cm, softens the granite's speckle and the concrete's stains, and puts fewer stones in the
+  soil.
+- **Not verified:** the owner's eye on any of it; the Medium level; a phone.

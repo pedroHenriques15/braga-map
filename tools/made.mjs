@@ -182,7 +182,7 @@ const GROUND = {
     return paint(n, (u, v) => {
       let g = 0.6 + mott(u, v) * 0.05 + grain(u, v) * 0.05 + (r() - 0.5) * 0.12;
       const s = stain(u, v);
-      if (s > 0.3) g -= (s - 0.3) * 0.25;
+      if (s > 0.3) g -= (s - 0.3) * 0.1;
       const c = pores(u, v);
       if (c.f1 < 0.06 && hash(c.id) < 0.3) g *= 0.7;
       return [g * 1.02, g, g * 0.95];
@@ -221,8 +221,8 @@ const GROUND = {
         return [g * 1.08, g * 1.02, g * 0.9];
       }
       // The stone: its own tone, rounded off at its edges, its face uneven and speckled.
-      const tone = 0.42 + st.tone * 0.16 + hash(id) * 0.05, round = Math.sqrt(smooth(0, j * 2, d));
-      const g = granite(r, tone * (0.72 + 0.28 * round) * (1 + face(u, v) * 0.08));
+      const tone = 0.4 + st.tone * 0.24 + hash(id) * 0.06, round = Math.sqrt(smooth(0, j * 2, d));
+      const g0 = tone * (0.72 + 0.28 * round) * (1 + face(u, v) * 0.08), g = mix(g0, granite(r, g0), 0.5);
       return [g, g * 0.99, g * 0.96];
     });
   },
@@ -252,7 +252,7 @@ const GROUND = {
       let g = (0.56 + body(u, v) * 0.1) * lit * (0.94 + hash(c.id) * 0.12) * (c.f2 - c.f1 < 0.04 ? 0.82 : 1) + (r() - 0.5) * 0.05;
       const s = stones(u, v);
       const sr = 0.1 + hash(s.id, 1) * 0.12;
-      if (hash(s.id) < 0.18 && s.f1 < sr) { const h = Math.sqrt(1 - (s.f1 / sr) ** 2), t = (0.42 + hash(s.id, 2) * 0.2) * (0.6 + 0.4 * h + (-s.dx - s.dy) * 1.2 * h); return [t * 1.05, t, t * 0.9]; }
+      if (hash(s.id) < 0.08 && s.f1 < sr) { const h = Math.sqrt(1 - (s.f1 / sr) ** 2), t = (0.42 + hash(s.id, 2) * 0.2) * (0.6 + 0.4 * h + (-s.dx - s.dy) * 1.2 * h); return [t * 1.05, t, t * 0.9]; }
       return [g * 1.1, g * 0.86, g * 0.62];
     });
     const px = n / m;

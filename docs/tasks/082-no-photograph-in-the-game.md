@@ -1,5 +1,5 @@
 ---
-status: todo
+status: doing
 priority: high
 kind: code
 repo: both

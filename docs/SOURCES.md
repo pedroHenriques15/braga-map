@@ -232,13 +232,13 @@ their lists are committed; `node tools/refs.mjs` fetches the photos into `.cache
 - **Credit:** "© Mapillary contributors, CC BY-SA 4.0", with each photo's author and link
   (`photo` in `refs/viewpoints.json` and `refs/photos.json` has both).
 - **May be used for:** the photos as references, with the credit and link, and their cameras'
-  positions to place the viewpoints. As textures too, which the licence allows: a texture made
-  from one is CC BY-SA. The detected features never get copied into this repository; they may
+  positions to place the viewpoints. Never as textures since task 082 (the owner's rule: no
+  photograph is drawn in a game), though the licence would allow it. The detected features never get copied into this repository; they may
   guide someone mapping those things in OpenStreetMap, which then brings them here.
 - **Used:** all 34 viewpoints' photos (three of them reference photos of the landmarks, task 021, and two of the route's chapels, task 056), and 403 of the reference photos (task 008, and four of task 056's), 19 of them
-  marked good enough for a texture. Ten of those are facade textures since task 007
-  (`refs/textures.json`, `world/textures/`), so CC BY-SA 4.0, each with its author and link in
-  its tile's index; `map().photoCredits` gathers the authors for a game's credits.
+  marked good enough for a texture. Ten of those were facade textures from task 007 to task 082,
+  which took them out of the game; what they showed is in `refs/buildings.json`, and
+  `setts`'s mean colour and contrast are measured off `closeup-pavement-setts-1`.
 
 ### Wikimedia Commons
 
@@ -275,7 +275,7 @@ their lists are committed; `node tools/refs.mjs` fetches the photos into `.cache
 - **KartaView** (`https://api.openstreetcam.org/2.0/photo/`): every query near Braga timed out or
   answered "Restricted access" on 2026-10-13.
 
-## For the ground's and the trees' photos
+## References for the ground's and the trees' textures
 
 ### Poly Haven
 
@@ -284,14 +284,14 @@ their lists are committed; `node tools/refs.mjs` fetches the photos into `.cache
 - **Access:** open, no account: each asset's record at `https://api.polyhaven.com/info/<id>` (its
   authors, its size in metres, its date) and its files at `https://api.polyhaven.com/files/<id>`.
 - **Licence:** CC0 1.0, every asset (https://polyhaven.com/license).
-- **Credit:** none owed; each is credited to its authors all the same, in `world/textures.js`
-  (`SURFACES`, `TREES`), and `map().photoCredits` lists them.
-- **May be used for:** everything.
-- **Fetched:** by `node tools/textures.mjs`, each asset's record and its 2k diffuse photo (a plant's
+- **Credit:** none owed, and none given since task 082: nothing of theirs is in the game.
+- **May be used for:** everything; since task 082 (decision 061), as references only.
+- **Fetched:** by `node tools/textures.mjs --measure`, each asset's 2k diffuse photo (a plant's
   photos of its leaves or twigs, with their alpha), into `.cache/textures/sources/`, checked on
-  2026-10-16 and 2026-10-18.
-- **Used for:** each kind of ground's photo (task 016, decision 034), tiled at its real size and
-  tinted with the place's colour: `asphalt_04` (Jenelle van Heerden, Sergej Majboroda, 4.04 m),
+  2026-10-16, 2026-10-18 and 2026-10-23.
+- **Used for:** what each made texture's mean colour and contrast are matched to (task 082,
+  `refs/textures.json`'s `ref` and `match`). Until task 082 they were drawn: each kind of ground's
+  photo (task 016, decision 034), tiled at its real size and tinted with the place's colour: `asphalt_04` (Jenelle van Heerden, Sergej Majboroda, 4.04 m),
   `concrete_floor_01` for paving (Rob Tuytel, 2 m), `cobblestone_floor_03` for setts (Rob Tuytel,
   2.4 m), `grass_ground` (Charlotte Baglioni, 2.51 m), `dirt_floor` for bare soil (eye-candy.xyz,
   2.07 m) and `gravel_floor_02` (Jenelle van Heerden, Dimitrios Savva, 2 m), in
@@ -303,7 +303,9 @@ their lists are committed; `node tools/refs.mjs` fetches the photos into `.cache
   photos of `island_tree_02`'s leaves (the broadleaves', the poplars', the palms' leaflets),
   `pine_tree_01`'s twigs (the pines'), `fir_tree_01`'s twigs (the cypresses' and cedars'; all three
   Rob Tuytel, Rico Cilliers) and `shrub_04`'s (the eucalyptus's, Rico Cilliers), laid along twigs
-  into a spray by `tools/textures.mjs`.
+  into a spray by `tools/textures.mjs`. The same assets are the references now, with
+  `japanese_zelkova_bark` (the planes'), `bark_brown_02` (the limes'), `sakura_bark` (the birches'),
+  `island_tree_01` (the planes' leaves) and `tree_small_02` (the limes' and the birches').
 
 ## Sounds
 

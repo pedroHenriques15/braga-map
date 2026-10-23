@@ -5,7 +5,7 @@
 // roofs: informação geográfica cedida pela Direção-Geral do Território (CC BY 4.0).
 import BASE from './world/base.js';
 import { TILES } from './world/tiles.js';
-import { CREDITS, SURFACES, TEXTURES, TREES } from './world/textures.js';
+import { SURFACES, TREES } from './world/textures.js';
 import { COVER, KINDS } from './world/cover.js';
 
 // A packed part of the map: a JSON header (where each part's numbers start, how many, and what
@@ -200,7 +200,8 @@ export function map() {
   for (const s of m.sections) for (const id of s.tiles) sectionOfTile.set(id, s.id);
   base = {
     credit: m.credit,
-    photoCredits: CREDITS,
+    // No photograph is drawn (task 082), so no photographer to credit.
+    photoCredits: [],
     groundKinds: KINDS.map((kind) => ({ kind, texture: SURFACES[kind] ?? null })),
     treeKinds: m.treeKinds.map(({ kind, evergreen }) => ({ kind, evergreen, bark: TREES[kind]?.bark ?? null, leaves: TREES[kind]?.leaves ?? null })),
     elev0: m.elev0,
@@ -263,10 +264,8 @@ export function tilesFor(area) {
 export async function loadWorld(area) {
   const m = map();
   const ids = tilesFor(area);
-  const [parts, photos, groundCover] = await Promise.all([
+  const [parts, groundCover] = await Promise.all([
     Promise.all(ids.map((id) => TILES[id]().then((mod) => unpack(mod.default)))),
-    // The photo textures' indexes (tools/textures.mjs): where each goes and its files, not the files.
-    Promise.all(ids.filter((id) => id in TEXTURES).map((id) => TEXTURES[id]().then((mod) => mod.default))),
     // What the ground is on each (tools/cover.mjs): its files, not the files.
     Promise.all(ids.filter((id) => id in COVER).map((id) => COVER[id]().then((mod) => mod.default))),
   ]);
@@ -503,7 +502,6 @@ export async function loadWorld(area) {
     trees,
     streets,
     walls,
-    photos: photos.flat(),
     groundCover,
   };
 }

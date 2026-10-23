@@ -1,6 +1,6 @@
 // What the ground is (task 016, tools/cover.mjs): every tile under the Volta dos Amigos' box has its
 // classes and each kind's colour at every graphics level, the cells' bytes a kind and a crown; each kind
-// that has a photo has its texture, credited; the parked cars are where they can be; a car park is an
+// but water and a roof has its texture, made (task 082); the parked cars are where they can be; a car park is an
 // area of its own; and an area's holes are inside it (a multipolygon's inner rings).
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -8,7 +8,7 @@ import { test } from 'node:test';
 import sharp from 'sharp';
 import { loadWorld, map } from '../index.js';
 import { COVER, KINDS } from '../world/cover.js';
-import { CREDITS, SURFACES } from '../world/textures.js';
+import { SURFACES } from '../world/textures.js';
 import amigos from '../tracks/amigos.js';
 
 const LEVELS = { high: 1000, medium: 500, low: 250 };
@@ -74,16 +74,15 @@ test("the shooter's area and the open world's ground is mostly what it should be
   assert.ok(n > 1000 && same / n > 0.95, `${same} of ${n} points on carriageways are their surface`);
 });
 
-test('each kind of ground with a photo has one, at every level, credited, and the map hands them out', () => {
+test('each kind of ground but water and a roof has its texture, at every level, made, and the map hands them out', () => {
   for (const k of KINDS.slice(0, 6)) {
     const s = SURFACES[k];
     assert.ok(s, k);
     assert.ok(s.metres >= 1 && s.metres <= 5, `${k}: ${s.metres} m`);
     assert.equal(s.mean.length, 3);
     for (const l of Object.keys(LEVELS)) assert.equal(fs.statSync(new URL(s.files[l].url)).size, s.files[l].bytes, `${k} ${l}`);
-    assert.equal(s.credit.source, 'Poly Haven');
-    assert.equal(s.credit.licence, 'CC0');
-    assert.ok(s.credit.author.split(', ').every((a) => CREDITS.find((c) => c.source === 'Poly Haven').authors.includes(a)), k);
+    // Made, not photographed (task 082; test/textures.test.js has how).
+    assert.ok(s.made.generator && !('credit' in s), k);
   }
   assert.deepEqual(m.groundKinds.map((g) => g.kind), KINDS);
   assert.deepEqual(m.groundKinds.map((g) => g.texture?.id ?? null), KINDS.map((k) => SURFACES[k]?.id ?? null));

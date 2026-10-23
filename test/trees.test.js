@@ -9,7 +9,7 @@ import { CELL, M, W, canopyOf, crowns, EVERGREEN, kindOf, KINDS, layers, measure
 import { inView, NEAR } from '../tools/species.mjs';
 import { viewCamera } from '../tools/buildings.mjs';
 import { loadWorld, map } from '../index.js';
-import { CREDITS, TREES } from '../world/textures.js';
+import { TREES } from '../world/textures.js';
 import amigos from '../tracks/amigos.js';
 
 const LEVELS = ['high', 'medium', 'low'];
@@ -201,7 +201,7 @@ test('the trees near the viewpoints are the species their photos show', async ()
   assert.equal(off, 0, `${off} trees of a row or a place not of its kind`);
 });
 
-test("each kind of tree has its bark and its leaves at every level, credited", () => {
+test("each kind of tree has its bark and its leaves at every level, made", () => {
   const m = map();
   for (const { kind, bark, leaves } of m.treeKinds) {
     assert.ok(bark && leaves, kind);
@@ -217,8 +217,8 @@ test("each kind of tree has its bark and its leaves at every level, credited", (
         assert.ok(f.w * f.h < last, `${t.id} ${l}`);
         last = f.w * f.h;
       }
-      assert.deepEqual([t.credit.source, t.credit.licence], ['Poly Haven', 'CC0'], t.id);
-      assert.ok(CREDITS.some((c) => c.source === 'Poly Haven' && t.credit.author.split(', ').every((a) => c.authors.includes(a))), t.id);
+      // Made, not photographed (task 082).
+      assert.ok(t.made.generator && !('credit' in t), t.id);
     }
   }
 });

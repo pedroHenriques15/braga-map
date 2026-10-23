@@ -1,295 +1,269 @@
 {
-  "about": "Photo textures (task 007): what tools/textures.mjs makes, and from what. A ground texture is the 2025 orthophoto over a tile (tile; none is made since task 016 drew the ground from its classes, its option A, over the orthophoto, its option B). A surface is a kind of ground's photo (task 016), the one a game tiles over the ground tools/cover.mjs classes as that kind (ground): a Poly Haven asset (CC0, seamless, its size in metres in its record), by its id. A tree's bark and leaves (task 019) are a kind of tree's (tree): its bark a Poly Haven texture (asset, CC0, seamless, its size in metres in its record); its leaves a spray composed from a Poly Haven tree's photos of its leaves or twigs (asset, and the files of it with their colour, diff, and their alpha, alpha), laid along twigs as spray says (branches, leaves to a branch per, fill more scattered over them, their length len as a share of the card, the angle they spread from the twig in degrees, droop, stretch and thin, and lobes, as many leaves fanned from one stalk as a plane's lobes, task 061; or a palm's frond); a bark with a tone (task 061, a birch's, which Poly Haven hasn't) is greyed and lifted to its mean brightness, contrast times as contrasted, tinted by its tint. A facade is a reference photo (refs/photos.json, by its id) straightened onto a wall: wall is the wall's points on the map, left to right as the photo sees it (along a building's footprint); quad its corners in the photo's own pixels, top left, top right, bottom right, bottom left; s the metres along the wall they span (from its first point, the whole wall if left out); y the metres above the building's ground (its y) at the quad's bottom and top. Read off the photo by eye.",
+  "about": "The world's textures (task 082): what tools/textures.mjs makes, and how. None is a photograph (the owner's rule, 2026-10-23): each is drawn by a generator in tools/made.mjs (generator, with its params), seamless, and its mean colour and contrast (match: the mean sRGB colour, and the spread of its luminance in sRGB's bytes) matched to what its references measure (ref: a Poly Haven texture, CC0, by its id, polyhaven, kept as a reference only, its file and its leaves' alpha where it has them, the green leaves only where green, greyed and lifted as tone says; or a reference photo of Braga, photo, refs/photos.json's, in its box of pixels), which node tools/textures.mjs --measure reads off them. A surface is a kind of ground (task 016), the one a game tiles over the ground tools/cover.mjs classes as that kind (ground), metres a side. A tree's bark and leaves (task 019) are a kind of tree's (tree): its bark metres a side, to wrap round its trunk; its leaves a spray of leaves drawn from their shape (leaf: shape, ovate, lanceolate, deltoid, cordate, rhombic, palmate, leaflet or needles; tones, the two across a leaf, before matching; teeth along its edge, veins either side of its midrib, how much of it is stalk, how far it curves; for needles, how many, the angles they spread at from the twig, their length as a share of the leaf's, their width), laid along twigs as spray says (branches, leaves to a branch per, fill more scattered over them, their length len as a share of the card, the angle they spread from the twig in degrees, droop, stretch and thin, the twig's colour or none; or a palm's frond).",
   "textures": [
-    {
-      "id": "facade-way-906140272",
-      "kind": "facade",
-      "photo": "facade-way-906140272",
-      "wall": [[1146.5, 1154], [1146.5, 1156], [1147.5, 1156], [1148.5, 1159], [1150.5, 1158.5], [1151, 1161]],
-      "quad": [[1672, 558], [2423, 558], [2423, 2168], [1672, 2168]],
-      "y": [0, 12.5],
-      "notes": "The middle of three. Its front steps back twice; the top metre of the taller part is left out. Dusk, a parked car at its foot."
-    },
-    {
-      "id": "facade-way-147545836",
-      "kind": "facade",
-      "photo": "facade-way-147545836",
-      "wall": [[369.5, 978.5], [379, 1000]],
-      "quad": [[106, 198], [823, 206], [823, 671], [106, 715]],
-      "y": [0, 16],
-      "notes": "Two blocks under one outline: the right one a floor taller, its top floor left out."
-    },
-    {
-      "id": "facade-way-1463270529",
-      "kind": "facade",
-      "photo": "facade-way-1463270529",
-      "wall": [[474, 966], [487, 966]],
-      "quad": [[1332, 241], [3798, 198], [3798, 2239], [1332, 2126]],
-      "s": [0, 12.5],
-      "y": [0, 7],
-      "notes": "Taken from a moving car: blurred. Only the shops and the first floor; the top floor is out of the photo."
-    },
-    {
-      "id": "facade-way-146464170",
-      "kind": "facade",
-      "photo": "facade-way-146464170",
-      "wall": [[1217.5, 1146], [1230, 1115.5]],
-      "quad": [[0, 714], [3600, 556], [3600, 1871], [0, 1956]],
-      "s": [3, 30],
-      "y": [0, 8.8],
-      "notes": "Most of the retail park's front: the ends are out of the photo, and a dark blur on the right is the car's window frame."
-    },
-    {
-      "id": "facade-lidar-x1150z1177",
-      "kind": "facade",
-      "photo": "facade-lidar-x1150z1177",
-      "wall": [[1147.5, 1172], [1148, 1178.5], [1149.5, 1178.5], [1149.5, 1181.5]],
-      "quad": [[1771, 1593], [3968, 1610], [3968, 2282], [1771, 2267]],
-      "y": [0, 2.5],
-      "notes": "The café's ground floor, which the LiDAR found as a building of its own; a car hides its left end."
-    },
-    {
-      "id": "facade-way-163978042",
-      "kind": "facade",
-      "photo": "facade-way-163978042",
-      "wall": [[1096.5, 1270], [1094, 1254]],
-      "quad": [[0, 62], [2253, 71], [2253, 2046], [0, 2063]],
-      "s": [2.3, 16.2],
-      "y": [0, 12.2],
-      "notes": "The corner block from its corner; its left end is out of the photo. A lamp post and cars in front."
-    },
-    {
-      "id": "facade-way-440182287",
-      "kind": "facade",
-      "photo": "facade-way-440182287",
-      "wall": [[-85.5, 693], [-91.5, 695]],
-      "quad": [[400, 457], [1634, 297], [1634, 1943], [400, 1971]],
-      "y": [0, 10],
-      "notes": "The left of a pair of semi-detached houses, its azulejos. The garden wall and fence stand in front of its lowest floor."
-    },
-    {
-      "id": "facade-way-440314428",
-      "kind": "facade",
-      "photo": "facade-way-440314428",
-      "wall": [[-165, 771], [-159.5, 769]],
-      "quad": [[1545, 241], [2423, 241], [2423, 1752], [1545, 1743]],
-      "y": [0, 12.8],
-      "notes": "A narrow part of a long block, where the map cuts it; a lorry hides the ground floor."
-    },
-    {
-      "id": "facade-way-1491347983",
-      "kind": "facade",
-      "photo": "facade-way-1491347983",
-      "wall": [[269.5, 753.5], [278.5, 772.5]],
-      "quad": [[362, 281], [880, 281], [880, 882], [362, 882]],
-      "y": [0, 24],
-      "notes": "The middle of three blocks, its top floor set back and left out; the map's outline is wider than the block, so a little of each neighbour comes too."
-    },
-    {
-      "id": "facade-way-159208687",
-      "kind": "facade",
-      "photo": "facade-way-159208687",
-      "wall": [[150, 1024], [120.5, 1039.5]],
-      "quad": [[178, 333], [823, 322], [823, 503], [178, 518]],
-      "y": [0, 10.9],
-      "notes": "Seen from across a car park, so 5 cm a pixel at best."
-    },
     {
       "id": "surface-asphalt",
       "kind": "surface",
       "ground": "asphalt",
-      "asset": "asphalt_04",
-      "notes": "Weathered, pale and fine: most of Braga's asphalt in the orthophoto is a light grey (its median 134 in the sun), not new black."
+      "generator": "asphalt",
+      "metres": 4,
+      "params": { "stone": 0.012 },
+      "ref": { "polyhaven": "asphalt_04" },
+      "match": { "mean": [134, 129, 126], "contrast": 13.7 },
+      "notes": "Weathered, pale and fine: most of Braga's asphalt in the orthophoto is a light grey (its median 134 in the sun), not new black; its stones about a centimetre."
     },
     {
       "id": "surface-paving",
       "kind": "surface",
       "ground": "paving",
-      "asset": "concrete_floor_01",
+      "generator": "concrete",
+      "metres": 2,
+      "params": {},
+      "ref": { "polyhaven": "concrete_floor_01" },
+      "match": { "mean": [118, 107, 89], "contrast": 24.6 },
       "notes": "Light concrete, for the yards, courtyards and paved plots; the calçada's pattern is task 018's."
     },
     {
       "id": "surface-setts",
       "kind": "surface",
       "ground": "setts",
-      "asset": "cobblestone_floor_03",
-      "notes": "Small grey granite setts in rows: only where the map says a street or a path is setts."
+      "generator": "setts",
+      "metres": 2.4,
+      "params": { "row": 0.11, "width": [0.07, 0.15], "joint": 0.01 },
+      "ref": { "photo": "closeup-pavement-setts-1", "box": [0, 330, 960, 720] },
+      "match": { "mean": [91, 86, 81], "contrast": 24.1 },
+      "notes": "Braga's granite setts (cubos) as closeup-pavement-setts-1 and -2 show them: about 11 cm, irregular, worn round, in rows that wander, set in dark grit; only where the map says a street or a path is setts."
     },
     {
       "id": "surface-grass",
       "kind": "surface",
       "ground": "grass",
-      "asset": "grass_ground",
-      "notes": "A patchy lawn, green over soil, as Braga's lawns and verges are in summer."
+      "generator": "grass",
+      "metres": 2.5,
+      "params": { "blades": 40000, "blade": [0.015, 0.045] },
+      "ref": { "polyhaven": "grass_ground" },
+      "match": { "mean": [110, 96, 62], "contrast": 9.4 },
+      "notes": "A patchy lawn, green blades and some dry over soil, as Braga's lawns and verges are."
     },
     {
       "id": "surface-soil",
       "kind": "surface",
       "ground": "soil",
-      "asset": "dirt_floor",
-      "notes": "Bare, dry soil: the waste ground, the alameda's strip under its trees."
+      "generator": "soil",
+      "metres": 2,
+      "params": { "twigs": 20 },
+      "ref": { "polyhaven": "dirt_floor" },
+      "match": { "mean": [182, 140, 100], "contrast": 13 },
+      "notes": "Bare, dry soil, its clods, small stones and bits of twig: the waste ground, the alameda's strip under its trees."
     },
     {
       "id": "surface-gravel",
       "kind": "surface",
       "ground": "gravel",
-      "asset": "gravel_floor_02",
-      "notes": "Light grey gravel."
+      "generator": "gravel",
+      "metres": 2,
+      "params": { "stone": 0.016 },
+      "ref": { "polyhaven": "gravel_floor_02" },
+      "match": { "mean": [170, 166, 155], "contrast": 32.4 },
+      "notes": "Light grey gravel, pebbles of a centimetre or two."
     },
     {
       "id": "tree-broadleaf-bark",
       "kind": "bark",
       "tree": "broadleaf",
-      "asset": "chinese_hackberry_bark",
+      "generator": "smooth",
+      "metres": 1.8,
+      "params": {},
+      "ref": { "polyhaven": "chinese_hackberry_bark" },
+      "match": { "mean": [85, 71, 51], "contrast": 8.6 },
       "notes": "Smooth grey bark, a hackberry's: Braga's streets are lined with hackberries (lódãos), limes and planes, whose young bark is as grey and smooth."
     },
     {
       "id": "tree-broadleaf-leaves",
       "kind": "leaves",
       "tree": "broadleaf",
-      "asset": "island_tree_02",
-      "diff": "leaves_diff",
-      "alpha": "leaves_alpha",
+      "generator": "spray",
+      "leaf": { "shape": "ovate", "tones": [[70, 105, 40], [110, 140, 60]], "teeth": 24, "veins": 6 },
       "spray": { "branches": 8, "per": 10, "len": [0.12, 0.18], "spread": [25, 70], "fill": 110 },
-      "notes": "Broad, glossy green leaves on fanning twigs: a street tree or an oak from a few metres off."
+      "ref": { "polyhaven": "island_tree_02", "file": "leaves_diff", "alpha": "leaves_alpha" },
+      "match": { "mean": [93, 101, 33], "contrast": 16.9 },
+      "notes": "Broad, glossy green leaves, finely toothed, on fanning twigs: a street tree or an oak from a few metres off."
     },
     {
       "id": "tree-pine-bark",
       "kind": "bark",
       "tree": "pine",
-      "asset": "pine_bark",
+      "generator": "plates",
+      "metres": 2,
+      "params": { "plate": [0.12, 0.3] },
+      "ref": { "polyhaven": "pine_bark" },
+      "match": { "mean": [103, 83, 64], "contrast": 12 },
       "notes": "A pine's plated, furrowed bark, as the maritime pines' on the hills."
     },
     {
       "id": "tree-pine-leaves",
       "kind": "leaves",
       "tree": "pine",
-      "asset": "pine_tree_01",
-      "diff": "twig_diff",
-      "alpha": "twig_alpha",
-      "spray": { "branches": 7, "per": 4, "len": [0.26, 0.38], "spread": [20, 50], "min": 0.01, "max": 0.06, "twig": "none", "fill": 45 },
-      "notes": "Twigs of long needles fanning out from a branch."
+      "generator": "spray",
+      "leaf": { "shape": "needles", "tones": [[70, 90, 45], [105, 125, 65]], "needles": 40, "angle": [15, 40], "length": 0.75 },
+      "spray": { "branches": 7, "per": 4, "len": [0.26, 0.38], "spread": [20, 50], "twig": "none", "fill": 45 },
+      "ref": { "polyhaven": "pine_tree_01", "file": "twig_diff", "alpha": "twig_alpha", "green": true },
+      "match": { "mean": [66, 72, 46], "contrast": 22 },
+      "notes": "Twigs of long needles fanning out from a branch, a maritime pine's."
     },
     {
       "id": "tree-eucalyptus-bark",
       "kind": "bark",
       "tree": "eucalyptus",
-      "asset": "bark_bluegum",
+      "generator": "peeling",
+      "metres": 1.8,
+      "params": {},
+      "ref": { "polyhaven": "bark_bluegum" },
+      "match": { "mean": [90, 77, 64], "contrast": 16.2 },
       "notes": "A blue gum's pale, peeling bark: Eucalyptus globulus is the eucalyptus of the Minho's woods."
     },
     {
       "id": "tree-eucalyptus-leaves",
       "kind": "leaves",
       "tree": "eucalyptus",
-      "asset": "shrub_04",
-      "diff": "Diffuse",
-      "alpha": "Alpha",
-      "spray": { "branches": 7, "per": 7, "len": [0.13, 0.19], "spread": [40, 80], "droop": 0.6, "stretch": 1.5, "thin": 0.7, "green": true, "min": 0.0003, "fill": 70 },
-      "notes": "Long, narrow grey-green leaves hanging from the twigs, the dead ones left out."
+      "generator": "spray",
+      "leaf": { "shape": "lanceolate", "tones": [[95, 115, 85], [130, 145, 110]], "curve": 0.12 },
+      "spray": { "branches": 7, "per": 7, "len": [0.13, 0.19], "spread": [40, 80], "droop": 0.6, "stretch": 1.5, "thin": 1, "fill": 110 },
+      "ref": { "polyhaven": "shrub_04", "file": "Diffuse", "alpha": "Alpha", "green": true },
+      "match": { "mean": [115, 124, 83], "contrast": 14.2 },
+      "notes": "Long, narrow, curved grey-green leaves hanging from the twigs."
     },
     {
       "id": "tree-conifer-bark",
       "kind": "bark",
       "tree": "conifer",
-      "asset": "chinese_cedar_bark",
+      "generator": "fibres",
+      "metres": 2.27,
+      "params": {},
+      "ref": { "polyhaven": "chinese_cedar_bark" },
+      "match": { "mean": [83, 64, 47], "contrast": 11.2 },
       "notes": "A cedar's stringy, reddish bark, as the cypresses' and cedars' in Braga's gardens and churchyards."
     },
     {
       "id": "tree-conifer-leaves",
       "kind": "leaves",
       "tree": "conifer",
-      "asset": "fir_tree_01",
-      "diff": "twig_diff",
-      "alpha": "twig_alpha",
-      "spray": { "branches": 7, "per": 5, "len": [0.26, 0.38], "spread": [15, 45], "min": 0.002, "max": 0.08, "twig": "none", "fill": 55 },
-      "notes": "Dense sprays of a fir's short needles, for the cypresses and cedars."
+      "generator": "spray",
+      "leaf": { "shape": "needles", "tones": [[55, 80, 40], [90, 115, 60]], "needles": 70, "angle": [50, 80], "length": 0.18, "width": 1.6 },
+      "spray": { "branches": 7, "per": 5, "len": [0.26, 0.38], "spread": [15, 45], "twig": "none", "fill": 55 },
+      "ref": { "polyhaven": "fir_tree_01", "file": "twig_diff", "alpha": "twig_alpha", "green": true },
+      "match": { "mean": [79, 94, 47], "contrast": 17.1 },
+      "notes": "Dense sprays of short needles, for the cypresses and cedars."
     },
     {
       "id": "tree-poplar-bark",
       "kind": "bark",
       "tree": "poplar",
-      "asset": "bark_willow",
-      "notes": "A willow's furrowed grey bark, as a poplar's."
+      "generator": "furrows",
+      "metres": 1,
+      "params": { "across": 9, "up": 3, "furrow": 0.25 },
+      "ref": { "polyhaven": "bark_willow" },
+      "match": { "mean": [66, 53, 42], "contrast": 9.3 },
+      "notes": "A poplar's furrowed grey bark, its furrows parting and meeting in long diamonds."
     },
     {
       "id": "tree-poplar-leaves",
       "kind": "leaves",
       "tree": "poplar",
-      "asset": "island_tree_02",
-      "diff": "leaves_diff",
-      "alpha": "leaves_alpha",
+      "generator": "spray",
+      "leaf": { "shape": "deltoid", "tones": [[70, 110, 45], [115, 145, 70]], "teeth": 20, "veins": 4, "stalk": 0.25 },
       "spray": { "branches": 8, "per": 10, "len": [0.09, 0.13], "spread": [20, 50], "fill": 150 },
-      "notes": "Smaller leaves, close along upright twigs."
+      "ref": { "polyhaven": "island_tree_02", "file": "leaves_diff", "alpha": "leaves_alpha" },
+      "match": { "mean": [93, 101, 33], "contrast": 16.9 },
+      "notes": "A poplar's triangular leaves on long stalks, small and close along upright twigs."
     },
     {
       "id": "tree-palm-bark",
       "kind": "bark",
       "tree": "palm",
-      "asset": "palm_tree_bark",
-      "notes": "A palm's trunk, ringed where its old fronds fell."
+      "generator": "rings",
+      "metres": 1.3,
+      "params": { "band": 0.09, "around": 7 },
+      "ref": { "polyhaven": "palm_tree_bark" },
+      "match": { "mean": [156, 144, 129], "contrast": 26.1 },
+      "notes": "A palm's trunk, ringed where its old fronds fell, their bases staggered ring to ring."
     },
     {
       "id": "tree-palm-leaves",
       "kind": "leaves",
       "tree": "palm",
-      "asset": "island_tree_02",
-      "diff": "leaves_diff",
-      "alpha": "leaves_alpha",
-      "spray": { "frond": true, "len": [0.18, 0.34], "spread": [55, 75], "thin": 0.35 },
+      "generator": "spray",
+      "leaf": { "shape": "leaflet", "tones": [[80, 110, 45], [120, 145, 70]] },
+      "spray": { "frond": true, "len": [0.18, 0.34], "spread": [55, 75], "thin": 1.1 },
+      "ref": { "polyhaven": "island_tree_02", "file": "leaves_diff", "alpha": "leaves_alpha" },
+      "match": { "mean": [93, 101, 33], "contrast": 16.9 },
       "notes": "A frond: leaflets either side of its stem, longest in its middle."
     },
     {
       "id": "tree-plane-bark",
       "kind": "bark",
       "tree": "plane",
-      "asset": "japanese_zelkova_bark",
-      "tone": { "mean": 150, "contrast": 1.5, "tint": [232, 240, 214] },
-      "notes": "A plane's pale bark, flaking in patches of grey, green and cream (capela-sao-joao's): a zelkova's, which flakes the same way, greyed to a plane's olive grey, its patches cream. Poly Haven's bark_platanus is an old plane's dark, rough foot."
+      "generator": "patches",
+      "metres": 1.8,
+      "params": { "across": 7, "up": 9 },
+      "ref": { "polyhaven": "japanese_zelkova_bark", "tone": { "mean": 150, "contrast": 1.5, "tint": [232, 240, 214] } },
+      "match": { "mean": [136, 141, 126], "contrast": 23 },
+      "notes": "A plane's pale bark, flaking in patches of grey, green and cream, as capela-sao-joao's photos show the Parque da Ponte's: matched to a zelkova's, which flakes the same way, greyed to a plane's olive grey as task 061 judged it."
     },
     {
       "id": "tree-plane-leaves",
       "kind": "leaves",
       "tree": "plane",
-      "asset": "island_tree_01",
-      "diff": "leaves_diff",
-      "alpha": "leaves_alpha",
-      "spray": { "branches": 7, "per": 5, "len": [0.11, 0.15], "spread": [35, 75], "lobes": 5, "fill": 30 },
-      "notes": "A plane's broad, palmate leaves: each five leaves of a Poly Haven tree fanned from one stalk, as Poly Haven has no plane."
+      "generator": "spray",
+      "leaf": { "shape": "palmate", "tones": [[75, 110, 40], [120, 150, 70]], "stalk": 0.2 },
+      "spray": { "branches": 7, "per": 5, "len": [0.15, 0.22], "spread": [35, 75], "fill": 70 },
+      "ref": { "polyhaven": "island_tree_01", "file": "leaves_diff", "alpha": "leaves_alpha" },
+      "match": { "mean": [93, 101, 33], "contrast": 16.9 },
+      "notes": "A plane's broad leaves, five-lobed."
     },
     {
       "id": "tree-lime-bark",
       "kind": "bark",
       "tree": "lime",
-      "asset": "bark_brown_02",
-      "notes": "A lime's grey-brown bark in shallow ridges, as the Parque da Ponte's old limes'."
+      "generator": "ridges",
+      "metres": 1,
+      "params": { "across": 14, "up": 5, "furrow": 0.15 },
+      "ref": { "polyhaven": "bark_brown_02" },
+      "match": { "mean": [95, 86, 64], "contrast": 27.3 },
+      "notes": "A lime's grey-brown bark in shallow ridges that branch and meet, as the Parque da Ponte's old limes'."
     },
     {
       "id": "tree-lime-leaves",
       "kind": "leaves",
       "tree": "lime",
-      "asset": "tree_small_02",
-      "diff": "leaves_diff",
-      "alpha": "leaves_alpha",
+      "generator": "spray",
+      "leaf": { "shape": "cordate", "tones": [[70, 110, 40], [115, 150, 65]], "teeth": 30, "veins": 5 },
       "spray": { "branches": 8, "per": 10, "len": [0.09, 0.13], "spread": [30, 70], "fill": 140 },
-      "notes": "Small rounded leaves, close and many: a lime's dense crown of heart-shaped leaves from a few metres off."
+      "ref": { "polyhaven": "tree_small_02", "file": "leaves_diff", "alpha": "leaves_alpha" },
+      "match": { "mean": [98, 115, 56], "contrast": 20.9 },
+      "notes": "Heart-shaped, toothed leaves, close and many: a lime's dense crown."
     },
     {
       "id": "tree-birch-bark",
       "kind": "bark",
       "tree": "birch",
-      "asset": "sakura_bark",
-      "tone": { "mean": 205, "contrast": 2.8, "tint": [255, 252, 246] },
-      "notes": "A birch's white bark with dark bands of lenticels: Poly Haven has no birch, so a cherry's, whose lenticels run in the same bands, greyed and lifted to white."
+      "generator": "white",
+      "metres": 1.6,
+      "params": {},
+      "ref": { "polyhaven": "sakura_bark", "tone": { "mean": 205, "contrast": 2.8, "tint": [255, 252, 246] } },
+      "match": { "mean": [202, 200, 195], "contrast": 33.1 },
+      "notes": "A birch's white bark with dark bands of lenticels: matched to a cherry's, whose lenticels run in the same bands, greyed and lifted to white as task 061 judged it."
     },
     {
       "id": "tree-birch-leaves",
       "kind": "leaves",
       "tree": "birch",
-      "asset": "tree_small_02",
-      "diff": "leaves_diff",
-      "alpha": "leaves_alpha",
+      "generator": "spray",
+      "leaf": { "shape": "rhombic", "tones": [[80, 120, 45], [125, 155, 75]], "teeth": 36, "veins": 5 },
       "spray": { "branches": 9, "per": 9, "len": [0.06, 0.09], "spread": [20, 50], "droop": 1.1, "fill": 50 },
-      "notes": "Small leaves along fine twigs hanging from the branch, as a weeping birch's."
+      "ref": { "polyhaven": "tree_small_02", "file": "leaves_diff", "alpha": "leaves_alpha" },
+      "match": { "mean": [98, 115, 56], "contrast": 20.9 },
+      "notes": "Small diamond-shaped, double-toothed leaves along fine twigs hanging from the branch, as a weeping birch's."
     }
   ]
 }

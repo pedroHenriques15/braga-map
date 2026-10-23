@@ -1788,3 +1788,38 @@ In party-kart:
 
 The alternatives: hand-built maps after Counter-Strike's (more like the game, not Braga); keeping the
 models and sounds made in code (no assets, but guns that look and sound like a game's of 2005).
+
+## 061 · No photograph is drawn in a game: every texture is made, and matched to the photos
+
+*2026-10-23 · task 082 · the owner's rule, 2026-10-23 ("Nenhuma foto usada diretamente no jogo, seja
+fachada ou não. Pode-se usar imagens de referências e qualquer outro uso para melhorar.") · replaces
+decision 002, and decision 030's photo textures; the KTX2 files and their levels stay · changes how
+decisions 034, 036, 043 and 051 draw the ground, the facades and the trees*
+
+Photos are references: to measure, to judge colours and kinds by, to read a building's face off, and
+the scorecard's. None is drawn. Decision 018 (no new photos taken) stands.
+
+- **The ten photo facades are gone** (task 007's, from Mapillary and Commons): their buildings are
+  the kit's, as the 13,000 others are (decision 036), each said in `refs/buildings.json` as its
+  photo shows it, with what the kit can't yet draw of it (an azulejo's own pattern, a shop's
+  grille, brand boards) in its notes, for task 086 and after. `world.photos`, `world/textures/<tile>/`
+  and their indexes are gone with them.
+- **Every texture is made by `tools/made.mjs`:** each kind of ground (asphalt's aggregate and
+  wear, concrete, Braga's granite setts in their rows and joints, a lawn's blades over soil, soil,
+  gravel) and each kind of tree's bark (nine) from seeded noise and cells that wrap both ways, and
+  its leaves drawn from their shape (outline, teeth, midrib and veins, two tones, the stalk) and laid
+  along twigs into the spray decision 043's cards take. The same files as before (decision 030's
+  KTX2, ETC1S, a file a level), so a game draws them as it did.
+- **Each is matched to its references:** its mean colour and the spread of its luminance brought to
+  what they measure (`refs/textures.json`'s `ref` and `match`, `--measure` reads them): the Poly
+  Haven textures that were drawn until now, CC0, kept as references only, and Braga's own close-up
+  where there's one fit to measure (the setts', `closeup-pavement-setts-1`). A game divides a
+  ground's texture by its mean and puts the place's colour in (decision 034), so it's the contrast
+  and the pattern that come from the texture, the colour from the orthophoto.
+- **No credits for them:** `map().photoCredits` is empty, and a game's credits list no photographer
+  or Poly Haven author. `test/textures.test.js` fails if a recipe names a photo, a Poly Haven
+  asset, a quad or a wall, or if `world/textures/` holds anything the recipes don't make.
+
+The alternatives: keeping the photos where they're good (the rule is the owner's, and has no
+exceptions); painting the textures in a shader in party-kart (every game would draw its own, and
+none could share them, as a world's textures are shared by decision 030).

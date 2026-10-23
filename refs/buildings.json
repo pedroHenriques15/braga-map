@@ -539,6 +539,26 @@
    "seen": null,
    "notes": "In no photo found online (task 008), nor in a viewpoint's."
   },
+  "lidar/x1150z1177": {
+   "type": "annex",
+   "colour": "white",
+   "material": "render",
+   "floors": 1,
+   "ground": "shops",
+   "base": null,
+   "balconies": "none",
+   "shutters": "grey",
+   "signs": [
+    {
+     "text": "Café Espadanido",
+     "colour": "white"
+    }
+   ],
+   "seen": "facade-lidar-x1150z1177",
+   "patch": null,
+   "sure": true,
+   "notes": "The café's single storey, which the LiDAR found as a building of its own: white render, two grey roller shutters down, a grey awning along its top with the café's name, posters by the door; a car hides its left end. What the kit lacks (task 082, read off its photo, which was drawn on it until then): the awning along its top."
+  },
   "lidar/x124z823": {
    "type": "block-1970s-90s",
    "colour": "beige",
@@ -1719,6 +1739,29 @@
    "sure": false,
    "notes": "At the end of the street, mostly behind trees: the left end of a white block; it may be part of the same white mass as 6."
   },
+  "way/1463270529": {
+   "type": "block-1970s-90s",
+   "colour": "pale-green",
+   "material": "render",
+   "floors": null,
+   "ground": "shops",
+   "base": {
+    "colour": "terracotta",
+    "material": "tiles"
+   },
+   "balconies": "continuous",
+   "shutters": "white",
+   "signs": [
+    {
+     "text": "Maquifrio",
+     "colour": "blue"
+    }
+   ],
+   "seen": "facade-way-1463270529",
+   "patch": null,
+   "sure": false,
+   "notes": "Seen from a moving car, blurred: an olive-green rendered block, a balcony with a white railing the length of its first floor, white roller shutters; below, a terracotta-tiled ground floor with a door behind a grille and a shop (Maquifrio, white and blue) behind a grey security grille. Its top floor is out of the photo. What the kit lacks (task 082, read off its photo, which was drawn on it until then): the shop's security grille over its windows."
+  },
   "way/1463361416": {
    "type": "block-1970s-90s",
    "colour": "white",
@@ -1768,7 +1811,7 @@
    "seen": "facade-way-146464170",
    "patch": [2381, 719, 2926, 992],
    "sure": true,
-   "notes": "A retail-park unit: one tall storey of white horizontal metal cladding over a band of pale grey-green fascia panels and a canopy, with shopfronts below covered in posters. Big brand boards along the top."
+   "notes": "A retail-park unit: one tall storey of white horizontal metal cladding over a band of pale grey-green fascia panels and a canopy, with shopfronts below covered in posters. Big brand boards along the top. What the kit lacks (task 082, read off its photo, which was drawn on it until then): the brand boards along its top (Sports Direct, Adidas, Puma), the cladding's horizontal lines and the posters over its shop windows."
   },
   "way/1468714608": {
    "seen": null,
@@ -1814,7 +1857,7 @@
    "seen": "facade-way-147545836",
    "patch": [395, 340, 450, 380],
    "sure": true,
-   "notes": "A 1960s-looking block in weathered render, grimed to a grey-brown, with two middle bays of recessed balconies between concrete fins, their back walls in blue-grey patterned mosaic. The ground floor is half ordinary windows, half a shop under a grey awning. A large for-sale banner hangs on the front. Its outline's left part takes in the recessed balconies of the neighbour with diamond-patterned tiles."
+   "notes": "A 1960s-looking block in weathered render, grimed to a grey-brown, with two middle bays of recessed balconies between concrete fins, their back walls in blue-grey patterned mosaic. The ground floor is half ordinary windows, half a shop under a grey awning. A large for-sale banner hangs on the front. Its outline's left part takes in the recessed balconies of the neighbour with diamond-patterned tiles. What the kit lacks (task 082, read off its photo, which was drawn on it until then): the blue-grey diamond mosaic on the back walls of the recessed balconies, the concrete fins between their bays, and the for-sale banner."
   },
   "way/147545838": {
    "type": "block-1970s-90s",
@@ -1872,7 +1915,7 @@
    "seen": "facade-way-1491347983",
    "patch": [612, 348, 642, 372],
    "sure": true,
-   "notes": "A cool mid-grey rendered block, its stacks of projecting balconies with aluminium railings set in recessed strips of blue tiles; six floors over shops, a cream cornice band and a glazed-in top floor set back. Its outline (a big footprint) also takes in the cream block of flats on the right and the right part of the grey block on the left. As viewpoint:lobato-crossing shows it: From this corner its outline is filled mostly by the tall corner block of the merged footprint (8 floors, a column of loggias at the corner, white roller shutters, shops under blue awnings), a light neutral grey render a little darker than the zebra crossing's white paint; the mid-grey block with blue-tiled strips shows only as a narrow receding strip on its left."
+   "notes": "A cool mid-grey rendered block, its stacks of projecting balconies with aluminium railings set in recessed strips of blue tiles; six floors over shops, a cream cornice band and a glazed-in top floor set back. Its outline (a big footprint) also takes in the cream block of flats on the right and the right part of the grey block on the left. As viewpoint:lobato-crossing shows it: From this corner its outline is filled mostly by the tall corner block of the merged footprint (8 floors, a column of loggias at the corner, white roller shutters, shops under blue awnings), a light neutral grey render a little darker than the zebra crossing's white paint; the mid-grey block with blue-tiled strips shows only as a narrow receding strip on its left. What the kit lacks (task 082, read off its photo, which was drawn on it until then): the strips of blue tiles the balcony stacks are set in, the cream cornice band, and the glazed top floor set back."
   },
   "way/1491347984": {
    "type": "block-1970s-90s",
@@ -2107,8 +2150,18 @@
    "notes": "The Capela de Santo Adrião (1576): rubble granite under a terracotta roof, a small window in its south side, its porch at the west end (way/897195634), the bell gable on the front's apex. Drawn by the games as a model of its own (task 056)."
   },
   "way/159208687": {
-   "seen": null,
-   "notes": "behind the Parque da Ponte's trees in capela-sao-joao, right of the chapel, where it takes the most of the shot of any but the chapel: nothing of it shows."
+   "type": "commercial",
+   "colour": "white",
+   "material": "render",
+   "floors": 2,
+   "ground": "glazed",
+   "base": null,
+   "balconies": "none",
+   "shutters": "none",
+   "seen": "facade-way-159208687",
+   "patch": null,
+   "sure": false,
+   "notes": "From across a car park, so small: a long white building, one tall glazed storey of big panes in white frames under a white rendered upper storey with no windows on this side; a canopy over the glazing. Behind the Parque da Ponte's trees in capela-sao-joao, where nothing of it shows. What the kit lacks (task 082, read off its photo, which was drawn on it until then): the glazing's white frames in their grid, and the canopy."
   },
   "way/159209216": {
    "seen": null,
@@ -2501,6 +2554,20 @@
    "patch": [77, 486, 179, 576],
    "sure": true,
    "notes": "Two storeys over a half-sunk lower floor hidden behind the garden wall with its iron railings; projecting balconies with white balustrades on the corner, a glazed-in porch under a little tiled roof on the right, a chimney and a deep eave. Seen through a cyan-tinted windscreen."
+  },
+  "way/163978042": {
+   "type": "block-1970s-90s",
+   "colour": "beige",
+   "material": "render",
+   "floors": 4,
+   "ground": "garages",
+   "base": null,
+   "balconies": "continuous",
+   "shutters": "white",
+   "seen": "facade-way-163978042",
+   "patch": null,
+   "sure": true,
+   "notes": "The corner block from its corner: greige render, a balcony with white railings the length of each of its two upper floors, broken in the middle where the front steps; brown slatted panels under and beside the windows; garage doors and a front door up a few steps behind a low wall and railings on the ground floor. What the kit lacks (task 082, read off its photo, which was drawn on it until then): the brown slatted panels, and the steps to the front door."
   },
   "way/164763021": {
    "seen": null,
@@ -4400,7 +4467,7 @@
    "seen": "facade-way-440182287",
    "patch": null,
    "sure": true,
-   "notes": "Its outline covers the two middle houses of a terrace of four under one low hipped roof: their upper floors faced in patterned glazed tiles, cream with a navy stripe on each, in a grey frame; cream render below with railings across the wide windows, garage doors at street level behind the gate. The neighbours: off-white with a balcony on the left, pale pink on the right."
+   "notes": "Its outline covers the two middle houses of a terrace of four under one low hipped roof: their upper floors faced in patterned glazed tiles, cream with a navy stripe on each, in a grey frame; cream render below with railings across the wide windows, garage doors at street level behind the gate. The neighbours: off-white with a balcony on the left, pale pink on the right. What the kit lacks (task 082, read off its photo, which was drawn on it until then): the azulejos' own pattern: cream tiles each with a navy stripe, set to make a zigzag, in a grey frame round the upper floor."
   },
   "way/440182894": {
    "seen": null,
@@ -4683,7 +4750,7 @@
    "seen": "facade-way-440314428",
    "patch": [1736, 397, 1959, 570],
    "sure": true,
-   "notes": "A slice of a long block of flats: the plain beige rendered bay with one window per floor (the stair, it seems) and the stack of balconies and glazed-in sun rooms to its right; at least five storeys, the top cut by the frame. Its ground floor is hidden by a lorry; the laundrette and Brilho Necessário signs to its left fall in the next outline."
+   "notes": "A slice of a long block of flats: the plain beige rendered bay with one window per floor (the stair, it seems) and the stack of balconies and glazed-in sun rooms to its right; at least five storeys, the top cut by the frame. Its ground floor is hidden by a lorry; the laundrette and Brilho Necessário signs to its left fall in the next outline. What the kit lacks (task 082, read off its photo, which was drawn on it until then): the glazed-in sun rooms stacked beside the open balconies."
   },
   "way/440314429": {
    "type": "block-1970s-90s",
@@ -5841,6 +5908,26 @@
   "way/906140269": {
    "seen": null,
    "notes": "hidden behind the retail park (Sports Direct, Alibaba); its outline sits on that building's roofline."
+  },
+  "way/906140272": {
+   "type": "block-1970s-90s",
+   "colour": "white",
+   "material": "render",
+   "floors": null,
+   "ground": "shops",
+   "base": null,
+   "balconies": "none",
+   "shutters": "white",
+   "signs": [
+    {
+     "text": "Peças",
+     "colour": "navy"
+    }
+   ],
+   "seen": "facade-way-906140272",
+   "patch": null,
+   "sure": false,
+   "notes": "The middle of three, at dusk: a narrow white rendered block, its front stepping back twice, three floors of plain windows (one with a white roller shutter) over two small shops, a parts shop and a tools shop, under dark fascias; a stain of grime along its top. Its top floor is out of the photo. What the kit lacks (task 082, read off its photo, which was drawn on it until then): its front's two steps back, and the cables slung across it."
   },
   "way/907338526": {
    "seen": null,

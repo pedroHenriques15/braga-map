@@ -53,9 +53,8 @@ world.open.gates; // where each street or path leaves the area: [{ x, z, heading
 world.inOpen(x, z); // inside its edge?
 world.shooter; // the shooter's area, Fujacal: { id: 'fujacal', name, pts, gates, tiles, seen }, and world.inShooter(x, z)
 world.arenas; // its three arenas, where a round is played: [{ id, name, pts, gates }], and world.inArena(id, x, z)
-world.photos; // the photo textures on the tiles loaded: [{ id, kind, box | wall, s, y, files: { high, medium, low }, credit }]
 world.groundCover; // what the ground is, every 50 cm under the Volta dos Amigos' box: [{ tile, box, classes, colour, cars, credit }]
-map().groundKinds; // the kinds it says, each with its photo: [{ kind, texture: { id, metres, mean, files, credit } | null }]
+map().groundKinds; // the kinds it says, each with its texture: [{ kind, texture: { id, metres, mean, files, made } | null }]
 ```
 
 - `map()` is what every game needs whichever part of the map it's in: the sections and their
@@ -214,8 +213,8 @@ map().groundKinds; // the kinds it says, each with its photo: [{ kind, texture: 
   crown's middle off the pavement and the street), where there's open ground under its crown to move
   its trunk to; a street tree stands in its pavement. Its trunk's thickness
   is what a tree that tall and that wide usually has (`trunk`; the LiDAR doesn't see a trunk). Each
-  kind has a photo of its bark and a spray of its leaves (`map().treeKinds`, from Poly Haven, CC0),
-  as the ground's kinds have theirs. Where the point cloud wasn't fetched (nowhere on the map today),
+  kind has a texture of its bark and a spray of its leaves (`map().treeKinds`, made, not
+  photographed: task 082), as the ground's kinds have theirs. Where the point cloud wasn't fetched (nowhere on the map today),
   the map's trees and its woods and parks filled in, at their kind's usual size (`filled`).
 - **What the ground is** (task 016, decision 034), every 50 cm under the Volta dos Amigos' box (48
   tiles, the shooter's area and the open world's among them): asphalt, paving, setts, grass, bare
@@ -227,25 +226,24 @@ map().groundKinds; // the kinds it says, each with its photo: [{ kind, texture: 
   graphics level: the classes, a cell a pixel (50 cm on High, 1 m on Medium, 2 m on Low); each
   kind's own colour there, the orthophoto's in the sun without its cars and shadows; and the cars
   the LiDAR saw parked (July 2025), each along a kerb, in a car park or elsewhere. `map().groundKinds`
-  gives each kind's seamless photo (from Poly Haven, CC0) and its size in metres, for a game to tile
+  gives each kind's seamless texture (made, task 082) and its size in metres, for a game to tile
   over the ground and tint with the place's colour. `index.d.ts` says how each file is laid out.
 - A multipolygon's inner rings are holes in the world's areas (`holes`: a clearing in a wood, a pond
   in a park), and the car parks on the ground, and the bays and lanes along the streets, are areas
   of their own (`parking`, task 016).
-- **Photo textures** (task 007, decision 030) belong to the place, so they're in the world too,
-  in `world/textures/`: ten facades, the only photos found good enough (task 017 drew every other
-  building from its kind's kit), the kinds of ground's photos (task 016) and the kinds of trees' bark
-  and leaves (task 019). `world.photos` lists those on the tiles loaded: what each is (`facade`,
-  straightened onto its `wall`; or `ground`, over its tile's `box`, which `textures.mjs` can still
-  make, though since decision 034 none is), and a file for each graphics level, `files.high`, `.medium` and `.low`,
-  each with its `url`, which the game's bundler serves as an asset (Vite does: in its dev server
-  and its build), its size in pixels and its bytes. Only the list comes with a tile; the game
-  fetches the files it draws. They're KTX2, compressed with Basis Universal's ETC1S, sRGB, with
-  their mipmaps, row 0 at the top: three.js's `KTX2Loader` turns them into what the graphics
-  card takes (ETC1 on a phone, BC7 on a PC), and they stay compressed on it, half a byte a pixel
-  on a phone where a canvas or a WebP takes four. Each has its credit, which a game shows where it
-  credits the map; `map().photoCredits` gathers them, each source with its licence and authors.
-  `index.d.ts` says how a facade's texture lies along its wall.
+- **Textures** (decision 030, decision 061) are in `world/textures/`: each kind of ground's (task 016)
+  and each kind of tree's bark and leaves (task 019). **None is a photograph** (the owner's rule,
+  task 082): each is drawn by `tools/made.mjs` from what it's made of and how it's laid, seamless,
+  and its mean colour and contrast matched to its reference photos; photos are references, to
+  measure and to judge by, never drawn. The ten photo facades of task 007 are gone: their buildings
+  are drawn by the kit, as the others are, and what their photos showed is in `refs/buildings.json`.
+  Each texture has a file for each graphics level, `files.high`, `.medium` and `.low`, each with
+  its `url`, which the game's bundler serves as an asset (Vite does: in its dev server and its
+  build), its size in pixels and its bytes. They're KTX2, compressed with Basis Universal's ETC1S,
+  sRGB, with their mipmaps, row 0 at the top: three.js's `KTX2Loader` turns them into what the
+  graphics card takes (ETC1 on a phone, BC7 on a PC), and they stay compressed on it, half a byte a
+  pixel on a phone where a canvas or a WebP takes four. `made` says how each was made and what it
+  was matched to; `map().photoCredits` is empty, as no photographer's work is in the game.
 - The package is plain JavaScript and data, so Node runs it as it is (its tests, a game's tests)
   and there's nothing to build.
 
@@ -281,7 +279,7 @@ node tools/levels.mjs  # the streets that cross on two levels round the track, a
 node tools/refs.mjs    # the viewpoints' and the reference photos, into .cache/refs/ (with Mapillary's free token)
 node tools/buildings.mjs  # the buildings whose facades to look at (refs/buildings.json), and with `mark` their photos marked (2 minutes)
 node tools/species.mjs mark  # each viewpoint's photo with the trees within 60 m of its camera numbered, and its orthophoto, for refs/trees.json (task 061, 10 s)
-node tools/textures.mjs  # the photo textures refs/textures.json asks for: world/textures/ (about a minute)
+node tools/textures.mjs  # the textures refs/textures.json asks for, made, not photographed: world/textures/ (about a minute)
 node tools/cover.mjs   # what the ground is every 50 cm under the Volta dos Amigos' box, and the cars parked: world/cover/ (3 minutes, 10 the first time)
 npm run minecraft  # the world as a Minecraft world (Java, 26.3): .cache/minecraft/Braga (30 s; --out, --box and --force: "A Minecraft world" below)
 node tools/round.mjs <round> --label "…" [--shots <party-kart>/shots]  # a round of party-kart's shots, in a few sheets, for the scorecard
@@ -293,9 +291,7 @@ They need Node 22.18 or later. Run them in that order: `track.mjs` and `world.mj
 landmarks from `map/braga.json`, `open.mjs` the Volta dos Amigos, `world.mjs` makes the ground finer
 on the tiles the tracks in `tracks/` run through and the open world's edge touches, the map page
 draws the edges (run `npm run page` again after `npm run open` or `npm run shooter`) and the street audit (again after
-`audit.mjs`, which reads the world's tiles), `textures.mjs` lays each facade on its building in
-the world and takes its colour (after `world.mjs`; `test/textures.test.js` says if a building moved from under one),
-and `build.mjs` and `world.mjs` take the buildings'
+`audit.mjs`, which reads the world's tiles), and `build.mjs` and `world.mjs` take the buildings'
 heights and roofs from `roofs.mjs`'s measurements, `world.mjs` the trees from `trees.mjs` (run it after
 `fetch.mjs trees`), and the walls from `walls.mjs` (run it
 after `roofs.mjs`, `npm run open` and `fetch.mjs barriers`), and the streets on their carriageways from `carriageways.mjs`
@@ -610,26 +606,23 @@ streets; when a track moves enough to change the edge, run the three again until
   60 m of the seven viewpoints read is in it and drawn of its species' kind. party-kart's
   `node scripts/shots.mjs <label>` shoots its city from every viewpoint, at the photo's field of
   view and shape, into a round beside the photos and the round before (task 002, decision 011).
-- `textures.mjs` makes the photo textures (task 007) that `refs/textures.json` asks for, into
-  `world/textures/`: a ground texture, the 2025 orthophoto over a tile, resampled onto the map's
-  grid (2048 pixels a side on High, 24 cm a pixel); a facade, a reference photo (`refs/photos.json`,
-  marked good enough for a texture) straightened onto its wall, from the corners of the wall in the
-  photo, read off it by eye, to the wall's points on the map and its height above the building's
-  ground (2.5 cm a pixel on High, as far as the photo has it). Each is sized for High, Medium and
-  Low (half, then a quarter, as many pixels across), compressed as KTX2 with Basis Universal's
-  ETC1S, and listed with its credit in its tile's index, `world/textures/<tile>.js`; and
-  `world/textures.js` loads each tile's index, and gathers the credits. It needs the orthophoto
-  (`fetch.mjs ortho`) and the photos (`refs.mjs`). `--check` also writes each one at High as a
-  PNG into `.cache/textures/`, and `--compare` as WebP and Basis's UASTC too, for weighing the
-  formats. `test/textures.test.js` checks each is made at every level and credited, and that each
-  facade faces the camera its photo was taken from. A facade's index says its building's colour and
-  what colour its wall is in the photo (from the patch of plain wall the session that looked at it
-  marked, else the photo's middling pixels), for a game to put the photo in the game's light (task
-  017). The orthophoto's shadows and cars stay in it
-  (task 007's notes say why). A kind of ground's photo (`kind: 'surface'`, task 016) is a seamless
-  one from Poly Haven (CC0), its record and 2k photo fetched once into `.cache/textures/sources/`,
-  made 1024, 512 and 256 pixels a side into `world/textures/surfaces/`, with its size in metres and
-  its mean colour, and listed by kind in `world/textures.js` (`SURFACES`), not with a tile.
+- `textures.mjs` makes the textures that `refs/textures.json` asks for (task 082), into
+  `world/textures/`: each kind of ground's (`kind: 'surface'`, task 016), 1024, 512 and 256 pixels a
+  side into `world/textures/surfaces/`, and each kind of tree's bark and leaves (task 019), 512, 256
+  and 128, into `world/textures/trees/`, each with its size in metres and its mean colour, listed by
+  kind in `world/textures.js` (`SURFACES`, `TREES`). Each is drawn by its `generator` in
+  `tools/made.mjs`: the ground's (asphalt's aggregate and wear, concrete, Braga's granite setts in
+  their rows and joints, a lawn's blades, soil, gravel) and the barks (smooth, a pine's plates, a
+  blue gum's peeling strips, a cedar's fibres, a poplar's furrows, a palm's rings, a plane's patches,
+  a lime's ridges, a birch's white) from seeded noise and cells that wrap both ways; a kind's leaves
+  drawn from its shape (ovate, lanceolate, deltoid, heart-shaped, diamond, five-lobed, a palm's
+  leaflet, a pine's or a fir's needles), each with its midrib, veins, two tones and stalk, and laid
+  along twigs into a spray. Then its mean colour and contrast are brought to its `match`, which
+  `--measure` reads off its references: a Poly Haven texture (CC0, a reference only, its 2k file
+  fetched once into `.cache/textures/sources/`) or a reference photo of Braga (`.cache/refs/`).
+  Each is compressed as KTX2 with Basis Universal's ETC1S; `--check` also writes each at High as a
+  PNG into `.cache/textures/`. `test/textures.test.js` checks none is a photograph, each is made at
+  every level, the folder holds nothing else, and the generators wrap and are the same from a seed.
   `tools/ktx2.mjs` has the KTX2 encoding it shares with `cover.mjs`.
 - `cover.mjs` classes the ground (task 016, decision 034) on every tile under the Volta dos Amigos'
   box, every 50 cm, after `world.mjs` (it reads the world's streets, paths, buildings and areas
@@ -893,15 +886,12 @@ The viewpoints' photos (`refs/viewpoints.json`, fetched into `.cache/refs/`, not
 © Mapillary contributors, under CC BY-SA 4.0: wherever one is shown, show its author and link,
 which `photo` gives. So are most reference photos (`refs/photos.json`); the rest are from
 Wikimedia Commons, each under its own licence (CC BY, CC BY-SA, CC0 or public domain), whose
-author, licence and link `photo` gives too. A texture made from a CC BY-SA photo is CC BY-SA.
+author, licence and link `photo` gives too. They're references only: none is drawn in a game.
 
-The photo textures in `world/textures/` (task 007) are made from Mapillary's photos, © Mapillary
-contributors, under CC BY-SA 4.0: the textures made from them are CC BY-SA 4.0 too. The kinds of
-ground's photos (`world/textures/surfaces/`, task 016) are from Poly Haven (polyhaven.com), CC0: no
-credit is owed, and each is credited to its authors all the same. What the ground is
-(`world/cover/`) is from DGT's 2025 LiDAR and orthophoto, with its near-infrared, and owes DGT's
-credit above. Each texture's index entry gives its author, licence and link, and
-`map().photoCredits` every author, for a game's credits.
+The textures in `world/textures/` are made by `tools/made.mjs` (task 082), not from any photo, and
+owe no credit; the Poly Haven textures (CC0) and the photos they're matched to are references only.
+What the ground is (`world/cover/`) is from DGT's 2025 LiDAR and orthophoto, with its near-infrared,
+and owes DGT's credit above.
 
 Every source the map uses or may use, with its licence, its exact credit and what it may be used
 for, is in [docs/SOURCES.md](docs/SOURCES.md).

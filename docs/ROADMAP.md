@@ -124,8 +124,10 @@ as references (082, replacing decision 002); OpenStreetMap still as it is (decis
 point cloud finds what it lacks (100); and insides made up for the shops' and cafés' ground floors
 only (095). The "Later" ideas are drafted here.
 
+Done: no photograph drawn in the game, every texture made by `tools/made.mjs` and matched to its
+references, the ten photo facades given back to the kit (082, decision 061).
+
 - **081** Ultra, a graphics level for a PC: first, as every task below hangs its detail on it.
-- **082** No photograph in the game: every texture made, matched to the photos. Before 085 and 089.
 - **083** The ground at 50 cm over the whole map, finest near the player (after 038).
 - **084** On Ultra, the streets on the land's own triangles (after 083).
 - **085** Textures at their finest on Ultra: UASTC, normal and roughness maps.

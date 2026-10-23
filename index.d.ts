@@ -495,10 +495,10 @@ export interface River {
   pts: [number, number, number][];
 }
 
-// A photo texture (task 007, decision 030), made by tools/textures.mjs: KTX2 files compressed with
-// Basis Universal's ETC1S, sRGB, with their mipmaps, row 0 at the top (a game's loader doesn't flip
-// them: three.js's KTX2Loader leaves flipY false). One file for each graphics level, each with its
-// url (the game's bundler serves it), its size in pixels and in bytes.
+// A texture's or a data file's files (decision 030), made by tools/textures.mjs and tools/cover.mjs: KTX2
+// files compressed with Basis Universal's ETC1S, sRGB, with their mipmaps, row 0 at the top (a game's
+// loader doesn't flip them: three.js's KTX2Loader leaves flipY false), or WebP. One file for each
+// graphics level, each with its url (the game's bundler serves it), its size in pixels and in bytes.
 export type PhotoLevel = 'high' | 'medium' | 'low';
 export interface PhotoFile {
   url: string;
@@ -506,9 +506,8 @@ export interface PhotoFile {
   h: number;
   bytes: number;
 }
-// Whose photo it's made from: source (DGT, Mapillary or Wikimedia Commons), author, licence (a
-// texture made from a CC BY-SA photo is CC BY-SA), url (the photo's page, or the data's record) and
-// date. A game shows it where it credits the map, as PhotoCredit does.
+// Whose data it's made from: source (DGT), author, licence, url (the data's record) and date. A game
+// shows it where it credits the map.
 export interface PhotoCreditOf {
   source: string;
   author: string;
@@ -516,42 +515,21 @@ export interface PhotoCreditOf {
   url: string;
   date: string;
 }
-interface PhotoBase {
-  id: string;
-  files: Record<PhotoLevel, PhotoFile>;
-  credit: PhotoCreditOf;
-}
-// The 2025 orthophoto over a box (a tile), row 0 to the north (z0), column 0 to the west (x0).
-// Its shadows and cars are in it.
-export interface GroundPhoto extends PhotoBase {
-  kind: 'ground';
-  box: { x0: number; z0: number; x1: number; z1: number };
-}
-// A photo straightened onto a wall: the wall's points (along its building's footprint, left to
-// right as the photo faces it), from wall[0] to wall[n - 1] a chord. A point p on the wall is
-// s = (p - wall[0]) · the chord's direction along it; the texture spans s from s[0] (its left) to
-// s[1] (its right), and heights y[0] (its bottom) to y[1] (its top), above elev0. A wall's front,
-// where the photo was taken from, is (-dz, dx) of its chord (dx, dz); each step of the wall facing
-// that way, as its own (-dz, dx) says, gets its part of the texture. colour: its building's facade
-// colour (a name in map().facadeColours); wallColour: what colour the wall is in the photo (sRGB, the
-// median of its middling pixels, the windows and the glare left out). A game divides the photo by the
-// one and multiplies it by the other, so the photo's light and white balance are the game's (task 017).
-export interface FacadePhoto extends PhotoBase {
-  kind: 'facade';
-  wall: [number, number][];
-  s: [number, number];
-  y: [number, number];
-  colour: string;
-  wallColour: [number, number, number];
-}
-export type PhotoTexture = GroundPhoto | FacadePhoto;
-// Every source the photo textures are made from, with the authors of those used and what they
-// texture: a game's credits list them.
+// No photograph is drawn since task 082 (the owner's rule): the photo textures of tasks 007 and 008 are
+// gone, and photoCredits is always empty. Kept so a game that lists them lists none.
 export interface PhotoCredit {
   source: string;
   licence: string;
   authors: string[];
-  kinds: ('ground' | 'facade' | 'surface' | 'bark' | 'leaves')[];
+  kinds: string[];
+}
+// How a texture was made (task 082, tools/made.mjs): its generator, and the mean colour (sRGB) and
+// contrast (the spread of its luminance in sRGB's bytes) it was matched to, measured off its
+// references (ref, in words: a Poly Haven texture or a photo of Braga, references only).
+export interface MadeTexture {
+  generator: string;
+  ref: string;
+  match: { mean: [number, number, number]; contrast: number };
 }
 
 // What the ground is (task 016, tools/cover.mjs), every 50 cm over the Volta dos Amigos' box: asphalt,
@@ -563,8 +541,8 @@ export interface PhotoCredit {
 // is setts (concrete echoes as they do); where the world draws the streets, the classes are the
 // streets' own surfaces.
 export type GroundKind = 'asphalt' | 'paving' | 'setts' | 'grass' | 'soil' | 'gravel' | 'water' | 'roof';
-// A kind of ground's photo (tools/textures.mjs, from Poly Haven, CC0), seamless, to tile over the
-// ground: `metres` a side. mean: its mean colour (sRGB, of its mean in linear light), which a game
+// A kind of ground's texture (tools/textures.mjs, made, task 082), seamless, to tile over the ground:
+// `metres` a side. mean: its mean colour (sRGB, of its mean in linear light), which a game
 // divides it by before tinting it with the ground's own colour (GroundCover's colour), so its detail
 // stays and its colour is the place's.
 export interface GroundTexture {
@@ -572,11 +550,11 @@ export interface GroundTexture {
   metres: number;
   mean: [number, number, number];
   files: Record<PhotoLevel, PhotoFile>;
-  credit: PhotoCreditOf;
+  made: MadeTexture;
 }
-// Each kind, in the order a GroundCover's cell has them: its photo, or null (water, a roof).
-// A kind of tree's bark and leaves (task 019, tools/textures.mjs, from Poly Haven, CC0):
-// - bark: a seamless photo of its bark, `metres` a side, to wrap round its trunk; mean its mean colour.
+// Each kind, in the order a GroundCover's cell has them: its texture, or null (water, a roof).
+// A kind of tree's bark and leaves (task 019, tools/textures.mjs, made, task 082):
+// - bark: a seamless texture of its bark, `metres` a side, to wrap round its trunk; mean its mean colour.
 // - leaves: a spray of its leaves (or twigs of needles, or a palm's frond: leaflets either side of its
 //   stem, up the card), RGBA, row 0 at the top, the twigs fanning up from the card's foot; what's
 //   see-through is in the leaves' mean colour (mean); cover: how much of the card is leaves.
@@ -586,7 +564,7 @@ export interface TreeTexture {
   mean: [number, number, number];
   cover?: number;
   files: Record<PhotoLevel, PhotoFile>;
-  credit: PhotoCreditOf;
+  made: MadeTexture;
 }
 // evergreen: whether the kind keeps its leaves in winter (task 061): the pines, eucalyptus, cypresses and
 // cedars, and palms; the broadleaves, poplars, planes, limes and birches lose theirs.
@@ -634,11 +612,11 @@ export interface GroundCover {
 
 export interface BragaMap {
   credit: string;
-  // The photo textures' sources and authors, over the whole map.
+  // Always empty: no photograph is drawn (task 082).
   photoCredits: PhotoCredit[];
-  // The kinds of ground a GroundCover's cells say, each with its photo (task 016).
+  // The kinds of ground a GroundCover's cells say, each with its texture (task 016).
   groundKinds: GroundKindOf[];
-  // Each kind of tree, in the order the tiles number them, with its bark's and its leaves' photos.
+  // Each kind of tree, in the order the tiles number them, with its bark's and its leaves' textures.
   treeKinds: TreeKindOf[];
   elev0: number;
   ext: Box;
@@ -704,8 +682,6 @@ export interface World extends BragaMap {
   streets: Streets;
   // The walls, fences, railings, hedges and gates on the open world's tiles loaded (task 013).
   walls: Wall[];
-  // The photo textures on the tiles loaded (task 007): which, where they go, and their files.
-  photos: PhotoTexture[];
   // What the ground is on the tiles loaded under the Volta dos Amigos' box (task 016).
   groundCover: GroundCover[];
 }

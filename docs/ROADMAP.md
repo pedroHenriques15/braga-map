@@ -115,6 +115,37 @@ with a grey day and rain on asking (022, decision 037).
 - **053** Last, after every task open on 2026-10-16 but 038: every task's notes read for what they
   left to improve, each thing still worth doing drafted as a task.
 
+## Ultra · Braga at its most real
+
+The owner asked for the absolute best quality in every aspect (2026-10-23). Their answers: a fourth
+graphics level, Ultra, for a PC only, where all of it goes, High, Medium and Low staying as the
+phones hold them (081); no photograph drawn in the game, a facade or anything else, the photos kept
+as references (082, replacing decision 002); OpenStreetMap still as it is (decision 022), so the
+point cloud finds what it lacks (100); and insides made up for the shops' and cafés' ground floors
+only (095). The "Later" ideas are drafted here.
+
+- **081** Ultra, a graphics level for a PC: first, as every task below hangs its detail on it.
+- **082** No photograph in the game: every texture made, matched to the photos. Before 085 and 089.
+- **083** The ground at 50 cm over the whole map, finest near the player (after 038).
+- **084** On Ultra, the streets on the land's own triangles (after 083).
+- **085** Textures at their finest on Ultra: UASTC, normal and roughness maps.
+- **086** Each facade's doors and windows where they are, read from its photos.
+- **087** Roofs as the point cloud has them: every plane, chimney, dormer and terrace.
+- **088** Every tree in the open world its species.
+- **089** On Ultra, the trees in full to the horizon, moving in the wind.
+- **090** The light on Ultra: cascaded shadows, occlusion, light bounced, reflections, TAA.
+- **091** Each viewpoint shot at its photo's hour and weather (blocked: it changes decision 037).
+- **092** Night: the lamps lighting the streets, the windows lit, Bom Jesus floodlit.
+- **093** The seasons: bare trees in winter, the jacarandas in June (after 088).
+- **094** Life in the streets: traffic, the TUB's buses, people (after 020).
+- **095** The shops' and cafés' ground floors with insides, made up (after 086).
+- **096** The Rio Este with its banks, walls and weirs, and the streams drawn.
+- **097** The railway: rails, sleepers, catenary, the station and a train.
+- **098** The old town's landmarks at their real size (after 099).
+- **099** The whole map at the open world's detail, the open world grown over it (after 038).
+- **100** The street furniture the point cloud finds, for 020 to draw.
+- **101** Braga's sound at its fullest: from what makes it, echoing off its walls (after 094).
+
 ## Alongside · The sound
 
 The owner found the game's audio truly horrible (2026-10-13): the engine, the beeps, the
@@ -204,22 +235,5 @@ alongside them in worktrees of their own.
 
 ## Later
 
-- **The old town's landmarks** (the Sé, the Arco da Porta Nova, the Praça da República, the
-  Theatro Circo, the Torre de Menagem; and those task 021 dropped as the race doesn't see them: the
-  Museu D. Diogo de Sousa, the Palácio do Raio, the Fonte do Ídolo, the Cividade, the Capela dos
-  Coimbras, the Congregados), and the Igreja de Lamaçães, when a track or the shooter goes there. The
-  cartoon models in `../party-kart/src/render/landmarks.ts` and `braga.ts` are for the first
-  track, not to scale.
-- **Life in the streets:** the TUB's buses on their routes, traffic, people on the pavements
-  and at the cafés' terraces.
-- **Night:** the street lamps, the lit windows, Bom Jesus floodlit on the hill.
-- **The seasons:** the plane trees bare in winter, the jacarandas in flower in June.
-- **More of Braga's sound** (beyond task 025): the cafés' terraces, once the map fetches cafés,
-  and the old town's, the Sé's bells up close.
-- **The rest of the map** at the route's level of detail, as more tracks and games use it, and
-  the open world grown over it a section at a time (decision 019).
-- **Inside the buildings,** beyond the arenas' plain rooms (079): shops and cafés on the ground
-  floor, furnished.
-- **The Rio Este** with its real banks, walls and weirs, and the streams the map fetches but
-  doesn't draw.
-- **The railway** with its rails, sleepers and catenary, the station, and a train.
+Nothing for now: every idea that was here was drafted on 2026-10-23 under "Ultra · Braga at its
+most real" (092–099, 101).

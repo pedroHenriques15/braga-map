@@ -14,8 +14,8 @@
 //   in tracks/, over the shooter's area and under the open world's, every 10 m on the rest), what
 //   the ground is (clipped to the tile), the streets and the railway, the buildings, and the trees;
 //   and round the open world's area, every street as surfaces (streets.mjs), every footway, path,
-//   cycleway and flight of steps (task 050), and the walls, fences, railings, hedges and gates
-//   (walls.mjs, task 013).
+//   cycleway and flight of steps (task 050), the walls, fences, railings, hedges and gates
+//   (walls.mjs, task 013), and the street furniture (furniture.mjs, task 100).
 // - world/tiles.js, a loader for each tile, for index.js.
 //
 // All in metres from the Praça da República, x east and z south, heights above ELEV0, packed as
@@ -34,6 +34,7 @@ import { decks } from './decks.mjs';
 import { carriagewayMoves, heldGround, isLine, isSquare, LEVEL, levelHeights, onCarriageways, pathLines, pathsOf, streetBands, streetBumps, streetsOf } from './lines.mjs';
 import { packPaths, packStreets, streetSurfaces } from './streets.mjs';
 import { cutWalls, packWalls } from './walls.mjs';
+import { packFurniture } from './furniture.mjs';
 import { EVERGREEN as TREE_EVERGREEN, KINDS as TREE_KINDS, osmKind, TREES } from './trees.mjs';
 import { PLATE, platesOf } from './plates.mjs';
 import { BALCONIES, BALCONY, COLOUR, COLOURS, floorsOf, GROUND, GROUND_OF, guesser, MATERIAL, MATERIALS, TYPE, TYPES } from './facades.mjs';
@@ -55,7 +56,7 @@ const places = fs.existsSync(path.join(CACHE, 'places.json')) ? readCache('place
 const ground = await terrain();
 const inExt = (x, z, m = 0) => x >= EXT.x0 - m && x <= EXT.x1 + m && z >= EXT.z0 - m && z <= EXT.z1 + m;
 
-const tiles = new Map(allTiles().map(([i, j]) => [tileId(i, j), { id: tileId(i, j), box: tileBox(i, j), areas: [], lines: [], buildings: [], trees: [], streets: [], paths: [], rails: [], walls: [], signs: [], names: [], nameAt: new Map(), stops: [], plates: [] }]));
+const tiles = new Map(allTiles().map(([i, j]) => [tileId(i, j), { id: tileId(i, j), box: tileBox(i, j), areas: [], lines: [], buildings: [], trees: [], streets: [], paths: [], rails: [], walls: [], furniture: [], signs: [], names: [], nameAt: new Map(), stops: [], plates: [] }]));
 const tileAt = (x, z) => tiles.get(tileId(...tileOf(x, z)));
 const tilesOver = (b, m = 0) => [...tiles.values()].filter((t) => overlaps(t.box, b, m));
 
@@ -798,6 +799,11 @@ let nTrees = 0;
 const wallList = fs.existsSync(path.join(CACHE, 'walls.json')) ? readCache('walls.json').walls : null;
 if (!wallList) console.log('no .cache/walls.json: no walls (node tools/walls.mjs)');
 let nWalls = 0;
+// The street furniture round the open world's area (furniture.mjs, task 100), each in the tile it
+// stands in.
+const furnitureList = fs.existsSync(path.join(CACHE, 'furniture.json')) ? readCache('furniture.json').furniture : null;
+if (!furnitureList) console.log('no .cache/furniture.json: no street furniture (node tools/furniture.mjs)');
+for (const f of furnitureList ?? []) tileAt(f.x, f.z)?.furniture.push(packFurniture(f));
 const treesOff = { moved: 0, out: 0, walked: 0, walking: 0, path: 0, pavement: 0, pits: 0 };
 {
   const nodes = onCarriageways(readCache('osm/street.json')).elements.filter((e) => e.type === 'node');
@@ -1196,6 +1202,7 @@ for (const t of tiles.values()) {
   if (t.paths.length) p.part('paths', t.paths);
   if (t.rails.length) p.part('rails', t.rails);
   if (t.walls.length) p.part('walls', t.walls);
+  if (t.furniture.length) p.part('furniture', [], { list: t.furniture });
   if (t.signs.length) p.part('signs', [], { list: t.signs });
   if (t.names.length) p.part('names', [], { list: t.names });
   if (t.stops.length) p.part('stops', [], { list: t.stops });

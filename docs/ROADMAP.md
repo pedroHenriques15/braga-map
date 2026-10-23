@@ -145,7 +145,9 @@ references, the ten photo facades given back to the kit (082, decision 061).
 - **097** The railway: rails, sleepers, catenary, the station and a train.
 - **098** The old town's landmarks at their real size (after 099).
 - **099** The whole map at the open world's detail, the open world grown over it (after 038).
-- **100** The street furniture the point cloud finds, for 020 to draw.
+- **100** The street furniture the point cloud finds, for 020 to draw: done (decision 062), braga-map
+  1.34.0. The LiDAR sees about one lamp in four, and its lamps, signs, traffic lights and shelters are
+  17 right of 50 in the photos; the low things are the map's only.
 - **101** Braga's sound at its fullest: from what makes it, echoing off its walls (after 094).
 
 ## Alongside · The sound

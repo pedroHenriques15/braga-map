@@ -1823,3 +1823,33 @@ the scorecard's. None is drawn. Decision 018 (no new photos taken) stands.
 The alternatives: keeping the photos where they're good (the rule is the owner's, and has no
 exceptions); painting the textures in a shader in party-kart (every game would draw its own, and
 none could share them, as a world's textures are shared by decision 030).
+
+## 062 · The furniture is the map's, and what the LiDAR sees of a pole's head; the low things the map's only
+
+*2026-10-23 · task 100 · adds the street furniture to decisions 022 and 025*
+
+OpenStreetMap has little of Braga's street furniture and nobody adds to it (decision 022), so the
+world takes what DGT's 2025 point cloud finds, as it does for the buildings and the walls, but only
+what the cloud can tell (`tools/furniture.mjs`, `world.furniture`):
+
+- **The map's, all of it,** in the open world's area: its lamps, signs, benches, bins and litter bins,
+  ecopontos, bollards, bus shelters (a stop with `shelter=yes`) and the poles that carry wires, where
+  it puts them. Where the LiDAR has one within 3 m, the map's stands, as high as the LiDAR measured it.
+- **The LiDAR's lamps, signs, traffic lights and bus shelters**, which it sees as a head in the air: a
+  clump of points 2 m up or more with nothing under it, a lamp's arm or a sign's plate long at most,
+  clear of trees, buildings, walls and wires, and not a parapet's top. It sees about one lamp in four
+  (of the map's in the open, 93 of 132 have no point over 3 m within 4 m), and of what it finds, a
+  sample of 50 checked against the photos was 17 right, 10 another piece of furniture, 14 nothing and 9
+  not shown (`refs/furniture.json`): kept, as a game's street with a lamp where there's a sign is
+  nearer Braga's than one with neither.
+- **Not the LiDAR's low things nor its poles on wires.** At 18 points a square metre a bench, a
+  container or a row of bollards is the top of a parked car, a parapet or a fence's posts (none of 14
+  looked at was one), an ecoponto's lids don't show their colours in the orthophoto, and a head on a
+  wire was never a pole's (none of 16). What neither has, task 020 places by its rules.
+- **A sign's face** is a photo's where one shows it (read, not drawn, as task 082 keeps the photos
+  as references), else the commonest for its place: a stop or a give-way sign by the map's, a
+  no entry at a one-way street's wrong end, a crossing's by a zebra, a bus stop's by a stop; else none.
+
+The alternatives were Mapillary's detected signs and lamps (decision 006 keeps them out), every clump
+the LiDAR finds kept (three times as many pieces, most of them cars and walls), and the map's alone
+(714 pieces where the open world has thousands).

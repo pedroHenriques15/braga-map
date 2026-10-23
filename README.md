@@ -49,6 +49,7 @@ world.plates; // in the open world's area, the streets' name plates: [{ name, on
 map().facadeTypes; // each kind of facade's proportions; map().facadeColours its colours
 world.streets; // in the open world's area: { carriageways, pavements, kerbs, markings, paths, handrails }, each piece at its level
 world.walls; // in the open world's area: [{ kind, material, on, h, w, level, source, pts, ys, open? }], the walls, fences, railings, hedges and gates
+world.furniture; // in the open world's area: [{ kind, x, z, angle, h, source, face? }], the lamps, signs, traffic lights, shelters, benches, bins, ecopontos, bollards
 world.open.gates; // where each street or path leaves the area: [{ x, z, heading, w, k, level, y }]
 world.inOpen(x, z); // inside its edge?
 world.shooter; // the shooter's area, Fujacal: { id: 'fujacal', name, pts, gates, tiles, seen }, and world.inShooter(x, z)
@@ -135,6 +136,14 @@ map().groundKinds; // the kinds it says, each with its texture: [{ kind, texture
   (the owner's answer, checked against the viewpoints' photos): a retaining wall granite, or concrete
   where it holds up a street; a wall in front of a house or a block of flats rendered and painted, a
   low one (up to 3 m, its top half a railing) with a railing on it; one under a hedge granite. `index.d.ts` says what each field means.
+- And its street furniture (task 100, `world.furniture`), for party-kart to draw (task 020):
+  every lamp, sign, bench, bin, litter bin, ecoponto, bollard, bus shelter and pole OpenStreetMap has
+  there, and the lamps, signs, traffic lights and bus shelters it lacks where DGT's LiDAR sees them
+  (`source`), each where its post stands, the way it faces and how high. The LiDAR sees few of them (of
+  the map's lamps in the open, about one in four) and isn't always right about what it sees: of a
+  sample of 50 checked against the photos, 17 were what it said and 10 another piece of furniture
+  (`refs/furniture.json`). A sign's face is a photo's where one shows it, else the commonest for its
+  place (a stop or a give-way sign by the map's, a no entry at a one-way street's wrong end).
 - The buildings are as DGT's LiDAR measured them (`measured`), 95% of those on the map: the
   height of the eaves (`h`) and of the ridge, the roof's shape, the way it runs (`dir`), which
   ends are hipped, its pitch, its storeys, and its colour as the 2025 orthophoto sees it (from
@@ -263,6 +272,7 @@ node tools/decks.mjs   # the bridges' decks DGT's point cloud saw: .cache/decks.
 node tools/carriageways.mjs  # where each street's carriageway really is, and the moves that put the map's lines there: .cache/carriageways.json (20 s, 4 minutes the first time)
 node tools/roundabouts.mjs   # where each roundabout's ring and island really are, and the statues in them: .cache/roundabouts.json (a minute; --check draws each over the orthophoto)
 node tools/walls.mjs   # the walls, fences, railings, hedges and gates round the open world's area: .cache/walls.json (2 minutes, and 3 more the first time)
+node tools/furniture.mjs  # the street furniture round the open world's area: .cache/furniture.json (a minute, and 3 more the first time; mark draws the sample checked against the photos)
 node tools/sights.mjs  # the Estádio 1.º de Maio's stands and floodlights, the chapels' and shrines' tops, from the point cloud: .cache/sights.json (two minutes)
 node tools/trees.mjs   # every tree the LiDAR sees, its height, crown, foot and kind: .cache/trees.json (40 s, 25 minutes the first time; TREES=<name>.json writes .cache/<name>.json, which world.mjs then reads given the same)
 npm run page     # the map page's map/braga.json
@@ -294,7 +304,7 @@ draws the edges (run `npm run page` again after `npm run open` or `npm run shoot
 `audit.mjs`, which reads the world's tiles), and `build.mjs` and `world.mjs` take the buildings'
 heights and roofs from `roofs.mjs`'s measurements, `world.mjs` the trees from `trees.mjs` (run it after
 `fetch.mjs trees`), and the walls from `walls.mjs` (run it
-after `roofs.mjs`, `npm run open` and `fetch.mjs barriers`), and the streets on their carriageways from `carriageways.mjs`
+after `roofs.mjs`, `npm run open` and `fetch.mjs barriers`), the street furniture from `furniture.mjs` (after `walls.mjs`, `trees.mjs` and `fetch.mjs furniture`), and the streets on their carriageways from `carriageways.mjs`
 and the roundabouts' rings from `roundabouts.mjs` (run them, in that order, before `walls.mjs`, `npm run open`, `npm run shooter`, `npm run world` and `npm run tracks`, which
 all take the streets moved, and `cover.mjs` again after `world.mjs`), and the facades from `refs/buildings.json` and the shops from `fetch.mjs shops`. All of them need the LiDAR. `track.mjs` also reads
 the streets the world draws (`world.streets`, which don't depend on a track) for the race's road, so
@@ -304,7 +314,7 @@ streets; when a track moves enough to change the edge, run the three again until
 - `fetch.mjs` gets OpenStreetMap through Overpass (streets and land; the footways, steps, paths
   and cycleways, which the world draws in the open world's area, and the squares mapped in parts,
   which only the street audit reads so far; the walls, fences, hedges, gates and car parks, for
-  `walls.mjs`, and the car parks for the world's areas too;
+  `walls.mjs`, and the car parks for the world's areas too; the street furniture, for `furniture.mjs`;
   buildings, parishes, landmarks, the shops, cafés, banks and offices with a name (for their signs),
   trees, the crossings, traffic lights and bus stops, and the turn
   restrictions) and elevation tiles, plus coarser ones 16 km round for the horizon. The public
@@ -456,6 +466,25 @@ streets; when a track moves enough to change the edge, run the three again until
   each piece whole and off the carriageways, a retaining wall's higher ground on its left, and in the
   shooter's area the land on a retaining wall's lower side under its top and no wall over the land
   (task 077).
+- `furniture.mjs` finds the street furniture round the open world's area (task 100), for `world.mjs`. It
+  boils each tile of DGT's point cloud there down once (`.cache/dgt/furniture/`): the points neither
+  the ground, a building nor a plant (classes 1 and 7: a lamp's head is often classed noise) from 25 cm
+  to 16 m up, and the plants' and the buildings' highest point every 50 cm. It takes the points in
+  clumps (within 50 cm across and a metre up of each other) and the cloud's view of a pole is its head
+  (a lamp's arm, a sign's plate, a few points), its post a point or two at most: a clump 2 m or more
+  up with nothing under it, under 3 m long and a metre wide, not growing, clear of the trees (the
+  plants' cells and `trees.mjs`'s crowns), the buildings and the walls, 1.5 m or more over the ground
+  within 4 m (else a parapet's top), and not on a wire (points at its height in a line through it).
+  Up to 3.6 m it's a sign, within 3.5 m of a carriageway's edge; higher a lamp; by the map's traffic
+  lights (25 m) one of them. A bus shelter is a flat roof 2.1 to 3.4 m up, 2 to 9 m long, by a stop the
+  map has. Each laid where the map's buildings round it sit (roofs.mjs's shifts), its post where the
+  cloud saw one, else its arm's end away from the street. Then the map's (`fetch.mjs furniture`), which
+  take the place of the LiDAR's within 3 m. Benches, bins, ecopontos and bollards it doesn't look for:
+  at 18 points a square metre they're the tops of parked cars, and an ecoponto's lids don't show their
+  colours in the orthophoto. `node tools/furniture.mjs mark` draws 50 of the LiDAR's in view of the
+  photos and rings each in its photo, for a session to say what it is (`refs/furniture.json`).
+  `test/furniture.test.js` checks the tiles carry the map's, only what the LiDAR can tell, and the
+  sample as recorded.
 - `trees.mjs` finds every tree in DGT's point cloud (task 019). It boils each tile down once to 50 cm
   cells (`.cache/dgt/trees/`, 35 s a tile): the highest and the lowest point of high vegetation (class
   5, 2 m and more up) over the terrain, how many there are and their colour (the cloud's near-infrared,

@@ -6,7 +6,7 @@
 //
 // node tools/fetch.mjs            everything but DGT's
 // node tools/fetch.mjs trees      only what's named (base, paths, barriers, buildings, admin, pois, art, shops, trees,
-//                                 street, restrictions, dem, horizon, lidar, ortho, cos)
+//                                 street, furniture, restrictions, dem, horizon, lidar, ortho, cos)
 import fs from 'node:fs';
 import path from 'node:path';
 import https from 'node:https';
@@ -80,6 +80,19 @@ out geom;`,
 (
   node["highway"~"^(crossing|traffic_signals|bus_stop)$"];
   node["crossing"];
+);
+out;`,
+  // The street furniture the map has (task 100): lamps, signs, traffic lights, bins, ecopontos,
+  // benches, bollards, bus stops and the poles carrying wires, which the LiDAR's own are checked
+  // against and give way to.
+  furniture: `[out:json][timeout:120][bbox:${BOX}];
+(
+  node["highway"~"^(street_lamp|traffic_signals|bus_stop|stop|give_way)$"];
+  node["traffic_sign"];
+  node["amenity"~"^(bench|waste_basket|recycling|waste_disposal|bicycle_parking)$"];
+  node["leisure"="picnic_table"];
+  node["barrier"~"^(bollard|block)$"];
+  node["power"~"^(pole|tower)$"]; node["man_made"~"^(utility_pole|street_cabinet|flagpole|mast)$"];
 );
 out;`,
   // The turns the map bans or makes the only one (no left turn, only straight on), for the routes

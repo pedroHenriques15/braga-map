@@ -391,6 +391,36 @@ export interface Wall {
   open?: boolean;
 }
 
+// A piece of street furniture (task 100, tools/furniture.mjs), round the open world's area, where it
+// stands: OpenStreetMap's (source 'osm'), and the lamps, signs, traffic lights and bus shelters DGT's 2025
+// LiDAR sees that the map lacks ('lidar'); where both have one, the map's, as high as the LiDAR measured
+// it. The LiDAR sees only some of them (a lamp's head, a sign's plate, a few points each; most posts
+// not at all), and of those it finds that the photos show, about four in ten are what it says and two
+// in three some piece of furniture (refs/furniture.json); the low things it can't tell from
+// parked cars, so the benches, bins, baskets, ecopontos, bollards and the poles that carry wires are
+// the map's only.
+// - kind: 'lamp' (a lamp post), 'sign' (a traffic sign on its post), 'traffic_light', 'pole' (one
+//   that carries wires), 'shelter' (a bus shelter), 'bench', 'bin' (a container), 'ecoponto' (the
+//   recycling bins), 'bollard', 'basket' (a litter bin).
+// - x, z: where its post stands (for a shelter or a bench, its middle); angle: the way it faces, in
+//   radians from x towards z: a lamp's arm and a sign's or a traffic light's face towards the street
+//   (cos angle, sin angle), a shelter, a bench or a bin along it.
+// - h: its top over the ground, in metres: as the LiDAR measured it, else the map's height, else its
+//   kind's usual (a lamp 8 m, a sign 2.8 m, a bench 0.8 m).
+// - face: a sign's, as a photo shows it, else the commonest for its place: 'stop' or 'give_way' by the
+//   map's, 'no_entry' at a one-way street's wrong end, 'crossing' by a zebra crossing, 'bus_stop' by a
+//   stop, 'direction' or 'keep_left' where a photo shows them; null where nothing tells it.
+export type FurnitureKind = 'lamp' | 'sign' | 'traffic_light' | 'pole' | 'shelter' | 'bench' | 'bin' | 'ecoponto' | 'bollard' | 'basket';
+export interface Furniture {
+  kind: FurnitureKind;
+  x: number;
+  z: number;
+  angle: number;
+  h: number;
+  source: 'osm' | 'lidar';
+  face?: 'stop' | 'give_way' | 'no_entry' | 'crossing' | 'bus_stop' | 'direction' | 'keep_left' | null;
+}
+
 // A tree (task 019, tools/trees.mjs): each one DGT's 2025 LiDAR found, where its point cloud was fetched
 // (the whole map but its far east and south edges), with what it measured of it; elsewhere the map's own
 // trees and its woods and parks filled in, at their kind's usual size.
@@ -682,6 +712,8 @@ export interface World extends BragaMap {
   streets: Streets;
   // The walls, fences, railings, hedges and gates on the open world's tiles loaded (task 013).
   walls: Wall[];
+  // The street furniture on the open world's tiles loaded (task 100).
+  furniture: Furniture[];
   // What the ground is on the tiles loaded under the Volta dos Amigos' box (task 016).
   groundCover: GroundCover[];
 }

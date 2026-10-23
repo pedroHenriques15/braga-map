@@ -131,6 +131,9 @@ const PATH_LEVELS = ['ground', 'bridge', 'tunnel', 'under'];
 // What each wall is, and what it's made of (tools/walls.mjs's WALL_KINDS and WALL_MATERIALS).
 const WALL_KINDS = ['wall', 'retaining', 'fence', 'railing', 'hedge', 'guard_rail', 'gate', 'bar'];
 const WALL_MATERIALS = [null, 'granite', 'rendered', 'concrete', 'metal', 'wood'];
+// What each piece of street furniture is, and a sign's face (tools/furniture.mjs's KINDS and FACES).
+const FURNITURE = ['lamp', 'sign', 'traffic_light', 'pole', 'shelter', 'bench', 'bin', 'ecoponto', 'bollard', 'basket'];
+const FACES = ['stop', 'give_way', 'no_entry', 'crossing', 'bus_stop', 'direction', 'keep_left'];
 
 let base = null;
 // The facades' lists (tools/facades.mjs), as the base has them, for reading the tiles' buildings.
@@ -279,6 +282,7 @@ export async function loadWorld(area) {
   const trees = [];
   const streets = { carriageways: [], pavements: [], kerbs: [], markings: [], paths: [], handrails: [] };
   const walls = [];
+  const furniture = [];
   const box = { x0: Infinity, x1: -Infinity, z0: Infinity, z1: -Infinity };
   parts.forEach(({ head, nums }, t) => {
     const g = grid(nums, head.terrain);
@@ -382,6 +386,12 @@ export async function loadWorld(area) {
     // The bus stops, [x, z, shelter] each; and the streets' name plates, [name, x, z, face, y, on]
     // each, the name its place in the tile's names (task 042).
     for (const [x, z, shelter] of head.stops?.list ?? []) stops.push({ x, z, shelter: shelter === 1 });
+    // The street furniture, [kind, x, z, angle, h, source, face] each (task 100).
+    for (const [k, x, z, angle, fh, src, face] of head.furniture?.list ?? []) {
+      const f = { kind: FURNITURE[k], x, z, angle, h: fh, source: src ? 'lidar' : 'osm' };
+      if (f.kind === 'sign') f.face = face ? FACES[face - 1] : null;
+      furniture.push(f);
+    }
     for (const [n, x, z, face, py, on] of head.plates?.list ?? []) plates.push({ name: names[n - 1], on: on ? 'post' : 'wall', x, z, face, y: py });
     // The trees (tools/world.mjs): [x, z, kind | mapped << 4 | filled << 5 | height << 6, crown, foot,
     // dx, dz] each, in half metres, then decimetres (dx, dz: its crown's middle from its trunk); the
@@ -502,6 +512,7 @@ export async function loadWorld(area) {
     trees,
     streets,
     walls,
+    furniture,
     groundCover,
   };
 }

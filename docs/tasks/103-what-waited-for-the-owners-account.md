@@ -43,7 +43,7 @@ Once Claude Code is signed in to the account that owns the pages (`/login`):
 
 | Task | What waits | Made at |
 |---|---|---|
-| 082 | A round for the scorecard: its shots are made (party-kart's `shots/2026-10-23-task082/`, all 33 places at High and Low on 1.33.0, and `shots/2026-10-23-task082b/`, four places on 1.33.1's setts), but it isn't prepared (`node tools/round.mjs`), isn't in `refs/rounds.json` and has no Claude's marks. Then the owner's marks | braga-map `83fd58d` (1.33.1), party-kart `2dfa05d` |
+| 082 | A round for the scorecard: its shots are made (party-kart's `shots/2026-10-23-task082/`, all 33 places at High and Low on 1.33.0, and `shots/2026-10-23-task082b/`, four places on 1.33.1's setts), but it isn't prepared (`node tools/round.mjs`), isn't in `refs/rounds.json` and has no Claude's marks. Then the owner's marks. **Since 2026-10-24:** shot again on main as `2026-10-24-after082` (party-kart's `shots/2026-10-24-after082/`, all 33 at High and Low), which takes these shots' place; Claude's marks for it are in `.cache/scorecard/marks/2026-10-24-after082.json` (mean 2.52, this run's baseline, on the scale in `_coord/marks-scale.md` beside the repositories). Not yet prepared with `tools/round.mjs`: done when it goes up | braga-map `83fd58d` (1.33.1), party-kart `2dfa05d` |
 | (none) | A page to update: the shared map page (https://claude.ai/artifact/UdwdhZYkR76J5xyPcRUHUb) was last republished by task 050 (`a694087`, 2026-10-15). `map/` has changed since in `d21b044` (026), `b846a05` and `d1cf52d` (014), `4bdb77a` (067, 072) and `a01bb67` (079), and no task records that it went up again | braga-map `a01bb67` (the last change to `map/`) |
 
 ## braga-map versions bumped and not tagged
@@ -108,6 +108,11 @@ picks it up can go on from here.
   5. 053 last.
 
   Each task's line here gets its commit, version and what's left once it lands.
+
+  Landed and found so far:
+  - The baseline marks (the coordinator, 2026-10-24): `2026-10-24-after082`, mean 2.52 over 33. Found
+    marking it, and drafted (`5da9746`): 111, white shards at a wall's foot, `critical`, next for the
+    first free worker; 112, two buildings the photos don't have.
 
 ## Read first
 

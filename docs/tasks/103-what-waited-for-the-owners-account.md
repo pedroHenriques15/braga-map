@@ -167,6 +167,11 @@ picks it up can go on from here.
     the full map for the streets, landmarks, arenas and bus stops, accents or not, the nearest first, the
     result the GPS's waypoint; and in 107's router, a car's route starts and ends on streets. Not
     verified: a real phone's own keyboard.
+  - **066** (worker-1): landed braga-map `4643ad3` (decision 068) and party-kart `84712aa`. A car
+    tilts by the surface it's on: on the João XXI's upper lane, 99 points tipped 64-72° now under 3°;
+    along every street at 90 km/h both ways, 172 times in the air (was 187), the longest 1.82 s (2.12).
+    `openings` stays (the Liberdade underpass needs it). Its first "Done when" is left open: the race
+    still flies 0.31-0.40 s on the João XXI, from the tiles' ground dipping at the lane's edge: task 115.
 
 ## Read first
 

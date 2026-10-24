@@ -305,6 +305,8 @@ node tools/levels.mjs  # the streets that cross on two levels round the track, a
 node tools/refs.mjs    # the viewpoints' and the reference photos, into .cache/refs/ (with Mapillary's free token)
 node tools/buildings.mjs  # the buildings whose facades to look at (refs/buildings.json), and with `mark` their photos marked (2 minutes)
 node tools/species.mjs mark  # each viewpoint's photo with the trees within 60 m of its camera numbered, and its orthophoto, for refs/trees.json (task 061, 10 s)
+node tools/species.mjs shooter  # the shooter's area's trees a photo shows, and the fewest photos to look at for those refs/trees.json hasn't (task 088)
+node tools/species.mjs summer   # Mapillary's panoramas in leaf round the shooter's area's trees, as reference photos in refs/photos.json (task 088)
 node tools/textures.mjs  # the textures refs/textures.json asks for, made, not photographed: world/textures/ (about a minute)
 node tools/cover.mjs   # what the ground is every 50 cm under the Volta dos Amigos' box, and the cars parked: world/cover/ (3 minutes, 10 the first time)
 npm run minecraft  # the world as a Minecraft world (Java, 26.3): .cache/minecraft/Braga (30 s; --out, --box and --force: "A Minecraft world" below)
@@ -647,8 +649,11 @@ streets; when a track moves enough to change the edge, run the three again until
   `tools/facades.mjs` lists. `refs/trees.json` says what species each tree near a viewpoint is, as a
   session saw it (task 061): `node tools/species.mjs mark` outlines and numbers the trees within 60 m
   of a viewpoint's camera (or a reference photo's) on its photo and on the orthophoto round it, into
-  `.cache/species/`; each tree seen is recorded by its crown's middle, and the rows along the avenues
-  and the places a species fills by their line or ring. `test/trees.test.js` checks every tree within
+  `.cache/species/` (since task 088, only those in sight past the buildings); each tree seen is
+  recorded by its crown's middle, and the rows along the avenues and the places a species fills by
+  their line or ring. Task 088 looked at every one of the shooter's area's trees a photo shows
+  (`node tools/species.mjs shooter`), with views of the panoramas taken in leaf added as reference
+  photos for it (`what: trees`, `node tools/species.mjs summer`), none near a friend's house. `test/trees.test.js` checks every tree within
   60 m of the seven viewpoints read is in it and drawn of its species' kind. party-kart's
   `node scripts/shots.mjs <label>` shoots its city from every viewpoint, at the photo's field of
   view and shape, into a round beside the photos and the round before (task 002, decision 011).

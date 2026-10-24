@@ -146,14 +146,15 @@ only (095). The "Later" ideas are drafted here.
 Done: no photograph drawn in the game, every texture made by `tools/made.mjs` and matched to its
 references, the ten photo facades given back to the kit (082, decision 061); and Ultra, offered on a
 PC, for each task below to hang its detail on: the screen's every pixel, the sun's shadows at 4096 px,
-the near trees to 700 m, the rounds shot at Ultra and Low (081, decision 069).
+the near trees to 700 m, the rounds shot at Ultra and Low (081, decision 069); and the shooter's
+area's trees their species where a photo shows one, in leaf too, the kinds staying nine (088,
+decision 070).
 
 - **083** The ground at 50 cm over the whole map, finest near the player (after 038).
 - **084** On Ultra, the streets on the land's own triangles (after 083).
 - **085** Textures at their finest on Ultra: UASTC, normal and roughness maps.
 - **086** Each facade's doors and windows where they are, read from its photos.
 - **087** Roofs as the point cloud has them: every plane, chimney, dormer and terrace.
-- **088** Every tree in the open world its species.
 - **089** On Ultra, the trees in full to the horizon, moving in the wind.
 - **090** The light on Ultra: cascaded shadows, occlusion, light bounced, reflections, TAA.
 - **091** Each viewpoint shot at its photo's hour and weather (blocked: it changes decision 037).

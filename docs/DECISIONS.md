@@ -2025,3 +2025,33 @@ the phones play as before, and the budget (decision 013) keeps its three phone l
 What it costs, on the owner's RTX 4060 Ti at 720 pixels high: 103–271 draw calls, 2.68–5.36 M
 triangles, 181 MB of textures, a frame of 1.4–3.4 ms (High 99–264, 1.43–3.19 M, 133 MB, 0.8–1.9 ms).
 High, Medium and Low draw the same as before, to the pixel.
+
+## 070 · The shooter's area's trees are the species their photos show, in leaf too; a species is drawn as the kind it looks like, and the kinds stay nine
+
+*2026-10-24 · task 088 · on decision 051*
+
+Decision 051 named the trees near seven viewpoints from their photos. Task 088 did it for every tree of
+the shooter's area a photo shows, and Braga's council publishes no street-tree inventory to take it
+from (`docs/SOURCES.md`).
+
+- **Every tree a photo shows is looked at** (`tools/species.mjs shooter`): within 60 m of a viewpoint's
+  or a reference photo's camera, in its view and in sight past the buildings. Most of those photos are
+  of February and March, the broadleaves bare, so **views of Mapillary's panoramas taken in leaf** are
+  reference photos too (`what: trees`, `tools/species.mjs summer`), none taken within 150 m of an egg or
+  a waypoint or looking at one within 300 m, the rule every reference photo keeps (`test/photos.test.js`).
+  Of the area's 337 trees in some photo's view, 328 were looked at (the other 9 the limes' row names):
+  71 named past "broadleaf" (the Rio Este's willows, the Alameda do Fujacal's planes, Judas trees,
+  hackberries, cedars and cypresses), 165 broadleaves no photo can name, 92 hidden. A label that names
+  nothing leaves a tree to the row that names it.
+- **A species is drawn as the kind it looks like** (as 051's were): the willows as poplars, the cedars,
+  cypresses and the araucaria as conifers, the Judas trees, oleander and evergreen broadleaves as
+  broadleaves. **No kind is added** until a species has some 50 trees on the photos' evidence: none
+  has (the willows 23, the planes 25, the hackberries 20), and the hackberries, the nearest, already
+  have "broadleaf"'s bark. An evergreen broadleaf is drawn deciduous till the seasons (093).
+- **A row is carried no further than a photo shows it** (051's rule): the point cloud's spacing would
+  carry the alameda's planes and the willows on, unseen.
+
+What it changed: 63 trees' kinds and nothing else of any tree; the shooter's area's share of
+"broadleaf" from 90.0% to 86.1%, the open world's from 87.3% to 87.1%. Of the five viewpoints shot,
+`alameda-fujacal`'s trunks are the plane's bark (paler than its photo's wet February bark), the others
+as they were (Claude's marks the same).

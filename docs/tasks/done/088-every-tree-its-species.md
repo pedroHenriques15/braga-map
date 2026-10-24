@@ -1,5 +1,5 @@
 ---
-status: doing
+status: done
 priority: medium
 kind: code
 repo: braga-map
@@ -45,10 +45,17 @@ species, then shape rules (`trees.mjs:446-459`). party-kart draws a kind's shape
 ## Done when
 
 - [ ] Every tree in the shooter's area that a photo shows has its species (765 trees there); the
-  share of "broadleaf" in the open world is recorded before and after.
-- [ ] `alameda-fujacal`, `31-de-janeiro`, `imaculada-conceicao`, `capela-sao-joao` and
-  `porfirio-da-silva` shot again, rated no lower.
-- [ ] `npm test` passes.
+  share of "broadleaf" in the open world is recorded before and after. Left, and why: every tree a
+  photo shows was looked at (328 of the 337 a photo's view takes in, of 746 in the area today; the 9
+  left are the Imaculada Conceição's limes, which its row names), but a photo names a species only
+  where it shows one: 71 of the area's are named past "broadleaf", 165 stay "broadleaf" (the photos
+  of February and March show them bare, and the summer panoramas don't reach them), 92 were hidden.
+  The share is recorded (Notes): the area's 90.0% to 86.1%, the open world's 87.3% to 87.1%.
+- [x] `alameda-fujacal`, `31-de-janeiro`, `imaculada-conceicao`, `capela-sao-joao` and
+  `porfirio-da-silva` shot again, rated no lower: the coordinator's marks
+  (`.cache/scorecard/marks/2026-10-24-after088.json`): `alameda-fujacal` 3 → 3,
+  `imaculada-conceicao` 3 → 3, the other three the same to the pixel.
+- [x] `npm test` passes: 153 of 153 on main with 081 under it.
 
 ## Out of scope
 
@@ -136,4 +143,11 @@ species, then shape rules (`trees.mjs:446-459`). party-kart draws a kind's shape
   `npm test` 155 of 156, the timed "world as a ground" test at 3.8 s while other shots ran, and
   14 of 14 run alone twice after.
 - **Not verified:** the species of the trees no photo shows (409 of the area's 746): they keep
-  019's rules.
+  019's rules. **Left:** the alameda's trunks are the plane's bark pattern but much paler than the
+  photo's wet February trunks (the coordinator's mark, 3 → 3): the plane's bark's tone is 061's, and
+  093's seasons are where a winter's wet bark would come in.
+- **Landed (worker-2, 2026-10-24):** braga-map 1.37.0, decision 070; party-kart pinned to v1.37.0.
+  At landing (rule 16), `tools/trees.mjs` ran once more into the shared `.cache/trees.json`, byte for
+  byte the private run's, so the tiles built from it stand. The round was shot at High and Low,
+  before 081 made the rounds Ultra and Low; its shots are party-kart's `shots/2026-10-24-before088/`
+  and `shots/2026-10-24-after088/`, not prepared with `tools/round.mjs` (task 103 keeps it).

@@ -89,5 +89,7 @@ frame), first a step of this task, is a task of its own (the coordinator's, 2026
 - **High and below unchanged:** High's, Medium's and Low's files are byte for byte as they were (the
   tool makes them as before; `git status` shows none changed). In the game, High and Low draw the same
   calls, triangles and texture memory as main at the three viewpoints, and the land the same to the
-  pixel (what differs between any two rounds is the streets' and the windows' canvas textures, drawn
-  with `Math.random` each run).
+  pixel. The streets' and the windows' canvas textures are another draw of their noise: the shots seed
+  `Math.random` (`?scenery`), three.js takes four of its numbers for every object it makes, and the
+  land's array texture is one more object on High, so every canvas drawn after it takes its noise from
+  further along the sequence (two rounds of the same code match to the pixel).

@@ -75,10 +75,10 @@ frame), first a step of this task, is a task of its own (the coordinator's, 2026
   `node tools/textures.mjs` takes about ten minutes, so it ran in two parts (the trees, then the
   grounds made before), each under ten minutes.
 - **The ground's roughness a number, not a map:** WebGL gives a fragment shader 16 textures; the land's
-  sampled 11 plus the sun's shadows, 16 on Ultra with 090's four cascades. In party-kart the six kinds'
-  textures are one array texture now, at every level (`cover.ts`'s `stack`), and their normal maps
-  another on Ultra: the land's shader samples 12 of 16 on Ultra, 8 on High, 7 on Low (counted in
-  Chromium on the owner's card, each program's samplers). A first roughness of 0.7 for the setts let the
+  sampled 11 plus the sun's shadows, 16 on Ultra with 090's four cascades. In party-kart, on Ultra, the six kinds'
+  textures are one array texture (`cover.ts`'s `stack`) and their normal maps another: the land's
+  shader samples 12 of 16 there (counted in Chromium on the owner's card, each program's samplers).
+  Below Ultra they're six textures as before (the coordinator's, 2026-10-24: see the next notes). A first roughness of 0.7 for the setts let the
   sky's light wash their joints pale; the kinds' are near the land's 0.96 now (0.9 to 0.96).
 - **Found: the setts the three viewpoints show up close aren't the map's.** The streets, their
   pavements and the steps are party-kart's own drawings (`streets.ts`'s `layers()`: 16 canvases at
@@ -89,7 +89,9 @@ frame), first a step of this task, is a task of its own (the coordinator's, 2026
 - **High and below unchanged:** High's, Medium's and Low's files are byte for byte as they were (the
   tool makes them as before; `git status` shows none changed). In the game, High and Low draw the same
   calls, triangles and texture memory as main at the three viewpoints, and the land the same to the
-  pixel. The streets' and the windows' canvas textures are another draw of their noise: the shots seed
-  `Math.random` (`?scenery`), three.js takes four of its numbers for every object it makes, and the
-  land's array texture is one more object on High, so every canvas drawn after it takes its noise from
-  further along the sequence (two rounds of the same code match to the pixel).
+  pixel; but with the six kinds' textures one array at every level, as first made, the streets' and the
+  windows' canvas textures were another draw of their noise: the shots seed `Math.random`
+  (`?scenery`), three.js takes four of its numbers for every object it makes, and the array was one
+  object more on High, so every canvas drawn after it took its noise from further along the sequence
+  (two rounds of the same code match to the pixel). So the array is Ultra's alone, and High and Low,
+  shot again against main's, are the same to the pixel: HIGHCHECK.

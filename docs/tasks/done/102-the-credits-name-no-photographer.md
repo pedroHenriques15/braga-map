@@ -1,5 +1,5 @@
 ---
-status: todo
+status: done
 priority: medium
 kind: code
 repo: party-kart
@@ -32,10 +32,12 @@ session was editing `src/main.ts` at the same time.
 
 ## Done when
 
-- [ ] How to play's Braga line credits OpenStreetMap, DGT and Copernicus, and names no photographer
-  nor "Fotografias".
-- [ ] `grep -n "photoCredits\|photos.ts" src` finds nothing in party-kart.
-- [ ] `npm test` and `npm run check` pass in party-kart.
+- [x] How to play's Braga line credits OpenStreetMap, DGT and Copernicus, and names no photographer
+  nor "Fotografias". (party-kart 28bb0d6: the line's text in `src/main.ts`; not looked at on the
+  screen.)
+- [x] `grep -n "photoCredits\|photos.ts" src` finds nothing in party-kart. (`grep -rn` over `src`, at
+  28bb0d6.)
+- [x] `npm test` and `npm run check` pass in party-kart. (156 of 156, at 28bb0d6 on braga-map 1.37.0.)
 
 ## Out of scope
 
@@ -44,3 +46,9 @@ session was editing `src/main.ts` at the same time.
 ## Notes
 
 - Found by 082.
+- **Done (2026-10-24, worker-1), party-kart:** How to play's Braga line ends, after OpenStreetMap's,
+  the DGT's and Copernicus's credits, "As texturas da cidade são feitas, não fotografadas: as
+  fotografias de Braga servem só de referência."; `photoCredits()` and its comment (which named
+  `render/photos.ts`) are gone. `grep -rn "photoCredits\|photos.ts" src` finds nothing; `npm test` 156
+  of 156 and `npm run check`. Not looked at on the screen. Landed as party-kart 28bb0d6 (on 088's
+  74436ae), no decision and no version: no viewpoint shows How to play.

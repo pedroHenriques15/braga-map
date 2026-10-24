@@ -44,7 +44,7 @@ Once Claude Code is signed in to the account that owns the pages (`/login`):
 | Task | What waits | Made at |
 |---|---|---|
 | 082 | A round for the scorecard: its shots are made (party-kart's `shots/2026-10-23-task082/`, all 33 places at High and Low on 1.33.0, and `shots/2026-10-23-task082b/`, four places on 1.33.1's setts), but it isn't prepared (`node tools/round.mjs`), isn't in `refs/rounds.json` and has no Claude's marks. Then the owner's marks. **Since 2026-10-24:** shot again on main as `2026-10-24-after082` (party-kart's `shots/2026-10-24-after082/`, all 33 at High and Low), which takes these shots' place; Claude's marks for it are in `.cache/scorecard/marks/2026-10-24-after082.json` (mean 2.52, this run's baseline, on the scale in `_coord/marks-scale.md` beside the repositories). Not yet prepared with `tools/round.mjs`: done when it goes up | braga-map `83fd58d` (1.33.1), party-kart `2dfa05d` |
-| (none) | A page to update: the shared map page (https://claude.ai/artifact/UdwdhZYkR76J5xyPcRUHUb) was last republished by task 050 (`a694087`, 2026-10-15). `map/` has changed since in `d21b044` (026), `b846a05` and `d1cf52d` (014), `4bdb77a` (067, 072) and `a01bb67` (079), and no task records that it went up again | braga-map `a01bb67` (the last change to `map/`) |
+| (none) | A page to update: the shared map page (https://claude.ai/artifact/UdwdhZYkR76J5xyPcRUHUb) was last republished by task 050 (`a694087`, 2026-10-15). `map/` has changed since in `d21b044` (026), `b846a05` and `d1cf52d` (014), `4bdb77a` (067, 072), `a01bb67` (079) and, in this run, `afa3e8b` (041: the squares mapped in parts), and no task records that it went up again | braga-map `afa3e8b` (the last change to `map/`) |
 
 ## braga-map versions bumped and not tagged
 
@@ -58,9 +58,12 @@ task's Notes as "decided by the session, for the owner to confirm".
 
 | Task | The question | What the session decided | Commit |
 |---|---|---|---|
-| (the run) | Who marks the rounds, now that Claude's marks are the judge, with four sessions? | The coordinator alone, so every round is on one scale; the workers shoot and send it the places that changed | this file's |
-| (the run) | Claude's marks for each place in the last rounds aren't kept locally (task 064 removed them once they went up, and the scorecard is out of reach): what is "no lower" measured against? | A new baseline of Claude's marks, every place marked again on main before the first task that changes a viewpoint lands; each round after is marked against the one before it | this file's |
-| (the run) | ROADMAP's "in party-kart, never two sessions on the same file", with three workers | Allowed in different functions of a file only, the one landing second rebasing and keeping both; the coordinator says which files each task has claimed | this file's |
+| (the run) | Who marks the rounds, now that Claude's marks are the judge, with four sessions? | The coordinator alone, so every round is on one scale; the workers shoot and send it the places that changed | `003fa12` |
+| (the run) | Claude's marks for each place in the last rounds aren't kept locally (task 064 removed them once they went up, and the scorecard is out of reach): what is "no lower" measured against? | A new baseline of Claude's marks, every place marked again on main before the first task that changes a viewpoint lands; each round after is marked against the one before it | `003fa12` |
+| (the run) | ROADMAP's "in party-kart, never two sessions on the same file", with three workers | Allowed in different functions of a file only, the one landing second rebasing and keeping both; the coordinator says which files each task has claimed | `003fa12` |
+| (the run) | Cross-session messages are off in every session (the workers' and the coordinator's) | The sessions talk through files in `_coord\`: `to-worker-N.md` from the coordinator, `from-worker-N.md` from each worker, each waiting on the other with a background command | (outside git) |
+| 041 | Its step 4: the two ways tagged as areas that aren't pedestrian (a residential yard and a driveway, outside the box) | Left as they are: drawn as streets round their outline, not as squares | 041's landing |
+| 105 | The chair (Joel's) and the trolley (Joel F.'s) are smaller than 2.8 m today: brought to 2.8 m, or kept in proportion? | Every body drawn at 0.7 of its model, so every driver stays the same size (the chair 2.06 m long, the trolley 2.16 m); the banger at 0.65 to fit 2.8 m (from 4.30), its driver 7% smaller | 105's landing |
 
 ## Progress
 
@@ -117,6 +120,10 @@ picks it up can go on from here.
   - The baseline marks (the coordinator, 2026-10-24): `2026-10-24-after082`, mean 2.52 over 33. Found
     marking it, and drafted (`5da9746`): 111, white shards at a wall's foot, `critical`, next for the
     first free worker; 112, two buildings the photos don't have.
+  - **041** (worker-3): landed `afa3e8b`, braga-map 1.35.0 (tagged), decision 063. The squares mapped
+    in parts are `plaza` areas with their holes, and the street audit reads the streets as they're drawn
+    since 026 (its premise was out of date). No viewpoint changed, so no round. Not verified: the
+    budget at Medium. Found: 113 (a wall's gap at a square's footway), drafted.
 
 ## Read first
 

@@ -96,6 +96,7 @@ them, drawn as squares less what's in them (041, decision 063).
   critical, in what's shipped (found marking the baseline round of 2026-10-24).
 - **112** Two buildings where the photos have none: by São João da Ponte's chapel and on the Viriato
   Amaral Nunes, where its graffiti wall is (found the same way).
+- **113** A wall keeps its gap where a footway gives way to a square's paving (found by 041).
 - **076** The land at a flight of steps, never drawn over its treads nor far under them: 565 of
   1,896 treads have it 15 cm or more over them, the Travessa do Fujacal's 17 steps among them, and 96
   stand 2 m or more over it (found on foot by 073; after 051).

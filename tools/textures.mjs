@@ -4,9 +4,13 @@
 // owner's rule, 2026-10-23). Photos are their references: each one's mean colour and contrast are
 // matched to what its references measure (`match`, which --measure reads off them). Each is cut for
 // each graphics level and compressed as KTX2 (Basis Universal's ETC1S, which a phone's graphics card
-// keeps compressed, decision 030), for map() to hand a game.
+// keeps compressed, decision 030), for map() to hand a game. And for Ultra (task 085, a PC's), each made
+// again at twice High's size, with a kind of ground's and a bark's relief as a normal map (in Basis's
+// UASTC, which keeps a normal's directions where ETC1S blurs them) and a bark's roughness, for the sun's
+// grazing light.
 //
-// node tools/textures.mjs            every texture in refs/textures.json (about half a minute)
+// node tools/textures.mjs            every texture in refs/textures.json (about ten minutes, Ultra's
+//                                    most of it: run it in parts, by id, on a busy machine)
 // node tools/textures.mjs <id>…      only those; the index keeps the rest
 // node tools/textures.mjs --check    and each one at High, as a PNG, into .cache/textures/
 // node tools/textures.mjs --measure  each recipe's `match` measured again off its references (in
@@ -14,7 +18,10 @@
 //                                    refs/textures.json; nothing is made
 //
 // world/textures/surfaces/<id>-<level>.ktx2 each kind of ground's, for each level: high, medium, low
-// world/textures/trees/<id>-<level>.ktx2    each kind of tree's bark and leaves
+// world/textures/surfaces/<id>-ultra.ktx2  and Ultra's, twice High's size, and its relief:
+//   <id>-ultra-normal.ktx2                   a normal map, UASTC, linear
+// world/textures/trees/<id>-<level>.ktx2    each kind of tree's bark and leaves, and Ultra's: a bark's
+//   <id>-ultra-rough.ktx2                    relief and its roughness (at half Ultra's size, linear) too
 // world/textures.js                         SURFACES, each kind of ground's (index.d.ts's GroundTexture),
 //                                           and TREES, each kind of tree's bark and leaves (TreeTexture)
 import fs from 'node:fs';
@@ -32,6 +39,27 @@ const SURFACE = { high: 1024, medium: 512, low: 256 };
 // A tree's bark and leaves (task 019) at each level: a bark spanning about 1 to 2 m, a spray of
 // leaves about 1 m.
 const TREE = { high: 512, medium: 256, low: 128 };
+// Ultra's (task 085): twice High's, made at that size rather than scaled up, so its grain is finer.
+const ULTRA = { surface: 2 * SURFACE.high, tree: 2 * TREE.high };
+// How deep each generator's relief is, black to white, in metres: what its normal map's slopes are
+// worked out from (a texture's dark is what's sunk: the setts' joints, the bark's furrows, the asphalt's
+// binder between its stones); and how rough its surface is: a kind of ground's a number (the land's
+// shader has no room for a map of it, task 085), a bark's a map, the sunk a little rougher. Near the
+// 0.96 a game's land was matched to the photos at (party-kart's), a little less where feet and tyres
+// wear it smooth: at 0.7 the setts took so much of the sky's light that their joints paled.
+const RELIEF = {
+  asphalt: { depth: 0.006, rough: 0.92 }, concrete: { depth: 0.003, rough: 0.94 }, setts: { depth: 0.02, rough: 0.9 },
+  grass: { depth: 0.012, rough: 0.96 }, soil: { depth: 0.01, rough: 0.96 }, gravel: { depth: 0.015, rough: 0.94 },
+  bark: { depth: 0.015, rough: 0.9 },
+};
+const reliefOf = (t) => RELIEF[t.kind === 'surface' ? t.generator : 'bark'];
+// Ultra's files, by what they are: a kind of ground's texture and its relief, a bark's and its roughness,
+// the leaves alone.
+const ULTRA_FILES = {
+  surface: { colour: 'ultra', normal: 'ultra-normal' },
+  bark: { colour: 'ultra', normal: 'ultra-normal', roughness: 'ultra-rough' },
+  leaves: { colour: 'ultra' },
+};
 
 // The mean of an image's pixels (those not see-through) in linear light, as a graphics card reads it, in
 // sRGB's bytes: what a game divides a kind of ground's texture by before tinting it with the place's colour.
@@ -48,31 +76,51 @@ function meanOf(img) {
   return sum.map((v) => srgb(v / n));
 }
 
+// A texture's relief and roughness (task 085), from its luminance as its height: the normal map's
+// slopes in the texture's own directions (u along a row, v down the rows, as a game reads the file),
+// seamless, as deep as RELIEF says over `metres`; the roughness in green, as three.js reads it.
+function relief(img, metres, { depth, rough }) {
+  const { w, h } = img, ch = img.channels ?? 3, lin = (v) => ((v /= 255) <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4);
+  const H = new Float32Array(w * h);
+  for (let i = 0; i < w * h; i++) H[i] = Math.cbrt(0.2126 * lin(img.data[i * ch]) + 0.7152 * lin(img.data[i * ch + 1]) + 0.0722 * lin(img.data[i * ch + 2]));
+  // The height's slope a pixel, in metres a metre: depth over the pixel's size.
+  const k = (depth * w) / metres, at = (x, y) => H[((y + h) % h) * w + ((x + w) % w)];
+  const normal = Buffer.alloc(w * h * 3), roughness = Buffer.alloc(w * h * 3);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) {
+    const du = ((at(x + 1, y) - at(x - 1, y)) / 2) * k, dv = ((at(x, y + 1) - at(x, y - 1)) / 2) * k, l = Math.hypot(du, dv, 1), o = (y * w + x) * 3;
+    normal[o] = Math.round(((-du / l + 1) / 2) * 255);
+    normal[o + 1] = Math.round(((-dv / l + 1) / 2) * 255);
+    normal[o + 2] = Math.round(((1 / l + 1) / 2) * 255);
+    roughness[o + 1] = Math.round(Math.max(0.3, Math.min(1, rough + (0.5 - H[y * w + x]) * 0.2)) * 255);
+  }
+  return { normal: { w, h, data: normal }, roughness: { w, h, data: roughness } };
+}
+
 // ---- What each texture is made as ----
 
 // What a recipe was matched to, in words, for the index.
 const refName = (ref) => (ref.photo ? `refs/photos.json's ${ref.photo}` : `Poly Haven's ${ref.polyhaven}`) + (ref.tone ? ', greyed' : '');
 
 // A kind of ground (task 016) or a tree's bark (task 019): its generator's texture, seamless, spanning
-// `metres` a side, matched to its references.
-function texture(t) {
-  const n = t.kind === 'surface' ? SURFACE.high : TREE.high;
+// `metres` a side, matched to its references; `n` pixels a side, High's or Ultra's.
+function texture(t, n = t.kind === 'surface' ? SURFACE.high : TREE.high) {
   const data = make(t.kind, t.generator, n, { metres: t.metres, ...t.params }, seedOf(t.id));
   match(data, 3, t.match);
   const img = { w: n, h: n, data };
-  return { img, place: { ...(t.kind === 'surface' ? { ground: t.ground } : { tree: t.tree }), metres: t.metres, mean: meanOf(img) } };
+  return { img, place: { ...(t.kind === 'surface' ? { ground: t.ground, roughness: reliefOf(t).rough } : { tree: t.tree }), metres: t.metres, mean: meanOf(img) } };
 }
 
 // A tree's leaves (task 019): a spray of them, each leaf drawn from its kind's shape (made.mjs's
 // leafSprites) and laid along twigs that fan up from the card's foot, as many branches, leaves to a
 // branch and as long as the recipe's `spray` says, and `fill` more over it; or, for a palm (`frond`), the
 // leaflets along a frond's stem up the card. RGBA, row 0 at the top; matched to its references; what's
-// see-through is in the leaves' mean colour, so its mipmaps don't darken their edges.
-async function leaves(t) {
+// see-through is in the leaves' mean colour, so its mipmaps don't darken their edges. `S` pixels a side,
+// High's or Ultra's.
+async function leaves(t, S = TREE.high) {
   const sprites = await leafSprites(t.leaf, seedOf(t.id)), sp = t.spray;
   let seed = [...t.id].reduce((v, c) => (v * 31 + c.charCodeAt(0)) % 2147483647, 7) || 7;
   const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
-  const S = TREE.high, inputs = [], twigs = [];
+  const inputs = [], twigs = [];
   // A leaf l pixels long from (x, y), pointing at angle a (from x towards y, down the card).
   const put = async (x, y, a, l, stretch = 1) => {
     const s = sprites[Math.floor(rnd() * sprites.length)], k = l / s.h;
@@ -175,18 +223,21 @@ function writeRecipes(file, doc) {
 // ---- The index ----
 
 function writeIndex(entries) {
-  const files = (e, dir) => LEVELS.map((l) => {
-    const f = `${e.id}-${l}.ktx2`, { w, h, bytes } = ktx2Size(path.join(OUT, dir, f));
-    return `${l}: { url: new URL('./textures/${dir}/${f}', import.meta.url).href, w: ${w}, h: ${h}, bytes: ${bytes} }`;
-  });
+  const file = (dir, f) => {
+    const { w, h, bytes } = ktx2Size(path.join(OUT, dir, f));
+    return `{ url: new URL('./textures/${dir}/${f}', import.meta.url).href, w: ${w}, h: ${h}, bytes: ${bytes} }`;
+  };
+  const files = (e, dir) => LEVELS.map((l) => `${l}: ${file(dir, `${e.id}-${l}.ktx2`)}`);
+  // Ultra's (task 085): the texture, and a kind of ground's or a bark's relief, a bark's roughness.
+  const ultra = (e, dir, pad) => `ultra: { ${Object.entries(ULTRA_FILES[e.kind]).map(([k, f]) => `${k}: ${file(dir, `${e.id}-${f}.ktx2`)}`).join(`,\n${pad}`)} }`;
   // Each kind of ground's, by the kind it's of.
-  const surfaces = entries.filter((e) => e.kind === 'surface').map((e) => `  ${e.place.ground}: { id: ${js(e.id)}, metres: ${e.place.metres}, mean: ${js(e.place.mean)},\n    files: { ${files(e, 'surfaces').join(',\n      ')} },\n    made: ${js(e.made)} },`);
+  const surfaces = entries.filter((e) => e.kind === 'surface').map((e) => `  ${e.place.ground}: { id: ${js(e.id)}, metres: ${e.place.metres}, mean: ${js(e.place.mean)}, roughness: ${e.place.roughness},\n    files: { ${files(e, 'surfaces').join(',\n      ')} },\n    ${ultra(e, 'surfaces', '      ')},\n    made: ${js(e.made)} },`);
   // Each kind of tree's bark and leaves (task 019), by the kind they're of.
   const trees = new Map();
   for (const e of entries.filter((e) => e.kind !== 'surface')) {
     const { tree, ...place } = e.place;
     if (!trees.has(tree)) trees.set(tree, []);
-    trees.get(tree).push(`    ${e.kind}: { id: ${js(e.id)}, ${Object.entries(place).map(([k, v]) => `${k}: ${js(v)}`).join(', ')},\n      files: { ${files(e, 'trees').join(',\n        ')} },\n      made: ${js(e.made)} },`);
+    trees.get(tree).push(`    ${e.kind}: { id: ${js(e.id)}, ${Object.entries(place).map(([k, v]) => `${k}: ${js(v)}`).join(', ')},\n      files: { ${files(e, 'trees').join(',\n        ')} },\n      ${ultra(e, 'trees', '        ')},\n      made: ${js(e.made)} },`);
   }
   fs.writeFileSync(
     path.join(ROOT, 'world', 'textures.js'),
@@ -215,16 +266,17 @@ if (args.includes('--measure')) {
 fs.mkdirSync(WORK, { recursive: true });
 // What was made before that no recipe makes now goes: the files are only ever what the recipes say.
 const dirOf = (t) => (t.kind === 'surface' ? 'surfaces' : 'trees');
+const namesOf = (t) => [...LEVELS, ...Object.values(ULTRA_FILES[t.kind])].map((l) => `${t.id}-${l}.ktx2`);
 for (const f of fs.readdirSync(OUT)) {
   const p = path.join(OUT, f);
   if (!['surfaces', 'trees'].includes(f)) { fs.rmSync(p, { recursive: true }); continue; }
-  for (const g of fs.readdirSync(p)) if (!recipes.some((t) => dirOf(t) === f && LEVELS.some((l) => g === `${t.id}-${l}.ktx2`))) fs.rmSync(path.join(p, g));
+  for (const g of fs.readdirSync(p)) if (!recipes.some((t) => dirOf(t) === f && namesOf(t).includes(g))) fs.rmSync(path.join(p, g));
 }
 const entries = [];
 for (const t of recipes) {
   const t0 = Date.now(), dir = dirOf(t);
   const made = { generator: t.generator, ref: refName(t.ref), match: t.match };
-  const stale = !only.length || only.includes(t.id) || LEVELS.some((l) => !fs.existsSync(path.join(OUT, dir, `${t.id}-${l}.ktx2`)));
+  const stale = !only.length || only.includes(t.id) || namesOf(t).some((g) => !fs.existsSync(path.join(OUT, dir, g)));
   const out = t.kind === 'leaves' ? await leaves(t) : texture(t);
   entries.push({ id: t.id, kind: t.kind, place: out.place, made });
   if (!stale) continue;
@@ -237,6 +289,20 @@ for (const t of recipes) {
     const bytes = await ktx2(img);
     fs.writeFileSync(path.join(OUT, dir, `${t.id}-${l}.ktx2`), bytes);
     sizes.push(`${l} ${img.w}×${img.h} ${(bytes.length / 1024).toFixed(0)} KB`);
+  }
+  // Ultra's, made at its own size (High's above stays as it was), in ETC1S as the others are; its relief
+  // in UASTC; a bark's roughness at half its size, as it changes slowly.
+  const up = t.kind === 'leaves' ? await leaves(t, ULTRA.tree) : texture(t, t.kind === 'surface' ? ULTRA.surface : ULTRA.tree);
+  const write = async (name, img, opts) => {
+    const bytes = await ktx2(img, opts);
+    fs.writeFileSync(path.join(OUT, dir, `${t.id}-${name}.ktx2`), bytes);
+    sizes.push(`${name} ${img.w}×${img.h} ${(bytes.length / 1024).toFixed(0)} KB`);
+  };
+  await write('ultra', up.img, {});
+  if (t.kind !== 'leaves') {
+    const r = relief(up.img, t.metres, reliefOf(t));
+    await write('ultra-normal', r.normal, { uastc: true, normal: true });
+    if (t.kind === 'bark') await write('ultra-rough', await resize(r.roughness, up.img.w / 2, up.img.h / 2), { linear: true });
   }
   if (check) await sharp(out.img.data, { raw: { width: out.img.w, height: out.img.h, channels: out.img.channels ?? 3 } }).png().toFile(path.join(WORK, t.id + '.png'));
   console.log(`  ${sizes.join(', ')} (${((Date.now() - t0) / 1000).toFixed(1)} s)`);

@@ -571,6 +571,16 @@ export interface PhotoFile {
   h: number;
   bytes: number;
 }
+// A made texture's files for Ultra (task 085, a PC's): its texture at twice High's size, made at that
+// size, so its grain is finer (ETC1S, sRGB, as the others); a kind of ground's and a bark's relief, a
+// normal map (UASTC, linear: red the slope along a row, green down the rows, blue up, each 0 to 1 for
+// -1 to 1; row 0 at the top as the texture's is, so its tangent is along u and its bitangent along v);
+// and a bark's roughness, at half that size (ETC1S, linear, in green, as three.js reads it).
+export interface UltraTexture {
+  colour: PhotoFile;
+  normal?: PhotoFile;
+  roughness?: PhotoFile;
+}
 // Whose data it's made from: source (DGT), author, licence, url (the data's record) and date. A game
 // shows it where it credits the map.
 export interface PhotoCreditOf {
@@ -609,12 +619,15 @@ export type GroundKind = 'asphalt' | 'paving' | 'setts' | 'grass' | 'soil' | 'gr
 // A kind of ground's texture (tools/textures.mjs, made, task 082), seamless, to tile over the ground:
 // `metres` a side. mean: its mean colour (sRGB, of its mean in linear light), which a game
 // divides it by before tinting it with the ground's own colour (GroundCover's colour), so its detail
-// stays and its colour is the place's.
+// stays and its colour is the place's. roughness: how rough it is, 0 to 1, for a game's light (task 085:
+// Ultra's, with its relief in ultra.normal).
 export interface GroundTexture {
   id: string;
   metres: number;
   mean: [number, number, number];
+  roughness: number;
   files: Record<PhotoLevel, PhotoFile>;
+  ultra: UltraTexture & { normal: PhotoFile };
   made: MadeTexture;
 }
 // Each kind, in the order a GroundCover's cell has them: its texture, or null (water, a roof).
@@ -623,12 +636,14 @@ export interface GroundTexture {
 // - leaves: a spray of its leaves (or twigs of needles, or a palm's frond: leaflets either side of its
 //   stem, up the card), RGBA, row 0 at the top, the twigs fanning up from the card's foot; what's
 //   see-through is in the leaves' mean colour (mean); cover: how much of the card is leaves.
+// Each with Ultra's files (ultra, task 085): a bark's with its relief and its roughness, the leaves alone.
 export interface TreeTexture {
   id: string;
   metres?: number;
   mean: [number, number, number];
   cover?: number;
   files: Record<PhotoLevel, PhotoFile>;
+  ultra: UltraTexture;
   made: MadeTexture;
 }
 // evergreen: whether the kind keeps its leaves in winter (task 061): the pines, eucalyptus, cypresses and

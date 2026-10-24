@@ -9,8 +9,12 @@ import { encodeToKTX2 } from 'ktx2-encoder';
 export const QUALITY = 200;
 
 // A KTX2 file of an RGB image ({ w, h, data } with three bytes a pixel, or four with `channels: 4`, its
-// alpha last), Basis's ETC1S (or UASTC, with Zstandard), with its mipmaps, sRGB.
-export async function ktx2(img, uastc = false) {
+// alpha last), Basis's ETC1S (or `uastc`, with Zstandard: Ultra's normal maps, task 085), with its
+// mipmaps, sRGB (or `linear`: a roughness map's numbers, not colours; or `normal`, a normal map's, which
+// Basis then keeps apart better). UASTC's RDO trades a little of its closeness for Zstandard to pack it
+// smaller: at `rdo` 3 a 2048 px texture is 2.8 MB where it's 4.1 without (task 085's measures).
+export async function ktx2(img, { uastc = false, rdo = 3, linear = false, normal = false } = {}) {
+  linear ||= normal;
   const ch = img.channels ?? 3, rgba = Buffer.alloc(img.w * img.h * 4);
   for (let i = 0, j = 0; i < img.w * img.h * ch; i += ch, j += 4) { rgba[j] = img.data[i]; rgba[j + 1] = img.data[i + 1]; rgba[j + 2] = img.data[i + 2]; rgba[j + 3] = ch === 4 ? img.data[i + 3] : 255; }
   // The encoder prints each mipmap it makes; this keeps the console to what's made.
@@ -18,8 +22,8 @@ export async function ktx2(img, uastc = false) {
   process.stdout.write = () => true;
   try {
     const out = await encodeToKTX2(new Uint8Array(1), {
-      isUASTC: uastc, qualityLevel: QUALITY, compressionLevel: 2, needSupercompression: uastc, uastcLDRQualityLevel: 1,
-      generateMipmap: true, isPerceptual: true, isSetKTX2SRGBTransferFunc: true, isKTX2File: true,
+      isUASTC: uastc, qualityLevel: QUALITY, compressionLevel: 2, needSupercompression: uastc, uastcLDRQualityLevel: 1, enableRDO: uastc, rdoQualityLevel: rdo, isNormalMap: normal,
+      generateMipmap: true, isPerceptual: !linear, isSetKTX2SRGBTransferFunc: !linear, isKTX2File: true,
       imageDecoder: async () => ({ width: img.w, height: img.h, data: new Uint8Array(rgba.buffer, rgba.byteOffset, rgba.length) }),
     });
     return Buffer.from(out);

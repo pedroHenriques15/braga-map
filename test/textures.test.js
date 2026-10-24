@@ -25,8 +25,14 @@ test('no texture is made from a photograph: each recipe names a generator, and i
   }
 });
 
+// Ultra's files (task 085), by what each kind of texture has.
+const ULTRA = { surface: ['ultra', 'ultra-normal'], bark: ['ultra', 'ultra-normal', 'ultra-rough'], leaves: ['ultra'] };
+// A KTX2 file's supercompression (1 Basis's ETC1S, 2 Zstandard's, as UASTC is here) and its transfer
+// function (2 sRGB, 1 linear), off its header and its data format descriptor.
+const ktx2Of = (b) => ({ scheme: b.readUInt32LE(44), transfer: b[b.readUInt32LE(48) + 14] });
+
 test('world/textures/ holds what the recipes make, at every level, and nothing else', () => {
-  const want = new Set(textures.flatMap((t) => LEVELS.map((l) => `${t.kind === 'surface' ? 'surfaces' : 'trees'}/${t.id}-${l}.ktx2`)));
+  const want = new Set(textures.flatMap((t) => [...LEVELS, ...ULTRA[t.kind]].map((l) => `${t.kind === 'surface' ? 'surfaces' : 'trees'}/${t.id}-${l}.ktx2`)));
   const dir = new URL('../world/textures/', import.meta.url);
   assert.deepEqual(fs.readdirSync(dir).sort(), ['surfaces', 'trees']);
   const has = ['surfaces', 'trees'].flatMap((d) => fs.readdirSync(new URL(d + '/', dir)).map((f) => `${d}/${f}`));
@@ -42,8 +48,22 @@ test('world/textures/ holds what the recipes make, at every level, and nothing e
       assert.ok(b.subarray(0, 12).equals(KTX2), `${t.id} ${l}: a KTX2 file`);
       assert.deepEqual([b.readUInt32LE(20), b.readUInt32LE(24), b.length], [f.w, f.h, f.bytes], `${t.id} ${l}`);
       assert.ok(f.w % 4 === 0 && f.h % 4 === 0 && f.w * f.h < last, `${t.id} ${l}: ${f.w} × ${f.h}`);
+      assert.deepEqual(ktx2Of(b), { scheme: 1, transfer: 2 }, `${t.id} ${l}: ETC1S, sRGB`);
       last = f.w * f.h;
     }
+    // Ultra's: twice High's size, ETC1S as the others; its relief at that size, UASTC, linear; a bark's
+    // roughness at half, linear; nothing else.
+    const u = t.ultra, high = t.files.high, kind = r.kind;
+    assert.deepEqual(Object.keys(u), ['colour', 'normal', 'roughness'].slice(0, ULTRA[kind].length), t.id);
+    const is = { colour: [2, { scheme: 1, transfer: 2 }], normal: [2, { scheme: 2, transfer: 1 }], roughness: [1, { scheme: 1, transfer: 1 }] };
+    for (const [k, f] of Object.entries(u)) {
+      const b = fs.readFileSync(new URL(f.url));
+      assert.ok(b.subarray(0, 12).equals(KTX2), `${t.id} ultra ${k}: a KTX2 file`);
+      assert.deepEqual([b.readUInt32LE(20), b.readUInt32LE(24), b.length], [f.w, f.h, f.bytes], `${t.id} ultra ${k}`);
+      assert.deepEqual([f.w, f.h], [high.w * is[k][0], high.h * is[k][0]], `${t.id} ultra ${k}: ${f.w} × ${f.h}`);
+      assert.deepEqual(ktx2Of(b), is[k][1], `${t.id} ultra ${k}`);
+    }
+    if (kind === 'surface') assert.ok(t.roughness > 0.3 && t.roughness <= 1, `${t.id}: roughness ${t.roughness}`);
   }
   // No photographer to credit.
   assert.deepEqual(map().photoCredits, []);

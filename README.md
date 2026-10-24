@@ -272,6 +272,12 @@ map().groundKinds; // the kinds it says, each with its texture: [{ kind, texture
   graphics card takes (ETC1 on a phone, BC7 on a PC), and they stay compressed on it, half a byte a
   pixel on a phone where a canvas or a WebP takes four. `made` says how each was made and what it
   was matched to; `map().photoCredits` is empty, as no photographer's work is in the game.
+  For Ultra, a PC's level (task 085), each has `ultra` too: `colour`, made again at twice High's size
+  (so its grain is finer, not scaled up), ETC1S as the others; a kind of ground's and a bark's
+  `normal`, its relief as a normal map (Basis's UASTC, linear: red the slope along a row, green down
+  the rows, blue up), worked out from its luminance as its height, as deep as its generator's relief
+  is; and a bark's `roughness`, at half that size (ETC1S, linear, in green). A kind of ground's
+  roughness is a number (`roughness`), as a game's land has no room for more maps.
 - The package is plain JavaScript and data, so Node runs it as it is (its tests, a game's tests)
   and there's nothing to build.
 
@@ -310,7 +316,7 @@ node tools/buildings.mjs  # the buildings whose facades to look at (refs/buildin
 node tools/species.mjs mark  # each viewpoint's photo with the trees within 60 m of its camera numbered, and its orthophoto, for refs/trees.json (task 061, 10 s)
 node tools/species.mjs shooter  # the shooter's area's trees a photo shows, and the fewest photos to look at for those refs/trees.json hasn't (task 088)
 node tools/species.mjs summer   # Mapillary's panoramas in leaf round the shooter's area's trees, as reference photos in refs/photos.json (task 088)
-node tools/textures.mjs  # the textures refs/textures.json asks for, made, not photographed: world/textures/ (about a minute)
+node tools/textures.mjs  # the textures refs/textures.json asks for, made, not photographed: world/textures/ (about ten minutes, Ultra's most of it)
 node tools/cover.mjs   # what the ground is every 50 cm under the Volta dos Amigos' box, and the cars parked: world/cover/ (3 minutes, 10 the first time)
 npm run minecraft  # the world as a Minecraft world (Java, 26.3): .cache/minecraft/Braga (30 s; --out, --box and --force: "A Minecraft world" below)
 node tools/round.mjs <round> --label "…" [--shots <party-kart>/shots]  # a round of party-kart's shots, in a few sheets, for the scorecard
@@ -681,8 +687,12 @@ streets; when a track moves enough to change the edge, run the three again until
   `--measure` reads off its references: a Poly Haven texture (CC0, a reference only, its 2k file
   fetched once into `.cache/textures/sources/`) or a reference photo of Braga (`.cache/refs/`).
   Each is compressed as KTX2 with Basis Universal's ETC1S; `--check` also writes each at High as a
-  PNG into `.cache/textures/`. `test/textures.test.js` checks none is a photograph, each is made at
-  every level, the folder holds nothing else, and the generators wrap and are the same from a seed.
+  PNG into `.cache/textures/`. Ultra's (task 085) are made again at twice High's size (2048 and
+  1024), with a kind of ground's and a bark's normal map (UASTC with RDO and Zstandard, a normal's
+  directions being what ETC1S blurs) and a bark's roughness: 48 files, 44 MB, the ground's normal
+  maps 29 MB of it. `test/textures.test.js` checks none is a photograph, each is made at every level
+  and Ultra's at its sizes and encodings, the folder holds nothing else, and the generators wrap and
+  are the same from a seed.
   `tools/ktx2.mjs` has the KTX2 encoding it shares with `cover.mjs`.
 - `cover.mjs` classes the ground (task 016, decision 034) on every tile under the Volta dos Amigos'
   box, every 50 cm, after `world.mjs` (it reads the world's streets, paths, buildings and areas

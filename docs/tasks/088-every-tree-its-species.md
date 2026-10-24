@@ -1,5 +1,5 @@
 ---
-status: todo
+status: doing
 priority: medium
 kind: code
 repo: braga-map
@@ -53,3 +53,87 @@ species, then shape rules (`trees.mjs:446-459`). party-kart draws a kind's shape
 ## Out of scope
 
 - How the trees are drawn far off: 089. Their seasons: 093.
+
+## Notes
+
+- **Under way (worker-2, 2026-10-24), braga-map branch `task-088`; party-kart unchanged (no new kind
+  to draw).**
+- **Step 1, the inventory: Braga doesn't publish one** (looked for on 2026-10-24, `docs/SOURCES.md`,
+  "Braga's street-tree inventory"): the Câmara Municipal de Braga has no dataset on dados.gov.pt, its
+  web GIS has no tree layer, and the 2025 regulation on its trees publishes none. Should one appear
+  as open data, it comes first in `kindOf`.
+- **Step 2, the photos.** `node tools/species.mjs shooter` counts the shooter's area's trees a photo
+  shows: within 60 m of a viewpoint's or a reference photo's camera, in its view, and now in sight
+  past the buildings (`inSight`, which `mark` uses too, so a tree behind a block isn't numbered on a
+  photo that can't show it); and lists the fewest photos that show every one not looked at yet.
+  746 trees in the area today (the task's 765 were 1.26.0's), 337 of them in some photo's view.
+  - Most of those photos are of February and March 2018–2019, the broadleaves bare; so
+    `node tools/species.mjs summer` finds Mapillary's panoramas taken in leaf (May to October) round
+    the area's trees and adds the best 90° view of each to `refs/photos.json` as a reference photo
+    (`what: trees`, `trees-<photo>-<heading>`; its heading, pitch and roll from Mapillary's
+    `computed_rotation`, `panoFrame`), none taken within 150 m of an egg or a waypoint or looking at
+    one within 300 m (`test/photos.test.js`'s rule, applied before it picks). 15 views, all of the
+    July 2024 walk (stuckstick, CC BY-SA 4.0), cut by `tools/refs.mjs`. Read, never drawn (082).
+    Its first run had picked by the trees alone, and 9 of its 16 views broke that rule: `npm test`
+    caught it, and they were taken out with the labels read off them and their files in the `.cache`.
+  - Every photo the tool listed was looked at, each tree numbered on it and on the orthophoto (the
+    first 59, the summer views, and the rest on contact sheets). **362 labels in `refs/trees.json`**
+    (now 448 trees, 17 species), the shooter's area's **328 of the 337** a photo's view takes in
+    (the 9 left are the Imaculada Conceição's limes, which its row names):
+    - **87 found hidden** (`species: null`): behind a wall or another crown, or the outline falls on
+      a building or the sky, as a Mapillary camera can be 5–15 m from where it's computed, and then
+      the trees can't be told apart;
+    - **199 broadleaves the photo can't name**, most bare in February and March;
+    - **76 named past "broadleaf":**
+      - **seen clearly (`sure`), 16:** the willows on the Rio Este's banks (narrow grey-green leaves
+        on slender shoots, in July), the Alameda do Fujacal's planes (their flaking bark and seed
+        balls, from the alameda's east end, `facade-way-383776389`), the hackberries of the Avenida
+        Imaculada Conceição's row in leaf (November), Judas trees in flower on the Rua Conselheiro
+        Lobato's pavement by the Hospifarma and beyond a car park off it (March), a spruce or fir;
+      - **a row's species carried along it, 30:** the further trees of a row a photo shows clearly at
+        its near end, as their notes say: the riverbank's willows (16), the alameda's planes (11),
+        the Judas trees (3);
+      - **seen, but small, dark or bare, 30:** planes and hackberries in winter, cedars and cypresses,
+        evergreen broadleaves behind garden walls, an araucaria, an oleander, a fan palm.
+    The Alameda do Fujacal's viewpoint photo (February) shows its avenue bare and pollarded; its trees
+    were labelled "broadleaf" from it, then "plane" once `facade-way-383776389` showed the same trees'
+    bark from the avenue's other end.
+  - New species in `refs/trees.json`: willow (*Salix*), cedar, cypress, Judas tree (*Cercis
+    siliquastrum*), araucaria (*A. heterophylla*), oleander, and `conifer` and `evergreen` for a
+    conifer or an evergreen broadleaf the photo can't name. Each is drawn as the kind it looks like
+    (decision 051): the willows as poplars, the conifers as conifers, the rest as broadleaves.
+  - A label that names nothing (hidden, or "broadleaf") is left out where a row names the tree: five
+    of the Imaculada Conceição's limes, looked at and not told, would otherwise have lost the row's
+    lime (`refsOf` gives a row only the trees not looked at).
+- **The share of "broadleaf"** (`.cache/trees.json` against main's): in the shooter's area 90.0%
+  before (674 of 749) and 86.1% after (645); in the open world 87.3% (16,216 of 18,576) and 87.1%
+  (16,176). 63 trees changed kind and nothing else of any tree: 23 broadleaf to poplar (the willows),
+  17 broadleaf and 3 conifer to plane (the alameda), 9 broadleaf to conifer, 1 to palm, and 9 conifer
+  and 1 poplar to broadleaf (019's shape rules had taken narrow, pollarded broadleaves and the
+  hackberry row's narrower crowns for conifers; the summer views show broad crowns).
+- **Steps 3 and 4, decided by the session, for the owner to confirm:**
+  - **No new kind.** None of the species found reaches the task's ~50 in the open world on the
+    photos' evidence: the willows are 23 and the planes 25 on the whole map, the hackberries 20
+    seen beside the trees 061's rows name; and the hackberries are drawn as "broadleaf", whose bark is already a hackberry's (Poly
+    Haven's `chinese_hackberry_bark`). So the kinds stay nine and party-kart's `trees.ts` is
+    untouched. An evergreen broadleaf (a holm oak, a laurel, an oleander) is drawn as the deciduous
+    broadleaf, which matters once 093 brings the seasons.
+  - **No row carried past what a photo shows**, as the owner chose for task 061 (decision 051): the
+    point cloud's spacing and heights would carry the alameda's planes and the riverbank's willows
+    further, but no photo shows them there. The NIR (a July flight) tells needles from leaves, as
+    019 already uses, not one broadleaf from another.
+- **Rule 16:** `tools/trees.mjs` and `npm run world` ran into a private `.cache` in braga-map-088
+  (`made.txt`), never the shared `trees.json`; at landing they run once more into the shared one.
+- **Viewpoints:** shot before (party-kart's `shots/2026-10-24-088-before`, main's 1.36.0) and after
+  (`shots/2026-10-24-088-after`, this branch's world installed), the five the task names, High and
+  Low, under the heavy lock. `31-de-janeiro`, `capela-sao-joao` and `porfirio-da-silva` are the same
+  to the pixel; `imaculada-conceicao` 0.9% of its pixels (a far tree); `alameda-fujacal` 17%: its
+  avenue's trunks are the plane's pale, patchy bark where they were a uniform brown. Its photo
+  (February) has the avenue bare and pollarded, grey trunks with pale patches: the after's pattern is
+  nearer it, its tone paler than the photo's wet bark. For the coordinator to rate.
+- **Tests:** braga-map `npm test` 153 of 153 (`test/photos.test.js` now knows `what: trees`, and the
+  rule that caught the nine views is untouched). party-kart on this world: `npm run check` clean,
+  `npm test` 155 of 156, the timed "world as a ground" test at 3.8 s while other shots ran, and
+  14 of 14 run alone twice after.
+- **Not verified:** the species of the trees no photo shows (409 of the area's 746): they keep
+  019's rules.

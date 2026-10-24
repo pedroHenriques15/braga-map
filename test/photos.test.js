@@ -1,5 +1,6 @@
 // The reference photos (refs/photos.json, task 008): a real photo of each facade, landmark, bridge,
-// roundabout, kind of wall and close-up, found online, each with its credit. None shows a friend's
+// roundabout, kind of wall and close-up, found online, each with its credit; and views of trees in
+// leaf, for their species (task 088). None shows a friend's
 // house: each was taken 150 m from every egg, and from every waypoint where .cache/places.json is
 // there to check against, and none looks towards one within 300 m.
 import assert from 'node:assert/strict';
@@ -14,7 +15,7 @@ const PLACES = path.join(CACHE, 'places.json');
 const NEAR = 150, FAR = 300;
 // Licences that allow a photo to be used as a texture, and the result published (decision 006).
 const OPEN = /^(CC BY(-SA)? [1-4]\.0|CC0|Public domain)$/;
-const WHAT = /^(facade:(way|relation)\/\d+|facade:lidar\/x-?\d+z-?\d+|(landmark|type|wall|closeup):[a-z0-9]+(-[a-z0-9]+)*|(bridge|roundabout):way\/\d+|gate|garden)$/;
+const WHAT = /^(facade:(way|relation)\/\d+|facade:lidar\/x-?\d+z-?\d+|(landmark|type|wall|closeup):[a-z0-9]+(-[a-z0-9]+)*|(bridge|roundabout):way\/\d+|gate|garden|trees)$/;
 
 const turn = (a, b) => Math.abs(((a - b + 540) % 360) - 180);
 

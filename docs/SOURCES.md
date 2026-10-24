@@ -238,7 +238,11 @@ their lists are committed; `node tools/refs.mjs` fetches the photos into `.cache
 - **Used:** all 34 viewpoints' photos (three of them reference photos of the landmarks, task 021, and two of the route's chapels, task 056), and 403 of the reference photos (task 008, and four of task 056's), 19 of them
   marked good enough for a texture. Ten of those were facade textures from task 007 to task 082,
   which took them out of the game; what they showed is in `refs/buildings.json`, and
-  `setts`'s mean colour and contrast are measured off `closeup-pavement-setts-1`.
+  `setts`'s mean colour and contrast are measured off `closeup-pavement-setts-1`. And 16 views cut
+  from the July 2024 panoramas (task 088, `trees-<photo>-<heading>`, `tools/species.mjs summer`),
+  read for the species of the shooter's area's trees in leaf: of the photos over that area only
+  those, a few of 2017 and one of September 2018 show its trees in leaf; the rest are of February
+  and March, when its broadleaves are bare.
 
 ### Wikimedia Commons
 
@@ -367,6 +371,19 @@ All CC0, on Freesound:
   None holds a race engine steady over its revs, which loops need.
 
 ## Not fetched
+
+### Braga's street-tree inventory
+
+Looked for on 2026-10-24 (task 088): not published. The Câmara Municipal de Braga has an
+organisation on dados.gov.pt, Portugal's open-data portal, with no dataset (its API's `datasets`
+count is 0), and the portal's only tree datasets are other towns' (Águeda's notable trees, and
+Cascais's own portal). The council's site (cm-braga.pt) links to its public web GIS
+(sigportal.cm-braga.pt/websigbraga) with the PDM, the orthophotos, the cadastre and the street
+names, and no tree layer; its WMS answers nothing without the viewer. The Regulamento de Gestão do
+Arvoredo em Meio Urbano e dos Espaços Verdes (Regulamento n.º 379/2025, Diário da República of
+2025-03-20) speaks of knowing, classifying and inventorying the trees, and its visible text
+publishes no inventory. Should one appear (as open data, under a licence that allows a derived
+map), it would come first in `kindOf`: each tree's species where it stands.
 
 ### The owner's and the friends' photos
 

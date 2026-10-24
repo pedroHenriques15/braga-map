@@ -97,6 +97,8 @@ them, drawn as squares less what's in them (041, decision 063).
 - **112** Two buildings where the photos have none: by São João da Ponte's chapel and on the Viriato
   Amaral Nunes, where its graffiti wall is (found the same way).
 - **113** A wall keeps its gap where a footway gives way to a square's paving (found by 041).
+- **116** The LiDAR's "buildings" on the map's car parks: 85, most of them vans, lorries or shade
+  canopies drawn as buildings (found by 112).
 - **115** The ground steps at a held street's edge, not slopes into it: the João XXI's upper lane,
   where the race still flies 0.3–0.4 s after 066's tilt (found by 066).
 - **076** The land at a flight of steps, never drawn over its treads nor far under them: 565 of

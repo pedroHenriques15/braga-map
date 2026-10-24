@@ -63,6 +63,9 @@ task's Notes as "decided by the session, for the owner to confirm".
 | (the run) | ROADMAP's "in party-kart, never two sessions on the same file", with three workers | Allowed in different functions of a file only, the one landing second rebasing and keeping both; the coordinator says which files each task has claimed | `003fa12` |
 | (the run) | Cross-session messages are off in every session (the workers' and the coordinator's) | The sessions talk through files in `_coord\`: `to-worker-N.md` from the coordinator, `from-worker-N.md` from each worker, each waiting on the other with a background command | (outside git) |
 | 041 | Its step 4: the two ways tagged as areas that aren't pedestrian (a residential yard and a driveway, outside the box) | Left as they are: drawn as streets round their outline, not as squares | 041's landing |
+| 106 | Is the city drawn under the full map? | No: the full map is opaque, and the city isn't drawn while it's open | 106's landing |
+| 106 | A touch screen with the minimap hidden in the settings: how does the map open? | A 🗺️ button in the bar opens it | 106's landing |
+| 106 | Does the full map stop your kart in a race too (the task says "as with the menu", and a race has no menu)? | Yes: opening it mid-race stops your kart, as round the city | 106's landing |
 | 105 | The chair (Joel's) and the trolley (Joel F.'s) are smaller than 2.8 m today: brought to 2.8 m, or kept in proportion? | Every body drawn at 0.7 of its model, so every driver stays the same size (the chair 2.06 m long, the trolley 2.16 m); the banger at 0.65 to fit 2.8 m (from 4.30), its driver 7% smaller | 105's landing |
 
 ## Progress
@@ -124,6 +127,12 @@ picks it up can go on from here.
     in parts are `plaza` areas with their holes, and the street audit reads the streets as they're drawn
     since 026 (its premise was out of date). No viewpoint changed, so no round. Not verified: the
     budget at Medium. Found: 113 (a wall's gap at a square's footway), drafted.
+  - **106** (worker-2): landed braga-map `280ea24` (decision 064, no version) and party-kart
+    `83146ed` (still on v1.33.1). M opens the full map in every mode, N mutes, a tap on the minimap
+    opens it on a touch screen. No viewpoint changed. Not verified: a real phone, two players seeing
+    each other on the map, the competitive mode, the Volta de Lamaçães' race. Found and fixed in it:
+    on foot with a gun out the minimap hid everyone. Fixed by the coordinator (`db5642c`), found by
+    worker-2: braga-map's `package-lock.json` had stayed at 1.29.0.
 
 ## Read first
 

@@ -118,8 +118,6 @@ the lime and the birch drawn as their own, each kind deciduous or evergreen (061
 - **018** Road markings and pavements as they are: Portugal's lines, Braga's pavements.
 - **044** Pavements level from the kerb, not draped over the ground's bumps (found by 035's
   round).
-- **065** A tree the map has beside a crown is that crown's trunk, not a young tree of its own: the
-  Imaculada Conceição's hackberry (found by 061).
 - **122** The land's texture isn't stretched on a steep slope: `alvaro-carneiro` (found by 111).
 - **068** The lawns green as in March, where the 2025 orthophoto has them dry (found by 014).
 

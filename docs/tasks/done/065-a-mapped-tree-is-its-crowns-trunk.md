@@ -1,5 +1,5 @@
 ---
-status: doing
+status: done
 priority: low
 kind: code
 repo: braga-map
@@ -48,9 +48,14 @@ measured it, kept as a young tree.
 ## Done when
 
 - [ ] At `imaculada-conceicao` one hackberry stands where its photo has its trunk, its crown over the
-  camera, and no young tree that isn't there.
-- [ ] How many mapped trees became a crown's trunk across the map, in Notes; `npm test` passes.
-- [ ] The viewpoint shot again, no worse than before.
+  camera, and no young tree that isn't there. **Left in part:** the hackberry stands where the photo
+  has its trunk (the camera moved, Notes), but the crown over the photo's camera is a nearer tree's,
+  not the hackberry's, and the young tree stays, 35 m ahead now, as no photo says it's gone (decision
+  043 keeps the map's trees in no crown).
+- [x] How many mapped trees became a crown's trunk across the map, in Notes; `npm test` passes. None:
+  step 2 isn't wanted, the camera being off, not the crown (Notes); `npm test` 153 of 153.
+- [x] The viewpoint shot again, no worse than before: the coordinator marked it 3 → 3
+  (`.cache/scorecard/marks/2026-10-24-after065.json`), the hackberry where the photo has it.
 
 ## Out of scope
 
@@ -96,3 +101,9 @@ measured it, kept as a young tree.
 - **Decided by the session, for the owner to confirm:** a viewpoint's camera may be moved up to 25 m
   along its street from where Mapillary puts its photo, where the photo's own trees put it there
   (the 15 m of 058's moves across a street stand); and the rows' floor in `test/trees.test.js` 25.
+- **The round** (party-kart's `shots/2026-10-24-after065/`, High and Low, `--map` this branch; before,
+  `shots/2026-10-24-after088/`'s, the old camera): the coordinator marked `imaculada-conceicao` 3 → 3.
+  The hackberry's trunk on the right where the photo has it, its crown over the top right. Left: the
+  hedge on the left is taller and nearer than the photo's (not looked into here).
+- **Decision 073** for the camera's move along its street; the rows' floor in `test/trees.test.js` is
+  in it too. Both decided by the session, for the owner to confirm (task 103's table).

@@ -2114,3 +2114,27 @@ The alternatives: the land carved in the tiles at 50 cm (decision 059's, still t
 land masked in front of each wall (a street's edge would still curl, and the karts would still ride
 the ramp); a wall's measured foot and top as the land's heights (up to a metre off a street at its
 foot).
+
+## 073 · A viewpoint's camera may move along its street too, where its photo's own trees put it
+
+*2026-10-24 · task 065 · adds to decision 041, whose moves across a street it leaves as they were*
+
+Decision 041 moved a camera only across its street, to the surface its photo was taken from, and
+kept it within 15 m of where Mapillary puts its photo. At `imaculada-conceicao` the photo's hackberry
+and fan palm stood 20 m nearer the camera in the world than in the photo: Mapillary's 2018 position
+is that far east along the Avenida Imaculada Conceição (its GPS's error along the street, which a
+move across it can't take out). Projected from 20 m back along the avenue, the LiDAR's hackberry
+falls on the photo's trunk foot and the palm where the photo has it (task 065's Notes).
+
+- **A camera may move along its street, up to 25 m from where Mapillary puts its photo,** where the
+  photo's own trees (or anything the LiDAR measured that the photo shows) put it there; its target
+  moves with it, so its heading and pitch stay, and its height is the eye's over the ground there.
+  Its notes say how far and that it moved along its street ("Moved … along"), and
+  `test/viewpoints.test.js` lets it be that far; any other move stays within 041's 15 m.
+- **The trees seen from a moved camera are looked at** as task 061's were (`test/trees.test.js`);
+  a tree seen is a row's no more, so the trees the rows name one by one went from 32 to 28, and the
+  test's floor for them from 30 to 25.
+
+Decided by the session, for the owner to confirm (task 103's table). The alternative: the map's
+young tree as the hackberry's trunk (065's step 2), which the photo didn't bear out: no mapped tree
+stands under that crown.

@@ -2001,3 +2001,27 @@ runs from the lane down to the cutting over about 1.5 m: held in the car's floor
 would float over the street as drawn on that ground, so the step is the ground's to make (task 115).
 The land dug in front of the tunnels' mouths (`openings`) stays: without it a car doesn't come out of
 the Liberdade underpass.
+
+## 069 · Ultra: everything past what a phone holds goes to a fourth level, for a PC only
+
+*2026-10-24 · task 081 · the owner's answer of 2026-10-23, beside decisions 013 and 017*
+
+The owner wants Braga at its absolute best in every aspect, and the friends' phones can't hold it.
+So the game has a fourth graphics level, **Ultra**, above High, Medium and Low, for a PC only, and
+everything the "Ultra" tasks add (083 to 101) goes there; High, Medium and Low stay as they are, so
+the phones play as before, and the budget (decision 013) keeps its three phone levels.
+
+- **Offered on a PC:** where the device isn't played by touch first and its graphics card takes
+  textures 16,384 pixels wide or is a discrete one by its name. `?quality=ultra` sets it whatever
+  the device (the shots). The game steps Ultra down to High when it runs slowly, never up to it.
+- **Built at High's level but for its own:** the city's detail, braga-map's files and the tiles are
+  High's until a task gives Ultra its own (085 its textures). Its own so far: the screen's every
+  pixel, the sun's shadows at 4096 px, and the near trees to 700 m, the most whose gathering keeps a
+  frame under 16 ms on the owner's PC at 2560 by 1440 (12 ms; 18 at 1,000 m). The haze stays the
+  light's (decision 037), and the camera already sees 30 km.
+- **The rounds are shot at Ultra and Low** from now on (`scripts/shots.mjs --ultra`): Ultra is what
+  "as real as it gets" means, Low what a phone sees.
+
+What it costs, on the owner's RTX 4060 Ti at 720 pixels high: 103–271 draw calls, 2.68–5.36 M
+triangles, 181 MB of textures, a frame of 1.4–3.4 ms (High 99–264, 1.43–3.19 M, 133 MB, 0.8–1.9 ms).
+High, Medium and Low draw the same as before, to the pixel.

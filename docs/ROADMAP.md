@@ -144,9 +144,10 @@ point cloud finds what it lacks (100); and insides made up for the shops' and ca
 only (095). The "Later" ideas are drafted here.
 
 Done: no photograph drawn in the game, every texture made by `tools/made.mjs` and matched to its
-references, the ten photo facades given back to the kit (082, decision 061).
+references, the ten photo facades given back to the kit (082, decision 061); and Ultra, offered on a
+PC, for each task below to hang its detail on: the screen's every pixel, the sun's shadows at 4096 px,
+the near trees to 700 m, the rounds shot at Ultra and Low (081, decision 069).
 
-- **081** Ultra, a graphics level for a PC: first, as every task below hangs its detail on it.
 - **083** The ground at 50 cm over the whole map, finest near the player (after 038).
 - **084** On Ultra, the streets on the land's own triangles (after 083).
 - **085** Textures at their finest on Ultra: UASTC, normal and roughness maps.

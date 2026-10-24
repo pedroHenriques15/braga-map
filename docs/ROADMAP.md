@@ -66,6 +66,7 @@ in a few sheets, so the scorecard holds about 100 more rounds (062, decision 045
 rounds made while the scorecard was out of reach, 052's to 061's, put up with Claude's marks (064,
 `tools/scorecard.mjs`).
 
+- **124** The budget counts every texture, those a shader takes alone too (found by 085).
 - **103** What waited for the owner's account: the rounds, marks, pages and tags the sessions left
   while Claude Code couldn't reach the owner's artifacts (from 2026-10-24), put up in one pass.
 

@@ -83,6 +83,7 @@ task's Notes as "decided by the session, for the owner to confirm".
 | 090 | Its scope | Cascaded shadows, GTAO and SMAA (three's TAA only accumulates while still, so it smears in motion); reflections, light bounced, the haze and clouds' shadows and soft shadows drafted as 117 to 120 | 090's landing |
 | 085 | Ultra's textures in git: ~100 MB as the task has it, each time they're made | The ~40 MB way, if the setts' joints and the bark read sharp up close at Ultra (the colour in ETC1S at twice High's size, the normal map alone in UASTC, roughness at half size in ETC1S); the ground's relief as one array of normal maps and a roughness by kind, within WebGL's 16 texture units; the facade kit split off as 123 (the coordinator) | 085's landing |
 | 085 | The setts, calçada and asphalt seen up close at 085's viewpoints are party-kart's street drawings (256 px canvases), not braga-map's textures: in 085, or a task of their own? | In 085: on Ultra the streets' drawings made at 1024 px (drawn finer, not scaled), about 80 MB more on the card (Ultra's textures ~540 MB); High and below as they are (the coordinator, on worker-2's recommendation) | 085's landing |
+| 085 | Its smaller choices on Ultra | Each kind of ground's roughness a number near the land's 0.96 (at 0.7 the setts' joints washed pale); the six kinds' textures one array on Ultra only, so High and below stay byte-identical; three's default anisotropy raised on Ultra so every texture takes the card's most; what was built for Ultra stays if the game steps down to High | 085's landing |
 | 088 | New tree kinds for the species found | None: no species reaches the task's ~50 trees on the photos' evidence (willows 23, planes 25, hackberries 20), and the hackberries are drawn as "broadleaf", whose bark is already a hackberry's; the kinds stay nine | 088's landing |
 | 088 | Carry a row's species past what the photos show (the point cloud's spacing) | No: a row's species goes only as far as a photo shows the row, as decision 051 has it | 088's landing |
 | 081 | How far Ultra draws the trees in full | 700 m, by a frame under 16 ms while moving (a frame after gathering them: 12 ms at 700 m, 18 at 1,000, at 2560 × 1440); a still frame holds 1,000 m at 4.6 ms | 081's landing |
@@ -229,6 +230,10 @@ picks it up can go on from here.
     behind it as in the photo (`viriato-amaral-nunes` 1 → 2, its paint not drawn): 137 of the map's walls
     drawn higher. Its premise half false: the green house is real. Found: 116 (the LiDAR's buildings on
     car parks), drafted.
+  - **059** (worker-3): braga-map landed `d52d3f3`, 1.39.0 (tagged, decision 075): the map's
+    sidewalks a pavement where the tiles had none under them (about 13 km off every street piece before,
+    5 m after), widened from the islands alone; `liberdade` 2 → 3. party-kart's pin to v1.39.0 waits: three
+    of its tests fail on the new pavements (the arenas' seeded cover, a street at a wall's top).
   - **The coordinator's watcher was down from 18:51 to 21:58** (not re-armed after a message), so ready
     tasks waited for their marks and turns: 102, 065, 090, 111, 112 and 059.
 

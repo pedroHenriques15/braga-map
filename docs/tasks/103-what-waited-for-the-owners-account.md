@@ -208,6 +208,11 @@ picks it up can go on from here.
     moved.
   - **102** (worker-1): landed braga-map `8fc55c9` and party-kart `28bb0d6`: How to play credits
     OpenStreetMap, the DGT and Copernicus and says the textures are made; `photoCredits` gone.
+  - **090** (worker-1): landed braga-map `aa33664` (decision 071) and party-kart `c373c5a`. Ultra's
+    light: the sun's shadows in four cascades of 4096 px to 2 km, GTAO, SMAA, on WebGL; fixed on the way
+    a three 0.186 bug (CSM's old lights chunk darkened every material). Its round at Ultra: no mark moved,
+    the corners and the trees' shadows nearer the photos. Its first Done when left open: the shadows reach
+    2 km, not the horizon, and the glass gives back the sky only (117). Drafted from it: 117 to 120.
   - **The coordinator's watcher was down from 18:51 to 21:58** (not re-armed after a message), so ready
     tasks waited for their marks and turns: 102, 065, 090, 111, 112 and 059.
 

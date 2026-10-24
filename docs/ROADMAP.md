@@ -151,7 +151,8 @@ naming no photographer since (102); and Ultra, offered on a
 PC, for each task below to hang its detail on: the screen's every pixel, the sun's shadows at 4096 px,
 the near trees to 700 m, the rounds shot at Ultra and Low (081, decision 069); and the shooter's
 area's trees their species where a photo shows one, in leaf too, the kinds staying nine (088,
-decision 070).
+decision 070); and Ultra's light, on WebGL: the sun's shadows in four cascades to 2 km, the corners'
+occlusion and the edges smoothed (090, decision 071).
 
 - **083** The ground at 50 cm over the whole map, finest near the player (after 038).
 - **084** On Ultra, the streets on the land's own triangles (after 083).
@@ -159,7 +160,6 @@ decision 070).
 - **086** Each facade's doors and windows where they are, read from its photos.
 - **087** Roofs as the point cloud has them: every plane, chimney, dormer and terrace.
 - **089** On Ultra, the trees in full to the horizon, moving in the wind.
-- **090** The light on Ultra: cascaded shadows, occlusion, light bounced, reflections, TAA.
 - **091** Each viewpoint shot at its photo's hour and weather (blocked: it changes decision 037).
 - **092** Night: the lamps lighting the streets, the windows lit, Bom Jesus floodlit.
 - **093** The seasons: bare trees in winter, the jacarandas in June (after 088).

@@ -2055,3 +2055,28 @@ What it changed: 63 trees' kinds and nothing else of any tree; the shooter's are
 "broadleaf" from 90.0% to 86.1%, the open world's from 87.3% to 87.1%. Of the five viewpoints shot,
 `alameda-fujacal`'s trunks are the plane's bark (paler than its photo's wet February bark), the others
 as they were (Claude's marks the same).
+
+## 071 · Ultra's light: WebGL, its frame drawn through three's post-processing
+
+*2026-10-24 · task 090 · decided by the session, for the owner to confirm (task 103), beside decision 069*
+
+Ultra stays on three's `WebGLRenderer` and gets what a phone can't afford laid over its frame
+(party-kart `src/render/post.ts`), not a move to `WebGPURenderer`. The game's look is in at least
+14 changes to three's shaders in 7 files, all WebGL's GLSL, which WebGPU's node materials don't take:
+Ultra on WebGPU would mean writing each again in TSL and keeping both, the phones' levels staying on
+WebGL. High, Medium and Low draw as before, to the pixel.
+
+- **The sun's shadows in four cascades** (three's CSM) of 4096 px, ending 60, 200, 650 and 2,000 m
+  off, the first as sharp as Ultra's one box was. Each lit material takes three's own lights chunk
+  with only CSM's loop over the suns in it: CSM's copy of the whole chunk is older than three
+  0.186's and drew every standard material darker and duller.
+- **Occlusion** (GTAO), from the frame's depth, eased so a crease between two walls doesn't come
+  out as a band; **SMAA** for the edges (three's TAA doesn't reproject, so it would smear in motion).
+- **Left for tasks of their own:** reflections (a buffer of the surfaces' normals, which the
+  occlusion would use too), the light bounced, a volumetric haze and the clouds' shadows, shadows
+  that soften with distance.
+
+What it costs, on the owner's RTX 4060 Ti: a frame at 720 pixels high of 3.34–7.58 ms (081's
+Ultra 1.36–3.44), at most 9.8 ms at 2560 by 1440; 192 MB more of textures (the cascades' maps). A
+gather of the near trees, every 20 m, adds 3–4 ms to its frame; the near trees go into every cascade
+whole, and task 089, which remakes the trees, takes that on.

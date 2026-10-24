@@ -66,6 +66,8 @@ task's Notes as "decided by the session, for the owner to confirm".
 | 106 | Is the city drawn under the full map? | No: the full map is opaque, and the city isn't drawn while it's open | 106's landing |
 | 106 | A touch screen with the minimap hidden in the settings: how does the map open? | A 🗺️ button in the bar opens it | 106's landing |
 | 106 | Does the full map stop your kart in a race too (the task says "as with the menu", and a race has no menu)? | Yes: opening it mid-race stops your kart, as round the city | 106's landing |
+| 107 | Inside the open world no street reaches the Picoto's top (its streets reach the rest only past the area's edge): how does the GPS get a kart there? | By car it keeps to the streets by the rules of the road and leaves them for a path or steps only where no street reaches the waypoint, each time costing 10 minutes in its search so it never cuts a one-way street by a pavement; the HUD says "Sai da estrada: segue pelo caminho" there | 107's landing |
+| 107 | One-way on each street's `Line`, as the task words it, or on a road graph? | A road graph in the tiles (`world.roads`, `world.turns`, made once by `tools/roads.mjs`): the lines are thinned and cut at each tile's edge, with no junctions, so a game couldn't route on them | 107's landing |
 | 105 | The chair (Joel's) and the trolley (Joel F.'s) are smaller than 2.8 m today: brought to 2.8 m, or kept in proportion? | Every body drawn at 0.7 of its model, so every driver stays the same size (the chair 2.06 m long, the trolley 2.16 m); the banger at 0.65 to fit 2.8 m (from 4.30), its driver 7% smaller | 105's landing |
 
 ## Progress

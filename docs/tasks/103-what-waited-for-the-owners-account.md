@@ -163,6 +163,10 @@ picks it up can go on from here.
     jump's run-up a bot goes round a kart it would catch, and the autopilot takes it up the ramp off the
     axis; put back on the run-up 24 times in 64 seeded eight-bot races, where 105's karts had 56 (the
     old karts' 12 per 32). Not verified: a race in a browser room with bots at the jump.
+  - **109** (worker-2): landed braga-map `03924b4` (docs only) and party-kart `6967a66`. A search on
+    the full map for the streets, landmarks, arenas and bus stops, accents or not, the nearest first, the
+    result the GPS's waypoint; and in 107's router, a car's route starts and ends on streets. Not
+    verified: a real phone's own keyboard.
 
 ## Read first
 

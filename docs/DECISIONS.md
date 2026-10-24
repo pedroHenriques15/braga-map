@@ -1896,3 +1896,32 @@ and meeting the others are done from (tasks 107 to 110):
 The alternatives were the map over the game half seen through (the city drawn for nothing, the
 streets harder to read), the game paused while it's open (it can't be, with others in the room), and
 a map of the open world's area alone (the city round it is where a player looks for somewhere to go).
+
+## 065 · Every kart 2.8 by 1.8 m, drawn within the footprint it collides as, its driver the same size in each
+
+*2026-10-24 · task 105 · the karts' size, in party-kart*
+
+The karts were drawn about twice a real kart's size, the kart 4.0 by 2.4 m, on a collision of two
+circles 0.8 m round, 3.5 by 1.6 m, and touched each other 2.2 m apart whichever way. The owner chose
+halfway to a real racing kart's 1.9 by 1.4 m (2026-10-24):
+
+- **One footprint, every kart's:** 2.8 m long and 1.8 m wide (party-kart's `KART`), so a race stays
+  fair. The walls meet it as two circles 0.9 m round, 0.5 m either side of its middle; another kart
+  as a capsule 0.9 m round its axis, so two touch 1.8 m apart side by side and 2.8 m nose to tail.
+  As the two circles, another kart's circle settled in the waist between them and two side by side
+  in a 3 m street locked there.
+- **Drawn within it:** each body at 0.7 of its model, its driver, glow and slipstream with it, so
+  every driver is the same size, about a person's: the kart 2.79 by 1.69 m, the chair 2.06 by 1.37
+  and the trolley 2.16 by 0.97, shorter than the karts as they were; the banger, the longest, at
+  0.65, 2.80 by 1.18 m. Keeping the chair and the trolley shorter was decided by the session, for
+  the owner to confirm (task 103).
+- **What's sized by a kart follows it:** the items' hits, the chase and close cameras (a kart fills
+  the screen as before, the street round it larger), getting out beside it, and a waiting kart as
+  cover and as what stops someone on foot.
+
+What it changes is mostly how the karts look: by collision two of the first karts already passed side
+by side in 3.8 m between walls, and these need 3.6 m, a band only about 34 m of the open world's
+streets fall in. The collision itself is 0.2 m wider. The alternatives were a real kart's size (the
+owner's no), the bodies drawn within the old collision, 3.5 by 1.6 m (the owner's no), the chair and
+the trolley brought to 2.8 m (their drivers 30% bigger than the others), and the two circles for the
+karts too (they lock).

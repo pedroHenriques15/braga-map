@@ -25,12 +25,12 @@ done end to end on Fujacal first (its streets as surfaces, drawn and driven on),
 whole area. Free roam went live with task 036 before the race moved onto the streets (decision
 026, 2026-10-15), and the race followed with 037 (decision 029). M opens the minimap into a full map
 of the whole city since 106 (decision 064), where the rest of the owner's improvements of 2026-10-24
-are done from; the sound moved to N.
+are done from; the sound moved to N. Every kart is 2.8 by 1.8 m since 105 (decision 065), drawn within
+the footprint it collides as, its driver the same size in each.
 
 - **038** The city streamed tile by tile, when the area grows.
 - **066** A car on a street beside a wall tilts by the street, not by the drop past its edge: the
   race's hops on the Avenida João XXI's upper lane (party-kart, found by 045).
-- **105** Smaller karts, about 2.8 × 1.8 m, halfway to a real kart's size (the owner, 2026-10-24).
 - **107** A waypoint on the map, and the GPS's route to it along the streets, by the rules of the road.
 - **108** "Ir para aqui": your kart put anywhere in the open world from the full map.
 - **109** Find a street or a place, and the GPS takes you there.

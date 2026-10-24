@@ -152,6 +152,11 @@ picks it up can go on from here.
     on both maps and as arrows on the street, the next turn on the HUD. Its premise was partly false: no
     street reaches the Picoto's top inside the area. No viewpoint changed. Not verified: a whole route
     driven by hand, a real phone, the turns' words everywhere.
+  - **108** (worker-2): landed braga-map `ccffa56` (docs only) and party-kart `ae5d387`. "Ir para
+    aqui" from the full map's right click or long press: your kart on the nearest street a kart can
+    reach, on foot you, flying the camera; never in a race or a round; "Fora da zona" outside the area.
+    Found and fixed in it: on foot, opening the full map didn't always let the pointer go
+    (`src/input.ts`). Not verified: two players seeing the jump, a real phone.
 
 ## Read first
 

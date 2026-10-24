@@ -31,7 +31,7 @@ import { gatesOf } from './open.mjs';
 import { ARENAS } from './arenas.mjs';
 import { terrain } from './terrain.mjs';
 import { decks } from './decks.mjs';
-import { carriagewayMoves, heldGround, isLine, isSquare, LEVEL, levelHeights, onCarriageways, pathLines, pathsOf, streetBands, streetBumps, streetsOf } from './lines.mjs';
+import { carriagewayMoves, heldGround, isLine, isSquare, isSquareInParts, LEVEL, levelHeights, onCarriageways, pathLines, pathsOf, streetBands, streetBumps, streetsOf } from './lines.mjs';
 import { packPaths, packStreets, streetSurfaces } from './streets.mjs';
 import { cutWalls, packWalls } from './walls.mjs';
 import { packFurniture } from './furniture.mjs';
@@ -156,6 +156,13 @@ for (const e of [...base.elements, ...parkingOsm]) {
   }
   const inner = memberRings(e.members, 'inner').filter((r) => r.length > 3);
   for (const r of memberRings(e.members, 'outer')) if (near(r)) areas.push([AREA.indexOf(c), simplify(r, tol), inner.filter((h) => inside(r, ...h[0])).map((h) => simplify(h, tol))]);
+}
+// And the squares mapped in parts (task 041), from paths.json: each outer ring a square, the inner rings
+// in it its holes (a fountain, a lawn, a bandstand), which show what's painted under the square.
+for (const e of pathsOsm.elements) {
+  if (!isSquareInParts(e)) continue;
+  const inner = memberRings(e.members, 'inner').filter((r) => r.length > 3);
+  for (const r of memberRings(e.members, 'outer')) if (r.length > 3 && r.some(([x, z]) => inExt(x, z, 50))) areas.push([AREA.indexOf('plaza'), simplify(r.slice(0, -1), 0.5), inner.filter((h) => inside(r, ...h[0])).map((h) => simplify(h.slice(0, -1), 0.5))]);
 }
 
 // Big areas first, so smaller ones inside them are painted over them; squares last. Each is cut to
@@ -808,10 +815,12 @@ const treesOff = { moved: 0, out: 0, walked: 0, walking: 0, path: 0, pavement: 0
 {
   const nodes = onCarriageways(readCache('osm/street.json')).elements.filter((e) => e.type === 'node');
   const rings = (kind) => areas.filter(([k]) => k === AREA.indexOf(kind)).map(([, r]) => r);
+  // The squares, each its outline and its holes (task 041).
+  const squares = areas.filter(([k]) => k === AREA.indexOf('plaza')).map(([, r, holes]) => [r, ...holes]);
   const B = OPEN_BOX, over = tilesOver(B).map((t) => ({ id: t.id, box: { x0: Math.max(t.box.x0, B.x0), x1: Math.min(t.box.x1, B.x1), z0: Math.max(t.box.z0, B.z0), z1: Math.min(t.box.z1, B.z1) } }));
   // The buildings and the water, which a tree moved off a path isn't moved into.
   const solid = [...outlines, ...rings('water')].map((r) => [r, bounds(r)]);
-  const { cuts, stats } = streetSurfaces({ lines, heights, elev0: ELEV0, height: tileGround, nodes, buildings: outlines, squares: rings('plaza'), water: rings('water'), paths: walks, walls: wallList ?? [], box: B, cuts: over });
+  const { cuts, stats } = streetSurfaces({ lines, heights, elev0: ELEV0, height: tileGround, nodes, buildings: outlines, squares, water: rings('water'), paths: walks, walls: wallList ?? [], box: B, cuts: over });
   for (const { id } of over) {
     const t = tiles.get(id);
     t.streets = packStreets(cuts.get(id), t.box.x0, t.box.z0);

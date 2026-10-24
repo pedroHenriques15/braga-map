@@ -364,7 +364,8 @@ const marked = (t) => !['unmarked', 'no'].includes(t.crossing) && t['crossing:ma
 // from `lines` (lines.mjs's streetLines: { k, w, pts, nodes, t, level }) and the heights of those off
 // the ground (`heights`, above the sea; out above `elev0`), and `height`, the ground's at (x, z) as the
 // tiles hold it, above the sea, for a deck's ends; `nodes`, the crossings and traffic lights
-// (fetch.mjs's street.json); `buildings`, `squares` and `water`, rings round them; `walls`, the walls,
+// (fetch.mjs's street.json); `buildings` and `water`, rings round them, and `squares`, each its
+// outline and then its holes (task 041); `walls`, the walls,
 // fences, hedges and gates (walls.mjs's, index.d.ts's Wall), which the pavements and the paths stop
 // at and a carriageway gives way to (task 052, `stopsAt` and `givesWayTo` below). Everything comes
 // out cut to each of `cuts` ([{ id, box }], the box itself by default), in `cuts`, a Map by id:
@@ -476,7 +477,8 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height =
 
   const B = buildings.filter((r) => r.length > 2 && r.some((p) => near(p, margin + 40))).map((r) => positive(toPath(r)));
   const W = water.filter((r) => r.length > 2 && r.some((p) => near(p, margin + 40))).map((r) => positive(toPath(r)));
-  const Q = squares.filter((r) => r.length > 2 && r.some((p) => near(p, margin + 40))).map((r) => positive(toPath(r)));
+  // Each square less its holes: a lawn, a fountain, a bandstand in one mapped in parts (task 041).
+  const Q = squares.filter(([r]) => r.length > 2 && r.some((p) => near(p, margin + 40))).flatMap(([r, ...holes]) => minus([positive(toPath(r))], holes.map((h) => positive(toPath(h)))));
   const built = wallIndex(buildings.filter((r) => r.some((p) => near(p, margin + 60))));
   const stats = { edges: edges.length, junctions: 0, islands: 0, reservations: 0, slivers: 0, past: 0, km: { kerb: 0, dropped: 0 }, m2: {}, paths: { m2: {}, flights: 0, treads: 0, steep: 0, lanes: 0, flush: 0 }, walls: { given, streets: onGround.filter((e) => e.pull).length, behind: 0, paths: 0 } };
 
@@ -1698,7 +1700,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const made = streetSurfaces({
     lines, heights, elev0: ELEV0, height, nodes, box, paths, walls,
     buildings: world.buildings.map((b) => b.pts),
-    squares: world.areas.filter((x) => x.kind === 'plaza').map((x) => x.pts),
+    squares: world.areas.filter((x) => x.kind === 'plaza').map((x) => [x.pts, ...x.holes]),
     water: world.areas.filter((x) => x.kind === 'water').map((x) => x.pts),
   });
   const got = { ...made.cuts.get('box'), stats: made.stats }, s = got.stats;

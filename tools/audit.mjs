@@ -1,15 +1,17 @@
 // The street audit (task 006): every street, path and step OpenStreetMap has where the games are
 // played, and whether the world's tiles draw it; and the reverse, every line in the tiles that's no
-// street OpenStreetMap has. A way is drawn where a line of its own kind in the tiles runs within a
-// metre of it (a square, where a square's outline does): party-kart paints every line the tiles
-// have on the ground, but a tunnel (its mouths are drawn) and a bridge's deck (drawn whole). A path
-// (task 050) is drawn where a path of its kind in the tiles' surfaces is within a metre of it; a
+// street OpenStreetMap has. A way is drawn where a line of its own kind in the tiles runs within
+// 1.2 m of it (a square, where a square's outline or a hole's does), on its carriageway where the
+// world moves it there (task 026): party-kart paints every line the tiles have on the ground, but a
+// tunnel (its mouths are drawn) and a bridge's deck (drawn whole). A path
+// (task 050) is drawn where a path of its kind in the tiles' surfaces is within 1.2 m of it; a
 // pavement or a crossing the map draws as a footway, where the streets' pavements or carriageways
 // are: those are only in the open world's area.
 //
 // node tools/audit.mjs           after world.mjs: the table, and .cache/audit.json, which build.mjs
 //                                puts on the map page as the layer "Auditoria"
-// node tools/audit.mjs photos    also the 2025 orthophoto with OpenStreetMap's ways over it, in
+// node tools/audit.mjs photos    also the 2025 orthophoto with OpenStreetMap's ways over it (on their
+//                                carriageways, where the world draws them), in
 //                                250 m squares over the shooter's area and along the route, into
 //                                .cache/audit/: to find by eye what the photo shows and the map lacks
 //
@@ -19,19 +21,21 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { CACHE, P, readCache } from './geo.mjs';
 import { Grid, inside, LINE } from './osm.mjs';
-import { isSquare } from './lines.mjs';
+import { isSquare, isSquareInParts, onCarriageways } from './lines.mjs';
 import { inShooter, OPEN, SHOOTER_BOX } from './sections.mjs';
 import { loadWorld } from '../index.js';
 import amigos from '../tracks/amigos.js';
 
-const base = readCache('osm/base.json');
+// The streets and paths where the world draws them: on their carriageways, where DGT's LiDAR measured
+// them (lines.mjs's onCarriageways, task 026), as world.mjs reads them.
+const base = onCarriageways(readCache('osm/base.json'));
 const pathsFile = path.join(CACHE, 'osm', 'paths.json');
 if (!fs.existsSync(pathsFile)) throw new Error('No footways yet: node tools/fetch.mjs paths');
-const paths = readCache('osm/paths.json');
+const paths = onCarriageways(readCache('osm/paths.json'));
 
 // How near a line in the tiles must run to count as drawing a way: the tiles keep a street's points
-// to within 0.8 m (world.mjs) and in half metres.
-const TOL = 1;
+// to within 0.8 m (world.mjs) and in half metres, up to 0.35 m more (task 041).
+const TOL = 1.2;
 const inBox = (b, x, z) => x >= b.x0 && x <= b.x1 && z >= b.z0 && z <= b.z1;
 const AREAS = [
   { id: 'box', name: "the Volta dos Amigos' box", in: (x, z) => inBox(amigos.box, x, z) },
@@ -73,8 +77,9 @@ for (const e of base.elements) {
 for (const e of paths.elements) {
   const t = e.tags || {};
   if (e.type === 'relation') {
-    // A square mapped as a multipolygon: world.mjs reads only ways, so it's never drawn.
-    ways.push({ id: e.id, rel: true, c: 'square', name: t.name, lines: e.members.filter((m) => m.type === 'way' && m.geometry).map((m) => ring(m.geometry)) });
+    // A square mapped as a multipolygon (task 041): its outer and inner ways, a square's outline and
+    // its holes' in the tiles.
+    if (isSquareInParts(e)) ways.push({ id: e.id, rel: true, c: 'square', name: t.name, lines: e.members.filter((m) => m.type === 'way' && m.geometry).map((m) => ring(m.geometry)) });
     continue;
   }
   // The streets' own (lines.mjs's pathsOf leaves them out): a pavement, or a link to one; a crossing,
@@ -117,7 +122,7 @@ function* pieces(pts) {
 const world = await loadWorld(amigos.box);
 const drawn = segGrid();
 for (const l of world.lines) for (let i = 1; i < l.pts.length; i++) drawn.put(l.pts[i - 1], l.pts[i], l.kind);
-for (const a of world.areas) if (a.kind === 'plaza') a.pts.forEach((p, i) => drawn.put(p, a.pts[(i + 1) % a.pts.length], PLAZA));
+for (const a of world.areas) if (a.kind === 'plaza') for (const r of [a.pts, ...a.holes]) r.forEach((p, i) => drawn.put(p, r[(i + 1) % r.length], PLAZA));
 // Pieces by what they are, in cells of 10 m: whether (x, z) is on one of `kind`, or within TOL.
 const surfaces = new Map();
 const putSurface = (kind, rings) => {

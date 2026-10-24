@@ -9,7 +9,7 @@ import path from 'node:path';
 import { CACHE, KX, KZ, LAT0, LON0, P, readCache, ROOT } from './geo.mjs';
 import { memberRings as rings, storeys } from './osm.mjs';
 import { CORE, EXT, OPEN, SECTIONS, SHOOTER, TILE } from './sections.mjs';
-import { onCarriageways, pathsOf, streetLines } from './lines.mjs';
+import { isSquareInParts, onCarriageways, pathsOf, streetLines } from './lines.mjs';
 import { gatesOf } from './open.mjs';
 import { ARENAS } from './arenas.mjs';
 import { terrain } from './terrain.mjs';
@@ -122,6 +122,15 @@ for (const e of base.elements) {
     const a = area(rs[0]);
     areas.push({ c, a: Math.round(a), r: rs.map((r) => pack(dp(r, c === 'forest' || c === 'farm' ? 2 : 1))) });
   }
+}
+// And the squares mapped in parts (task 041), from paths.json: their outer rings and their holes, which
+// the page fills even-odd.
+const pathsFile = path.join(CACHE, 'osm', 'paths.json');
+const pathsOsm = fs.existsSync(pathsFile) ? onCarriageways(read('paths.json')) : null;
+for (const e of pathsOsm?.elements ?? []) {
+  if (!isSquareInParts(e)) continue;
+  const outer = rings(e.members, 'outer').filter((r) => r.length > 3);
+  if (outer.some((r) => touches(r))) areas.push({ c: 'plaza', r: [...outer, ...rings(e.members, 'inner').filter((r) => r.length > 3)].map((r) => pack(dp(r, 0.8))) });
 }
 
 // Big fields first, so smaller ones inside them draw on top.
@@ -267,8 +276,7 @@ const game = JSON.parse(fs.readFileSync(path.join(ROOT, 'tools/first-track.json'
 // ---- The open world's area (task 032) and the shooter's (task 015): each one's edge, and the gates
 // where streets cross it, and paths (task 050) ----
 const near = (x, z, m) => inBox(EXT, x, z, m);
-const pathsFile = path.join(CACHE, 'osm', 'paths.json');
-const extLines = [...streetLines(base, ground, near).lines, ...(fs.existsSync(pathsFile) ? pathsOf(onCarriageways(read('paths.json')), near) : [])];
+const extLines = [...streetLines(base, ground, near).lines, ...(pathsOsm ? pathsOf(pathsOsm, near) : [])];
 const gatesAt = (ring) => gatesOf(ring, extLines).map(({ x, z, heading, w, k, level }) => ({ x, z, heading, w, k, level }));
 const areaOf = (ring) => Math.abs(ring.reduce((a, [x, z], i) => { const [x2, z2] = ring[(i + 1) % ring.length]; return a + x * z2 - x2 * z; }, 0)) / 2;
 const openGates = gatesAt(OPEN), openArea = areaOf(OPEN);

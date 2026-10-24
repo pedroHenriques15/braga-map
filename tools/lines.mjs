@@ -74,6 +74,9 @@ const levelOf = (t) => (on(t.bridge) ? LEVEL.bridge : t.tunnel === 'building_pas
 // A way that's a street or the railway, as a line; a pedestrian area isn't one (it's a square).
 export const isLine = (e) => e.type === 'way' && (LINE[e.tags?.highway] != null || !!e.tags?.railway);
 export const isSquare = (e, pts) => e.tags.highway === 'pedestrian' && (e.tags.area === 'yes' || (pts.length > 3 && pts[0][0] === pts[pts.length - 1][0] && pts[0][1] === pts[pts.length - 1][1]));
+// And a square mapped in parts, a multipolygon (the Praça da República): fetch.mjs's `paths` has them
+// (task 041).
+export const isSquareInParts = (e) => e.type === 'relation' && e.tags?.highway === 'pedestrian' && e.tags.type === 'multipolygon';
 
 // Every street and railway with a point within 50 m of the box `near` takes (x, z, margin), from
 // fetch.mjs's base.json, each { id, k, w, pts, nodes, t, level }; and `heights`, a line's point (the

@@ -1853,3 +1853,24 @@ what the cloud can tell (`tools/furniture.mjs`, `world.furniture`):
 The alternatives were Mapillary's detected signs and lamps (decision 006 keeps them out), every clump
 the LiDAR finds kept (three times as many pieces, most of them cars and walls), and the map's alone
 (714 pieces where the open world has thousands).
+
+## 063 · A square is a square however the map maps it, less what's in it; the audit measures the streets where the world draws them
+
+*2026-10-24 · task 041 · makes decision 022's "a street the world misses is a bug in the scripts" hold for the squares*
+
+- **A square mapped in parts,** a `highway=pedestrian` multipolygon as the Praça da República is, is
+  a square as one mapped as a way is: each of its outer rings a `plaza` area in the tiles and on the
+  map page. Its relations are read from `paths.json`, which fetches them; `base` isn't fetched again
+  for them.
+- **What's in it is cut out, not painted over:** its inner rings (a lawn, a garden, a fountain, a
+  bandstand, a building) are its holes, in the tiles' area and in the pavement the streets' surfaces
+  pave a square with (task 033), so what the map has there shows.
+- **A way tagged as an area that isn't pedestrian** (a residential street's yard, a driveway) stays a
+  street round its outline: it's driven on, and a square's paving and furniture (tasks 018, 020)
+  aren't a yard's.
+- **The street audit measures the world against the streets where the world draws them:** on their
+  carriageways (task 026), within 1.2 m, as the tiles keep a street to 0.8 m and in half metres. Against
+  the map's lines as fetched it listed 167 ways as drawn in part that the world draws whole.
+
+The alternative was fetching the relations into `base` with the streets (one file, but eleven days
+of the map's edits into every tile and track); the owner chose `paths.json` (2026-10-24).

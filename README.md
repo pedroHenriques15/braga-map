@@ -313,7 +313,7 @@ streets; when a track moves enough to change the edge, run the three again until
 
 - `fetch.mjs` gets OpenStreetMap through Overpass (streets and land; the footways, steps, paths
   and cycleways, which the world draws in the open world's area, and the squares mapped in parts,
-  which only the street audit reads so far; the walls, fences, hedges, gates and car parks, for
+  which the world and the map page take as squares (task 041); the walls, fences, hedges, gates and car parks, for
   `walls.mjs`, and the car parks for the world's areas too; the street furniture, for `furniture.mjs`;
   buildings, parishes, landmarks, the shops, cafés, banks and offices with a name (for their signs),
   trees, the crossings, traffic lights and bus stops, and the turn
@@ -595,8 +595,9 @@ streets; when a track moves enough to change the edge, run the three again until
   counts; the Liberdade's lanes; and nothing on anything else.
 - `audit.mjs` is the street audit (task 006): over the Volta dos Amigos' box, the open world's area
   and the shooter's, every street, square, railway, footway, step, path and cycleway the map has,
-  by class, its length and how much of it the world's tiles draw (a line of its own kind within a
-  metre; for a square, its outline; for a path, a path of its kind, and for a pavement or a
+  by class, its length and how much of it the world's tiles draw (a line of its own kind within
+  1.2 m, the streets where the world draws them, on their carriageways; for a square, its outline
+  and its holes'; for a path, a path of its kind, and for a pavement or a
   crossing the map draws as a footway, the streets' surfaces, both only in the open world's area),
   and the reverse, any line in the tiles along no street of its kind. It prints a table, lists what isn't drawn whole, and writes `.cache/audit.json`, which
   `build.mjs` puts on the map page as the layer "Auditoria". `node tools/audit.mjs photos` also
@@ -833,13 +834,13 @@ from above, and its icon. Close the world in the game before replacing it.
   pedestrian streets) come to 102 km, 65% fewer. Keeping only the fast roads, primary and
   secondary cuts 78%, but loses the Avenida Central and the old town. That cut is only the page's:
   the world has every street.
-- **The street audit** (task 006, the layer "Auditoria"): round the Volta dos Amigos, the world
-  draws all 202 km of street the map has, service roads and dirt tracks too, but 360 m of streets
-  being built or of no known class; 43 of its 51 squares (all 11 in the open world: the other 8
-  are mapped in parts). In the open world's area (task 050), of the map's paths, 83% of the 21.6 km
+- **The street audit** (task 006, the layer "Auditoria"; on 2026-10-24, task 041): round the Volta
+  dos Amigos, the world draws all 220 km of street the map has, service roads and dirt tracks too,
+  but 310 m of streets being built or of no known class, and all 53 of its squares, the 8 mapped in
+  parts too (task 041). In the open world's area (task 050), of the map's paths, 82% of the 21.6 km
   of footways (the rest giving way to the pavements and the streets), 84% of the 1.8 km of steps,
-  95% of the 6.7 km of paths and 89% of the 7.9 km of cycleways; and the streets' own, 65% of the
-  47.5 km of pavements the map draws as footways under the streets' pavements, 90% of its 6.3 km
+  95% of the 6.7 km of paths and 94% of the 7.9 km of cycleways; and the streets' own, 72% of the
+  47.5 km of pavements the map draws as footways under the streets' pavements, 92% of its 6.3 km
   of crossings.
 - **The ground** from DGT's 2025 LiDAR: every 20 m on the page, every 2 m in the world on the 23
   tiles the open world's area touches (the Volta dos Amigos and Fujacal among them), every 10 m on

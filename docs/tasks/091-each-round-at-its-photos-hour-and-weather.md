@@ -1,5 +1,5 @@
 ---
-status: blocked
+status: todo
 priority: low
 kind: code
 repo: both
@@ -32,9 +32,13 @@ date is in `refs/photos.json`; party-kart's `src/sun.ts` takes `?time=` and `src
 
 ## Questions
 
-- [ ] Decision 037 chose the same afternoon for every round. Shoot each at its photo's moment
+- [x] Decision 037 chose the same afternoon for every round. Shoot each at its photo's moment
   instead, or both (a second set of shots per round)? Recommendation: at its photo's moment,
   as the scorecard compares a shot with its photo; the game itself stays on its clear afternoon.
+  > At its photo's moment (the owner, 2026-10-24): each round shot at each photo's date, hour and
+  > weather; the game itself stays on its clear March afternoon. Decision 037 changes for the rounds
+  > only, a new entry when this task is finished. Changing how shots are taken makes a new baseline
+  > round (decision 011), so the first round shot so is labelled one.
 
 ## Read first
 
@@ -48,4 +52,5 @@ date is in `refs/photos.json`; party-kart's `src/sun.ts` takes `?time=` and `src
 
 ## Notes
 
-- Blocked on the question: it changes decision 037, which the owner set on 2026-10-17.
+- Blocked on the question: it changes decision 037, which the owner set on 2026-10-17. Answered
+  2026-10-24, `todo`.

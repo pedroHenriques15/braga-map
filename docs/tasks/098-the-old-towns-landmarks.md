@@ -1,5 +1,5 @@
 ---
-status: todo
+status: blocked
 priority: low
 kind: code
 repo: both
@@ -42,3 +42,13 @@ the old town's, and those 021 dropped.
 - [ ] Each landmark stands at its measured size, and its new viewpoint is shot and rated.
 - [ ] The first track's cartoon models are gone.
 - [ ] `npm test` here, `npm test` and `npm run check` in party-kart pass.
+## Notes
+
+- **Split on 2026-10-24 (the owner):** the landmarks inside the playable area are done, those
+  outside it wait with 099. Checked that day against the open world's edge (`tools/open.json`):
+  none of the twelve here is inside it (the Sé at (-449, 154), the Arco da Porta Nova (-612, 107),
+  the Praça da República and the Arcada round (0, 0), the Theatro Circo (-62, 199), the Torre de
+  Menagem (-163, -19), the Palácio do Raio (-37, 319), the Fonte do Ídolo (4, 282), the Cividade
+  round (-640, 540), the Casa dos Coimbras (-190, 158), the Congregados (53, 31), the Igreja de
+  Lamaçães (2162, 674)), so this task keeps all twelve, blocked on 099. The open world's own
+  landmarks that aren't models yet are task 104.

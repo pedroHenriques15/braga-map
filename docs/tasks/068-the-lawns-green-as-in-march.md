@@ -41,9 +41,16 @@ Steps:
    drier than a watered lawn's: how much, where, and checked against the orthophoto and the photos
    (a dry lawn, or paving that echoes high: white calçada, concrete).
 2. **Classed:** what step 1 shows is a lawn classed grass, as 014 does in the islands.
-3. **Coloured:** a lawn's colour in March, not the summer's: from the watered lawns' in the same
-   photo, or a season's shift the owner picks (a question).
+3. **Coloured:** a lawn's colour in March, not the summer's: the watered lawns' colour in the same
+   orthophoto (the stadium's pitch, 014's islands), on every level and at every date (the owner,
+   2026-10-24). 093's seasons, on Ultra only, may shift it by the month later.
 4. Shoot the viewpoints with lawns in view again.
+
+## Questions
+
+- [x] What green do the dry lawns get: the watered lawns' colour in the same orthophoto, or a
+  season's shift by the month (with 093)? Recommendation: the watered lawns', measured, as 014 did.
+  > The watered lawns' colour (the owner, 2026-10-24).
 
 ## Read first
 

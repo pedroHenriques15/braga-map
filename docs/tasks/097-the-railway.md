@@ -1,5 +1,5 @@
 ---
-status: todo
+status: blocked
 priority: low
 kind: code
 repo: both
@@ -45,3 +45,6 @@ puts them in the tiles (`rails`); party-kart has no code for them.
 
 - Not checked: whether the station and the line are inside the open world's area. If they aren't,
   they're drawn in the far city first, and reached once 099 grows the area.
+- Checked 2026-10-24: none of the railway's 237 points in the map is inside the open world's edge
+  (`tools/open.json`), and Braga's station stands at about (-1040, 350), outside it. **Held by the
+  owner (2026-10-24):** what's outside the playable area waits with 099.

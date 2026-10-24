@@ -40,3 +40,7 @@ Today `src/ambience.ts` mixes the beds by what's near; `src/audio.ts` the mix (t
 - [ ] Two takes with `scripts/listen.mjs` (a lane in Fujacal and the Avenida da Liberdade) judged
   by ear against the baseline, by the owner.
 - [ ] `npm test` and `npm run check` pass.
+## Notes
+
+- 2026-10-24: its first "Done when" is the owner's ear. A session working without the owner makes
+  the takes and leaves them as a row in task 103 ("a file": the takes' folder), and doesn't tick it.

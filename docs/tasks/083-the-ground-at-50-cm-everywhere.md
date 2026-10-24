@@ -41,10 +41,15 @@ gzipped; at 50 cm it would be 16 times the points.
 
 ## Questions
 
-- [ ] Where the 50 cm files are served from: GitHub Pages and the npm package (a tile's 1001²
+- [x] Where the 50 cm files are served from: GitHub Pages and the npm package (a tile's 1001²
   heights are about 2 MB before compression, some 280 MB over the 140 tiles, a guess to be
   measured), only the open world's tiles at 50 cm, or the owner's homelab. Recommendation: only
   the open world's tiles at 50 cm, on Pages, until the area grows (099).
+  > Only the open world's 25 tiles, in git with the rest of the world, so on Pages through
+  > party-kart (the owner, 2026-10-24). Measured that day on a real tile: 2.0 MB raw, 0.85 MB
+  > gzipped stored as differences along each row, so about 50 MB per full rebuild of them in git
+  > and about 3.4 MB to download round the player. Step 1 fetches `MDT-50cm` for the tiles under
+  > the open world's area only (20 of the map's 48 are fetched today), not the whole map.
 
 ## Read first
 

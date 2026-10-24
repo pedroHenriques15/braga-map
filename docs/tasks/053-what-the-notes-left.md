@@ -103,3 +103,5 @@ It changes nothing a game shows, so no viewpoint and no budget.
 - Drafted 2026-10-16 at the owner's request, after task 013 went live; both questions answered.
 - Not verified: the counts are of those phrases alone; many follow-ups aren't marked with any of
   them, so the list will be longer.
+- 2026-10-24: in a run without the owner (task 103), step 3's questions for the owner aren't asked:
+  each is recorded here and in task 103 for the owner, and the task stays open on them.

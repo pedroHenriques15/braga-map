@@ -53,6 +53,16 @@ Steps:
    treat them as squares too, and say which in Notes.
 5. Run `npm run world`, `node tools/audit.mjs` and `npm run page`, and `npm test`.
 
+## Questions
+
+- [x] Fetch the relations into `base` again (one file, but 11 days of OSM edits into every tile and
+  maybe the tracks), or have `world.mjs` and `build.mjs` read `paths.json` too? Recommendation:
+  read `paths.json`, so only the squares change.
+  > Read `paths.json` too, no fetch (the owner, 2026-10-24): step 1's second way.
+- [x] Its squares are outside the playable area (none in the open world's, task 006): done anyway?
+  > Done (the owner, 2026-10-24): the squares in the tiles, on the map page and in the far city's
+  > painted ground.
+
 ## Read first
 
 - `tools/lines.mjs` (`isLine`, `isSquare`), `tools/world.mjs` (the areas, and the squares it hands

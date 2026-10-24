@@ -30,6 +30,16 @@ nothing reads it; party-kart's `src/render/trees.ts` tints every kind's leaves o
 3. **The ground:** fallen leaves under the deciduous trees in autumn; the lawns' green by the month
    (task 068 is March's).
 4. The default stays 13 March: the planes bare, as the photos of that date show.
+5. **On Ultra only** (the owner, 2026-10-24): High, Medium and Low stay in summer leaf, as now, so a
+   phone sees no change. The rounds, shot at Ultra at each photo's moment (091), show each photo's
+   season.
+
+## Questions
+
+- [x] Where do the seasons show: on Ultra only, High and below staying in summer leaf; or on every
+  level, the default game's planes bare for everyone? Recommendation: Ultra only (081: what a
+  phone can't hold goes to Ultra).
+  > Ultra only (the owner, 2026-10-24).
 
 ## Read first
 
@@ -38,9 +48,10 @@ nothing reads it; party-kart's `src/render/trees.ts` tints every kind's leaves o
 
 ## Done when
 
-- [ ] At `?time=` in January, March, June and October, the avenues' trees look as Braga's do then
+- [ ] On Ultra, at `?time=` in January, March, June and October, the avenues' trees look as Braga's do then
   (`31-de-janeiro`, `liberdade`, `capela-sao-joao`, `porfirio-da-silva`), each set beside a reference
   photo of that season.
+- [ ] High, Medium and Low unchanged (every viewpoint the same at those levels).
 - [ ] `npm test` here, `npm test` and `npm run check` in party-kart pass.
 
 ## Out of scope

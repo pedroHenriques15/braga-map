@@ -1,5 +1,5 @@
 ---
-status: todo
+status: blocked
 priority: low
 kind: code
 repo: both
@@ -50,3 +50,9 @@ the open world. Task 038 streams the tiles, which a bigger world needs.
 ## Notes
 
 - Status `todo` though it has a question: the recommended answer lets it start.
+- **Held by the owner (2026-10-24): not done for now.** Measured that day for the choice: a tile at
+  the open world's detail averages 290 KB against 63 KB, so `world/` would go from 28 to about
+  75 MB; its step 3, the 50 cm ground over all 140 tiles, about 280 MB in git per full rebuild
+  (178 MB of history today); about 2 GB more of DGT's data to fetch; and seven pipelines tuned on
+  the open world run over 5.6 times the area, the old town's lanes and squares where their rules
+  were never tried. Its question isn't asked until it's taken up again. 097 and 098 wait with it.

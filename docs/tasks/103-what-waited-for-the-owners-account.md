@@ -36,8 +36,8 @@ Once Claude Code is signed in to the account that owns the pages (`/login`):
 3. **The map page:** published from `map/index.html` with `map/braga.json` and `map/tracks.json`
    beside it, as the README's "The map page" says, after `npm run page` on main.
 4. **The rest of the table,** row by row: each one done is ticked in the table with the date.
-5. **The versions:** each braga-map version in the second table tagged (or left, as the owner
-   says), and party-kart pinned to the last.
+5. **The decisions:** each row of the third table confirmed or changed by the owner, and the task's
+   Notes saying which.
 
 ## Waiting for the owner's account
 
@@ -48,9 +48,8 @@ Once Claude Code is signed in to the account that owns the pages (`/login`):
 
 ## braga-map versions bumped and not tagged
 
-| Version | Task | Commit | party-kart |
-|---|---|---|---|
-| 1.34.0 | 100 | `6248f21` | on v1.33.1 |
+None: the owner lets the sessions tag (2026-10-24). 1.34.0 (task 100, `6248f21`) was tagged that
+day; party-kart is pinned to the latest tag by the first task of Phase 2 that touches it.
 
 ## Decided by the session, for the owner to confirm
 
@@ -65,8 +64,39 @@ task's Notes as "decided by the session, for the owner to confirm".
 Where the work on every open task stands (the owner's two phases, 2026-10-24), so a session that
 picks it up can go on from here.
 
-- **Phase 1, the questions:** asked on 2026-10-24.
-- **Phase 2, the work:** not started.
+- **Phase 1, the questions:** done on 2026-10-24. Every open task's questions answered in its
+  file; the owner's general answers:
+  - **Tags:** the session tags each braga-map version and pins party-kart to it.
+  - **Deploy:** once, at the end, from a clean main, checked live (party-kart's
+    `docs/releasing.md`). Not after each task.
+  - **Commits:** after each task, `git pull --rebase`, commit and push to main, in each repository it
+    touched; a worktree's branch merged into main, then the worktree removed (its `.cache` junction
+    first, with `rmdir`, never a recursive delete).
+  - **Order:** the `/task` order (priority, then `depends-on`), the owner's new improvements first
+    (105 to 110, before 081).
+  - **A premise that proves false:** recorded in the task's Notes and here, the part that still holds
+    done; dropped with the reason only if none does.
+  - **Two at a time:** at most one task that rebuilds braga-map's world, beside one that doesn't touch
+    the same files (a party-kart-only task, say), each in a worktree of its own (ROADMAP's "Two
+    sessions at once").
+  - **Not done in this run (held, `blocked`):** 099 (the whole map at the open world's detail), 097
+    (the railway, all outside the playable area) and 098 (the old town's landmarks, all outside it).
+    What of 098 is inside the playable area is task 104, done.
+  - **Never asked again in Phase 2:** a new question is decided by the session, written in the task's
+    Notes as "decided by the session, for the owner to confirm", and added to the table above.
+- **Phase 2, the work:** not started. The order, each after its `depends-on`:
+  1. 105 smaller karts, 106 the full map on M, 107 the GPS, 108 "Ir para aqui", 109 find a place,
+     110 meet the others.
+  2. 081 Ultra, then 102 the credits.
+  3. The medium ones: 044 pavements level, then 051 steps, then 076 the land at the steps; 041 squares
+     and 059 the island's pavement alongside; 066 the tilt; 018 markings after 044, then 020
+     furniture; 085 textures, 086 doors and windows, 087 roofs, 088 species, 090 the light; 038
+     streaming, then 083 the 50 cm ground (038 is low but 083 needs it).
+  4. The low ones: 084, 065, 068, 089, 091 (after 090), 092 (after 090 and 020), 093 (after 088), 094
+     (after 020), 095 (after 086), 096, 101 (after 094), 104.
+  5. 053 last.
+
+  Each task's line here gets its commit, version and what's left once it lands.
 
 ## Read first
 
@@ -77,8 +107,6 @@ picks it up can go on from here.
 ## Done when
 
 - [ ] Every row of the first table is up, and ticked with the date.
-- [ ] Every version in the second table is tagged, or the owner said to leave it, and party-kart is
-  pinned to the last.
 - [ ] The owner has confirmed or changed each decision in the third table, and each task's Notes
   say which.
 

@@ -35,6 +35,17 @@ draws them.
    Low none. In the deathmatch, none (decision 056).
 5. `?scenery` draws none, so rounds stay the city alone (decision 011).
 
+## Questions
+
+- [x] Where the TUB's buses drive: TUB's GTFS (its licence asked first), OpenStreetMap's bus
+  routes, or made-up loops? Recommendation: OpenStreetMap's route relations.
+  > OpenStreetMap's bus routes, at made-up intervals; no GTFS (the owner, 2026-10-24). Step 2's
+  > "the GTFS feed's licence asked of TUB first" no longer applies.
+- [x] The cars, buses and people: CC0 3D models, or built in code? Recommendation: CC0 models,
+  their textures made.
+  > CC0 models (the owner, 2026-10-24), as task 020's answer says: each on record, at real size,
+  > no photo texture (decision 061).
+
 ## Read first
 
 - braga-map's `docs/DECISIONS.md` 010, 011, 056; tasks 020, 042; party-kart's `src/ambience.ts`,

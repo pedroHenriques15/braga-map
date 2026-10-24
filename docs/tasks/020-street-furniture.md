@@ -46,6 +46,20 @@ route. Traffic lights cycle 20 s.
    cars), simple and in the colours cars come in; never in front of a gate (task 013).
 4. **Shooter's area:** every piece in its photo, where it is.
 
+## Questions
+
+- [x] Which lines serve a stop: TUB's GTFS feed (its licence asked of TUB first), OpenStreetMap's
+  bus routes, or none? Recommendation: OpenStreetMap's route relations (ODbL, like the rest).
+  > OpenStreetMap's bus routes, no GTFS (the owner, 2026-10-24). How complete OSM's TUB routes are
+  > isn't checked: a line it lacks is left out and listed.
+- [x] Braga's models (step 2) and the parked cars (step 3): CC0 3D models, as decision 060 allowed
+  for the deathmatch, or built in code? Recommendation: CC0 models, their textures made.
+  > CC0 models allowed (the owner, 2026-10-24): CC0 glTF models (Quaternius, Poly Pizza, Kenney
+  > and the like), each on record as party-kart's `src/fight/ASSETS.md` keeps them, at their real
+  > size; any photo texture they carry replaced by a made or flat one (decision 061). A model of
+  > Braga's own (the TUB shelter, the ecoponto) is still drawn from its reference photos where no
+  > CC0 model is near enough. A DECISIONS.md entry when this task is finished.
+
 ## Read first
 
 - `../party-kart/src/render/road.ts:241-331`, `city.ts` (`streetFurniture`), `kit.ts`.

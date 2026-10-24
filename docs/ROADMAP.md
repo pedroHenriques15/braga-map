@@ -28,6 +28,14 @@ whole area. Free roam went live with task 036 before the race moved onto the str
 - **038** The city streamed tile by tile, when the area grows.
 - **066** A car on a street beside a wall tilts by the street, not by the drop past its edge: the
   race's hops on the Avenida João XXI's upper lane (party-kart, found by 045).
+- **105** Smaller karts, about 2.8 × 1.8 m, halfway to a real kart's size (the owner, 2026-10-24).
+- **106** The minimap opens into a full map with M; mute moves to N.
+- **107** A waypoint on the map, and the GPS's route to it along the streets, by the rules of the road.
+- **108** "Ir para aqui": your kart put anywhere in the open world from the full map.
+- **109** Find a street or a place, and the GPS takes you there.
+- **110** Meet the others: the GPS to a friend, and a mark the whole room sees.
+
+  The owner's improvements of 2026-10-24, done first, before 081.
 
 ## Games · More tracks and the shooter
 
@@ -145,9 +153,15 @@ references, the ten photo facades given back to the kit (082, decision 061).
 - **094** Life in the streets: traffic, the TUB's buses, people (after 020).
 - **095** The shops' and cafés' ground floors with insides, made up (after 086).
 - **096** The Rio Este with its banks, walls and weirs, and the streams drawn.
-- **097** The railway: rails, sleepers, catenary, the station and a train.
-- **098** The old town's landmarks at their real size (after 099).
-- **099** The whole map at the open world's detail, the open world grown over it (after 038).
+- **097** The railway: rails, sleepers, catenary, the station and a train. Held by the owner
+  (2026-10-24): it's all outside the playable area, so it waits with 099.
+- **098** The old town's landmarks at their real size (after 099). Held with 099: none of its twelve
+  is inside the playable area.
+- **104** The open world's own landmarks that aren't models yet, split from 098 (the owner,
+  2026-10-24): a parish church, a chapel, two wayside shrines, a bust, a swing, a statue, an
+  installation and the fountains.
+- **099** The whole map at the open world's detail, the open world grown over it (after 038). Held by
+  the owner (2026-10-24): not done for now, for its cost (its Notes).
 - **100** The street furniture the point cloud finds, for 020 to draw: done (decision 062), braga-map
   1.34.0. The LiDAR sees about one lamp in four, and its lamps, signs, traffic lights and shelters are
   17 right of 50 in the photos; the low things are the map's only.

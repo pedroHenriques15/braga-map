@@ -85,3 +85,8 @@ Steps:
   path is setts: at `fujacal-start` the strip between the street and the flats is granite setts in the
   photo and paving in the game. Where this task finds Braga's pavements from the photos, the ground
   cover can take them.
+- 2026-10-24, before starting: step 3's "a texture for each from the close-up photos (task 007)"
+  no longer holds. Since task 082 (decision 061) no photograph is drawn: each pavement's texture is
+  made by `tools/made.mjs` and matched to its close-up photos (`refs/textures.json`'s `ref` and
+  `match`), as the setts' already are. The ROADMAP has 018 after 044 (stream 1's kerbs), though
+  its `depends-on` doesn't say so.

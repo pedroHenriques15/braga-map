@@ -60,3 +60,6 @@ Steps, when the owner grows the area or a phone can't hold it:
   gzipped on High, and loading only the tiles near the player would take it down. The owner: load
   time doesn't matter, so that isn't a reason to do this sooner. It still waits for the area to
   grow.
+- 2026-10-24: the owner set the order for the open tasks (`/task` order, 083 among them), and 083's
+  50 cm ground near the player builds on this, so it's done before 083, though the area doesn't
+  grow (099 is held).

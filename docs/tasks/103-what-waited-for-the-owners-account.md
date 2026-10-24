@@ -71,6 +71,9 @@ task's Notes as "decided by the session, for the owner to confirm".
 | 107 | 106's double-click on the full map zoomed in; 107's click puts the waypoint | The double-click zoom removed (the wheel and a pinch still zoom) | 107's landing |
 | 109 | In what order does the search list what it finds? | The nearest first, as the task says (so "picoto" from Fujacal lists the Picoto Adventure Park, 930 m, before the Monte e miradouro do Picoto, 1.1 km); Enter takes the first | 109's landing |
 | 114 | A bot that has lost its speed on the jump's run-up: back up and line up again, or be put back? | It moves aside, takes the ramp, falls short and is put back as before: from a standstill a kart needs about 120 m flat out to reach the ramp's speed, about 15 s backing up against 3 s for the put-back | 114's landing |
+| 110 | What happens to the room's marks in a race? | They stay, hidden during it, and are back after it | 110's landing |
+| 110 | When does following a friend end? | When you're there (within 15 m), as a waypoint does | 110's landing |
+| 110 | What does a mark look like? | A flag in the colour of the driver who put it (a dark driver's dark with a white edge), with their name | 110's landing |
 | 105 | The chair (Joel's) and the trolley (Joel F.'s) are smaller than 2.8 m today: brought to 2.8 m, or kept in proportion? | Every body drawn at 0.7 of its model, so every driver stays the same size (the chair 2.06 m long, the trolley 2.16 m); the banger at 0.65 to fit 2.8 m (from 4.30), its driver 7% smaller | 105's landing |
 
 ## Progress

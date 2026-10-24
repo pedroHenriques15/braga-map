@@ -233,7 +233,10 @@ picks it up can go on from here.
   - **059** (worker-3): braga-map landed `d52d3f3`, 1.39.0 (tagged, decision 075): the map's
     sidewalks a pavement where the tiles had none under them (about 13 km off every street piece before,
     5 m after), widened from the islands alone; `liberdade` 2 → 3. party-kart's pin to v1.39.0 waits: three
-    of its tests fail on the new pavements (the arenas' seeded cover, a street at a wall's top).
+    of its tests failed on the new pavements; fixed in braga-map `fdec71f`, 1.39.1 (no map sidewalk laid
+    across a wall's step, but on an island), and party-kart `c8c2994`, pinned to v1.39.1, with the arenas'
+    cover generator fixed (a pallet that cut a passage off, the skips' climbing boxes placed first, no
+    fence flat against a thing): every arena's cover moves again.
   - **The coordinator's watcher was down from 18:51 to 21:58** (not re-armed after a message), so ready
     tasks waited for their marks and turns: 102, 065, 090, 111, 112 and 059.
 

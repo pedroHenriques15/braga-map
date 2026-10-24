@@ -74,6 +74,11 @@ answer now, and suggest `/task answer NNN` for the most useful one.
 2. Shoot the task's viewpoints again (task 002's script) and, once the scorecard exists (task
    003), post them as a new round. Check the budget (task 004) when the task added geometry or
    textures.
+   If the Artifact tool can't reach a page (the scorecard, the map page, a before-and-after
+   page), don't stop: leave the round in `.cache/scorecard/` (prepared with `tools/round.mjs`,
+   Claude's marks in `.cache/scorecard/marks/<round>.json`), add a row to the ledger task
+   (`docs/tasks/103-what-waited-for-the-owners-account.md`: the task, what waits, the commit it
+   was made at), and go on. Never publish a new artifact in its place.
 3. Update the docs the work changed (`README.md`, `docs/*.md`, party-kart's docs when it touched
    party-kart), add a `docs/DECISIONS.md` entry for a lasting decision, and move or remove the
    item in `docs/ROADMAP.md`.

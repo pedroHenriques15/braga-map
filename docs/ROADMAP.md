@@ -58,6 +58,9 @@ in a few sheets, so the scorecard holds about 100 more rounds (062, decision 045
 rounds made while the scorecard was out of reach, 052's to 061's, put up with Claude's marks (064,
 `tools/scorecard.mjs`).
 
+- **103** What waited for the owner's account: the rounds, marks, pages and tags the sessions left
+  while Claude Code couldn't reach the owner's artifacts (from 2026-10-24), put up in one pass.
+
 ## Phase 2 · The shape: the ground, the streets and the buildings where they really are
 
 Done: the buildings' heights and roofs (010), the buildings the map lacks (011), the bridges and

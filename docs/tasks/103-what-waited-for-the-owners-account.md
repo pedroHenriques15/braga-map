@@ -237,6 +237,12 @@ picks it up can go on from here.
     across a wall's step, but on an island), and party-kart `c8c2994`, pinned to v1.39.1, with the arenas'
     cover generator fixed (a pallet that cut a passage off, the skips' climbing boxes placed first, no
     fence flat against a thing): every arena's cover moves again.
+  - **085** (worker-2): landed braga-map `35f2784`, 1.40.0 (tagged, decision 076), and party-kart
+    `abef330`, pinned to v1.40.0. Ultra's textures at their finest the ~40 MB way (48 files, 44 MB), the
+    ground's and bark's relief, the streets' drawings 4× finer, the card's most anisotropy; High and Low
+    byte-identical. Its round at Ultra: no mark moved. Not verified: Ultra on a card smaller than the
+    owner's RTX 4060 Ti (~550 MB of textures). Found: 124 (the budget's textures uncounted) and 127 (a
+    round goes up at Ultra), drafted; 123 split from it.
   - **The coordinator's watcher was down from 18:51 to 21:58** (not re-armed after a message), so ready
     tasks waited for their marks and turns: 102, 065, 090, 111, 112 and 059.
 

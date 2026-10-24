@@ -176,6 +176,9 @@ occlusion and the edges smoothed (090, decision 071).
 - **120** On Ultra, shadows that soften with distance from what casts them (found by 090).
 - **123** The facade kit at its finest on Ultra: 80 px a metre, its bays with relief (split from
   085).
+- **125** On Ultra, a facade's openings with depth: reveals, sills, frames, shutter boxes (split from
+  086).
+- **126** The arenas' insides take their doors and windows from the facades' layouts (split from 086).
 - **099** The whole map at the open world's detail, the open world grown over it (after 038). Held by
   the owner (2026-10-24): not done for now, for its cost (its Notes).
 - **100** The street furniture the point cloud finds, for 020 to draw: done (decision 062), braga-map

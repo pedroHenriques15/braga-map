@@ -35,12 +35,12 @@
       "name": "Avenida Imaculada Conceição, under its trees",
       "nome": "Avenida Imaculada Conceição, debaixo das árvores",
       "kind": "kart",
-      "x": -260.1,
-      "y": 13.1,
-      "z": 729,
-      "tx": -162.7,
-      "ty": 19.6,
-      "tz": 706.7,
+      "x": -279.6,
+      "y": 13.2,
+      "z": 733.5,
+      "tx": -182.2,
+      "ty": 19.7,
+      "tz": 711.2,
       "fov": 48,
       "surface": "lane",
       "photo": {
@@ -56,7 +56,7 @@
         "pitch": 3.7,
         "roll": 0
       },
-      "notes": "The photo is from a car in the eastbound carriageway's left lane, the median's hedge beside it. Moved 2.7 m onto that lane's middle, off the median where Mapillary puts it (task 058)."
+      "notes": "The photo is from a car in the eastbound carriageway's left lane, the median's hedge beside it. Moved 2.7 m onto that lane's middle, off the median where Mapillary puts it (task 058). Moved 20 m back along the avenue too (task 065): from where Mapillary puts it the big hackberry's trunk, as the LiDAR and OpenStreetMap have it, stands beside the camera, where the photo has it 20 m ahead on the right, and the fan palm beyond it too near; from here both are where the photo has them."
     },
     {
       "id": "liberdade",

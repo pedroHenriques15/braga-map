@@ -1,5 +1,5 @@
 ---
-status: todo
+status: doing
 priority: low
 kind: code
 repo: braga-map
@@ -60,3 +60,39 @@ measured it, kept as a young tree.
 ## Notes
 
 - Found by task 061 (2026-10-18).
+- **Under way (worker-2, 2026-10-24), braga-map branch `task-065`, on 1.37.0 (088's).**
+- **Step 1, looked at first: the camera is off along the avenue, not the crown.** The July orthophoto
+  (`tools/species.mjs mark`'s plan round the camera) has no crown over OpenStreetMap's tree at
+  (-244.7, 731), 15 m ahead of the camera, only pavement and a grass strip; the LiDAR's crown, at
+  (-259.5, 735.5), is beside the camera, and OpenStreetMap maps a tree at its trunk too (node
+  3871181783, at -258.8, 735, where the world stands it); the big crowns north of the avenue are
+  level with the camera or behind it, where the photo has round trees 20–40 m ahead on its left.
+  Projected with the viewpoint's camera (`viewCamera`): from where it was, the LiDAR crown's trunk is
+  behind the camera, and OpenStreetMap's tree at 0.63 across and 0.35 down, in front of and right of
+  the photo's trunk foot (0.52, 0.29); from 20 m back along the avenue, the crown's trunk lands at
+  0.52, 0.29, on the photo's trunk foot, and the fan palm (-230.6, 728.1) where the photo has it
+  (0.20 across, its top at -0.09; the photo 0.245 and -0.12), where from as it was its top came out
+  at -0.26, too high. Mapillary's 2018 position is about 20 m too far east along the avenue (task
+  058 moved it only across).
+- **The premise half false:** the foliage over the photo's camera isn't the hackberry's, 20 m ahead,
+  but a nearer tree's on the right (the map's at -276.2, 740.1, 15.4 m tall, its leaves from 8.5 m).
+  And OpenStreetMap's tree at (-244.7, 731) isn't the hackberry's trunk: it's a second mapped tree
+  the LiDAR doesn't see (under 3 m in 2025, or felled), 35 m ahead of the moved camera at the fan
+  palm's foot, where the 2018 photo has no young broadleaf. It stays a young tree, as decision 043
+  keeps the map's trees in no crown: whether it's there now no photo says.
+- **Step 3, done: the camera moved 20 m back along the avenue** (`refs/viewpoints.json`: from
+  (-260.1, 13.1, 729) to (-279.6, 13.2, 733.5), its target with it, its height over the ground and
+  its pitch kept; still in the eastbound carriageway's left lane, clear of every trunk and crown).
+  It's 20.2 m from where Mapillary puts its photo; `test/viewpoints.test.js` allowed 15 m for a move
+  across the street (058), and now allows 25 m where the notes say it was moved along its street.
+  Step 2 (a mapped tree beside a crown as its trunk) isn't wanted: none is the case here.
+- **The trees newly in view** (`test/trees.test.js` wants every tree within 60 m of this viewpoint's
+  camera, in view, looked at): 9, in `refs/trees.json` from the photo marked from the new camera:
+  four of the Avenida Imaculada Conceição's hackberries behind the median's hedge, as its row (061)
+  has them; five more on the avenue's north side, clipped into balls as the south pavement's limes
+  look but not told which crown each is ("broadleaf"); one at the view's edge hidden. A tree seen is a
+  row's no more, so the rows name 28 trees one by one where they named 32, and the test's floor for
+  them went from 30 to 25.
+- **Decided by the session, for the owner to confirm:** a viewpoint's camera may be moved up to 25 m
+  along its street from where Mapillary puts its photo, where the photo's own trees put it there
+  (the 15 m of 058's moves across a street stand); and the rows' floor in `test/trees.test.js` 25.

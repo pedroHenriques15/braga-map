@@ -46,10 +46,12 @@ test('each viewpoint says where it looks from, and whose photo it is set against
     assert.match(p.date, /^\d{4}-\d{2}-\d{2}$/, v.id);
     // The camera stands where the photo was taken: within 5 m of where Mapillary puts it, a phone's
     // GPS; or, where that's off the surface the photo was taken from, moved the shortest way onto it
-    // (task 058), up to 15 m, and its notes say so.
+    // (task 058), up to 15 m, and its notes say so; or, where what the photo shows puts it further
+    // along its street (a phone's position along the way it goes is the least sure), up to 25 m, its
+    // notes saying so (task 065).
     const [x, z] = P({ lat: p.lat, lon: p.lon });
     const off = Math.hypot(x - v.x, z - v.z);
-    assert.ok(off < 5 || (off < 15 && /\bMoved\b/.test(v.notes)), `${v.id} is ${off.toFixed(1)} m from its photo`);
+    assert.ok(off < 5 || (off < 15 && /\bMoved\b/.test(v.notes)) || (off < 25 && /\bMoved\b[^.]*\balong\b/.test(v.notes)), `${v.id} is ${off.toFixed(1)} m from its photo`);
   }
 });
 

@@ -197,7 +197,9 @@ test('the trees near the viewpoints are the species their photos show', async ()
   const { refs, rows, areas } = refsOf(trees, seen);
   let off = 0;
   for (const [t, r] of refs) if (!r.seen && t.kind !== kindOfSpecies(r.species)) off++;
-  assert.ok(rows > 30 && areas > 50, `${rows} trees in rows, ${areas} in places`);
+  // The rows still name trees: fewer as their trees are seen one by one (28 since task 065's camera saw
+  // four of the Imaculada Conceição's hackberries).
+  assert.ok(rows > 25 && areas > 50, `${rows} trees in rows, ${areas} in places`);
   assert.equal(off, 0, `${off} trees of a row or a place not of its kind`);
 });
 

@@ -1,5 +1,5 @@
 ---
-status: todo
+status: doing
 priority: medium
 kind: code
 repo: both
@@ -73,3 +73,9 @@ Steps:
   (-228.7, 930.4): the top tread (5.94 m) 1.07 m over the path past it, so they can be walked down
   but not up from the top. The 8 steps at (-223.2, 947.0): the lowest tread 0.6 m over the street
   (a jump up), the top 0.85 m over the path past it. Treads drawn over or under the land: task 076.
+- **Measured again (step 1), 2026-10-24, braga-map 1.37.0:** 140 flights on the ground in the open
+  world's area with two treads or more under their line. Their foot more than 0.3 m over what's just
+  past it: 22 (13 a carriageway, 5 a footway, 3 the land, 1 a pavement; the worst 1.87 m, way
+  382878426 at (1236, 405)); their top more than 0.3 m under what's past it: 10 (7 a carriageway, 2 the
+  land, 1 a footway). (What's past an end: the first thing that isn't a tread within 1.5 m along the
+  flight's line; a pavement, island or raised path taken 15 cm over the tiles' ground.)

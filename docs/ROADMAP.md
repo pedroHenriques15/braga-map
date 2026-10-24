@@ -97,6 +97,7 @@ them, drawn as squares less what's in them (041, decision 063).
 - **112** Two buildings where the photos have none: by São João da Ponte's chapel and on the Viriato
   Amaral Nunes, where its graffiti wall is (found the same way).
 - **113** A wall keeps its gap where a footway gives way to a square's paving (found by 041).
+- **121** A steep bank the LiDAR finds isn't a retaining wall: Santo Adrião's (found by 111).
 - **116** The LiDAR's "buildings" on the map's car parks: 85, most of them vans, lorries or shade
   canopies drawn as buildings (found by 112).
 - **115** The ground steps at a held street's edge, not slopes into it: the João XXI's upper lane,
@@ -120,6 +121,7 @@ the lime and the birch drawn as their own, each kind deciduous or evergreen (061
   round).
 - **065** A tree the map has beside a crown is that crown's trunk, not a young tree of its own: the
   Imaculada Conceição's hackberry (found by 061).
+- **122** The land's texture isn't stretched on a steep slope: `alvaro-carneiro` (found by 111).
 - **068** The lawns green as in March, where the 2025 orthophoto has them dry (found by 014).
 
 ## Phase 4 · Street furniture, landmarks and light
@@ -170,6 +172,12 @@ decision 070).
 - **104** The open world's own landmarks that aren't models yet, split from 098 (the owner,
   2026-10-24): a parish church, a chapel, two wayside shrines, a bust, a swing, a statue, an
   installation and the fountains.
+- **117** On Ultra, reflections: the windows, the Rio Este and the wet streets (found by 090).
+- **118** On Ultra, the light bounced off a sunlit facade into a shaded street (found by 090).
+- **119** On Ultra, a volumetric haze and the clouds' shadows on the land (found by 090).
+- **120** On Ultra, shadows that soften with distance from what casts them (found by 090).
+- **123** The facade kit at its finest on Ultra: 80 px a metre, its bays with relief (split from
+  085).
 - **099** The whole map at the open world's detail, the open world grown over it (after 038). Held by
   the owner (2026-10-24): not done for now, for its cost (its Notes).
 - **100** The street furniture the point cloud finds, for 020 to draw: done (decision 062), braga-map

@@ -93,6 +93,10 @@ ends (077, 078, decision 059).
   squares (found by 006's audit).
 - **059** A pavement the map has on an island drawn as a pavement, not the island's grass: the
   Avenida da Liberdade's at (276, 840), where `liberdade`'s photo is taken (found by 058).
+- **111** White shards sticking out of the road at a wall's foot in the Travessa Conselheiro Lobato:
+  critical, in what's shipped (found marking the baseline round of 2026-10-24).
+- **112** Two buildings where the photos have none: by São João da Ponte's chapel and on the Viriato
+  Amaral Nunes, where its graffiti wall is (found the same way).
 - **076** The land at a flight of steps, never drawn over its treads nor far under them: 565 of
   1,896 treads have it 15 cm or more over them, the Travessa do Fujacal's 17 steps among them, and 96
   stand 2 m or more over it (found on foot by 073; after 051).

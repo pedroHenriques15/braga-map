@@ -68,6 +68,7 @@ task's Notes as "decided by the session, for the owner to confirm".
 | 106 | Does the full map stop your kart in a race too (the task says "as with the menu", and a race has no menu)? | Yes: opening it mid-race stops your kart, as round the city | 106's landing |
 | 107 | Inside the open world no street reaches the Picoto's top (its streets reach the rest only past the area's edge): how does the GPS get a kart there? | By car it keeps to the streets by the rules of the road and leaves them for a path or steps only where no street reaches the waypoint, each time costing 10 minutes in its search so it never cuts a one-way street by a pavement; the HUD says "Sai da estrada: segue pelo caminho" there | 107's landing |
 | 107 | One-way on each street's `Line`, as the task words it, or on a road graph? | A road graph in the tiles (`world.roads`, `world.turns`, made once by `tools/roads.mjs`): the lines are thinned and cut at each tile's edge, with no junctions, so a game couldn't route on them | 107's landing |
+| 107 | 106's double-click on the full map zoomed in; 107's click puts the waypoint | The double-click zoom removed (the wheel and a pinch still zoom) | 107's landing |
 | 105 | The chair (Joel's) and the trolley (Joel F.'s) are smaller than 2.8 m today: brought to 2.8 m, or kept in proportion? | Every body drawn at 0.7 of its model, so every driver stays the same size (the chair 2.06 m long, the trolley 2.16 m); the banger at 0.65 to fit 2.8 m (from 4.30), its driver 7% smaller | 105's landing |
 
 ## Progress
@@ -135,6 +136,22 @@ picks it up can go on from here.
     each other on the map, the competitive mode, the Volta de Lamaçães' race. Found and fixed in it:
     on foot with a gun out the minimap hid everyone. Fixed by the coordinator (`db5642c`), found by
     worker-2: braga-map's `package-lock.json` had stayed at 1.29.0.
+  - **105** (worker-1): landed braga-map `bf238be` (decision 065, no version) and party-kart `54fdcad`,
+    `c4dbac2` and `31dbdf3` (the pin from v1.33.1 to v1.35.0, bringing 1.34.0's furniture data, not drawn,
+    and 1.35.0's squares, which no viewpoint sees: no round). Every kart drawn within 2.8 × 1.8 m and
+    colliding as that, as capsules; peer prefix pk44. Its premise was partly false: the karts already
+    fitted side by side by collision almost everywhere; what was wrong was how big they were drawn. Not
+    verified: a race at speed in a browser room, the deathmatch's cover in a round, touch. Found: 114
+    (the bots' pile-up on the jump's run-up, three times as many put back), drafted, worker-1's next.
+    It landed inside 107's merge turn, by the coordinator's double grant; nothing was lost (both
+    fast-forwards), and the merge-turn rule is now the exact line "merge turn: NNN".
+  - **107** (worker-2): landed braga-map `52128bb`, 1.36.0 (tagged, decision 066), and party-kart
+    `924347c`, pinned to v1.36.0. A road graph in the tiles (`tools/roads.mjs`, `world.roads` and
+    `world.turns`: 6,375 stretches, 2,409 for cars, 1,035 one-way, 39 banned turns; +72 KB gzipped over
+    the open world's tiles); the router by the rules of the road, the waypoint on the full map, the route
+    on both maps and as arrows on the street, the next turn on the HUD. Its premise was partly false: no
+    street reaches the Picoto's top inside the area. No viewpoint changed. Not verified: a whole route
+    driven by hand, a real phone, the turns' words everywhere.
 
 ## Read first
 

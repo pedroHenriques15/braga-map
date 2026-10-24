@@ -1,5 +1,5 @@
 ---
-status: doing
+status: done
 priority: high
 kind: code
 repo: party-kart
@@ -49,11 +49,15 @@ track's. M is "Som ligado ou desligado" (`MUTE` in `src/binds.ts`), and every ke
 
 ## Done when
 
-- [ ] M opens and closes the full map round the city, in a race and in a round, and N mutes (a test of
-  the default keys; Playwright's shot of the map in Notes).
-- [ ] In a deathmatch round the map shows no foe (a test).
-- [ ] On a touch screen a tap on the minimap opens it.
-- [ ] `npm test` and `npm run check` pass.
+- [x] M opens and closes the full map round the city, in a race and in a round, and N mutes (a test of
+  the default keys; Playwright's shot of the map in Notes). party-kart's `test/binds.test.ts` ("M opens
+  the full map and N turns the sound on and off…"); the Playwright run in Notes, `1-roam` to `7-round`.
+- [x] In a deathmatch round the map shows no foe (a test). `test/mapview.test.ts` ("in a deathmatch
+  round the maps show no foe…"), and in the game the one dot drawn was the one team-mate up (Notes).
+- [x] On a touch screen a tap on the minimap opens it. Playwright with touch and CDP touches: the tap
+  opens it, ✕ closes it (`8-touch`, `9-touch-pinched`); with the minimap hidden, 🗺️ in the bar
+  (`10-touch-button`).
+- [x] `npm test` and `npm run check` pass. party-kart: 140 of 140, and `tsc` clean, on `83146ed`.
 
 ## Out of scope
 
@@ -119,3 +123,5 @@ track's. M is "Som ligado ou desligado" (`MUTE` in `src/binds.ts`), and every ke
   a room seeing each other on it (the dots come from the same snapshots as the minimap's); a match of
   the competitive mode (only a deathmatch of two teams); the Volta de Lamaçães' race (only the Volta
   dos Amigos'). Each shot was taken on Low.
+- **Landed** 2026-10-24 in worker-2's merge turn: party-kart `83146ed` on main (still on braga-map
+  1.33.1: 105 moves the pin), decision 064. braga-map's world, tools and library unchanged: no version.

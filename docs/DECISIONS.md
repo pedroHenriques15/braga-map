@@ -1874,3 +1874,25 @@ the LiDAR finds kept (three times as many pieces, most of them cars and walls), 
 
 The alternative was fetching the relations into `base` with the streets (one file, but eleven days
 of the map's edits into every tile and track); the owner chose `paths.json` (2026-10-24).
+
+## 064 · The full map: M opens it over the game, which goes on under it; a round's maps show no foe
+
+*2026-10-24 · task 106 · adds to decisions 019 and 056*
+
+Party Kart's minimap shows 220 m round you, and nothing showed the whole open world. M opens the
+minimap into a full map (party-kart's `FullMap`), the place the GPS, going somewhere, finding a place
+and meeting the others are done from (tasks 107 to 110):
+
+- **What it shows:** every line of the tiles the city loads, north up, from the minimap's own: the
+  streets at their widths and their names as you zoom in, the race's route, the arenas, the area's
+  edge, you and the others. Round the city it opens round you; in a race on its whole track; in a
+  round on its arena.
+- **The game goes on under it.** The network, the others and the bots don't pause; your kart waits
+  (in a race too) and you stand, as with the menu. It's opaque, and the city isn't drawn under it.
+- **A round's maps show no foe:** only you and your team-mates who are up, on the minimap and the
+  full map alike (`onTheMap`), so neither gives a foe away.
+- **The sound moves to N;** a key a player bound to another control keeps that control.
+
+The alternatives were the map over the game half seen through (the city drawn for nothing, the
+streets harder to read), the game paused while it's open (it can't be, with others in the room), and
+a map of the open world's area alone (the city round it is where a player looks for somewhere to go).

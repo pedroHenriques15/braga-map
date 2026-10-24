@@ -76,6 +76,8 @@ task's Notes as "decided by the session, for the owner to confirm".
 | 110 | What does a mark look like? | A flag in the colour of the driver who put it (a dark driver's dark with a white edge), with their name | 110's landing |
 | 059 | Its island at the Liberdade isn't an island since 052; the map's sidewalks lie on open ground with no pavement under them for about 13 km of the open world (1 to 8 m off every street piece), the Liberdade's among them. Only the islands (292 m), or every such sidewalk? | Every such sidewalk (the coordinator, on worker-3's measure): the map's sidewalk is a pavement where the tiles have none under it, on an island or on open ground, kerbed like the streets' pavements; it changes many viewpoints, all shot and marked | 059's landing |
 | 112 | The grey box at `capela-sao-joao` is a row of parked vans and a motorhome the LiDAR outlined as a building, and no rule picks it out alone: how is it left out? | A field `not` on its `refs/buildings.json` entry (what it is, from the photo), and `world.mjs` leaves out a LiDAR building marked so; the general rule for car parks is task 116 | 112's landing |
+| 088 | New tree kinds for the species found | None: no species reaches the task's ~50 trees on the photos' evidence (willows 23, planes 25, hackberries 20), and the hackberries are drawn as "broadleaf", whose bark is already a hackberry's; the kinds stay nine | 088's landing |
+| 088 | Carry a row's species past what the photos show (the point cloud's spacing) | No: a row's species goes only as far as a photo shows the row, as decision 051 has it | 088's landing |
 | 081 | How far Ultra draws the trees in full | 700 m, by a frame under 16 ms while moving (a frame after gathering them: 12 ms at 700 m, 18 at 1,000, at 2560 × 1440); a still frame holds 1,000 m at 4.6 ms | 081's landing |
 | 081 | Step 2's "the haze's far plane at the most the city holds" on Ultra | Left as High's: the camera's far plane is already 30 km, and the haze is the light's, matched to the photos (decision 037) | 081's landing |
 | 105 | The chair (Joel's) and the trolley (Joel F.'s) are smaller than 2.8 m today: brought to 2.8 m, or kept in proportion? | Every body drawn at 0.7 of its model, so every driver stays the same size (the chair 2.06 m long, the trolley 2.16 m); the banger at 0.65 to fit 2.8 m (from 4.30), its driver 7% smaller | 105's landing |
@@ -186,6 +188,13 @@ picks it up can go on from here.
     not reproduced: a stack trace in `test/comp.test.ts` (110's Notes). Not verified: two machines on
     different networks, real phones, an old build in the room.
   - **The owner's improvements, 105 to 110, are all in** (2026-10-24), with 114 found by 105.
+  - **081** (worker-1): landed braga-map `2e49fc9` (decision 069, no version: its step 6's premise was
+    false, `loadWorld` takes no level) and party-kart `41adaa2`. Ultra, offered on a PC only: the full
+    pixel ratio, shadows at 4096, the near trees to 700 m, the city built at High's level until 085.
+    High, Medium and Low draw the same shots as before. The rounds are shot and marked at Ultra from now:
+    its round `2026-10-24-after081` is the Ultra baseline, Claude's marks as `after082`'s (mean 2.52, no
+    mark moved; Ultra differs from High by at most 2% of a shot). Not verified: Ultra in a race, the
+    settings' picker opened, the owner's own screen.
 
 ## Read first
 

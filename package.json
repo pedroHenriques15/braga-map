@@ -1,6 +1,6 @@
 {
   "name": "braga-map",
-  "version": "1.38.0",
+  "version": "1.39.0",
   "private": true,
   "description": "Braga's real streets, buildings and hills, from OpenStreetMap, for games: the world in sections, and the tracks planned on it.",
   "type": "module",

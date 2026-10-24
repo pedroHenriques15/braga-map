@@ -89,12 +89,11 @@ ends (077, 078, decision 059); and the squares the map has in parts, the Praça 
 them, drawn as squares less what's in them (041, decision 063); and the land stepping under a retaining
 wall, not ramping up in front of it through a street at its foot (111, party-kart, decision 072); and
 a wall of the map's as high as it says where the ground steps along it, and the vans by São João da
-Ponte's chapel not a building (112, decision 074).
+Ponte's chapel not a building (112, decision 074); and the map's sidewalks pavements where the
+streets' don't reach, the Avenida da Liberdade's calçada beside its red lane among them (059, decision 075).
 
 - **051** A flight of steps meets the street, the path or the land at its foot and its top: 51 of
   236 stand more than a kart's step over what's at their foot (found by 050).
-- **059** A pavement the map has on an island drawn as a pavement, not the island's grass: the
-  Avenida da Liberdade's at (276, 840), where `liberdade`'s photo is taken (found by 058).
 - **113** A wall keeps its gap where a footway gives way to a square's paving (found by 041).
 - **121** A steep bank the LiDAR finds isn't a retaining wall: Santo Adrião's (found by 111).
 - **116** The LiDAR's "buildings" on the map's car parks: 85, most of them vans, lorries or shade
@@ -225,7 +224,7 @@ alongside them in worktrees of their own.
   8. **044** pavements level from the kerb.
   9. **051** steps meet what they lead to: a flight's foot at the kerb 044 sets.
   10. **014** roundabouts: done (decision 050), braga-map 1.28.0, the race's road round the rings
-      measured. **041** squares: done (decision 063), braga-map 1.35.0; **059** a pavement on an island any time after 026.
+      measured. **041** squares: done (decision 063), braga-map 1.35.0; **059** the map's sidewalks: done (decision 075), braga-map 1.39.0.
 - **Stream 2, the look.** The high ones, on 007's photo textures' pipeline, party-kart's
   `city.ts` and `refs/`.
   1. **016** the ground from the aerial photos: done (decision 034). 018's parking bays, 019's

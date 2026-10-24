@@ -365,7 +365,8 @@ const marked = (t) => !['unmarked', 'no'].includes(t.crossing) && t['crossing:ma
 // the ground (`heights`, above the sea; out above `elev0`), and `height`, the ground's at (x, z) as the
 // tiles hold it, above the sea, for a deck's ends; `nodes`, the crossings and traffic lights
 // (fetch.mjs's street.json); `buildings` and `water`, rings round them, and `squares`, each its
-// outline and then its holes (task 041); `walls`, the walls,
+// outline and then its holes (task 041); `sidewalks`, the pavements the map draws on their own (lines.mjs's
+// sidewalksOf, task 059), paved where the streets' pavements don't reach; `walls`, the walls,
 // fences, hedges and gates (walls.mjs's, index.d.ts's Wall), which the pavements and the paths stop
 // at and a carriageway gives way to (task 052, `stopsAt` and `givesWayTo` below). Everything comes
 // out cut to each of `cuts` ([{ id, box }], the box itself by default), in `cuts`, a Map by id:
@@ -382,11 +383,12 @@ const marked = (t) => !['unmarked', 'no'].includes(t.crossing) && t['crossing:ma
 //   runs in, a kerb over the ground; ys a tread's height at each of its points, or a footbridge's;
 // - handrails: [{ level, pts, ys }], along a flight of steps, ys the rail's top;
 // level ground, bridge or tunnel, and ys a height at each point (each ring's) off the ground.
-export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height = null, nodes = [], buildings = [], squares = [], water = [], paths = [], walls = [], box, cuts = [{ id: 'box', box }], margin = 80 }) {
+export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height = null, nodes = [], buildings = [], squares = [], water = [], paths = [], sidewalks = [], walls = [], box, cuts = [{ id: 'box', box }], margin = 80 }) {
   const t0 = Date.now();
   const near = ([x, z], m) => x >= box.x0 - m && x <= box.x1 + m && z >= box.z0 - m && z <= box.z1 + m;
   const ways = lines.filter((l) => l.k <= 8 && l.pts.some((p) => near(p, margin)));
   const walks = paths.filter((p) => p.pts.some((q) => near(q, margin)));
+  const sideways = sidewalks.filter((p) => p.pts.some((q) => near(q, margin)));
   const stops = walls.filter((w) => stopsAt(w) && w.pts.length > 1 && w.pts.some((p) => near(p, margin + 20)));
   const stopAt = new Map(nodes.filter((n) => n.tags).map((n) => [n.id, n.tags]));
 
@@ -480,7 +482,7 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height =
   // Each square less its holes: a lawn, a fountain, a bandstand in one mapped in parts (task 041).
   const Q = squares.filter(([r]) => r.length > 2 && r.some((p) => near(p, margin + 40))).flatMap(([r, ...holes]) => minus([positive(toPath(r))], holes.map((h) => positive(toPath(h)))));
   const built = wallIndex(buildings.filter((r) => r.some((p) => near(p, margin + 60))));
-  const stats = { edges: edges.length, junctions: 0, islands: 0, reservations: 0, slivers: 0, past: 0, km: { kerb: 0, dropped: 0 }, m2: {}, paths: { m2: {}, flights: 0, treads: 0, steep: 0, lanes: 0, flush: 0 }, walls: { given, streets: onGround.filter((e) => e.pull).length, behind: 0, paths: 0 } };
+  const stats = { edges: edges.length, junctions: 0, islands: 0, reservations: 0, sidewalks: 0, slivers: 0, past: 0, km: { kerb: 0, dropped: 0 }, m2: {}, paths: { m2: {}, flights: 0, treads: 0, steep: 0, lanes: 0, flush: 0 }, walls: { given, streets: onGround.filter((e) => e.pull).length, behind: 0, paths: 0 } };
 
   // The carriageways of each group: each edge's band, the corners where they meet rounded.
   const made = new Map();
@@ -882,7 +884,9 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height =
     // open, or a street with no pavements: the fast roads, service roads, tracks and pedestrian
     // streets, whose paving runs to the walls). On a bridge 1.5 m, as party-kart draws its decks;
     // in a tunnel, none.
-    let pave = [];
+    // And the map's own sidewalks where those don't reach (task 059), pieces of their own, so the streets'
+    // pavements keep their points along the kerbs, which the carriageways share.
+    let pave = [], theirs = [];
     if (level === 'ground') {
       const want = (pc) => {
         if (pc.island || inRes(pc.m[0] + pc.nrm[0] * 0.3, pc.m[1] + pc.nrm[1] * 0.3)) return true;
@@ -916,6 +920,27 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height =
       }
       pave = minus(pave, [...band(none, PAVE + 0.5, true), ...res, ...islands]);
       pave = union(pave, minus(Q, [...U, ...B, ...W, ...res, ...islands]));
+      // The map's own pavements beside the streets (task 059), where the streets' don't reach, on an
+      // island or on open ground: each its band at its width, cut as a path is (back from the
+      // carriageways, the buildings, the water and what's over it, and to the walls either side of its
+      // line), and with the slivers under a metre between it and a pavement filled; but not across a
+      // passage under a building, which a footway would give way to and leave the building uncut.
+      if (sideways.length) {
+        const nearU = splitter(U), nearB = splitter([...B, ...W]), nearO = splitter(over), SW = [];
+        for (const s of sideways) {
+          let A = band([toPath(s.pts)], s.w / 2, true);
+          const b = boundsOfPaths(A);
+          A = minus(minus(minus(A, nearU(b)), nearB(b)), nearO(b));
+          if (walled && A.length) A = minus(A, shade(sides(s.pts), walled, s.w / 2 + 0.3, PATH_KEEP));
+          SW.push(...A);
+        }
+        const passages = walks.filter((p) => p.level === 3 && p.kind !== 'steps').map((p) => band([toPath(p.pts)], p.w / 2 + 0.3));
+        const side = minus(union(SW), [...res, ...passages.flat()]);
+        const filled = minus(meet(closed(union([...pave, ...side]), 0.5), grow(side, 1)), [...U, ...B, ...W, ...res, ...islands, ...passages.flat()]);
+        theirs = minus(union([...side, ...filled]), [...pave, ...(g.noPave ?? [])]);
+        stats.sidewalks += area(meet(theirs, boxPath));
+        islands = minus(islands, side);
+      }
       pave = minus(pave, g.noPave ?? []);
     } else if (paved(key, g)) {
       pave = minus(minus(grow(U, 1.5), U), g.noPave ?? []);
@@ -924,10 +949,10 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height =
     // to: the flights of steps and the cycleways.
     let flushed = [], lanes = [];
     if (level === 'ground') {
-      const got = groundPaths(walks.filter((p) => (p.kind === 'steps' ? !!p.flight : p.level === 0 || p.level === 3)), { U, kerbed: [...pave, ...res, ...islands], B, W, over, walled, boxPath, levelName: pathLevel });
+      const got = groundPaths(walks.filter((p) => (p.kind === 'steps' ? !!p.flight : p.level === 0 || p.level === 3)), { U, kerbed: [...pave, ...theirs, ...res, ...islands], B, W, over, walled, boxPath, levelName: pathLevel });
       if (got.taken.length) {
         const T = union(got.taken);
-        [pave, res, islands] = [minus(pave, T), minus(res, T), minus(islands, T)];
+        [pave, theirs, res, islands] = [minus(pave, T), minus(theirs, T), minus(res, T), minus(islands, T)];
       }
       ({ flush: flushed, lanes } = got);
       addPaths(got.out);
@@ -937,17 +962,18 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height =
       stats.paths.lanes += area(meet(lanes, boxPath));
       stats.paths.flush += area(meet(flushed, boxPath));
     }
-    pave = shapes(pave).filter((sh) => Math.abs(C.Clipper.Area(sh[0])) / (S * S) > 1).flat();
+    [pave, theirs] = [pave, theirs].map((ps) => shapes(ps).filter((sh) => Math.abs(C.Clipper.Area(sh[0])) / (S * S) > 1).flat());
     addShapes('pavements', shapes(pave), { kind: 'pavement', level }, ys);
+    addShapes('pavements', shapes(theirs), { kind: 'pavement', level }, ys);
     addShapes('pavements', shapes(res), { kind: 'reservation', level }, ys);
     // A roundabout's island apart (task 014): a game draws it in what the ground is there.
     addShapes('pavements', shapes(minus(islands, ringed)), { kind: 'island', level }, ys);
     addShapes('pavements', shapes(meet(islands, ringed)), { kind: 'island', round: true, level }, ys);
-    stats.m2.pavement = (stats.m2.pavement ?? 0) + area(meet(pave, boxPath));
+    stats.m2.pavement = (stats.m2.pavement ?? 0) + area(meet([...pave, ...theirs], boxPath));
 
     // The kerbs: the edge of the carriageway wherever a pavement, a reservation or an island is
     // behind it (or a cycleway flush with the pavement), dropped where a crossing meets it.
-    const inPave = insideOf([...pave, ...flushed]);
+    const inPave = insideOf([...pave, ...theirs, ...flushed]);
     const crossings = [];
     for (const e of g.list) e.nodes.forEach((n, i) => {
       const t = stopAt.get(n);
@@ -1704,7 +1730,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     water: world.areas.filter((x) => x.kind === 'water').map((x) => x.pts),
   });
   const got = { ...made.cuts.get('box'), stats: made.stats }, s = got.stats;
-  console.log(`${s.edges} edges, ${s.junctions} junctions, ${s.islands} islands, ${s.reservations} reservations, ${Math.round(s.slivers)} m² of slivers closed, ${Math.round(s.past)} m² of corners cut back past a deck's or a tunnel's end, in ${s.seconds} s`);
+  console.log(`${s.edges} edges, ${s.junctions} junctions, ${s.islands} islands, ${s.reservations} reservations, ${Math.round(s.sidewalks)} m² of the map's sidewalks paved where the streets' pavements don't reach, ${Math.round(s.slivers)} m² of slivers closed, ${Math.round(s.past)} m² of corners cut back past a deck's or a tunnel's end, in ${s.seconds} s`);
   console.log(`carriageways ${Object.entries(s.m2).filter(([k]) => k !== 'pavement').map(([k, v]) => `${k} ${Math.round(v)} m²`).join(', ')}; pavements ${Math.round(s.m2.pavement)} m²; kerbs ${s.km.kerb.toFixed(2)} km, ${s.km.dropped.toFixed(2)} km dropped`);
   console.log(`walls: ${s.walls.streets} streets brought back to the map's walls in them, giving way ${Math.round(s.walls.given)} m² of carriageway; ${Math.round(s.walls.behind)} m² of pavement and ${Math.round(s.walls.paths)} m² of paths behind a wall taken off`);
   console.log(`${got.carriageways.length} carriageway pieces, ${got.pavements.length} pavements, ${got.kerbs.length} kerbs, ${got.markings.length} markings (${['lane', 'centre', 'zebra', 'stop', 'giveway', 'yield'].map((k) => `${got.markings.filter((m) => m.kind === k).length} ${k}`).join(', ')})`);

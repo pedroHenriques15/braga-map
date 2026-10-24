@@ -143,6 +143,23 @@ export function pathsOf(paths, near) {
   return out;
 }
 
+// The pavements the map draws on their own, beside a street (footway=sidewalk), on the ground and
+// outdoors, with a point within 50 m of the box `near` takes (task 059): what pathsOf leaves out as the
+// streets' own, for streets.mjs to pave where the streets' pavements don't reach. Each { id, w, pts }:
+// w its width, the map's or a footway's usual 2 m.
+export function sidewalksOf(paths, near) {
+  const out = [];
+  for (const e of paths.elements) {
+    const t = e.tags ?? {};
+    if (e.type !== 'way' || t.highway !== 'footway' || t.footway !== 'sidewalk') continue;
+    if ((t.indoor && t.indoor !== 'no') || (t.level != null && t.level !== '0') || levelOf(t) !== LEVEL.ground) continue;
+    const pts = e.geometry.map(P);
+    if (pts.length < 2 || !pts.some(([x, z]) => near(x, z, 50))) continue;
+    out.push({ id: e.id, w: pathWidth('footway', t), pts });
+  }
+  return out;
+}
+
 // A riser, where the map doesn't count the steps; and the least a counted step rises in the terrain
 // for the terrain to be taken to have the flight's rise.
 export const RISER = 0.16;

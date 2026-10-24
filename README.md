@@ -106,7 +106,8 @@ map().groundKinds; // the kinds it says, each with its texture: [{ kind, texture
   (its ring and island where DGT's LiDAR measured them, task 014: `round`, for a game to draw in what
   the ground is there),
   and brought back to a wall of the map's that stands in it, no narrower than its lanes (task 052);
-  the kerbs (dropped at the crossings); the pavements behind them, up to the buildings and the walls;
+  the kerbs (dropped at the crossings); the pavements behind them, up to the buildings and the walls,
+  and the map's own beside them where those don't reach (task 059);
   the central
   reservations; and the lines painted on them, from what the map says (lanes, the line between the
   two ways, zebras, stop lines at traffic lights, and at each roundabout's entry the give-way line
@@ -114,7 +115,7 @@ map().groundKinds; // the kinds it says, each with its texture: [{ kind, texture
   level, with its heights off the ground. `index.d.ts` says what each part is.
 - So is every footway, path, cycleway and flight of steps the map has there (task 050,
   `world.streets.paths`), but the pavements, crossings and islands it draws as footways, which are
-  the streets' own, and what's indoors: each at the map's width or its kind's (a footway 2 m, a path
+  the streets' own (its pavements are paved with the streets'), and what's indoors: each at the map's width or its kind's (a footway 2 m, a path
   1.5 m, a cycleway 2.5 m, or 1.5 m one way, steps 2 m), in what it's paved with, cut back to the
   carriageways, the buildings (but a passage under one, `under`, which reaches a metre past each
   mouth, flush with a pavement it opens onto: task 078), the water and the walls either side
@@ -565,7 +566,10 @@ streets; when a track moves enough to change the edge, run the three again until
   reservations (between two one-way carriageways running opposite ways up to 14 m apart, for 30 m
   or more); and the pavements, 3.2 m out from the kerb or to the buildings and the water, and none
   along a side the map says has none, or out in the open (no building within 25 m), or by a fast
-  road, a service road, a track or a pedestrian street. The streets end at their walls (task 052,
+  road, a service road, a track or a pedestrian street; and where those don't reach, on an island or
+  out in the open, the pavements the map draws on their own (`footway=sidewalk`, task 059): each its
+  band at the map's width or 2 m, cut as a path is, and the slivers under a metre between it and a
+  pavement filled. The streets end at their walls (task 052,
   decision 046): the walls (`stopsAt`: the map's, and the walls, fences and retaining walls the LiDAR
   found, but not its hedges nor the gates) stop a pavement, each piece of a kerb looking straight out
   from it and none behind a wall it sees, 15 cm short of the wall's line, but what another kerb sees

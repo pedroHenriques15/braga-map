@@ -2163,3 +2163,28 @@ Two things the photos showed the tiles had wrong, at `viriato-amaral-nunes` and 
 The alternatives: a wall's top measured from the point cloud over a retaining wall's higher ground (it
 missed this wall, measured over its whole 500 m, and caught 8 others no photo had checked); a rule for
 the LiDAR's buildings in parks (it drops real kiosks and glasshouses).
+
+## 075 · The map's sidewalks are pavements where the streets' don't reach
+
+*2026-10-24 · task 059 (widened by the coordinator) · adds to decisions 022 and 046*
+
+The streets' pavements are made from the carriageways (3.2 m out, to the buildings and the water,
+none where it isn't built up, task 033), and the footways OpenStreetMap draws as a street's own
+(`footway=sidewalk`) were left out of the paths (task 050). So 12.2 km of the map's 45.9 km of
+sidewalks in the open world's area lay more than a metre off every street piece, on open ground or an
+island: the Avenida da Liberdade's calçada beside its red lane was grey ground, a bank's pavement on the
+Sameiro road was land.
+
+- **Each of the map's sidewalks is a pavement where the streets' don't reach:** its band at the map's
+  width or a footway's 2 m, cut as a path is (back from the carriageways, the buildings, the water and
+  the decks, and to the walls either side of its line), less the reservations and the passages under
+  buildings, with the slivers under a metre between it and a pavement filled, and out of an island.
+  The kerbs follow, wherever a pavement is behind a carriageway's edge.
+- **They're pavements of their own:** the streets' pavements stay as they're cut from the carriageways,
+  so the two share their points along the kerbs (a game finds the streets' outline as the edges no
+  other piece runs the other way; joined into one, the kerbs read as outline and the land showed there).
+- Behind a wall from its street, a sidewalk of the map's is still drawn (the map says it's there):
+  task 052's measure of pavement past a wall counts them apart (0.23 km).
+
+The alternative was the task as first drafted: only the islands' sidewalks (292 m), which since task
+052 no longer took in the Liberdade's pavement.

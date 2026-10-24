@@ -10,7 +10,7 @@ import ClipperLib from 'clipper-lib';
 import { loadWorld } from '../index.js';
 import amigos from '../tracks/amigos.js';
 import { CACHE, readCache } from '../tools/geo.mjs';
-import { heldGround, LEVEL, onCarriageways, streetBands, streetBumps, streetsOf } from '../tools/lines.mjs';
+import { heldGround, LEVEL, onCarriageways, sidewalksOf, streetBands, streetBumps, streetsOf } from '../tools/lines.mjs';
 import { stopsAt, streetSurfaces } from '../tools/streets.mjs';
 import { barriersOf } from '../tools/walls.mjs';
 import { EXT, OPEN_BOX } from '../tools/sections.mjs';
@@ -195,6 +195,37 @@ test('the streets end at their walls: a pavement at any, a carriageway at the ma
   const tee = [way(1, 5, 6, [[0, 0], [50, 0]], [1, 2]), way(2, 5, 6, [[50, 0], [100, 0]], [2, 3]), way(3, 5, 6, [[50, 0], [50, 50]], [2, 4])];
   const corner = inside(cut(streetSurfaces({ lines: tee, box, walls: [wall([[53.1, 4.4], [54.4, 3.1]])] })).carriageways), open = inside(cut(streetSurfaces({ lines: tee, box })).carriageways);
   assert.ok(open(54.2, 3.9) && !corner(54.2, 3.9) && corner(53.4, 3.4), "the corner's kerb at the wall");
+});
+
+test("the map's own pavements beside the streets are pavements where the streets' don't reach: on an island, on open ground (task 059)", () => {
+  const sw = (pts, w = 2) => ({ id: 0, w, pts });
+  const pave = (got) => inside(got.pavements.filter((p) => p.kind === 'pavement'));
+  // A road's two one-way carriageways of 7 m, 20 m apart, joined at both ends: the island between
+  // them, 442 m², has the map's sidewalk along it 2.5 m in from the south kerb.
+  const t = { highway: 'secondary', oneway: 'yes' }, d = 20;
+  const lines = [way(1, 3, 7, [[0, 0], [40, 0]], [1, 2], t), way(2, 3, 7, [[40, d], [0, d]], [3, 4], t), way(3, 5, 6, [[40, 0], [40, d]], [2, 3]), way(4, 5, 6, [[0, d], [0, 0]], [4, 1])];
+  const isle = (got) => inside(got.pavements.filter((p) => p.kind === 'island'));
+  const bare = cut(streetSurfaces({ lines, box }));
+  assert.ok(isle(bare)(20, 6) && !pave(bare)(20, 6), 'without it, all island');
+  const got = cut(streetSurfaces({ lines, box, sidewalks: [sw([[0, 6], [40, 6]])] }));
+  assert.ok(pave(got)(20, 5.2) && pave(got)(20, 6.8) && !isle(got)(20, 6), 'the sidewalk a pavement, its 2 m');
+  assert.ok(isle(got)(20, 12) && isle(got)(20, 4) && !pave(got)(20, 4), 'the rest of the island an island');
+  // A residential street out in the open, no pavement of its own: the map's sidewalk 3 m out from its
+  // kerb, another at its kerb, kerbed; one 0.6 m past a pavement of the street's, the sliver between
+  // them filled; and one through a house, and along the map's wall in its band, cut back to them.
+  const road = [way(1, 5, 6, [[0, 0], [100, 0]], [1, 2])];
+  const open = cut(streetSurfaces({ lines: road, box, sidewalks: [sw([[0, 7], [60, 7]]), sw([[0, -4], [100, -4]])] }));
+  assert.ok(!pave(open)(30, 4) && pave(open)(30, 6.2) && pave(open)(30, 7.8) && !pave(open)(30, 8.3), 'a pavement 2 m wide, 3 m out');
+  assert.ok(!pave(open)(80, 7), 'none past its end');
+  assert.ok(pave(open)(30, -3.5) && pave(open)(30, -4.8), 'and one at the kerb');
+  const onKerb = ([x, z]) => open.kerbs.some((k) => k.h > 0 && k.pts.some((p, i) => i && segDist([x, z], k.pts[i - 1], p) < 0.05));
+  assert.ok(onKerb([30, -3]) && !onKerb([30, 3]), 'kerbed where it meets the carriageway');
+  const houses = [[[0, -20], [100, -20], [100, -9], [0, -9]], [[40, 9], [60, 9], [60, 15], [40, 15]]];
+  const walls = [{ kind: 'wall', source: 'osm', level: 'ground', pts: [[70, 10.6], [90, 10.6]] }];
+  const built = cut(streetSurfaces({ lines: road, box, buildings: houses, walls, sidewalks: [sw([[0, -7.8], [100, -7.8]]), sw([[0, 10], [100, 10]])] }));
+  assert.ok(pave(built)(30, -6.4) && pave(built)(30, -6.7) && pave(built)(30, -8.5), "the sliver between the street's pavement and the sidewalk filled");
+  assert.ok(pave(built)(20, 10) && !pave(built)(50, 10), 'the one through the house cut back to it');
+  assert.ok(pave(built)(80, 10.3) && !pave(built)(80, 10.9), 'and to the wall in its band');
 });
 
 test("the tiles' 2 m ground held to a street's carriageway: not the wall beside it, nor the wall's top (task 045)", () => {
@@ -668,12 +699,61 @@ test('every street in the area has its carriageway, at its real width', () => {
   assert.ok(q(0.1) > 0.85, `one in ten carriageways is under ${q(0.1)} of its width`);
 });
 
+test("the map's sidewalks in the area are paved: on a street's pieces, or within a metre of one (task 059)", { skip: !fs.existsSync(`${CACHE}/osm/paths.json`) && 'no paths (node tools/fetch.mjs paths)' }, () => {
+  // Every metre of each footway=sidewalk in the area, but in a building: on a carriageway, a pavement
+  // or a path; on an island; or off them all, and how far. Before task 059, 13 km of the 47 were
+  // more than a metre off every piece (the tiles paved none of them), and 292 m on islands.
+  const near = (x, z, m) => x >= OPEN_BOX.x0 - m && x <= OPEN_BOX.x1 + m && z >= OPEN_BOX.z0 - m && z <= OPEN_BOX.z1 + m;
+  const sidewalks = sidewalksOf(onCarriageways(readCache('osm/paths.json')), near);
+  const pieces = [...S.carriageways, ...S.pavements.filter((p) => p.kind !== 'island'), ...S.paths].filter((p) => p.level === 'ground');
+  const onPiece = inside(pieces), onIsland = inside(S.pavements.filter((p) => p.level === 'ground' && p.kind === 'island'));
+  const inBuilding = inside(w.buildings.map((b) => ({ rings: [b.pts] })));
+  const edges = new Map(), C5 = 5;
+  for (const p of pieces) for (const r of p.rings) r.forEach((a, i) => {
+    const b = r[(i + 1) % r.length];
+    for (let cx = Math.floor((Math.min(a[0], b[0]) - 1) / C5); cx <= Math.floor((Math.max(a[0], b[0]) + 1) / C5); cx++) for (let cz = Math.floor((Math.min(a[1], b[1]) - 1) / C5); cz <= Math.floor((Math.max(a[1], b[1]) + 1) / C5); cz++) {
+      const k = cx + ',' + cz;
+      if (!edges.has(k)) edges.set(k, []);
+      edges.get(k).push([a, b]);
+    }
+  });
+  const byEdge = (x, z) => (edges.get(Math.floor(x / C5) + ',' + Math.floor(z / C5)) ?? []).some(([a, b]) => segDist([x, z], a, b) <= 1);
+  let len = 0, off = 0, isle = 0;
+  const far = [];
+  for (const sw of sidewalks) for (let i = 1; i < sw.pts.length; i++) {
+    const [a, b] = [sw.pts[i - 1], sw.pts[i]], L = Math.hypot(b[0] - a[0], b[1] - a[1]), n = Math.max(1, Math.round(L));
+    for (let k = 0; k < n; k++) {
+      const [x, z] = [a[0] + ((b[0] - a[0]) * (k + 0.5)) / n, a[1] + ((b[1] - a[1]) * (k + 0.5)) / n];
+      if (!w.inOpen(x, z) || inBuilding(x, z)) continue;
+      len += L / n;
+      if (onPiece(x, z)) continue;
+      if (onIsland(x, z)) { isle += L / n; continue; }
+      if (!byEdge(x, z)) { off += L / n; if (far.length < 5) far.push(`(${x.toFixed(0)}, ${z.toFixed(0)}) way ${sw.id}`); }
+    }
+  }
+  console.log(`the map's sidewalks in the area: ${(len / 1000).toFixed(1)} km; on an island ${isle.toFixed(0)} m; more than a metre off every street piece ${off.toFixed(0)} m, as at ${far.join(', ')}`);
+  assert.ok(isle < 10, `${isle.toFixed(0)} m of them on an island`);
+  assert.ok(off < 0.05 * len, `${off.toFixed(0)} m of them off every street piece`);
+});
+
 test('no pavement runs past a wall into what is behind it (task 052)', () => {
   // Each wall a pavement stops at (streets.mjs's stopsAt), every half metre but its last metre at
   // either end, where it faces a street (within 60° of square to the way to the nearest carriageway's
   // edge, 4 m off at most): whether there's pavement 0.4 m past it, but another street's, whose
-  // carriageway is on that side of the wall.
+  // carriageway is on that side of the wall, or one of the map's own sidewalks there (task 059).
   const ground = S.carriageways.filter((c) => c.level === 'ground'), pave = inside(S.pavements.filter((p) => p.level === 'ground' && p.kind === 'pavement')), onRoad = inside(ground);
+  const sidewalks = fs.existsSync(`${CACHE}/osm/paths.json`) ? sidewalksOf(onCarriageways(readCache('osm/paths.json')), (x, z, m) => x >= OPEN_BOX.x0 - m && x <= OPEN_BOX.x1 + m && z >= OPEN_BOX.z0 - m && z <= OPEN_BOX.z1 + m) : [];
+  const swCells = new Map();
+  for (const sw of sidewalks) for (let i = 1; i < sw.pts.length; i++) {
+    const [a, b] = [sw.pts[i - 1], sw.pts[i]];
+    for (let cx = Math.floor((Math.min(a[0], b[0]) - 2) / 5); cx <= Math.floor((Math.max(a[0], b[0]) + 2) / 5); cx++) for (let cz = Math.floor((Math.min(a[1], b[1]) - 2) / 5); cz <= Math.floor((Math.max(a[1], b[1]) + 2) / 5); cz++) {
+      const k = cx + ',' + cz;
+      if (!swCells.has(k)) swCells.set(k, []);
+      swCells.get(k).push([a, b, sw.w / 2 + 0.1]);
+    }
+  }
+  const onSidewalk = (x, z) => (swCells.get(Math.floor(x / 5) + ',' + Math.floor(z / 5)) ?? []).some(([a, b, r]) => segDist([x, z], a, b) <= r);
+  let theMaps = 0;
   const edges = new Map();
   for (const c of ground) for (const r of c.rings) r.forEach((a, i) => {
     const b = r[(i + 1) % r.length];
@@ -708,6 +788,7 @@ test('no pavement runs past a wall into what is behind it (task 052)', () => {
         const sg = -uz * ox + ux * oz > 0 ? 1 : -1, nx = -uz * sg, nz = ux * sg, fx = px + nx * 0.4, fz = pz + nz * 0.4;
         facing += 0.5;
         if (!pave(fx, fz)) continue;
+        if (onSidewalk(fx, fz)) { theMaps += 0.5; continue; }
         const f = nearest(fx, fz);
         if (f && (f.p[0] - px) * nx + (f.p[1] - pz) * nz > 0) continue;
         past += 0.5;
@@ -716,7 +797,7 @@ test('no pavement runs past a wall into what is behind it (task 052)', () => {
       s0 += l;
     }
   }
-  console.log(`walls a pavement stops at, facing a street: ${(facing / 1000).toFixed(2)} km; with pavement past them ${(past / 1000).toFixed(2)} km (${((past / facing) * 100).toFixed(1)}%: 40.8% on braga-map 1.22.0), e.g. at ${at.filter((_, i) => i % 40 === 0).slice(0, 6).join(', ')}`);
+  console.log(`walls a pavement stops at, facing a street: ${(facing / 1000).toFixed(2)} km; with pavement past them ${(past / 1000).toFixed(2)} km (${((past / facing) * 100).toFixed(1)}%: 40.8% on braga-map 1.22.0), and the map's own sidewalks ${(theMaps / 1000).toFixed(2)} km more, e.g. at ${at.filter((_, i) => i % 40 === 0).slice(0, 6).join(', ')}`);
   assert.ok(facing > 10000, `only ${facing} m of walls facing a street`);
   assert.ok(past / facing <= 0.02, `${((past / facing) * 100).toFixed(1)}% of the walls facing a street have pavement past them`);
 });

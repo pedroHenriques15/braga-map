@@ -31,7 +31,7 @@ import { gatesOf } from './open.mjs';
 import { ARENAS } from './arenas.mjs';
 import { terrain } from './terrain.mjs';
 import { decks } from './decks.mjs';
-import { carriagewayMoves, heldGround, isLine, isSquare, isSquareInParts, LEVEL, levelHeights, onCarriageways, pathLines, pathsOf, streetBands, streetBumps, streetsOf } from './lines.mjs';
+import { carriagewayMoves, heldGround, isLine, isSquare, isSquareInParts, LEVEL, levelHeights, onCarriageways, pathLines, pathsOf, sidewalksOf, streetBands, streetBumps, streetsOf } from './lines.mjs';
 import { packPaths, packStreets, streetSurfaces } from './streets.mjs';
 import { cutWalls, packWalls } from './walls.mjs';
 import { packFurniture } from './furniture.mjs';
@@ -136,7 +136,11 @@ const { heights, open } = levelHeights(lines, ground, tileGround, held, deck);
 // What's walked or cycled (lines.mjs's pathsOf and pathLines, task 050) round the open world's area,
 // where the world draws it: a footbridge and a path's tunnel at their heights, each flight of steps
 // with its treads.
-const walks = pathLines(pathsOf(pathsOsm, (x, z, m) => x >= OPEN_BOX.x0 - m && x <= OPEN_BOX.x1 + m && z >= OPEN_BOX.z0 - m && z <= OPEN_BOX.z1 + m), { ground, grid: tileGround, deck, lines, heights, elev0: ELEV0 });
+const inOpenBox = (x, z, m) => x >= OPEN_BOX.x0 - m && x <= OPEN_BOX.x1 + m && z >= OPEN_BOX.z0 - m && z <= OPEN_BOX.z1 + m;
+const walks = pathLines(pathsOf(pathsOsm, inOpenBox), { ground, grid: tileGround, deck, lines, heights, elev0: ELEV0 });
+// And the pavements the map draws on their own beside the streets, paved where the streets' don't reach
+// (task 059).
+const sidewalks = sidewalksOf(pathsOsm, inOpenBox);
 const areas = []; // [kind, ring, holes]
 for (const e of [...base.elements, ...parkingOsm]) {
   const t = e.tags || {};
@@ -841,7 +845,7 @@ const treesOff = { moved: 0, out: 0, walked: 0, walking: 0, path: 0, pavement: 0
   const B = OPEN_BOX, over = tilesOver(B).map((t) => ({ id: t.id, box: { x0: Math.max(t.box.x0, B.x0), x1: Math.min(t.box.x1, B.x1), z0: Math.max(t.box.z0, B.z0), z1: Math.min(t.box.z1, B.z1) } }));
   // The buildings and the water, which a tree moved off a path isn't moved into.
   const solid = [...outlines, ...rings('water')].map((r) => [r, bounds(r)]);
-  const { cuts, stats } = streetSurfaces({ lines, heights, elev0: ELEV0, height: tileGround, nodes, buildings: outlines, squares, water: rings('water'), paths: walks, walls: wallList ?? [], box: B, cuts: over });
+  const { cuts, stats } = streetSurfaces({ lines, heights, elev0: ELEV0, height: tileGround, nodes, buildings: outlines, squares, water: rings('water'), paths: walks, sidewalks, walls: wallList ?? [], box: B, cuts: over });
   for (const { id } of over) {
     const t = tiles.get(id);
     t.streets = packStreets(cuts.get(id), t.box.x0, t.box.z0);
@@ -944,7 +948,7 @@ const treesOff = { moved: 0, out: 0, walked: 0, walking: 0, path: 0, pavement: 0
   const ps = stats.paths;
   console.log(`trees on a carriageway as it's drawn: ${treesOff.moved} moved off it, ${treesOff.out} left out; the LiDAR's on a footway, path, cycleway or flight of steps, or overhanging a pavement: ${treesOff.walked} moved off it (${treesOff.path} off a path, ${treesOff.pavement} off a pavement), ${treesOff.walking} with nowhere under their crowns to go; ${treesOff.pits} street trees left in their pavements`);
   if (wallList) console.log(`walls: ${nWalls} pieces in the open world's tiles, of ${wallList.length}; ${stats.walls.streets} streets brought back to the map's walls in them, giving way ${Math.round(stats.walls.given)} m² of carriageway; ${Math.round(stats.walls.behind)} m² of pavement and ${Math.round(stats.walls.paths)} m² of paths behind a wall taken off`);
-  console.log(`streets: ${stats.edges} stretches in the open world's ${over.length} tiles, ${stats.junctions} junctions, ${stats.islands} islands, ${stats.reservations} reservations, ${Math.round(stats.slivers)} m² of slivers closed, ${Math.round(stats.past)} m² of corners cut back past a deck's or a tunnel's end, ${Math.round(stats.km.kerb)} km of kerb, in ${Math.round(stats.seconds)} s`);
+  console.log(`streets: ${stats.edges} stretches in the open world's ${over.length} tiles, ${stats.junctions} junctions, ${stats.islands} islands, ${stats.reservations} reservations, ${Math.round(stats.sidewalks)} m² of the map's sidewalks paved where the streets' pavements don't reach, ${Math.round(stats.slivers)} m² of slivers closed, ${Math.round(stats.past)} m² of corners cut back past a deck's or a tunnel's end, ${Math.round(stats.km.kerb)} km of kerb, in ${Math.round(stats.seconds)} s`);
   console.log(`paths: ${walks.length} ways round the area, ${Object.entries(ps.m2).map(([k, v]) => `${k} ${Math.round(v)} m²`).join(', ')} (cycleways ${Math.round(ps.lanes)} m² beside the road and ${Math.round(ps.flush)} m² flush with a pavement); ${ps.flights} flights of steps in ${ps.treads} treads, ${ps.steep} rising more than 0.3 m`);
 }
 

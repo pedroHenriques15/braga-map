@@ -69,6 +69,8 @@ task's Notes as "decided by the session, for the owner to confirm".
 | 107 | Inside the open world no street reaches the Picoto's top (its streets reach the rest only past the area's edge): how does the GPS get a kart there? | By car it keeps to the streets by the rules of the road and leaves them for a path or steps only where no street reaches the waypoint, each time costing 10 minutes in its search so it never cuts a one-way street by a pavement; the HUD says "Sai da estrada: segue pelo caminho" there | 107's landing |
 | 107 | One-way on each street's `Line`, as the task words it, or on a road graph? | A road graph in the tiles (`world.roads`, `world.turns`, made once by `tools/roads.mjs`): the lines are thinned and cut at each tile's edge, with no junctions, so a game couldn't route on them | 107's landing |
 | 107 | 106's double-click on the full map zoomed in; 107's click puts the waypoint | The double-click zoom removed (the wheel and a pinch still zoom) | 107's landing |
+| 109 | In what order does the search list what it finds? | The nearest first, as the task says (so "picoto" from Fujacal lists the Picoto Adventure Park, 930 m, before the Monte e miradouro do Picoto, 1.1 km); Enter takes the first | 109's landing |
+| 114 | A bot that has lost its speed on the jump's run-up: back up and line up again, or be put back? | It moves aside, takes the ramp, falls short and is put back as before: from a standstill a kart needs about 120 m flat out to reach the ramp's speed, about 15 s backing up against 3 s for the put-back | 114's landing |
 | 105 | The chair (Joel's) and the trolley (Joel F.'s) are smaller than 2.8 m today: brought to 2.8 m, or kept in proportion? | Every body drawn at 0.7 of its model, so every driver stays the same size (the chair 2.06 m long, the trolley 2.16 m); the banger at 0.65 to fit 2.8 m (from 4.30), its driver 7% smaller | 105's landing |
 
 ## Progress
@@ -157,6 +159,10 @@ picks it up can go on from here.
     reach, on foot you, flying the camera; never in a race or a round; "Fora da zona" outside the area.
     Found and fixed in it: on foot, opening the full map didn't always let the pointer go
     (`src/input.ts`). Not verified: two players seeing the jump, a real phone.
+  - **114** (worker-1): landed braga-map `1cb3330` (decision 067) and party-kart `8bbe292`. On the
+    jump's run-up a bot goes round a kart it would catch, and the autopilot takes it up the ramp off the
+    axis; put back on the run-up 24 times in 64 seeded eight-bot races, where 105's karts had 56 (the
+    old karts' 12 per 32). Not verified: a race in a browser room with bots at the jump.
 
 ## Read first
 

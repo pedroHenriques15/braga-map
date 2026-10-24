@@ -58,6 +58,9 @@ task's Notes as "decided by the session, for the owner to confirm".
 
 | Task | The question | What the session decided | Commit |
 |---|---|---|---|
+| (the run) | Who marks the rounds, now that Claude's marks are the judge, with four sessions? | The coordinator alone, so every round is on one scale; the workers shoot and send it the places that changed | this file's |
+| (the run) | Claude's marks for each place in the last rounds aren't kept locally (task 064 removed them once they went up, and the scorecard is out of reach): what is "no lower" measured against? | A new baseline of Claude's marks, every place marked again on main before the first task that changes a viewpoint lands; each round after is marked against the one before it | this file's |
+| (the run) | ROADMAP's "in party-kart, never two sessions on the same file", with three workers | Allowed in different functions of a file only, the one landing second rebasing and keeping both; the coordinator says which files each task has claimed | this file's |
 
 ## Progress
 
@@ -84,6 +87,14 @@ picks it up can go on from here.
     What of 098 is inside the playable area is task 104, done.
   - **Never asked again in Phase 2:** a new question is decided by the session, written in the task's
     Notes as "decided by the session, for the owner to confirm", and added to the table above.
+  - **Claude's marks are the judge** (the owner, 2026-10-24): a task's "rated no lower" is decided on
+    Claude's marks, not by waiting for the owner's; they still go up with the rounds when the account
+    is back.
+  - **Four sessions** (the owner, 2026-10-24): three workers (worker-1 to worker-3), each doing whole
+    tasks in worktrees of its own, coordinated by the session "Braga-map and party-kart open tasks",
+    which assigns the tasks, grants the one merge turn, marks every round and keeps this file. The
+    workers' rules and the live board are outside git, in `C:\Users\pedro\source\repos\_coord\`
+    (`worker-brief.md`, `board.md`); what lands is recorded here.
 - **Phase 2, the work:** not started. The order, each after its `depends-on`:
   1. 105 smaller karts, 106 the full map on M, 107 the GPS, 108 "Ir para aqui", 109 find a place,
      110 meet the others.

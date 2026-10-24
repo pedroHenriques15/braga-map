@@ -201,6 +201,15 @@ picks it up can go on from here.
     its round `2026-10-24-after081` is the Ultra baseline, Claude's marks as `after082`'s (mean 2.52, no
     mark moved; Ultra differs from High by at most 2% of a shot). Not verified: Ultra in a race, the
     settings' picker opened, the owner's own screen.
+  - **088** (worker-2): landed braga-map `3a5404d`, 1.37.0 (tagged, decision 070), and party-kart
+    `74436ae`, pinned to v1.37.0. The shooter's area's trees the species their photos show (448 trees
+    seen, 17 species); Braga publishes no street-tree inventory; no new kind. Nine reference photos it
+    first picked broke the privacy rule and were dropped before any commit. Its round, at High: no mark
+    moved.
+  - **102** (worker-1): landed braga-map `8fc55c9` and party-kart `28bb0d6`: How to play credits
+    OpenStreetMap, the DGT and Copernicus and says the textures are made; `photoCredits` gone.
+  - **The coordinator's watcher was down from 18:51 to 21:58** (not re-armed after a message), so ready
+    tasks waited for their marks and turns: 102, 065, 090, 111, 112 and 059.
 
 ## Read first
 

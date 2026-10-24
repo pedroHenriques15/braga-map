@@ -784,10 +784,14 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
 
   // ---- The map's barriers, measured, and what the LiDAR found that the map has. ----
   const walls = [];
+  let tall = 0;
   for (const b of osm) {
     const mm = measured.get(b.id) ?? { cover: 0, h: NaN, stepped: false, drop: NaN };
-    const w = { kind: b.kind, material: b.material, h: b.h, w: b.w, pts: b.pts, level: b.level, source: 'osm', id: b.id };
-    if (w.kind === 'wall' && mm.stepped) { w.kind = 'retaining'; why['retaining walls of the map']++; }
+    const w = { kind: b.kind, material: b.material, h: b.h, mapH: b.h, w: b.w, pts: b.pts, level: b.level, source: 'osm', id: b.id };
+    // A wall of the map's the ground steps along is a retaining wall, but as high as the map says it is,
+    // where it says (`tall`): over its lower side's ground at least (task 112: the Avenida Doutor Viriato
+    // Amaral Nunes's painted wall, 3 m on a step of 0.8 m).
+    if (w.kind === 'wall' && mm.stepped) { w.kind = 'retaining'; if (w.mapH) { w.tall = w.mapH; tall++; } why['retaining walls of the map']++; }
     if (w.kind === 'retaining' && mm.stepped) {
       if (mm.drop < 0) w.pts = [...w.pts].reverse();
       w.h = Math.abs(mm.drop);
@@ -811,6 +815,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
       if (w.kind === 'retaining' && o.kind === 'wall') {
         o.kind = 'retaining';
         o.h = w.h;
+        if (o.mapH) { o.tall = o.mapH; tall++; }
         if ((o.pts[o.pts.length - 1][0] - o.pts[0][0]) * w.ux + (o.pts[o.pts.length - 1][1] - o.pts[0][1]) * w.uz < 0) o.pts = [...o.pts].reverse();
         o.measured = true;
         why['retaining walls of the map']++;
@@ -987,7 +992,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
           const p0 = Math.max(s0, a), p1 = Math.min(s1, b);
           if (p1 - p0 < 0.5) continue;
           const pts = piece(w.pts, p0, p1);
-          out.push({ ...w, h, pts: turned ? pts.reverse() : pts, ys: null, from: p0, whole: L, ysWhole: null, ptsWhole: w.pts, stepped: { h: w.h, L } });
+          out.push({ ...w, h: Math.max(h, w.tall ?? 0), pts: turned ? pts.reverse() : pts, ys: null, from: p0, whole: L, ysWhole: null, ptsWhole: w.pts, stepped: { h: w.h, L } });
           stepped.pieces++;
           if (turned) stepped.turned += p1 - p0;
           if (h <= FLAT) stepped.flat += p1 - p0;
@@ -997,7 +1002,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     }
     for (const [s0, s1] of spans) if (s1 - s0 >= 0.5) out.push({ ...w, pts: cs.length ? piece(w.pts, s0, s1) : w.pts, ys: w.ys && cs.length ? null : w.ys, from: s0, whole: L, ysWhole: w.ys, ptsWhole: w.pts });
   }
-  console.log(`walls: the map's retaining walls measured along them, in ${stepped.pieces} pieces: ${(stepped.turned / 1000).toFixed(2)} km turned (their higher ground on the other side), ${(stepped.flat / 1000).toFixed(2)} km where the terrain doesn't step`);
+  console.log(`walls: ${tall} of the map's walls the ground steps along kept as high as it says; the map's retaining walls measured along them, in ${stepped.pieces} pieces: ${(stepped.turned / 1000).toFixed(2)} km turned (their higher ground on the other side), ${(stepped.flat / 1000).toFixed(2)} km where the terrain doesn't step`);
 
   // ---- What each is, how thick, and its top's height at each point. ----
   const final = [];
@@ -1017,7 +1022,10 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
         continue;
       }
       const [sx, sz] = seenAt(p.x, p.z);
-      ys.push(w.kind === 'retaining' && w.measured ? ground.at(sx + p.uz * 1.75, sz - p.ux * 1.75) : ground.at(sx, sz) + w.h);
+      const up = ground.at(sx + p.uz * 1.75, sz - p.ux * 1.75);
+      // A retaining wall's top: its higher ground; one of the map's with its height, that over the lower
+      // of its two sides' ground, whichever way its piece runs (task 112).
+      ys.push(w.kind === 'retaining' && w.measured ? Math.max(up, w.tall ? Math.min(up, ground.at(sx - p.uz * 1.75, sz + p.ux * 1.75)) + w.tall : -Infinity) : ground.at(sx, sz) + w.h);
     }
     // Only the points where it turns, or its top bends by 10 cm or more.
     const keep = [0];

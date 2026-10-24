@@ -1,5 +1,5 @@
 {
- "about": "What each building's facade is (task 017, docs/BUILDING-TYPES.md), as a session saw it in its photos: every building in the shooter's area and in view of a viewpoint (node tools/buildings.mjs lists them). By the building's name: way/<id> or relation/<id>, OpenStreetMap's, or lidar/x<x>z<z>, one the map lacks, by the middle of its outline. type, material, ground and balconies are words tools/facades.mjs lists; colour (its walls' above the ground floor), base's colour (the ground floor's, where it isn't the walls') and shutters (the roller shutters', or none) are its colour names. floors: the storeys counted in the photo, the ground floor's among them (null where they couldn't be). signs: the shop signs read in the photo, each its name and its colour. seen: the photo it was looked at in (a reference photo's id, or viewpoint:<id>); sure: false where it was small, far, blurred or half hidden. A building nobody could see in any photo is guessed by tools/world.mjs from the map and from these.",
+ "about": "What each building's facade is (task 017, docs/BUILDING-TYPES.md), as a session saw it in its photos: every building in the shooter's area and in view of a viewpoint (node tools/buildings.mjs lists them). By the building's name: way/<id> or relation/<id>, OpenStreetMap's, or lidar/x<x>z<z>, one the map lacks, by the middle of its outline. type, material, ground and balconies are words tools/facades.mjs lists; colour (its walls' above the ground floor), base's colour (the ground floor's, where it isn't the walls') and shutters (the roller shutters', or none) are its colour names. floors: the storeys counted in the photo, the ground floor's among them (null where they couldn't be). signs: the shop signs read in the photo, each its name and its colour. seen: the photo it was looked at in (a reference photo's id, or viewpoint:<id>); sure: false where it was small, far, blurred or half hidden. A building nobody could see in any photo is guessed by tools/world.mjs from the map and from these. not: on one the LiDAR found, what it is where a photo shows it isn't a building (task 112); tools/world.mjs leaves it out.",
  "buildings": {
   "lidar/x-108z722": {
    "seen": null,
@@ -890,7 +890,8 @@
   },
   "lidar/x284z1003": {
    "seen": null,
-   "notes": "hidden behind the parked vans and a motorhome, in the trees' shade."
+   "notes": "hidden behind the parked vans and a motorhome, in the trees' shade.",
+   "not": "the parked vans and the motorhome themselves, side by side under the trees, which the LiDAR took for a building: capela-sao-joao's photo has lawn there (task 112)"
   },
   "lidar/x293z1589": {
    "seen": null,

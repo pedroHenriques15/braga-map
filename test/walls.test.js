@@ -203,3 +203,23 @@ test("a retaining wall's lower side is drawn under its top, and a wall stands on
   assert.deepEqual(why(low, LEFT.retaining).filter((s) => s.endsWith('no cause recorded')), []);
   assert.deepEqual(why(over, LEFT.over).filter((s) => s.endsWith('no cause recorded')), []);
 });
+
+test("a wall standing on a retaining wall's step is drawn to its top: the Avenida Doutor Viriato Amaral Nunes's painted wall (task 112)", () => {
+  // The map's retaining wall along the avenue's north side, from (40.5, 1470.5) to (0, 1451.5): the
+  // ground steps 0.7 m down behind it, and the wall on it stands 2.6 to 2.9 m over the road (the
+  // point cloud, and viriato-amaral-nunes' photo), hiding the building behind it.
+  const on = (x) => x.kind === 'retaining' && x.pts.some(([px, pz]) => Math.hypot(px - 20, pz - 1461) < 12);
+  const it = w.walls.filter(on);
+  assert.ok(it.length, 'the wall is there');
+  // Its top over the road, 2 m out on the road's side (its left: the higher ground's).
+  const over = [];
+  for (const x of it) for (let i = 1; i < x.pts.length; i++) {
+    const [ax, az] = x.pts[i - 1], [bx, bz] = x.pts[i], L = Math.hypot(bx - ax, bz - az);
+    if (L < 1) continue;
+    const [mx, mz] = [(ax + bx) / 2, (az + bz) / 2], [lx, lz] = [(bz - az) / L, -(bx - ax) / L];
+    over.push((x.ys[i - 1] + x.ys[i]) / 2 - w.height(mx + lx * 2, mz + lz * 2));
+  }
+  const mid = over.sort((a, b) => a - b)[over.length >> 1];
+  console.log(`the painted wall's top over the road: ${over.map((v) => v.toFixed(1)).join(', ')} m`);
+  assert.ok(mid >= 2, `its top ${mid.toFixed(2)} m over the road at the median`);
+});

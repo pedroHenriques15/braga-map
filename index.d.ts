@@ -393,7 +393,8 @@ export interface Streets {
 //   A wall of the map's where the terrain steps across it is a retaining wall, measured along it
 //   (task 077): cut where its higher ground changes side (each piece with it on its left) and where its
 //   step changes height, each piece its own h; where the terrain doesn't step, a piece as low as it
-//   does (0.1 to 0.3 m).
+//   does (0.1 to 0.3 m). But where the map gives its height, it's that high at least, over the lower
+//   of its two sides' ground (task 112).
 //   A wall the LiDAR finds on a retaining wall's top, higher than a parapet, is a fence on it.
 // - material: what a wall, a retaining wall or a gate is made of: the map's where it says; else by
 //   what's round it (the owner's answer, checked against the viewpoints' photos): a retaining wall

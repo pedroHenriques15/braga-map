@@ -2138,3 +2138,28 @@ falls on the photo's trunk foot and the palm where the photo has it (task 065's 
 Decided by the session, for the owner to confirm (task 103's table). The alternative: the map's
 young tree as the hackberry's trunk (065's step 2), which the photo didn't bear out: no mapped tree
 stands under that crown.
+
+## 074 · A wall of the map's keeps its height where the ground steps along it; a "building" a photo shows isn't one is left out by name
+
+*2026-10-24 · task 112 · adds to decisions 033 (the walls) and 025 (the buildings the map lacks)*
+
+Two things the photos showed the tiles had wrong, at `viriato-amaral-nunes` and `capela-sao-joao`:
+
+- **A wall of the map's the ground steps along is a retaining wall, but as high as the map says.**
+  `walls.mjs` makes a wall of the map's a retaining wall where the terrain steps across it (task 077),
+  and gave each piece its step's height, so a wall OpenStreetMap gives a height to lost it: the
+  Avenida Doutor Viriato Amaral Nunes's painted wall, `barrier=wall height=3`, came out its 0.9 m step,
+  flush with the road, and the building behind it stood in full view. Now such a wall stands at least
+  its mapped height over the lower of its two sides' ground (`tall`): 155 of the map's walls in the
+  area have a height, and 137 of them are drawn higher, 5.2 km, by 1.21 m at the median and 4 m at
+  most. The map as it is (decision 022): where the map gives a height, it's the wall's.
+- **A building the LiDAR found that a photo shows isn't one is left out by name.** By São João da
+  Ponte's chapel the LiDAR's "building" was vans and a motorhome parked side by side under the trees,
+  7 m wide (too wide for `roofs.mjs`'s vehicle rule), which task 017's session had seen in a photo.
+  No rule over the map picked it out alone (in a park: 22, real ones among them; mostly blue: 570;
+  green under trees: 1, not it), so it's marked where what the photos show is kept,
+  `refs/buildings.json`'s `not`, and `world.mjs` leaves out a LiDAR building so marked. One so far.
+
+The alternatives: a wall's top measured from the point cloud over a retaining wall's higher ground (it
+missed this wall, measured over its whole 500 m, and caught 8 others no photo had checked); a rule for
+the LiDAR's buildings in parks (it drops real kiosks and glasshouses).

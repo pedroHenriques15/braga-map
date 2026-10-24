@@ -131,7 +131,8 @@ map().groundKinds; // the kinds it says, each with its texture: [{ kind, texture
   OpenStreetMap has there, and the walls, hedges and retaining walls it lacks where DGT's LiDAR sees
   them (`source`), each as high as the LiDAR measured it (else the map's `height`), its top's height
   at each point; a wall of the map's where the terrain steps across it is a retaining wall, measured
-  along it, cut where its higher ground changes side or its step its height (task 077). Each opens
+  along it, cut where its higher ground changes side or its step its height (task 077), but as high as
+  the map says it is where it says, over the lower of its two sides (task 112). Each opens
   where a street or a path passes through it and is cut where it would stand on a carriageway or a
   path, but a street gives way to the map's where its lanes fit beside one (task 052); a gate where the map has one, where a driveway crosses a wall, and in a door's or a car's gap
   in a wall the LiDAR found. What each is made of is the map's where it says, else by what's round it
@@ -181,7 +182,8 @@ map().groundKinds; // the kinds it says, each with its texture: [{ kind, texture
   glass) and its colour where it isn't the walls'; its balconies; its shutters' colour; and its
   storeys, as counted in its photo or from its height and its kind. Every building in the shooter's
   area and in view of a viewpoint was looked at in its photos by a session (`refs/buildings.json`,
-  `seen`); the rest are guessed from the map's tags, their size and their height, and from the
+  `seen`), and one the LiDAR found that the photo shows isn't a building (vans parked side by side,
+  `not`) is left out (task 112); the rest are guessed from the map's tags, their size and their height, and from the
   buildings seen, as often as those of their kind are each colour, material and ground floor.
 - The shops' **signs** (task 017): each shop, café, bank or office OpenStreetMap names, as plain text
   (no logos) on its sign's colour (the photo's, where a photo showed it), over its building's ground
@@ -473,7 +475,8 @@ streets; when a track moves enough to change the edge, run the three again until
   within 3 m of one (the bank's growth). Then the map's barriers, each measured along its line (where the terrain steps across a
   wall of the map's, a retaining wall, then measured again along it every half metre, `stepsOf`:
   cut where its higher ground changes side, turned, or where its step changes height, each piece its
-  own, and as low as the terrain where it doesn't step), and what the LiDAR found along one dropped
+  own, and as low as the terrain where it doesn't step; a wall of the map's with its `height` as high as
+  that over the lower of its sides, task 112), and what the LiDAR found along one dropped
   (but a hedge along a wall). The gates: the map's, across the street or the path each is on or along its wall; where a
   driveway crosses a wall; and in a door's or a car's gap in a wall the LiDAR found. Each wall opens
   where a street or a path crosses it (a way the map stops 3 m short of a wall goes through it), and

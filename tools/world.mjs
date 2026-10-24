@@ -432,7 +432,7 @@ const guessRoof = (ring, roof) => {
   const r = minRect(ring), rise = roof === ROOF.flat ? 0 : r.W * Math.tan(PITCH / 57.2958);
   return { dir: r.angle, pitch: roof === ROOF.flat ? 0 : PITCH, rise, ends: roof === ROOF.hipped ? 3 : 0 };
 };
-let real = 0, lidar = 0, stands = 0, measured = 0, parts = 0;
+let real = 0, lidar = 0, stands = 0, notBuildings = 0, measured = 0, parts = 0;
 {
   const church = new Set(['church', 'cathedral', 'chapel', 'basilica', 'religious', 'monastery', 'convent']);
   const flats = new Set(['apartments', 'residential', 'dormitory', 'hotel']);
@@ -530,7 +530,8 @@ let real = 0, lidar = 0, stands = 0, measured = 0, parts = 0;
   // The buildings the map lacks, as the LiDAR saw them: a block of them as one, in parts where the
   // roofs step, each part with its kind from its size and height alone and its facade colour from
   // where it is. Not in the stadium's grounds: its stands are the stadium's, which the games draw
-  // (the sight).
+  // (the sight); nor one a session saw in a photo isn't a building (refs/buildings.json's `not`: what
+  // it is, such as vehicles parked side by side, task 112).
   const pitch = base.elements.find((e) => e.type === 'way' && e.id === 22660434);
   const grounds = pitch ? base.elements.filter((e) => e.type === 'way' && e.tags?.leisure === 'stadium').map((e) => e.geometry.map(P)).filter((r) => inside(r, ...P(pitch.geometry[0]))) : [];
   const colorAt = (x, z) => Math.floor(rnd(Math.round(x * 2) * 20011 + Math.round(z * 2), 7) * COLORS);
@@ -538,7 +539,9 @@ let real = 0, lidar = 0, stands = 0, measured = 0, parts = 0;
     const cx = f.pts.reduce((s, p) => s + p[0], 0) / f.pts.length, cz = f.pts.reduce((s, p) => s + p[1], 0) / f.pts.length;
     if (!inExt(cx, cz) || !isMeasured(f)) continue;
     if (grounds.some((r) => inside(r, cx, cz))) { stands++; continue; }
-    putMeasured(f.pts, { building: 'yes' }, f, colorAt, f.src, `lidar/x${Math.round(cx)}z${Math.round(cz)}`);
+    const name = `lidar/x${Math.round(cx)}z${Math.round(cz)}`;
+    if (seenFaces[name]?.not) { notBuildings++; continue; }
+    putMeasured(f.pts, { building: 'yes' }, f, colorAt, f.src, name);
     lidar++;
   }
 }
@@ -637,7 +640,7 @@ let infill = 0;
       }
     }
   }
-  console.log(`buildings: ${real} from the map and ${lidar} it lacks from the LiDAR (${stands} left to the stadium; ${measured} measured, in ${parts} parts; guessed roofs at ${PITCH}°), ${infill} filled in (${rowNames.size} streets in rows); frontage skipped for ${JSON.stringify(why)}`);
+  console.log(`buildings: ${real} from the map and ${lidar} it lacks from the LiDAR (${stands} left to the stadium, ${notBuildings} seen not to be one; ${measured} measured, in ${parts} parts; guessed roofs at ${PITCH}°), ${infill} filled in (${rowNames.size} streets in rows); frontage skipped for ${JSON.stringify(why)}`);
   const faces = signed.filter(([, f]) => f.seen).length;
   console.log(`facades: ${faces} seen, ${signed.length - faces} guessed; ${Object.entries(Object.groupBy(signed, ([, f]) => f.type)).map(([k, v]) => `${v.length} ${k}`).join(', ')}`);
 }

@@ -1925,3 +1925,32 @@ streets fall in. The collision itself is 0.2 m wider. The alternatives were a re
 owner's no), the bodies drawn within the old collision, 3.5 by 1.6 m (the owner's no), the chair and
 the trolley brought to 2.8 m (their drivers 30% bigger than the others), and the two circles for the
 karts too (they lock).
+
+## 066 · The map carries a road graph to route on; a car's GPS keeps to the streets by the rules, and off them only where none reaches
+
+*2026-10-24 · task 107 · makes decision 023's "the data does it once" hold for routing, and decision 010's rules of the road a game's*
+
+A game that finds the way somewhere needs what the race's planner has (`tools/track.mjs`): the streets
+joined at their junctions, which way a car may drive each, and the turns the map bans. The tiles' lines
+can't give it: they're for drawing, thinned, cut at each tile's edge, with no junctions. So the map
+carries it, made once by `tools/roads.mjs` (`world.roads`, `world.turns`):
+
+- **Every street and path in the open world's area, junction to junction:** each way split where
+  another shares a node, cut where it crosses the area's edge (a dead end there, as a game's barriers
+  stand at the gates), with who may use it (cars by the map's access; on foot every path it doesn't
+  close and every street but a motorway), a car's one-way (turned to run the way its points go), a
+  roundabout's ring, its name, width, level and heights. The streets' own footways (a pavement the
+  map draws, a crossing) are in it, as they join the paths to the streets.
+- **The turns the map bans cars, as plain bans:** at a junction, from the point before it to the point
+  after it, an `only_` turn made into bans of every other; the few over a way rather than a node left
+  out.
+- **A car's GPS keeps to the streets by the rules** (one-way, no banned turn, no turning back but at a
+  dead end, the avenues first), and leaves them for a path or the steps, as a kart drives them, only
+  where no street reaches the waypoint inside the area: each time costs ten minutes in the search, so
+  a pavement never saves going round a one-way street. The Picoto's top is such a place: its streets
+  in the area reach the rest only from outside it.
+
+The alternatives were the one-way on each Line and the junctions found by each game from the lines'
+points (every game making the graph again, from points thinned and cut by tile), a route that stops
+where the streets do (the Picoto's top out of reach), and a car free on the pavements (a GPS that
+drives against a one-way street on its pavement).

@@ -1,5 +1,5 @@
 ---
-status: doing
+status: done
 priority: high
 kind: code
 repo: both
@@ -49,11 +49,16 @@ round's walkable ground, `src/world/paths.ts`).
 
 ## Done when
 
-- [ ] A route from the plinth to the Picoto's top drives the one-way streets the right way and takes
-  no banned turn (a test in party-kart), and one on foot takes the steps.
-- [ ] The route shows on both maps and as arrows on the street, and the HUD names the next turn
-  (Playwright's shots in Notes).
-- [ ] `npm test` here, `npm test` and `npm run check` in party-kart pass.
+- [x] A route from the plinth to the Picoto's top drives the one-way streets the right way and takes
+  no banned turn (a test in party-kart), and one on foot takes the steps. party-kart's
+  `test/route.test.ts`: by car 2.71 km by the streets by the rules to the foot of the hill, then the
+  paths up (the premise in Notes: the top's streets reach the rest only from outside the area); on
+  foot, two flights of steps between streets a walker takes and a car goes round; all 39 banned turns
+  never taken.
+- [x] The route shows on both maps and as arrows on the street, and the HUD names the next turn
+  (Playwright's shots in Notes). party-kart's `shots/2026-10-24-task107/`, 12 of 12 (Notes).
+- [x] `npm test` here, `npm test` and `npm run check` in party-kart pass. braga-map 153 of 153 on the
+  rebased tree; party-kart 143 of 143 and `tsc` clean, again on the v1.36.0 pin at landing.
 
 ## Out of scope
 
@@ -142,3 +147,5 @@ round's walkable ground, `src/world/paths.ts`).
 - **Not verified:** a kart driven along a whole route by hand (the autopilot drives races only), on a
   real phone, the Volta de Lamaçães' streets beyond the area's one-way checks, and that the turns
   read naturally everywhere ("Vira à esquerda na Rua do Fujacal" where the Rua do Fujacal itself turns).
+- **Landed** 2026-10-24 in worker-2's merge turn, after 105: braga-map 1.36.0 (tagged), decision 066;
+  party-kart pinned from v1.35.0 to v1.36.0 in its GPS commit.

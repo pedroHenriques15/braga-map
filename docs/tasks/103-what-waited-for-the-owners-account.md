@@ -175,6 +175,13 @@ picks it up can go on from here.
     along every street at 90 km/h both ways, 172 times in the air (was 187), the longest 1.82 s (2.12).
     `openings` stays (the Liberdade underpass needs it). Its first "Done when" is left open: the race
     still flies 0.31-0.40 s on the João XXI, from the tiles' ground dipping at the lane's edge: task 115.
+  - **110** (worker-2): landed braga-map `b13d255` (docs only) and party-kart `67e3771`. Round the
+    city, both maps show the room's friends and marks; the GPS follows a friend; "Marcar para todos"; a
+    new message pair the host checks (inside the open world, the sender's own id, one a second); the peer
+    prefix stays pk44. Found and fixed in it: the maps drew someone on foot at their kart. Seen once and
+    not reproduced: a stack trace in `test/comp.test.ts` (110's Notes). Not verified: two machines on
+    different networks, real phones, an old build in the room.
+  - **The owner's improvements, 105 to 110, are all in** (2026-10-24), with 114 found by 105.
 
 ## Read first
 

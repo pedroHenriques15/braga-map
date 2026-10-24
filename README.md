@@ -568,8 +568,10 @@ streets; when a track moves enough to change the edge, run the three again until
   along a side the map says has none, or out in the open (no building within 25 m), or by a fast
   road, a service road, a track or a pedestrian street; and where those don't reach, on an island or
   out in the open, the pavements the map draws on their own (`footway=sidewalk`, task 059): each its
-  band at the map's width or 2 m, cut as a path is, and the slivers under a metre between it and a
-  pavement filled. The streets end at their walls (task 052,
+  band at the map's width or 2 m, cut as a path is, none where the ground across it varies more than
+  50 cm (a wall's step or a bank, which the map draws one over) but on an island, whose ground is
+  paved either way, and the slivers under a metre between it and a pavement filled. The streets end
+  at their walls (task 052,
   decision 046): the walls (`stopsAt`: the map's, and the walls, fences and retaining walls the LiDAR
   found, but not its hedges nor the gates) stop a pavement, each piece of a kerb looking straight out
   from it and none behind a wall it sees, 15 cm short of the wall's line, but what another kerb sees

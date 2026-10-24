@@ -141,4 +141,24 @@ Steps:
   `party-kart-059/shots/2026-10-24-t059-fix-before` and `-fix-after`, `alvaro-carneiro`, `liberdade`,
   `lobato-crossing`: the grey shape gone, `liberdade` as before the fix. Triangles +1.1% at the median.
 - **Landed 2026-10-24:** braga-map 1.39.0 (lines.mjs `sidewalksOf`, streets.mjs, world.mjs, the world
-  rebuilt in the merge turn, two tests, the README, decision 075); party-kart pinned to v1.39.0.
+  rebuilt in the merge turn, two tests, the README, decision 075). party-kart's pin to v1.39.0 was held
+  back by three of its tests, which the new pavements had moved:
+  - task 111's "the street on a wall's top sinks to it", 26 cm at the 97th percentile (its bound 20):
+    the map draws some sidewalks over a wall's step or a bank. braga-map 1.39.1 paves none where the
+    ground across it varies more than 50 cm (streets.mjs `SIDE_STEP`), but on an island, whose ground
+    is paved either way (else party-kart draws a wide one as verge): 14 cm. The map's sidewalks paved
+    53,452 m² (57,061 in 1.39.0); 592 m of their lines more than a metre off every piece, 3 m on an
+    island.
+  - "the walkable ground stays joined": in vilaca a pallet stood at a passage's mouth, 1.2 m off a
+    building's corner, diagonally; party-kart's `lanes()` looked only square out of a thing's sides, and
+    the bots' lattice lost what's behind it (1,178 points of 1,382). It now looks round the corners
+    too: 1,358.
+  - "a skip with its box": in topo and santa-justa the things round the first anchors took the room
+    left (MOST) before the skips' boxes were tried. The steps now go in first: 11 skips of 12 with their
+    box (3 of 11 before). The cost: fewer sandbags, drums and barriers round the anchors.
+  Moving the cover turned up a site fence put flat against a hoarding (a fence now only runs on from a
+  thing) and the longest-look test sampling other points with the cover than without (now the same
+  lattice cells). **Every arena's cover moves again** (the anchors where they were; the rest
+  reshuffled).
+- **Landed 2026-10-25:** braga-map 1.39.1 (streets.mjs, the README, the world); party-kart pinned to
+  v1.39.1 with the cover's fixes (world/cover.ts, test/field.test.ts).

@@ -22,6 +22,9 @@ const S = 100; // Clipper works in whole numbers: centimetres
 
 // How far a pavement reaches from its kerb at most, when the map doesn't say and no building stops it.
 const PAVE = 3.2;
+// How much the ground may vary across a sidewalk of the map's for it to be paved (task 059): more, it
+// runs over a wall's step or a bank.
+const SIDE_STEP = 0.5;
 // A kerb's height, and how far apart its points are looked at, along the edge of the carriageway.
 const KERB = 0.15, PIECE = 4;
 // The radius a kerb turns a corner at, by the smaller of the streets that meet there (osm.mjs's LINE
@@ -927,11 +930,36 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height =
       // passage under a building, which a footway would give way to and leave the building uncut.
       if (sideways.length) {
         const nearU = splitter(U), nearB = splitter([...B, ...W]), nearO = splitter(over), SW = [];
-        for (const s of sideways) {
-          let A = band([toPath(s.pts)], s.w / 2, true);
+        // A sidewalk's line in the runs where the ground across its band is within SIDE_STEP: none laid
+        // across a step, a wall's or a bank's, where the map draws it on one (the ground under it as the
+        // tiles hold it; every metre along it, at its line and its band's edges). But on an island,
+        // whose ground is paved there either way: there it's the sidewalk's, not the island's verge.
+        const onIsland = insideOf(islands);
+        const level = (s) => {
+          if (!height) return [s.pts];
+          const runs = [];
+          let run = [];
+          const flush = () => { if (run.length > 1 && lengthOf(run) >= 1) runs.push(run); run = []; };
+          for (let i = 1; i < s.pts.length; i++) {
+            const [a, b] = [s.pts[i - 1], s.pts[i]], L = dist(a, b);
+            if (L < 1e-3) continue;
+            const [ux, uz] = [(b[0] - a[0]) / L, (b[1] - a[1]) / L], n = Math.max(1, Math.ceil(L));
+            for (let k = 0; k <= n; k++) {
+              if (k === 0 && run.length) continue;
+              const p = [a[0] + (b[0] - a[0]) * (k / n), a[1] + (b[1] - a[1]) * (k / n)];
+              const hs = [0, 1, -1].map((o) => height(p[0] - uz * o * (s.w / 2), p[1] + ux * o * (s.w / 2)));
+              if (Math.max(...hs) - Math.min(...hs) <= SIDE_STEP || onIsland(p[0], p[1])) run.push(p);
+              else flush();
+            }
+          }
+          flush();
+          return runs;
+        };
+        for (const s of sideways) for (const run of level(s)) {
+          let A = band([toPath(run)], s.w / 2, true);
           const b = boundsOfPaths(A);
           A = minus(minus(minus(A, nearU(b)), nearB(b)), nearO(b));
-          if (walled && A.length) A = minus(A, shade(sides(s.pts), walled, s.w / 2 + 0.3, PATH_KEEP));
+          if (walled && A.length) A = minus(A, shade(sides(run), walled, s.w / 2 + 0.3, PATH_KEEP));
           SW.push(...A);
         }
         const passages = walks.filter((p) => p.level === 3 && p.kind !== 'steps').map((p) => band([toPath(p.pts)], p.w / 2 + 0.3));

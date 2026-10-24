@@ -219,6 +219,9 @@ picks it up can go on from here.
     gone; +4.7% triangles on High at the median. The deathmatch arenas' cover moved with the ground (topo
     70, vilaca 53, santa-justa 54). In the live build until the next deploy. Drafted from its round:
     121 (Santo Adrião's bank taken for walls) and 122 (the land's texture stretched on a steep slope).
+  - **065** (worker-2): landed braga-map `2e5a7e7` (decision 073), no version. Its premise half false:
+    the camera was off along the avenue, not the crown leaning; `imaculada-conceicao` moved 20 m back,
+    where its photo's hackberry and palm stand. Its mark 3 → 3. Left: the young tree OSM maps 35 m ahead.
   - **The coordinator's watcher was down from 18:51 to 21:58** (not re-armed after a message), so ready
     tasks waited for their marks and turns: 102, 065, 090, 111, 112 and 059.
 

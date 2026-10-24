@@ -94,4 +94,6 @@ frame), first a step of this task, is a task of its own (the coordinator's, 2026
   (`?scenery`), three.js takes four of its numbers for every object it makes, and the array was one
   object more on High, so every canvas drawn after it took its noise from further along the sequence
   (two rounds of the same code match to the pixel). So the array is Ultra's alone, and High and Low,
-  shot again against main's, are the same to the pixel: HIGHCHECK.
+  shot again against main's, are the same to the pixel: 0 bytes of 8.3 million differ at High and at Low
+  (main's `before085c` and the branch's `after085c`, both on braga-map 1.38.0's world). The land's shader
+  samples 13 textures on High, as before, and 12 on Low.

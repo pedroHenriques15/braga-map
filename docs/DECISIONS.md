@@ -2188,3 +2188,37 @@ Sameiro road was land.
 
 The alternative was the task as first drafted: only the islands' sidewalks (292 m), which since task
 052 no longer took in the Liberdade's pavement.
+
+## 076 · Ultra's textures: twice High's, made at that size, with the ground's and the barks' relief
+
+*2026-10-24 · task 085 · adds to decisions 030 and 069*
+
+Decision 030 compressed every texture in ETC1S, at most 2048 px: small on a phone, soft up close on a
+PC's screen. Ultra (decision 069) takes everything past what a phone holds, so it takes the textures
+at their finest:
+
+- **Each made texture again at twice High's size, made at that size** (`<id>-ultra.ktx2`: a kind of
+  ground's 2048 px, a bark's and a spray of leaves' 1024), its grain finer rather than High's scaled
+  up, **in ETC1S** as the others. UASTC for its colour too (decision 030's alternative) came to some
+  60 MB, and UASTC for everything, with roughness maps, to some 100 MB, of binary files in this
+  repository's history each time the textures are made, in every install of the package: the
+  owner chose Ultra's download (081), not that. Shot side by side at the three viewpoints, UASTC's
+  colour wasn't plainly sharper (task 085's Notes). Decided by the coordinator, for the owner to
+  confirm.
+- **The relief:** each kind of ground's and each bark's normal map (`-ultra-normal.ktx2`, UASTC
+  with RDO 3 and Zstandard, linear), worked out from its luminance as its height (what's dark is
+  what's sunk: the setts' joints, the bark's furrows), as deep as its generator's relief is
+  (`RELIEF`: the setts' 2 cm, the asphalt's 6 mm); a bark's roughness as a map (`-ultra-rough.ktx2`,
+  half size, ETC1S, linear), and a kind of ground's as a number (`roughness`), near the 0.96 the
+  game's land was matched to the photos at: WebGL gives a fragment shader 16 textures, and the land's
+  had 16 on Ultra with its four shadow cascades. On Ultra, in party-kart, the six kinds' textures are one
+  array texture and their normal maps another, so the land's shader samples 12; below Ultra they're six
+  as before, so High and Low draw as they did to the pixel (the shots' seeded noise, which three's uuids
+  draw from too, would shift with one object more).
+- **The streets' own drawings** (party-kart's, not the map's) made 4× finer on Ultra, 1024 px a
+  layer; and every texture filtered at the card's most (anisotropy). Decided by the coordinator, on
+  the session's recommendation, for the owner to confirm.
+
+48 files, 44 MB (the ground's normal maps 29 of it); High's and below are byte for byte as they were.
+In the game, Ultra downloads some 40 MB more than High and holds about 170 MB more on the card, its frame
+as it was (party-kart's budget, "Ultra's textures").

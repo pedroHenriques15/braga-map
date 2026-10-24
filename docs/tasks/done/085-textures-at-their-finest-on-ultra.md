@@ -1,5 +1,5 @@
 ---
-status: doing
+status: done
 priority: medium
 kind: code
 repo: both
@@ -50,11 +50,17 @@ frame), first a step of this task, is a task of its own (the coordinator's, 2026
 
 ## Done when
 
-- [ ] Up close on Ultra (`lobato-pavement`, `travessa-fujacal`, `capela-sao-joao`) the setts'
+- [x] Up close on Ultra (`lobato-pavement`, `travessa-fujacal`, `capela-sao-joao`) the setts'
   joints and a tree's bark are sharp where High blurs them (a wall's render is the facade kit's
-  task).
-- [ ] The cost (download, memory) is in the budget's Ultra column; High and below unchanged.
-- [ ] `npm test` here, `npm test` and `npm run check` in party-kart pass.
+  task): the coordinator marked the round (party-kart's `shots/2026-10-24-after085/`, at Ultra,
+  `.cache/scorecard/marks/2026-10-24-after085.json`): no mark moved, the textures finer up close, the
+  joints and the bark in relief.
+- [x] The cost (download, memory) is in the budget's Ultra column; High and below unchanged: party-kart's
+  `docs/architecture.md`, "Ultra's textures" (about 170 MB more on the card, about 40 MB more downloaded,
+  the frame as it was); High's, Medium's and Low's files byte for byte as they were, and High and Low
+  shot against main's the same to the pixel (Notes).
+- [x] `npm test` here (156 of 156 on 1.39.1), `npm test` and `npm run check` in party-kart pass (on
+  v1.40.0, at landing).
 
 ## Out of scope
 
@@ -97,3 +103,9 @@ frame), first a step of this task, is a task of its own (the coordinator's, 2026
   shot again against main's, are the same to the pixel: 0 bytes of 8.3 million differ at High and at Low
   (main's `before085c` and the branch's `after085c`, both on braga-map 1.38.0's world). The land's shader
   samples 13 textures on High, as before, and 12 on Low.
+- **The round** (party-kart's `shots/2026-10-24-after085/`, Ultra, High and Low at the three viewpoints;
+  before, `shots/2026-10-24-before085/`, main 28c9e28): the coordinator marked it at Ultra, no mark
+  moving; the cost timed back to back in `before085b` and `after085b`. Not prepared with
+  `tools/round.mjs`, which takes a round's High shots: 085 changes Ultra alone (task 103's table has it).
+- **Decision 076**, for the owner to confirm: Ultra's textures as made (the coordinator's, on the
+  session's measures), the ground's roughness a number, the streets' drawings finer on Ultra.

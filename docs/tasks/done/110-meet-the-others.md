@@ -1,5 +1,5 @@
 ---
-status: doing
+status: done
 priority: high
 kind: code
 repo: party-kart
@@ -40,10 +40,13 @@ message").
 
 ## Done when
 
-- [ ] In two browser contexts in one room, one sets its route to the other and it follows them; one
-  puts a mark and the other sees it (Playwright in Notes).
-- [ ] The host drops a mark outside the open world or under another's id (a test).
-- [ ] `npm test` and `npm run check` pass.
+- [x] In two browser contexts in one room, one sets its route to the other and it follows them; one
+  puts a mark and the other sees it (Playwright in Notes). `meet110.mjs`, 19 of 19: Bruno's GPS
+  follows Ana, again past 50 m and every 4 s; her mark on his maps with her name; shots seen.
+- [x] The host drops a mark outside the open world or under another's id (a test).
+  `test/marks.test.ts`, its first test.
+- [x] `npm test` and `npm run check` pass. On party-kart's main with 066 (84712aa) under it: 156 of
+  156, `tsc` clean.
 
 ## Notes
 
@@ -84,17 +87,15 @@ message").
   Ana, or the host), keeps Ana's untouched; takes his own beside hers; one a player; not more than one
   a second (999 ms dropped, 1000 ms taken); renamed; taken away; gone when he leaves. The sender: the
   first at once, the last of three within 1.2 s after it, none once stopped. `whereIs`: none for a
-  bot, someone gone, or unheard of for 5 s. `npm test` 155 of 155 and `npm run check` clean (one
-  earlier full run ended on a stack trace in `test/comp.test.ts`'s bots-alone match, a file 110
-  doesn't touch; it passed alone four times, and the full suite twice since). Playwright in the game,
-  two browser contexts in one room over PeerJS (party-kart's `shots/2026-10-24-task110/`,
-  `meet110.mjs`, `results.json`, 19 of 19, run again on the last code): Ana hosts, Bruno joins by the
-  link; Ana goes to the Avenida João XXI, Bruno sees her in the list and on the map, a click and his
+  bot, someone gone, or unheard of for 5 s. `npm test` 155 of 155 and `npm run check` clean.
+  Playwright in the game, two browser contexts in one room over PeerJS (party-kart's
+  `shots/2026-10-24-task110/`, `meet110.mjs`, `results.json`, 19 of 19, run again on the last code):
+  Ana hosts, Bruno joins by the link; Ana goes to the Avenida João XXI, Bruno sees her in the list and on the map, a click and his
   GPS follows her (662 m by the streets); she goes 497 m to the Parque da Ponte and his route goes
   after her at once (1220 m); she drives 20 m on and within 4 s his waypoint is where she is; she
-  marks a place by the Topo do Fujacal for everyone, Bruno has it with her name and his feed says so, a click on
-  it makes it his waypoint (no longer following); her new mark takes the old one's place; taken away,
-  it goes from his maps; his own reaches her and goes when he leaves; in a race no room on the map; no
+  marks a place by the Topo do Fujacal for everyone, Bruno has it with her name and his feed says
+  so, a click on it makes it his waypoint (no longer following); her new mark takes the old one's
+  place; taken away, it goes from his maps; his own reaches her and goes when he leaves; in a race no room on the map; no
   page errors. On a phone's screen (`phone110.mjs`, `results-phone.json`): her mark on his minimap
   with her name, the room's list on the full map a tap on the minimap opens, a long press offering
   "Marcar para todos"; its check of a tap on her name following her failed as it should: he was 10 m
@@ -103,6 +104,13 @@ message").
   `2-ana-marks` ("A tua marca" with its ✕), `3-bruno-sees-the-mark` (her flag by the Topo do Fujacal,
   "Marca de Ana" in the list; by car the route to her ends about 50 m short of her in the park, on
   the streets as 109 has it), `4-phone-minimap-mark`, `5-phone-map-room`, `6-phone-long-press`.
+- **Seen once, not reproduced:** one full `npm test` run on this branch ended on a stack trace in
+  `test/comp.test.ts`, its test "bots alone in a match, two against two and three against three:
+  rounds won every way, bombs planted, the match over" (its last frames: `inside` in
+  `src/world/interiors.ts`:185, `solid`, `sight` and `clear` in `src/world/sight.ts`, `FootBot.sees`,
+  `look` and `step`, `Squad.step`, then `match` at comp.test.ts:222), and no summary after it; its
+  cause wasn't found. 110 doesn't touch those files. The file passed alone four times, and the full
+  suite three times since.
 - **Decided by the session, for the owner to confirm:**
   - The room's marks stay through a race or a round, hidden in it, and are back after it (rather
     than cleared when one starts); none can be put while one is on.
@@ -110,6 +118,9 @@ message").
     rather than going on following them.
   - A mark is a flag in the colour of who put it, the driver's: a dark driver's is dark, with a white
     edge.
+- **Landed (worker-2, 2026-10-24):** party-kart `67e3771`, rebased onto 066's 84712aa (156 of 156,
+  `tsc` clean). braga-map unchanged but this file and the roadmap: no version. No new decision: the
+  task's own rules; the three decided for the owner are in task 103's table.
 - **Not verified:** two machines on different networks (both contexts were on one machine, through
   PeerJS's server); real phones (Playwright's touch screen only); an old build in the same room (that
   it ignores both messages is read from the code, not run).

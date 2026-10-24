@@ -1,5 +1,5 @@
 ---
-status: doing
+status: done
 priority: high
 kind: code
 repo: party-kart
@@ -37,10 +37,13 @@ Today: the streets' names are the map's (`Line.name`, `src/world/names.ts`); the
 
 ## Done when
 
-- [ ] "picoto", "fujacal" and "joao xxi" each find their place, and picking one sets the route
-  (a test of the search; Playwright in Notes).
-- [ ] Typing in the box doesn't move the kart.
-- [ ] `npm test` and `npm run check` pass.
+- [x] "picoto", "fujacal" and "joao xxi" each find their place, and picking one sets the route
+  (a test of the search; Playwright in Notes). party-kart's `test/places.test.ts` (both tests), and
+  the Playwright run in the game, 14 of 14: each of the three found and picked, a route set.
+- [x] Typing in the box doesn't move the kart. Playwright: "wasd mn " and ↑ typed in it, the kart
+  0.00 m from where it was, the map still open, the sound as it was.
+- [x] `npm test` and `npm run check` pass. On party-kart's main with 114 (8bbe292) under it: 152 of
+  152, `tsc` clean.
 
 ## Notes
 
@@ -83,3 +86,6 @@ Today: the streets' names are the map's (`Line.name`, `src/world/names.ts`); the
   "picoto" from Fujacal gives the Picoto Adventure Park before the Monte e miradouro do Picoto (930 m
   and 1.1 km): both are listed, Enter takes the first.
 - **Not verified:** on a real phone's own keyboard (Playwright's keys only).
+- **Landed (worker-2, 2026-10-24):** party-kart `6967a66`, rebased onto 114's 8bbe292 (152 of 152,
+  `tsc` clean). braga-map unchanged but this file and the roadmap: no version. No new decision: the
+  nearest first is the task's own, and a car's route ending on a street keeps decision 066.

@@ -35,6 +35,8 @@ are done from; the sound moved to N.
 - **108** "Ir para aqui": your kart put anywhere in the open world from the full map.
 - **109** Find a street or a place, and the GPS takes you there.
 - **110** Meet the others: the GPS to a friend, and a mark the whole room sees.
+- **114** Bots keep their distance on the jump's run-up: with 105's longer karts a pile-up there
+  sends three times as many short of the ramp (found by 105).
 
   The owner's improvements of 2026-10-24, done first, before 081.
 

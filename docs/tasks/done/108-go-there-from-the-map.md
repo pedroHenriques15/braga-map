@@ -1,5 +1,5 @@
 ---
-status: doing
+status: done
 priority: high
 kind: code
 repo: party-kart
@@ -37,10 +37,12 @@ camera when you land (`src/main.ts`, about line 1231); the others see you where 
 
 ## Done when
 
-- [ ] From the full map your kart goes to a street across the open world, on it and facing along it
-  (a test of the spot it picks; Playwright in Notes).
-- [ ] It's never offered in a race or a round (a test).
-- [ ] `npm test` and `npm run check` pass.
+- [x] From the full map your kart goes to a street across the open world, on it and facing along it
+  (a test of the spot it picks; Playwright in Notes). party-kart's `test/goto.test.ts` (23 places,
+  and under a deck); the Playwright run in Notes, 12 of 12.
+- [x] It's never offered in a race or a round (a test). `test/goto.test.ts` (`mayGo`), and in the
+  game a right click in a race offers nothing.
+- [x] `npm test` and `npm run check` pass. 147 of 147, `tsc` clean, on `ae5d387`.
 
 ## Notes
 
@@ -78,3 +80,5 @@ camera when you land (`src/main.ts`, about line 1231); the others see you where 
   `4-touch-menu`.
 - **Not verified:** two players in a room, the other seeing the jump (the 30 m rule is the game's,
   unchanged); a real phone (CDP's touches only).
+- **Landed** 2026-10-24 in worker-2's merge turn: party-kart `ae5d387` on main. braga-map's world, tools
+  and library unchanged: no version. No lasting decision beyond 064 and 066 (no DECISIONS entry).

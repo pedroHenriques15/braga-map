@@ -26,13 +26,13 @@ whole area. Free roam went live with task 036 before the race moved onto the str
 026, 2026-10-15), and the race followed with 037 (decision 029). M opens the minimap into a full map
 of the whole city since 106 (decision 064), where the rest of the owner's improvements of 2026-10-24
 are done from; the sound moved to N. A click on it puts a waypoint since 107 (decision 066), and the
-GPS takes you there along the map's road graph, by the rules of the road. Every kart is 2.8 by 1.8 m since 105 (decision 065), drawn within
+GPS takes you there along the map's road graph, by the rules of the road; and since 108 a right
+click on it (a long press) puts your kart on the street nearest a place, "Ir para aqui". Every kart is 2.8 by 1.8 m since 105 (decision 065), drawn within
 the footprint it collides as, its driver the same size in each.
 
 - **038** The city streamed tile by tile, when the area grows.
 - **066** A car on a street beside a wall tilts by the street, not by the drop past its edge: the
   race's hops on the Avenida João XXI's upper lane (party-kart, found by 045).
-- **108** "Ir para aqui": your kart put anywhere in the open world from the full map.
 - **109** Find a street or a place, and the GPS takes you there.
 - **110** Meet the others: the GPS to a friend, and a mark the whole room sees.
 - **114** Bots keep their distance on the jump's run-up: with 105's longer karts a pile-up there

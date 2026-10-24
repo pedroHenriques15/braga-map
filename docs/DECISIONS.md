@@ -1954,3 +1954,33 @@ The alternatives were the one-way on each Line and the junctions found by each g
 points (every game making the graph again, from points thinned and cut by tile), a route that stops
 where the streets do (the Picoto's top out of reach), and a car free on the pavements (a GPS that
 drives against a one-way street on its pavement).
+
+## 067 · On a jump's run-up the bots go round a kart stopped there, and one that can't fly gets out of the way
+
+*2026-10-24 · task 114 · changes decision 044's "the bots pass nobody" on the run-up, in party-kart*
+
+The bots drove a jump's run-up on the ramp's axis in single file and passed nobody (decision 044).
+With the karts 2.8 m long (decision 065), one stopped there by an item or a bump sent those behind
+into it and short of the landing: put back on the Volta dos Amigos' run-up 56 times in 64 seeded
+eight-bot races, where the old karts, touching only 2.2 m apart, had about half that.
+
+- **A kart in the way is gone round:** one a bot would catch before that kart is well off the lip,
+  judged by where it will be when the bot gets there. On the bot's own side if there's room, to the
+  kerb; else the other side if there's more than a second to cross; else as far over on its side as
+  it goes. Not crossing in front of a kart it's about to reach, nor swinging back while alongside it.
+- **Up the ramp beside it:** the autopilot steers onto a line up to 1.65 m either side of the ramp's
+  axis, parallel to it, as it steers onto the axis. Flights from up to 2.15 m off the axis all land
+  in the corner the race takes in; further across, karts arriving at an angle clip the ramp's side.
+- **One that can't fly moves aside:** a bot that can't make the ramp's speed by its foot any more
+  (6 m/s under it, by the handling's own acceleration) moves as far over as the road goes, away from
+  the kart behind it; under 15 m/s the autopilot drives its line up the ramp rather than steering it
+  onto the flight, which at a walking pace swung it into the run-up's wall. It still falls short and
+  is put back on the run-up, as a player would be: from a standstill a kart needs about 120 m to
+  reach the ramp's speed, about 15 s backing up, against 3 s for the put-back (decided by the
+  session, for the owner to confirm).
+
+What it did: put back on the run-up 24 times in the same 64 races, where it was 56; of eight bots in
+a pack with a pudim dropped on the run-up, 32 seeded times, 44 put back (32 of them the ones it hit)
+where it was 85; behind a kart stopped on the run-up, every bot past the landing. The alternatives
+were keeping a following distance on the run-up (a bot that brakes takes the ramp too slow and falls
+short itself), and a bot that lost its speed backing up and lining up again (above).

@@ -28,15 +28,14 @@ of the whole city since 106 (decision 064), where the rest of the owner's improv
 are done from; the sound moved to N. A click on it puts a waypoint since 107 (decision 066), and the
 GPS takes you there along the map's road graph, by the rules of the road; and since 108 a right
 click on it (a long press) puts your kart on the street nearest a place, "Ir para aqui". Every kart is 2.8 by 1.8 m since 105 (decision 065), drawn within
-the footprint it collides as, its driver the same size in each.
+the footprint it collides as, its driver the same size in each; and since 114 (decision 067) the bots
+go round a kart stopped on a jump's run-up rather than into it.
 
 - **038** The city streamed tile by tile, when the area grows.
 - **066** A car on a street beside a wall tilts by the street, not by the drop past its edge: the
   race's hops on the Avenida João XXI's upper lane (party-kart, found by 045).
 - **109** Find a street or a place, and the GPS takes you there.
 - **110** Meet the others: the GPS to a friend, and a mark the whole room sees.
-- **114** Bots keep their distance on the jump's run-up: with 105's longer karts a pile-up there
-  sends three times as many short of the ramp (found by 105).
 
   The owner's improvements of 2026-10-24, done first, before 081.
 

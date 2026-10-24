@@ -31,11 +31,10 @@ click on it (a long press) puts your kart on the street nearest a place, "Ir par
 its search box finds a street, a landmark, an arena or a bus stop by its name, accents or not, and
 the GPS takes you there. Every kart is 2.8 by 1.8 m since 105 (decision 065), drawn within
 the footprint it collides as, its driver the same size in each; and since 114 (decision 067) the bots
-go round a kart stopped on a jump's run-up rather than into it.
+go round a kart stopped on a jump's run-up rather than into it. A car tilts by the street, pavement
+or path it's on, not the drop past its edge, since 066 (decision 068).
 
 - **038** The city streamed tile by tile, when the area grows.
-- **066** A car on a street beside a wall tilts by the street, not by the drop past its edge: the
-  race's hops on the Avenida João XXI's upper lane (party-kart, found by 045).
 - **110** Meet the others: the GPS to a friend, and a mark the whole room sees.
 
   The owner's improvements of 2026-10-24, done first, before 081.

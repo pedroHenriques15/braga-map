@@ -1984,3 +1984,20 @@ a pack with a pudim dropped on the run-up, 32 seeded times, 44 put back (32 of t
 where it was 85; behind a kart stopped on the run-up, every bot past the landing. The alternatives
 were keeping a following distance on the run-up (a bot that brakes takes the ramp too slow and falls
 short itself), and a bot that lost its speed backing up and lining up again (above).
+
+## 068 · A car tilts by the surface it's on, not the ground past its edge
+
+*2026-10-24 · task 066 · party-kart's ground, beside decision 049*
+
+party-kart tilted a car by the ground 1.5 m either side of it wherever that fell, and on a narrow
+street beside a wall or a cutting that's past the carriageway's edge: on the Avenida João XXI's 3.3 m
+upper lane the race's car read the cutting's street 6 m down and was tipped to 64° on a flat road.
+Since task 066, on a street, a pavement or a path, a side whose ground is further off the ground
+under the car than a street climbs (40% over the distance) is read at half a metre instead, or left
+out, and the slope taken on the side that's still its own surface; elsewhere, and where both sides
+are its own, as before. Along every street in the area at 90 km/h, both ways, a car was in the air
+0.3 s or more 172 times, where it was 187. What's left on the João XXI is the ground itself, which
+runs from the lane down to the cutting over about 1.5 m: held in the car's floor alone, the car
+would float over the street as drawn on that ground, so the step is the ground's to make (task 115).
+The land dug in front of the tunnels' mouths (`openings`) stays: without it a car doesn't come out of
+the Liberdade underpass.

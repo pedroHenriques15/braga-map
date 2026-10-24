@@ -35,6 +35,7 @@ import { carriagewayMoves, heldGround, isLine, isSquare, isSquareInParts, LEVEL,
 import { packPaths, packStreets, streetSurfaces } from './streets.mjs';
 import { cutWalls, packWalls } from './walls.mjs';
 import { packFurniture } from './furniture.mjs';
+import { roadsOf } from './roads.mjs';
 import { EVERGREEN as TREE_EVERGREEN, KINDS as TREE_KINDS, osmKind, TREES } from './trees.mjs';
 import { PLATE, platesOf } from './plates.mjs';
 import { BALCONIES, BALCONY, COLOUR, COLOURS, floorsOf, GROUND, GROUND_OF, guesser, MATERIAL, MATERIALS, TYPE, TYPES } from './facades.mjs';
@@ -56,7 +57,7 @@ const places = fs.existsSync(path.join(CACHE, 'places.json')) ? readCache('place
 const ground = await terrain();
 const inExt = (x, z, m = 0) => x >= EXT.x0 - m && x <= EXT.x1 + m && z >= EXT.z0 - m && z <= EXT.z1 + m;
 
-const tiles = new Map(allTiles().map(([i, j]) => [tileId(i, j), { id: tileId(i, j), box: tileBox(i, j), areas: [], lines: [], buildings: [], trees: [], streets: [], paths: [], rails: [], walls: [], furniture: [], signs: [], names: [], nameAt: new Map(), stops: [], plates: [] }]));
+const tiles = new Map(allTiles().map(([i, j]) => [tileId(i, j), { id: tileId(i, j), box: tileBox(i, j), areas: [], lines: [], buildings: [], trees: [], streets: [], paths: [], rails: [], walls: [], furniture: [], signs: [], names: [], nameAt: new Map(), stops: [], plates: [], roads: [], turns: [] }]));
 const tileAt = (x, z) => tiles.get(tileId(...tileOf(x, z)));
 const tilesOver = (b, m = 0) => [...tiles.values()].filter((t) => overlaps(t.box, b, m));
 
@@ -233,6 +234,23 @@ for (const s of lines) {
     flush();
   }
 }
+// The road graph a game routes on (roads.mjs, task 107): every street and path in the open world's
+// area from junction to junction, each in the tile its first point is in, [what, name, width, n,
+// ...points, ...heights]: what its kind (osm.mjs's LINE, or lines.mjs's PATH_K for a path), 16 if a
+// car may use it, 32 if someone on foot may, 64 if a car may only go the way its points do, its
+// level (128 times it) and 512 if it's part of a roundabout; name its place in the tile's names (0 for none); its width in decimetres; and
+// on a deck or in a tunnel each point's height after them, in decimetres above ELEV0. And the turns
+// the map bans cars, in the tile of their junction: [junction, from, to], each x and z in half metres.
+const graph = roadsOf({ lines, heights, paths: pathsOsm.elements, walks, restrictions: readCache('osm/restrictions.json').elements, inArea: (x, z) => inside(OPEN, x, z), ground: (x, z) => ground.at(x, z), elev0: ELEV0 });
+for (const r of graph.roads) {
+  const t = tileAt(...r.pts[0]), name = r.name ? nameIn(t, r.name) : 0;
+  if (name > 511) throw new Error(`${t.id}: more than 511 names`);
+  const up = r.level === LEVEL.bridge || r.level === LEVEL.tunnel;
+  t.roads.push(r.k + 16 * r.car + 32 * r.foot + 64 * r.oneway + 128 * r.level + 512 * r.ring, name, Math.round(r.w * 10), r.pts.length, ...packPts(r.pts), ...(up ? r.ys.map(dm) : []));
+}
+for (const { at, from, to } of graph.turns) tileAt(...at).turns.push(...[at, from, to].flatMap(([x, z]) => [half(x), half(z)]));
+console.log(`the road graph: ${graph.stats.roads} stretches (${graph.stats.car} for cars, ${graph.stats.oneway} of them one-way; ${graph.stats.foot} on foot), ${graph.stats.junctions} junctions, ${graph.stats.turns} turns banned (${graph.stats.viaWay} bans over a way left out)`);
+
 // The bus stops (task 042): every one the map has (highway=bus_stop), where it stands, and whether it
 // has a shelter, in its tile's header: [x, z, shelter] each, in metres, shelter 1 or 0.
 let nStops = 0;
@@ -1216,6 +1234,8 @@ for (const t of tiles.values()) {
   if (t.names.length) p.part('names', [], { list: t.names });
   if (t.stops.length) p.part('stops', [], { list: t.stops });
   if (t.plates.length) p.part('plates', [], { list: t.plates });
+  if (t.roads.length) p.part('roads', t.roads);
+  if (t.turns.length) p.part('turns', t.turns);
   const b64 = p.encode();
   fs.writeFileSync(path.join(dir, 'tiles', t.id + '.js'), `${HEAD}export default '${b64}';\n`);
   bytes += b64.length;

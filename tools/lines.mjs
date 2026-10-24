@@ -69,7 +69,7 @@ export function onCarriageways(osm, { widths = true } = {}) {
 // `covered`), or a bridge's deck (where the map draws the stretch under a bridge as a tunnel).
 export const LEVEL = { ground: 0, bridge: 1, tunnel: 2, under: 3 };
 const on = (v) => v != null && v !== 'no';
-const levelOf = (t) => (on(t.bridge) ? LEVEL.bridge : t.tunnel === 'building_passage' || (on(t.covered) && !on(t.tunnel)) ? LEVEL.under : on(t.tunnel) ? LEVEL.tunnel : LEVEL.ground);
+export const levelOf = (t) => (on(t.bridge) ? LEVEL.bridge : t.tunnel === 'building_passage' || (on(t.covered) && !on(t.tunnel)) ? LEVEL.under : on(t.tunnel) ? LEVEL.tunnel : LEVEL.ground);
 
 // A way that's a street or the railway, as a line; a pedestrian area isn't one (it's a square).
 export const isLine = (e) => e.type === 'way' && (LINE[e.tags?.highway] != null || !!e.tags?.railway);

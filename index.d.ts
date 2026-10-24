@@ -118,6 +118,40 @@ export interface Line {
   heights?: number[];
 }
 
+// The road graph a game routes on (task 107, tools/roads.mjs): every street and path in the open
+// world's area from junction to junction, cut where it crosses the area's edge (a dead end there, as
+// a game's barriers stand at the gates). Its ends are its first and last points, and a junction is
+// where stretches' ends are at one point (in half metres, as every point is); the points between are
+// thinned to 0.8 m. kind: a street's, as a Line's (0 to 8), or a path's, 10 a footway (a pavement the
+// map draws and a crossing too), 11 a path or a bridleway, 12 a cycleway, 13 a flight of steps. car: a
+// car may use it (the map's access, and never a pedestrian street unless it lets motor vehicles in);
+// foot: someone on foot may (every path the map doesn't close, and every street but a motorway).
+// oneway: a car only the way its points go (a one-way street, a roundabout); someone on foot either
+// way. ring: part of a roundabout (its ring, one-way). w: its width, kerb to kerb. heights: on a deck
+// or in a tunnel, each point's road above elev0.
+export interface Road {
+  kind: number;
+  car: boolean;
+  foot: boolean;
+  oneway: boolean;
+  ring: boolean;
+  level: 'ground' | 'bridge' | 'tunnel' | 'under';
+  w: number;
+  name: string | null;
+  pts: [number, number][];
+  heights?: number[];
+}
+
+// A turn the map bans cars (its turn restrictions, `only_` ones made into bans of every other turn,
+// for any hour): at the junction `at`, a car on the stretch whose point before the junction is `from`
+// may not go on onto the stretch whose point after it is `to` (each a Road's second or last but one).
+// The bans over a way rather than a node aren't in it.
+export interface Turn {
+  at: [number, number];
+  from: [number, number];
+  to: [number, number];
+}
+
 // A bus stop (task 042): every one OpenStreetMap has (highway=bus_stop), where it stands (by the
 // kerb, or on the street's line where the map puts it there), and whether it has a shelter (the map's
 // shelter=yes; it doesn't always say).
@@ -707,6 +741,10 @@ export interface World extends BragaMap {
   // The bus stops on the tiles loaded, and the streets' name plates (task 042).
   stops: Stop[];
   plates: Plate[];
+  // The road graph and the turns the map bans cars, on the open world's tiles loaded (task 107): a
+  // stretch whose first point is on a tile loaded, and a turn whose junction is.
+  roads: Road[];
+  turns: Turn[];
   trees: Tree[];
   // Every street as surfaces, and every path, on the open world's tiles loaded (empty on the others).
   streets: Streets;

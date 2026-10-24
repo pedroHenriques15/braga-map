@@ -279,6 +279,8 @@ export async function loadWorld(area) {
   const signs = [];
   const stops = [];
   const plates = [];
+  const roads = [];
+  const turns = [];
   const trees = [];
   const streets = { carriageways: [], pavements: [], kerbs: [], markings: [], paths: [], handrails: [] };
   const walls = [];
@@ -393,6 +395,26 @@ export async function loadWorld(area) {
       furniture.push(f);
     }
     for (const [n, x, z, face, py, on] of head.plates?.list ?? []) plates.push({ name: names[n - 1], on: on ? 'post' : 'wall', x, z, face, y: py });
+    // The road graph (tools/roads.mjs, task 107): each stretch [what, name, width, n, ...points,
+    // ...heights], what its kind (0 to 13), 16 for cars, 32 on foot, 64 one-way, its level 128 times,
+    // 512 a roundabout's;
+    // the name its place in the tile's names; a deck's or a tunnel's height at each point after the
+    // points. And the turns the map bans cars, [junction, from, to] each, in half metres.
+    const Ro = head.roads;
+    for (let i = Ro ? Ro.at : 0; Ro && i < Ro.at + Ro.n; ) {
+      const what = nums[i];
+      const n = nums[i + 3];
+      const level = (what >> 7) & 3;
+      const road = { kind: what & 15, car: (what & 16) !== 0, foot: (what & 32) !== 0, oneway: (what & 64) !== 0, ring: (what & 512) !== 0, level: LEVELS[level], w: nums[i + 2] / 10, name: names[nums[i + 1] - 1] ?? null, pts: points(nums, i + 4, n) };
+      i += 4 + n * 2;
+      if (level === 1 || level === 2) {
+        road.heights = Array.from(nums.subarray(i, i + n), (v) => v / 10);
+        i += n;
+      }
+      roads.push(road);
+    }
+    const Tu = head.turns;
+    for (let i = Tu ? Tu.at : 0; Tu && i < Tu.at + Tu.n; i += 6) turns.push({ at: [nums[i] / 2, nums[i + 1] / 2], from: [nums[i + 2] / 2, nums[i + 3] / 2], to: [nums[i + 4] / 2, nums[i + 5] / 2] });
     // The trees (tools/world.mjs): [x, z, kind | mapped << 4 | filled << 5 | height << 6, crown, foot,
     // dx, dz] each, in half metres, then decimetres (dx, dz: its crown's middle from its trunk); the
     // third read as 16 bits unsigned.
@@ -509,6 +531,8 @@ export async function loadWorld(area) {
     signs,
     stops,
     plates,
+    roads,
+    turns,
     trees,
     streets,
     walls,

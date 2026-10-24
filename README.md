@@ -50,6 +50,8 @@ map().facadeTypes; // each kind of facade's proportions; map().facadeColours its
 world.streets; // in the open world's area: { carriageways, pavements, kerbs, markings, paths, handrails }, each piece at its level
 world.walls; // in the open world's area: [{ kind, material, on, h, w, level, source, pts, ys, open? }], the walls, fences, railings, hedges and gates
 world.furniture; // in the open world's area: [{ kind, x, z, angle, h, source, face? }], the lamps, signs, traffic lights, shelters, benches, bins, ecopontos, bollards
+world.roads; // in the open world's area, the road graph to route on: [{ kind, car, foot, oneway, ring, level, w, name, pts, heights? }], junction to junction
+world.turns; // and the turns the map bans cars: [{ at, from, to }], at a junction from the point before it to the point after it
 world.open.gates; // where each street or path leaves the area: [{ x, z, heading, w, k, level, y }]
 world.inOpen(x, z); // inside its edge?
 world.shooter; // the shooter's area, Fujacal: { id: 'fujacal', name, pts, gates, tiles, seen }, and world.inShooter(x, z)
@@ -144,6 +146,20 @@ map().groundKinds; // the kinds it says, each with its texture: [{ kind, texture
   sample of 50 checked against the photos, 17 were what it said and 10 another piece of furniture
   (`refs/furniture.json`). A sign's face is a photo's where one shows it, else the commonest for its
   place (a stop or a give-way sign by the map's, a no entry at a one-way street's wrong end).
+- And its road graph (task 107, `tools/roads.mjs`, `world.roads` and `world.turns`), for a game to
+  route on, as party-kart's GPS does: every street and path in the area from junction to junction
+  (the lines above are for drawing: thinned, cut at each tile's edge, with no junctions), cut where it
+  crosses the area's edge, a dead end there as a game's barriers stand at the gates. Each stretch says
+  who may use it (cars, by the map's access; on foot, every path the map doesn't close and every
+  street but a motorway), whether a car may go only the way its points do (a one-way street, turned
+  round where it runs against the way it's drawn; a roundabout's ring, `ring`), its name, width and
+  level, and on a deck or in a tunnel its heights. Its ends are junctions where they're at one point.
+  The turns the map bans (its turn restrictions, an `only_` one made into bans of every other) are
+  plain bans: at a junction, from the stretch whose point before it is `from` onto the one whose point
+  after it is `to`. 6,375 stretches, 2,409 for cars (1,035 one-way), 39 banned turns; the bans over a
+  way rather than a node (one) aren't in it. 154 KB in the open world's tiles, 72 KB gzipped. The
+  Picoto's top has streets of its own in the area, which reach the rest only from outside it: there,
+  only paths and steps go up.
 - The buildings are as DGT's LiDAR measured them (`measured`), 95% of those on the map: the
   height of the eaves (`h`) and of the ridge, the roof's shape, the way it runs (`dir`), which
   ends are hipped, its pitch, its storeys, and its colour as the 2025 orthophoto sees it (from

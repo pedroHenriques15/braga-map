@@ -213,6 +213,12 @@ picks it up can go on from here.
     a three 0.186 bug (CSM's old lights chunk darkened every material). Its round at Ultra: no mark moved,
     the corners and the trees' shadows nearer the photos. Its first Done when left open: the shadows reach
     2 km, not the horizon, and the glass gives back the sky only (117). Drafted from it: 117 to 120.
+  - **111** (worker-3, critical): landed braga-map `e6a2990` (decision 072) and party-kart `28c9e28`.
+    The land is held to each side of a retaining wall and cut along it, so it never ramps across a wall's
+    step: the white shards at `travessa-lobato` gone (2 → 3), couteiro's heaps of land over the street
+    gone; +4.7% triangles on High at the median. The deathmatch arenas' cover moved with the ground (topo
+    70, vilaca 53, santa-justa 54). In the live build until the next deploy. Drafted from its round:
+    121 (Santo Adrião's bank taken for walls) and 122 (the land's texture stretched on a steep slope).
   - **The coordinator's watcher was down from 18:51 to 21:58** (not re-armed after a message), so ready
     tasks waited for their marks and turns: 102, 065, 090, 111, 112 and 059.
 

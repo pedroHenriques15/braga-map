@@ -95,12 +95,16 @@ picks it up can go on from here.
     which assigns the tasks, grants the one merge turn, marks every round and keeps this file. The
     workers' rules and the live board are outside git, in `C:\Users\pedro\source\repos\_coord\`
     (`worker-brief.md`, `board.md`); what lands is recorded here.
-- **Phase 2, the work:** not started. The order, each after its `depends-on`:
+- **Phase 2, the work:** started on 2026-10-24 (105, 106 and 041 first). The order, each after its
+  `depends-on`. Tasks drafted during the run are in it too (the owner, 2026-10-24): a `critical` one
+  goes to the first worker free, the others by their priority.
   1. 105 smaller karts, 106 the full map on M, 107 the GPS, 108 "Ir para aqui", 109 find a place,
-     110 meet the others.
+     110 meet the others; and 111, the white shards at a wall's foot (`critical`), as soon as a worker
+     is free.
   2. 081 Ultra, then 102 the credits.
   3. The medium ones: 044 pavements level, then 051 steps, then 076 the land at the steps; 041 squares
-     and 059 the island's pavement alongside; 066 the tilt; 018 markings after 044, then 020
+     and 059 the island's pavement alongside; 112 the two buildings the photos don't have (a world
+     rebuild, after 041's); 066 the tilt; 018 markings after 044, then 020
      furniture; 085 textures, 086 doors and windows, 087 roofs, 088 species, 090 the light; 038
      streaming, then 083 the 50 cm ground (038 is low but 083 needs it).
   4. The low ones: 084, 065, 068, 089, 091 (after 090), 092 (after 090 and 020), 093 (after 088), 094

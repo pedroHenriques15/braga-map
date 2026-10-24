@@ -2080,3 +2080,37 @@ What it costs, on the owner's RTX 4060 Ti: a frame at 720 pixels high of 3.34–
 Ultra 1.36–3.44), at most 9.8 ms at 2560 by 1440; 192 MB more of textures (the cascades' maps). A
 gather of the near trees, every 20 m, adds 3–4 ms to its frame; the near trees go into every cascade
 whole, and task 089, which remakes the trees, takes that on.
+
+## 072 · The land steps under a retaining wall: a game holds it to each side's own ground, and cuts its mesh along the wall
+
+*2026-10-24 · task 111 · adds to decision 059, whose "the land carved to the wall at 50 cm" it leaves as it was*
+
+The tiles hold the ground every 2 m (decision 049), so across a retaining wall standing at a slant to
+that grid the land ramps from one side's ground to the other's, over up to a cell either side of the
+step. A game drawing that ramp on a 2 m lattice stood its triangles up to a metre or more in front of
+the wall's face (the white shards in the Travessa Conselheiro Lobato, through the band a street's
+outline leaves the land drawn in), curled a street at the wall's foot up to it (39 cm over its last
+2 m, at the median, in the Volta dos Amigos' box) and sank one on its top down to it (44 cm). The data
+can't hold the step, whatever its points' heights; the game can, so party-kart does it:
+
+- **The land's height either side of a retaining wall is that side's own** (`land.ts`'s
+  `heldAtWalls`): within 3 m of a wall of the map's standing half a metre or more over its lower side,
+  the land on its lower side is held down to the ground 3 m out, past the grid's ramp, and on its
+  higher side up to the ground 3 m in, eased out over the last metre and the wall's first and last
+  1.5 m. The karts and the walkers stand on it as it's drawn. (The wall's own top, and its top less its
+  height, are braga-map's measures 1.75 m either side and the step's upper quarter: held to them, a
+  street at its foot was held up to a metre over itself.) A side's ground is never taken past another
+  wall alongside, but half way to it: between a terrace's two tiers, or a street between the wall
+  above it and the one below, both walls hold the land to the same ground.
+- **The land's mesh is cut along each wall's footprint** (`lattice.ts`'s `Surface`), its pieces at
+  those heights, so it steps under the wall, whose face and top stand over the step. Only a small
+  cell's triangles are cut, and a cell is split into small ones only as any is (where the land shows
+  beside a street and its triangles would miss it): splitting every cell a wall meets, round the map's
+  80 km of them, cost a fifth more triangles at every viewpoint, and cutting the big cells' 8% more
+  on High and 13% on Low, where a 10 m triangle (20 m on Low) is too coarse for a step to show.
+- **Nothing in the data changes:** a wall's line, its top and its height are as braga-map has them.
+
+The alternatives: the land carved in the tiles at 50 cm (decision 059's, still too big to ship); the
+land masked in front of each wall (a street's edge would still curl, and the karts would still ride
+the ramp); a wall's measured foot and top as the land's heights (up to a metre off a street at its
+foot).

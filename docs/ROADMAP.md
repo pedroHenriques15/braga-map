@@ -86,14 +86,13 @@ ground is there, the statues the map has in them, and the give-way markings at t
 decision 050); and on foot, a retaining wall measured along its length and never climbed from below,
 the river's bed stopped at the walls on its bank, and the passages under the houses open at their
 ends (077, 078, decision 059); and the squares the map has in parts, the Praça da República among
-them, drawn as squares less what's in them (041, decision 063).
+them, drawn as squares less what's in them (041, decision 063); and the land stepping under a retaining
+wall, not ramping up in front of it through a street at its foot (111, party-kart, decision 072).
 
 - **051** A flight of steps meets the street, the path or the land at its foot and its top: 51 of
   236 stand more than a kart's step over what's at their foot (found by 050).
 - **059** A pavement the map has on an island drawn as a pavement, not the island's grass: the
   Avenida da Liberdade's at (276, 840), where `liberdade`'s photo is taken (found by 058).
-- **111** White shards sticking out of the road at a wall's foot in the Travessa Conselheiro Lobato:
-  critical, in what's shipped (found marking the baseline round of 2026-10-24).
 - **112** Two buildings where the photos have none: by São João da Ponte's chapel and on the Viriato
   Amaral Nunes, where its graffiti wall is (found the same way).
 - **113** A wall keeps its gap where a footway gives way to a square's paving (found by 041).

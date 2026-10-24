@@ -74,6 +74,7 @@ task's Notes as "decided by the session, for the owner to confirm".
 | 110 | What happens to the room's marks in a race? | They stay, hidden during it, and are back after it | 110's landing |
 | 110 | When does following a friend end? | When you're there (within 15 m), as a waypoint does | 110's landing |
 | 110 | What does a mark look like? | A flag in the colour of the driver who put it (a dark driver's dark with a white edge), with their name | 110's landing |
+| 059 | Its island at the Liberdade isn't an island since 052; the map's sidewalks lie on open ground with no pavement under them for about 13 km of the open world (1 to 8 m off every street piece), the Liberdade's among them. Only the islands (292 m), or every such sidewalk? | Every such sidewalk (the coordinator, on worker-3's measure): the map's sidewalk is a pavement where the tiles have none under it, on an island or on open ground, kerbed like the streets' pavements; it changes many viewpoints, all shot and marked | 059's landing |
 | 105 | The chair (Joel's) and the trolley (Joel F.'s) are smaller than 2.8 m today: brought to 2.8 m, or kept in proportion? | Every body drawn at 0.7 of its model, so every driver stays the same size (the chair 2.06 m long, the trolley 2.16 m); the banger at 0.65 to fit 2.8 m (from 4.30), its driver 7% smaller | 105's landing |
 
 ## Progress

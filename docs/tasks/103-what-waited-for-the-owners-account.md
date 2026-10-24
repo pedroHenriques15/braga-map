@@ -82,6 +82,7 @@ task's Notes as "decided by the session, for the owner to confirm".
 | 090 | The renderer for Ultra's light (its step 7): WebGL with three's post-processing, or WebGPU? | WebGL, with three's post-processing on Ultra only: the game's look is in 14 changes to three's GLSL shaders in 7 files, which WebGPU's node materials don't take | 090's landing |
 | 090 | Its scope | Cascaded shadows, GTAO and SMAA (three's TAA only accumulates while still, so it smears in motion); reflections, light bounced, the haze and clouds' shadows and soft shadows drafted as 117 to 120 | 090's landing |
 | 085 | Ultra's textures in git: ~100 MB as the task has it, each time they're made | The ~40 MB way, if the setts' joints and the bark read sharp up close at Ultra (the colour in ETC1S at twice High's size, the normal map alone in UASTC, roughness at half size in ETC1S); the ground's relief as one array of normal maps and a roughness by kind, within WebGL's 16 texture units; the facade kit split off as 123 (the coordinator) | 085's landing |
+| 085 | The setts, calçada and asphalt seen up close at 085's viewpoints are party-kart's street drawings (256 px canvases), not braga-map's textures: in 085, or a task of their own? | In 085: on Ultra the streets' drawings made at 1024 px (drawn finer, not scaled), about 80 MB more on the card (Ultra's textures ~540 MB); High and below as they are (the coordinator, on worker-2's recommendation) | 085's landing |
 | 088 | New tree kinds for the species found | None: no species reaches the task's ~50 trees on the photos' evidence (willows 23, planes 25, hackberries 20), and the hackberries are drawn as "broadleaf", whose bark is already a hackberry's; the kinds stay nine | 088's landing |
 | 088 | Carry a row's species past what the photos show (the point cloud's spacing) | No: a row's species goes only as far as a photo shows the row, as decision 051 has it | 088's landing |
 | 081 | How far Ultra draws the trees in full | 700 m, by a frame under 16 ms while moving (a frame after gathering them: 12 ms at 700 m, 18 at 1,000, at 2560 × 1440); a still frame holds 1,000 m at 4.6 ms | 081's landing |
@@ -222,6 +223,12 @@ picks it up can go on from here.
   - **065** (worker-2): landed braga-map `2e5a7e7` (decision 073), no version. Its premise half false:
     the camera was off along the avenue, not the crown leaning; `imaculada-conceicao` moved 20 m back,
     where its photo's hackberry and palm stand. Its mark 3 → 3. Left: the young tree OSM maps 35 m ahead.
+  - **112** (worker-3): landed braga-map `92b813e`, 1.38.0 (tagged, decision 074), and party-kart
+    `fa00deb`, pinned to v1.38.0. The grey box by São João da Ponte's chapel (parked vans and a motorhome)
+    left out (`capela-sao-joao` 3 → 4); the Viriato's painted wall at its map's height, the house hidden
+    behind it as in the photo (`viriato-amaral-nunes` 1 → 2, its paint not drawn): 137 of the map's walls
+    drawn higher. Its premise half false: the green house is real. Found: 116 (the LiDAR's buildings on
+    car parks), drafted.
   - **The coordinator's watcher was down from 18:51 to 21:58** (not re-armed after a message), so ready
     tasks waited for their marks and turns: 102, 065, 090, 111, 112 and 059.
 

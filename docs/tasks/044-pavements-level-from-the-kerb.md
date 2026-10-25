@@ -107,3 +107,70 @@ Steps:
 - 2026-10-16: party-kart's `streets.ts`, `ground.ts` and `test/ground.test.ts` have uncommitted
   changes from another session (task 013's walls, by the look of `scratch-walls.ts`). Start after
   they land, and don't overwrite them.
+- 2026-10-25, done in braga-map (`tools/streets.mjs`, `paveHeights`, `follow`, `mouthsOf`) and
+  party-kart (`world/ground.ts`, `render/city.ts`, `world/cover.ts`):
+  - **The tiles' format changes.** A piece on the ground (or a path under something at its level)
+    laid at heights of its own has 64 (`LAID`) in its first number. Its heights are in centimetres:
+    the first in decimetres and the centimetres more, then each point's difference from the one
+    before. `index.js`'s streets and paths readers read them, and a reader that doesn't know `LAID`
+    misreads the tile, so it's a minor version.
+  - **A point along a ring only where the heights need it.** One is added on an edge wherever a
+    straight line between its points would be more than 3 cm off the heights, at a quarter, half or
+    three quarters of the way, down to 40 cm. Decided by the session, for the owner to confirm (a row
+    in task 103). A point every 2 m (step 1) took the tiles from 14.3 to 22.0 MB. At 1 cm they were
+    16.5 MB, and High drew 21-31% more triangles. At 3 cm: **15.0 MB against 1.42.0's 14.0 (1.41.0's
+    the same), and `loadWorld({ open: true })` in 88-89 ms against 82** (the best of five, twice
+    each).
+  - **The heights.** On its kerb, a point is at the carriageway's ground right there and the kerb, or
+    at the ground where the kerb's dropped. Off it, the kerb's top, rising or falling towards the
+    back as the land does, 2% at most. Between two kerbs across from each other (within 45° of
+    straight across), it runs from one top to the other. Within 1.2 m of a dropped kerb, it slopes
+    down to it.
+  - **Which kerb is a point's.** The nearest (within a metre of the nearest) the way to which runs
+    over the pavements, crosses no wall they stop at, and keeps 25 cm off a retaining wall's foot.
+    Before that rule, a map's sidewalk behind a wall took a lower street's kerb and lay 7 m under its
+    ground, and a pavement on a wall's top took the street at its foot round the wall's end. With no
+    such kerb, a point is at the land's height and a kerb, as before (554 points of 28,429 within a
+    pavement's width).
+  - **Where a path on the land leaves the pavements** (its line crossing out of them onto the path as
+    it's drawn), the pavement eases back to the land's height and a kerb. It does so within the path's
+    half width, then over 12% of the difference (1.2 m at least, 8 m at most), so the path meets it
+    with a kerb's step, as before. The passage at (-262, 924) came out onto a pavement 55 cm over it.
+    A path that only runs along a pavement's back meets a wall: on the hills, a level pavement
+    stands well over the land behind it in places. Steps of over 35 cm where a path's edge meets a
+    pavement: 54 m in the open area, against 3 m when the pavements were draped.
+  - **A reservation or island meets a pavement at the pavement's heights.** It's laid as one either
+    way, so they met 1.2 m apart.
+  - **Snap rounding.** The ground's carriageways, pavements and paths are snap-rounded together,
+    so they share their points: none cracks open beside another. A passage's floor and the street
+    it comes out to had left a 2 cm sliver a building's wall stood in.
+  - **The tests.** braga-map: the streets test checks the heights as the rule makes them. 0 of 53,396
+    points on a kerb are more than 1 cm off. 0 of 28,429 within a pavement's width are steeper than
+    2% but between two kerbs. 554 are at the land's (no kerb bounding them), and 8 are eased by a
+    path's mouth. The paths test: a raised path on the ground or under something has heights.
+    163/163. party-kart: 162/162; the ground builds in 1.4-1.6 s (main 1.2-1.3 s).
+  - **party-kart, the land under and behind a laid pavement.**
+    - Under a laid pavement, the land is a kerb under it where it would otherwise stand through it.
+    - On a retaining wall's lower side, within its reach, the land rises from a laid pavement's edge
+      no more than a metre a metre. Without that, the 2 m ground's ramp across the wall stood up to
+      2 m over the pavement at the wall's foot (task 111's test).
+    - Where the land behind a pavement is more than 30 cm over it, it's cut along the pavement's
+      back as at a retaining wall (`WorldGround.backs`), so it steps up there, the pavement's
+      granite face to it (streets.ts already drew that). Otherwise it sloped up over the pavement's
+      edge across a 2 m cell. A cell such a cut meets is split where the step's over 50 cm (on Low,
+      a metre).
+    - In a 300 m box round (418, 1408), the land is over a pavement by more than 5 cm on 68 m²
+      and more than 30 cm on 18 m², against 130 and 20 m² on main.
+    - The arenas: a box beside a skip may be no more than 3 cm lower than it (`cover.ts`). One 5 cm
+      lower left the skip's top out of a jump's reach from the box's.
+  - **The budget** (shots `2026-10-25-before044`, main 8ee2879 on 1.42.0 from a fresh worktree, and
+    `2026-10-25-after044`; three views at Ultra, High and Low). Triangles: Ultra +2-3%, High +8-12%
+    (devesa 2.78 M → 3.12 M), Low +10-16%. Draw calls are the same; frame times are the same or
+    lower. The more triangles are the pavements' and carriageways' points (each laid ring's, shared
+    by snap rounding) and the land's cuts and split cells at the pavements' backs. A level pavement
+    alone would need fewer, as step 4 thought, but not with what laying them level brought.
+  - **The shots.** `bom-jesus`: its crease is gone, the pavement level from its kerb to the wall.
+    `lobato-pavement`: level as before. `devesa`: the near pavements no longer heave. The white
+    mound by the garages at (440, 1029), the ruin the LiDAR took for ground (Out of scope, task
+    043's kind), was a pavement draped over it. It's now the land itself behind a level pavement,
+    faced in granite up to the land's 2 m triangles, so its top is jagged.

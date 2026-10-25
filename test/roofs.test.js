@@ -2,7 +2,7 @@
 // 50 cm with 3 cm of noise, the roof running 40 cm past the walls.
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { measure } from '../tools/roofs.mjs';
+import { canopyOf, measure, topShape } from '../tools/roofs.mjs';
 
 const G = 200; // the ground, above the sea
 const T30 = Math.tan(Math.PI / 6);
@@ -85,4 +85,28 @@ test('a shed with one slope falls the way it faces', () => {
   near(p.pitch, 15, 3, 'pitch');
   near(Math.sin(p.dir), 1, 0.05, 'it slopes down to the south (+z)');
   near(p.eaves - G, 3, 0.4, 'eaves');
+});
+
+// A "building" the LiDAR sees on a car park, under 4.6 m (task 116): its cells every 50 cm over its
+// rectangle and how high each is over the ground (`h(x, z)`, with the LiDAR's noise), and the
+// orthophoto's colour over it, as canopyOf takes them.
+const onPark = (L, W, h, [r, g, b]) => {
+  const at = [], rise = [];
+  for (let x = 0.25; x < L; x += 0.5) for (let z = 0.25; z < W; z += 0.5) { at.push([x, z]); rise.push(h(x, z) + noise()); }
+  return canopyOf({ ...topShape(at, rise), bright: (r + g + b) / 3, blue: b - (r + g) / 2, L });
+};
+// A row of pyramid awnings, each 5 m square, 2.5 m at its edges and 3.3 m at its peak.
+const tents = (x, z) => 2.5 + 0.8 * (1 - Math.max(Math.abs((x % 5) - 2.5), Math.abs((z % 5) - 2.5)) / 2.5);
+
+test("a car park's canopies aren't buildings: solar panels, a row of tents, a long awning (task 116)", () => {
+  assert.equal(onPark(30, 10, (x, z) => 2.5 + 0.2 * z, [95, 110, 140]), 'solar', 'panels on a frame, tilted 11°');
+  assert.equal(onPark(20, 5, tents, [200, 200, 195]), 'tent', 'four white awnings in a row');
+  assert.equal(onPark(5, 5, tents, [200, 200, 195]), 'tent', 'one');
+  assert.equal(onPark(30, 6, () => 2.8, [215, 215, 210]), 'flat', 'a long white awning, flat');
+});
+
+test("but a kiosk, a house or a dark flat roof on one is (task 116)", () => {
+  assert.equal(onPark(4, 4, () => 2.8, [215, 215, 210]), null, 'a white kiosk, flat');
+  assert.equal(onPark(10, 7, (x, z) => 3 + (3.5 - Math.abs(z - 3.5)) * 0.6, [180, 90, 70]), null, 'a gabled house, its tiles red');
+  assert.equal(onPark(12, 8, () => 3.5, [110, 105, 100]), null, 'a flat grey roof');
 });

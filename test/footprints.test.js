@@ -96,3 +96,22 @@ test("the buildings found lie over the LiDAR's, clear of the map's", { skip }, (
   }
   assert.ok(over < lidar.found.length * 0.01, `${over} of ${lidar.found.length} with their middle in one of the map's`);
 });
+
+test("the LiDAR's canopies over the map's car parks aren't drawn as buildings (task 116)", async () => {
+  // The buildings the map lacks whose middle is on a car park, under 4.6 m tall, each once (a building
+  // across two tiles is two pieces): 82 before task 116 (the tents and solar canopies over the cars
+  // most of them); now the kiosks, sheds and a few canopies the rule can't tell.
+  const w = await loadWorld({ sections: map().sections.map((s) => s.id) });
+  const parks = w.areas.filter((a) => a.kind === 'parking');
+  const grid = new Grid(50);
+  parks.forEach((a, i) => grid.add(a.pts[0][0], a.pts[0][1], i));
+  const reach = Math.ceil(Math.max(...parks.map((a) => Math.max(...a.pts.map(([x, z]) => Math.hypot(x - a.pts[0][0], z - a.pts[0][1]))))) / 50);
+  const low = new Set();
+  for (const b of w.buildings) {
+    if ((b.source !== 'lidar' && b.source !== 'microsoft') || b.h >= 4.6) continue;
+    const [x, z] = b.pts.reduce((s, p) => [s[0] + p[0] / b.pts.length, s[1] + p[1] / b.pts.length], [0, 0]);
+    if (grid.near(x, z, reach).some((i) => inside(parks[i].pts, x, z) && !parks[i].holes.some((h) => inside(h, x, z)))) low.add(`${Math.round(x * 2)},${Math.round(z * 2)}`);
+  }
+  console.log(`the LiDAR's buildings under 4.6 m on the map's car parks: ${low.size}`);
+  assert.ok(low.size <= 40, `${low.size} under 4.6 m on a car park`);
+});

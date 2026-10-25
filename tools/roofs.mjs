@@ -28,7 +28,7 @@ import jpeg from 'jpeg-js';
 import { CACHE, P, readCache } from './geo.mjs';
 import { CLASS, DGT, fromTM, mapToTM, points, tileToMap, tilesOver } from './dgt.mjs';
 import { buildings, fillCells, fit, square } from './footprints.mjs';
-import { bounds, footprints, Grid, inside, minRect, rectAxis, ringArea, ringOf, simplify } from './osm.mjs';
+import { AREA_OF, bounds, footprints, Grid, inside, memberRings, minRect, rectAxis, ringArea, ringOf, simplify } from './osm.mjs';
 import { EXT } from './sections.mjs';
 import { terrain } from './terrain.mjs';
 
@@ -498,12 +498,45 @@ function shifts(rings) {
 // sits with them as they're drawn, and measured as they are.
 //
 // Not a building, and dropped: what stands under 2 m (cars, hedges the LiDAR took for a roof); a
-// lorry or a bus (under 3.2 m wide, 4.6 m tall and 19 m long); and what the orthophoto shows green
-// over most of it (a tree over a low roof).
+// lorry or a bus (under 3.2 m wide, 4.6 m tall and 19 m long); what the orthophoto shows green over
+// most of it (a tree over a low roof); and on a car park, under 4.6 m and not beside a building the
+// map has, a canopy (canopyOf, task 116), which the games don't draw.
 
+// The file in .cache it writes (and world.mjs reads): another while a task tries it out, so the shared
+// one isn't overwritten before the task lands.
+export const ROOFS = process.env.ROOFS || 'roofs.json';
 const MARGIN = 200; // cells read round each tile, so a building on its edge is whole: 100 m
-function missing(list, field, ground, box, ms, msField) {
-  const out = [], dropped = [], why = { low: 0, vehicle: 0, green: 0 };
+// What the LiDAR's top over a "building" is like: a plane fitted to it (how far off it, rms, in metres;
+// how steep, tilt) over its cells' [x, z] (`at`, in metres) and how high each is (`rise`).
+export function topShape(at, rise) {
+  const n = rise.length, cx = at.reduce((a, p) => a + p[0], 0) / n, cz = at.reduce((a, p) => a + p[1], 0) / n, mr = rise.reduce((a, b) => a + b, 0) / n;
+  let xx = 0, xz = 0, zz = 0, xr = 0, zr = 0;
+  at.forEach(([x, z], k) => { const [u, v, r] = [x - cx, z - cz, rise[k] - mr]; xx += u * u; xz += u * v; zz += v * v; xr += u * r; zr += v * r; });
+  const det = xx * zz - xz * xz || 1, bx = (xr * zz - zr * xz) / det, bz = (zr * xx - xr * xz) / det;
+  const rms = Math.sqrt(at.reduce((s, [x, z], k) => s + (rise[k] - mr - bx * (x - cx) - bz * (z - cz)) ** 2, 0) / n);
+  return { rms, tilt: Math.hypot(bx, bz) };
+}
+// A LiDAR "building" on a car park under 4.6 m (task 116): a canopy over the cars, or not (null), by
+// its top (topShape) and the orthophoto over it (its mean brightness and how much bluer than red and
+// green, 0-255) and how long it is (L, m). A solar canopy: dark, one plane, tilted or blue. A tent (a
+// row of white or grey pyramid awnings, one or many): light, its top bumpy as the pyramids are, 20 to
+// 45 cm off a plane, or 18 cm and 5 m long or more (a kiosk 4 m across can be that bumpy). A flat
+// one: light, flat, 10 m long or more (a long awning, or a row of vans under one). Of the 107 on the
+// map's car parks in October 2026, looked at: 43 tents, 12 solar canopies, 5 flat ones, a few rows of
+// vans and site cabins; the rest kiosks, sheds and buildings, which stay.
+export function canopyOf({ rms, tilt, bright, blue, L }) {
+  if (bright < 140 && rms < 0.2 && (tilt >= 0.1 || blue >= 13)) return 'solar';
+  if (bright >= 160 && rms <= 0.45 && (rms >= 0.2 || (rms >= 0.18 && L >= 5))) return 'tent';
+  if (bright >= 175 && rms < 0.2 && L >= 10) return 'flat';
+  return null;
+}
+function missing(list, field, ground, box, ms, msField, parked = () => false) {
+  const out = [], dropped = [], why = { low: 0, vehicle: 0, green: 0, canopy: 0 };
+  // The map's outlines near a point, for whether a "building" is one's part, beside it.
+  const mapped = new Grid(20);
+  for (const it of list) mapped.add(it.cx, it.cz, it);
+  const off = ([x, z], [ax, az], [bx, bz]) => { const dx = bx - ax, dz = bz - az, t = Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / (dx * dx + dz * dz || 1))); return Math.hypot(ax + dx * t - x, az + dz * t - z); };
+  const beside = (pts) => pts.filter((p) => mapped.near(p[0], p[1], 4).some((it) => it.pts.some((a, k) => off(p, a, it.pts[(k + 1) % it.pts.length]) < 1.5))).length >= 0.3 * pts.length;
   let squared = 0, microsoft = 0;
   const W = N + 2 * MARGIN;
   for (const key of tilesOver(box)) {
@@ -548,13 +581,14 @@ function missing(list, field, ground, box, ms, msField) {
       // Its height over the ground, and how green the photo is over it, from up to 300 of its cells.
       const cells = [];
       for (let k = 0; k < b.label.length; k++) if (b.label[k] === b.id) cells.push(k);
-      const every = Math.max(1, Math.floor(cells.length / 300)), rise = [];
+      const every = Math.max(1, Math.floor(cells.length / 300)), rise = [], at = [], rgb = [0, 0, 0];
       let green = 0, seen = 0;
       for (let q = 0; q < cells.length; q += every) {
         const k = cells[q], x = (k % b.w) + b.x0, y = Math.floor(k / b.w) + b.y0, [px, pz] = cellXZ(x + 0.5, y + 0.5);
         rise.push(top[y * W + x] - ground.at(px, pz));
+        at.push([x * CELL, y * CELL]);
         const c = colourAt(px, pz);
-        if (c) { seen++; if (2 * c[1] - c[0] - c[2] > 20) green++; }
+        if (c) { seen++; if (2 * c[1] - c[0] - c[2] > 20) green++; rgb[0] += c[0]; rgb[1] += c[1]; rgb[2] += c[2]; }
       }
       const tall = quantile(rise, 0.5), ring = b.ring.map(([x, y]) => [x * CELL, y * CELL]), r = minRect(ring);
       const not = tall < 2 ? 'low' : r.W < 1.6 && r.L < 9.5 && tall < 4.6 ? 'vehicle' : seen && green > 0.6 * seen ? 'green' : null;
@@ -572,7 +606,12 @@ function missing(list, field, ground, box, ms, msField) {
       // On the map, where the outlines round it are.
       const onMap = best.map(([x, y]) => fromTM(E0 + x * CELL, N1 - y * CELL));
       const sh = field.at(cx, cz) ?? { dx: 0, dz: 0 };
-      out.push({ src, fit: Math.round(fits * 100) / 100, tall: Math.round(tall * 10) / 10, pts: onMap.map(([x, z]) => [Math.round((x - sh.dx) * 100) / 100, Math.round((z - sh.dz) * 100) / 100]) });
+      const pts = onMap.map(([x, z]) => [Math.round((x - sh.dx) * 100) / 100, Math.round((z - sh.dz) * 100) / 100]);
+      if (tall < 4.6 && parked(cx - sh.dx, cz - sh.dz) && seen) {
+        const canopy = canopyOf({ ...topShape(at, rise), bright: (rgb[0] + rgb[1] + rgb[2]) / 3 / seen, blue: (rgb[2] - (rgb[0] + rgb[1]) / 2) / seen, L: r.L });
+        if (canopy && !beside(pts)) { why.canopy++; dropped.push([Math.round(cx), Math.round(cz), 'canopy']); continue; }
+      }
+      out.push({ src, fit: Math.round(fits * 100) / 100, tall: Math.round(tall * 10) / 10, pts });
     }
   }
   return { found: out, dropped, why, squared, microsoft };
@@ -626,7 +665,19 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
     return { pts, b, cx: (b.x0 + b.x1) / 2, cz: (b.z0 + b.z1) / 2 };
   }).filter((m) => m.pts.length >= 3);
   const msField = shifts(ms);
-  const lost = missing(list, field, ground, box, ms, msField);
+  // The car parks on the ground (osm.mjs's AREA_OF: not one in a building), each in the 50 m cells its
+  // box meets, for the canopies on them (task 116).
+  const parks = new Map();
+  for (const e of [...readCache('osm/base.json').elements, ...readCache('osm/barriers.json').elements]) {
+    if (AREA_OF(e.tags ?? {}) !== 'parking' || (e.type !== 'way' && e.type !== 'relation')) continue;
+    for (const r of e.type === 'way' ? [e.geometry.map(P)] : memberRings(e.members, 'outer')) {
+      if (r.length < 4) continue;
+      const b = bounds(r);
+      for (let i = Math.floor(b.x0 / 50); i <= Math.floor(b.x1 / 50); i++) for (let j = Math.floor(b.z0 / 50); j <= Math.floor(b.z1 / 50); j++) parks.set(i + ',' + j, [...(parks.get(i + ',' + j) ?? []), r]);
+    }
+  }
+  const parked = (x, z) => (parks.get(Math.floor(x / 50) + ',' + Math.floor(z / 50)) ?? []).some((r) => inside(r, x, z));
+  const lost = missing(list, field, ground, box, ms, msField, parked);
   // Where the point cloud was boiled down: there the LiDAR saw every building, so world.mjs invents
   // none.
   out.seen = tilesOver(EXT).filter((key) => fs.existsSync(path.join(RDIR, key + '.bin')));
@@ -643,5 +694,5 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   }
   const area = Math.round(out.found.reduce((s, f) => s + ringArea(f.pts), 0) / 1000);
   console.log(`roofs: ${out.found.length} buildings the map lacks (${area}k m², ${parts} parts), ${lost.squared} squared and ${lost.microsoft} Microsoft's outlines (shifted ${quantile([...msField.all.values()].map((f) => Math.hypot(f.dx, f.dz)), 0.5).toFixed(1)} m, the median); not buildings: ${JSON.stringify(lost.why)}; in ${((Date.now() - t1) / 1000).toFixed(0)} s`);
-  fs.writeFileSync(path.join(CACHE, 'roofs.json'), JSON.stringify(out));
+  fs.writeFileSync(path.join(CACHE, ROOFS), JSON.stringify(out));
 }

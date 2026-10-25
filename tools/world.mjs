@@ -38,6 +38,7 @@ import { packFurniture } from './furniture.mjs';
 import { roadsOf } from './roads.mjs';
 import { EVERGREEN as TREE_EVERGREEN, KINDS as TREE_KINDS, osmKind, TREES } from './trees.mjs';
 import { PLATE, platesOf } from './plates.mjs';
+import { ROOFS } from './roofs.mjs';
 import { BALCONIES, BALCONY, COLOUR, COLOURS, floorsOf, GROUND, GROUND_OF, guesser, layoutOnRing, MATERIAL, MATERIALS, OPENING, OPENINGS, TYPE, TYPES } from './facades.mjs';
 
 // The streets on their carriageways where the LiDAR measured them (lines.mjs's onCarriageways, task 026),
@@ -304,8 +305,8 @@ const COLORS = 8; // a number from each building's id, for a game's own variety
 // Each footprint with the name the reference photos and refs/buildings.json give its building:
 // way/<id> or relation/<id>.
 const fps = buildingsOsm.elements.flatMap((el) => footprints({ elements: [el] }).map((e) => Object.assign(e, { name: `${el.type}/${el.id}` })));
-if (!fs.existsSync(path.join(CACHE, 'roofs.json'))) throw new Error('No measured roofs in .cache/roofs.json: node tools/roofs.mjs');
-const { buildings: roofs, found = [], seen: lidarTiles = [] } = readCache('roofs.json');
+if (!fs.existsSync(path.join(CACHE, ROOFS))) throw new Error(`No measured roofs in .cache/${ROOFS}: node tools/roofs.mjs`);
+const { buildings: roofs, found = [], seen: lidarTiles = [] } = readCache(ROOFS);
 // Each measured part's roof as its points have it (tools/planes.mjs, task 087): its planes, what stands
 // on it and its overhang, by building and part; none where planes.json wasn't made.
 const roofPlanes = fs.existsSync(path.join(CACHE, 'planes.json')) ? readCache('planes.json').buildings : {};

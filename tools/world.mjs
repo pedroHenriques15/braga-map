@@ -1261,11 +1261,11 @@ for (const t of tiles.values()) {
     const at = new Map(rowOrder(t.buildings).map((r, k) => [r, k]));
     p.part('layouts', [], { list: t.layouts.map(([row, k, st]) => [at.get(row), k, st]) });
   }
-  // The roofs as their points have them, each [its building's place in the tile's buildings, its planes,
-  // its groups, its blocks, its overhang] (putBuilding).
+  // The roofs as their points have them (putBuilding), each [its building's place in the tile's
+  // buildings, how many planes, groups and blocks, its overhang, its planes, its groups, its blocks].
   if (t.roofs.length) {
     const at = new Map(rowOrder(t.buildings).map((r, k) => [r, k]));
-    p.part('roofs', [], { list: t.roofs.map(([row, ...rest]) => [at.get(row), ...rest]) });
+    p.part('roofs', t.roofs.flatMap(([row, planes, groups, blocks, over]) => [at.get(row), planes.length / 3, groups.length, blocks.length / 6, over, ...planes, ...groups, ...blocks]));
   }
   p.part('trees', t.trees);
   if (t.streets.length) p.part('streets', t.streets);

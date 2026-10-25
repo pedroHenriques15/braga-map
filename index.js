@@ -398,29 +398,40 @@ export async function loadWorld(area) {
         return out;
       });
     }
-    // A roof as its points have it (task 087): [its place among the tile's buildings, its planes, its
-    // groups, its blocks, its overhang] each, in the header. A plane is its height over the ground at
-    // the building's first point in decimetres and its rise a metre east and south in thousandths; a
-    // group, a bit for each plane in it; a block, its middle from the first point and its half-length
-    // and half-width in decimetres, the way it's long in degrees, its top over the ground; the
-    // overhang in decimetres, -1 for none known.
-    for (const [k, planes, groups, blocks, over] of head.roofs?.list ?? []) {
-      const b = buildings[first + k];
+    // A roof as its points have it (task 087): [its place among the tile's buildings, how many planes,
+    // groups and blocks, its overhang, its planes, its groups, its blocks] each. A plane is its height
+    // over the ground at the building's first point in decimetres and its rise a metre east and south
+    // in thousandths; a group, a bit for each plane in it; a block, its middle from the first point in
+    // decimetres, the way it's long in degrees, its half-length and half-width and its top over the
+    // ground in decimetres; the overhang in decimetres, -1 for none known.
+    const R = head.roofs;
+    for (let i = R ? R.at : 0; R && i < R.at + R.n; ) {
+      const b = buildings[first + nums[i]];
+      const np = nums[i + 1];
+      const ng = nums[i + 2];
+      const nb = nums[i + 3];
+      const over = nums[i + 4];
       const [x0, z0] = b.pts[0];
-      if (planes.length) {
+      i += 5;
+      if (np) {
         b.planes = [];
-        for (let q = 0; q < planes.length; q += 3) {
-          const gx = planes[q + 1] / 1000;
-          const gz = planes[q + 2] / 1000;
-          b.planes.push({ c: planes[q] / 10 - gx * x0 - gz * z0, gx, gz });
+        for (let q = 0; q < np; q++, i += 3) {
+          const gx = nums[i + 1] / 1000;
+          const gz = nums[i + 2] / 1000;
+          b.planes.push({ c: nums[i] / 10 - gx * x0 - gz * z0, gx, gz });
         }
-        b.groups = groups.map((g) => b.planes.map((_, i) => i).filter((i) => g & (1 << i)));
-      }
-      if (blocks.length) {
+        const planes = b.planes;
+        b.groups = [];
+        for (let q = 0; q < ng; q++, i++) {
+          const g = nums[i];
+          b.groups.push(planes.map((_, n) => n).filter((n) => g & (1 << n)));
+        }
+      } else i += ng;
+      if (nb) {
         b.blocks = [];
-        for (let q = 0; q < blocks.length; q += 6) {
-          const a = (blocks[q + 2] * Math.PI) / 180;
-          b.blocks.push({ x: x0 + blocks[q] / 10, z: z0 + blocks[q + 1] / 10, ux: Math.cos(a), uz: Math.sin(a), l: blocks[q + 3] / 10, w: blocks[q + 4] / 10, top: blocks[q + 5] / 10 });
+        for (let q = 0; q < nb; q++, i += 6) {
+          const a = (nums[i + 2] * Math.PI) / 180;
+          b.blocks.push({ x: x0 + nums[i] / 10, z: z0 + nums[i + 1] / 10, ux: Math.cos(a), uz: Math.sin(a), l: nums[i + 3] / 10, w: nums[i + 4] / 10, top: nums[i + 5] / 10 });
         }
       }
       b.overhang = over < 0 ? null : over / 10;

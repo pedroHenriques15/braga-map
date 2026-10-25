@@ -193,6 +193,8 @@ decision 081).
   year on Ultra (found by 093).
 - **132** The bare trees' twigs dark against the sky, as in March, not a pale haze (found in
   093's round; before the deploy).
+- **133** On Ultra, fallen leaves under the deciduous trees in autumn (093's What 3, left for a task
+  of its own).
 - **099** The whole map at the open world's detail, the open world grown over it (after 038). Held by
   the owner (2026-10-24): not done for now, for its cost (its Notes).
 - **100** The street furniture the point cloud finds, for 020 to draw: done (decision 062), braga-map

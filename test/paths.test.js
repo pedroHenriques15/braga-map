@@ -119,39 +119,51 @@ test('each path is at its level: a footbridge on its deck, a passage under its b
 
 test('each step at its height: a tread a riser over the one before, from its foot to its top', { skip }, () => {
   // Along each flight in the area, every 5 cm, the treads under its line, but another flight's that
-  // it runs into (one whose middle is past its ends or off its side): each one height, and between
-  // them a riser, or a whole number of them where a tread is cut away (by a carriageway or a
-  // building), every riser the same, to the centimetre the tiles keep them to. And as many as the
-  // map counts, where none is cut away.
+  // it runs into (one whose middle is past its ends or off its side, or nearer the other's line): each
+  // one height, and between them a riser, or a whole number of them where a tread is cut away (by a
+  // building), every riser the same, to the centimetre the tiles keep them to. And as many as the map
+  // counts, where none is cut away: where its ends run under a carriageway, its treads are spread over
+  // what's left of its line (task 051).
   const flights = ways.filter((p) => p.kind === 'steps' && p.level !== LEVEL.bridge && p.pts.every(inOpen));
+  const lengthOf = (pts) => pts.reduce((a, v, i) => (i ? a + Math.hypot(v[0] - pts[i - 1][0], v[1] - pts[i - 1][1]) : 0), 0);
+  // How far a point is from a flight's line, and how far along it.
+  const off = (p, cx, cz) => {
+    let best = Infinity, at = 0, s = 0;
+    for (let i = 1; i < p.pts.length; i++) {
+      const [ax, az] = p.pts[i - 1], [bx, bz] = p.pts[i], dx = bx - ax, dz = bz - az, l = Math.hypot(dx, dz) || 1e-9, f = ((cx - ax) * dx + (cz - az) * dz) / (l * l), d = Math.hypot(ax + dx * Math.max(0, Math.min(1, f)) - cx, az + dz * Math.max(0, Math.min(1, f)) - cz);
+      if (d < best) { best = d; at = s + f * l; }
+      s += l;
+    }
+    return { d: best, at };
+  };
+  const onCarriageway = (x, z) => onStreet(x, z).some((q) => !q.kind && q.level === 'ground');
   let checked = 0, counted = 0, same = 0;
   const bad = [], fewer = [];
   for (const p of flights) {
-    const L = p.pts.reduce((a, v, i) => (i ? a + Math.hypot(v[0] - p.pts[i - 1][0], v[1] - p.pts[i - 1][1]) : 0), 0);
+    const L = lengthOf(p.pts);
     const mine = (q) => {
       const r = q.rings[0], cx = r.reduce((a, v) => a + v[0], 0) / r.length, cz = r.reduce((a, v) => a + v[1], 0) / r.length;
-      let best = Infinity, at = 0, s = 0;
-      for (let i = 1; i < p.pts.length; i++) {
-        const [ax, az] = p.pts[i - 1], [bx, bz] = p.pts[i], dx = bx - ax, dz = bz - az, l = Math.hypot(dx, dz) || 1e-9, f = ((cx - ax) * dx + (cz - az) * dz) / (l * l), d = Math.hypot(ax + dx * Math.max(0, Math.min(1, f)) - cx, az + dz * Math.max(0, Math.min(1, f)) - cz);
-        if (d < best) { best = d; at = s + f * l; }
-        s += l;
-      }
-      return best <= p.w / 2 + 0.3 && at >= -0.05 && at <= L + 0.05;
+      const { d, at } = off(p, cx, cz);
+      if (d > p.w / 2 + 0.3 || at < -0.05 || at > L + 0.05) return false;
+      return !flights.some((o) => o !== p && o.pts.some(([x, z]) => Math.hypot(x - cx, z - cz) < L + 5) && (({ d: e, at: t }) => e < d && t >= -0.05 && t <= lengthOf(o.pts) + 0.05)(off(o, cx, cz)));
     };
-    const under = along(p.pts, 0.05).map(([x, z]) => onPath(x, z).filter((q) => q.kind === 'steps' && mine(q)).map((q) => q.ys[0][0]));
-    const ys = [...new Set(under.flat())].sort((a, b) => a - b), cut = under.filter((u) => !u.length).length * 0.05;
+    const line = along(p.pts, 0.05);
+    const under = line.map(([x, z]) => onPath(x, z).filter((q) => q.kind === 'steps' && mine(q)).map((q) => q.ys[0][0]));
+    const road = line.map(([x, z]) => onCarriageway(x, z));
+    const ys = [...new Set(under.flat())].sort((a, b) => a - b), cut = under.filter((u, i) => !u.length && !road[i]).length * 0.05;
     if (ys.length < 2) continue;
     checked++;
-    // (Where two flights meet on a landing, a tread of the other may be under this one's end.)
-    const rises = ys.slice(1).map((y, i) => y - ys[i]), r = rises.slice().sort((a, b) => a - b)[rises.length >> 1];
+    // (Where two flights meet on a landing, a tread of the other may be under this one's end; of two
+    // rises, one may be two risers where a tread is cut away.)
+    const rises = ys.slice(1).map((y, i) => y - ys[i]), r = rises.length > 2 ? rises.slice().sort((a, b) => a - b)[rises.length >> 1] : Math.min(...rises);
     if (!rises.slice(rises.length > 2 ? 1 : 0, rises.length > 2 ? -1 : undefined).every((d) => Math.round(d / r) >= 1 && Math.abs(d - Math.round(d / r) * r) <= 0.011 * Math.round(d / r) + 0.001)) bad.push(`${p.id}: ${ys.join(' ')}`);
-    // Those cut away where its ends run under a carriageway, a pavement or a building, as many as the
-    // tread's depth goes into what's cut.
-    const count = parseInt(p.t.step_count);
+    // Those cut away where its ends run under a building, as many as the tread's depth goes into
+    // what's cut.
+    const count = parseInt(p.t.step_count), depth = (L - road.filter(Boolean).length * 0.05) / count;
     if (count > 0) {
       counted++;
-      if (Math.abs(ys.length + cut / (L / count) - count) <= 2) same++;
-      else fewer.push(`${p.id}: ${ys.length} and ${(cut / (L / count)).toFixed(1)} cut away of ${count}`);
+      if (Math.abs(ys.length + cut / depth - count) <= 2) same++;
+      else fewer.push(`${p.id}: ${ys.length} and ${(cut / depth).toFixed(1)} cut away of ${count}`);
     }
   }
   console.log(`${checked} flights in the area with two treads or more under their line; ${counted} the map counts, ${same} with as many treads as it says, or cut away (${fewer.join(', ')})`);
@@ -168,6 +180,73 @@ test('each step at its height: a tread a riser over the one before, from its foo
   assert.ok(rails.length > 100 && rails.every((h) => h.ys.length === h.pts.length));
   const near = rails.filter((h) => h.pts.some(([x, z]) => Math.hypot(x - tf.pts[0][0], z - tf.pts[0][1]) < 5));
   assert.equal(near.length, 2, "the Travessa do Fujacal's flight has a handrail each side");
+});
+
+test("a flight's ends meet what they lead to: its foot a kart's step at most over the street, the pavement or the path it leaves from, its top at what it climbs to (task 051)", { skip }, () => {
+  // Each flight on the ground in the area with two treads or more under its line: its lowest tread and
+  // its highest, and what's just past each end along its line (the first point within 1.5 m that isn't
+  // one of its treads): a carriageway at the ground as the tiles hold it, a pavement, an island or a
+  // reservation a kerb over it, a path (a raised one a kerb over it), a building, another flight, or the
+  // land. A kart climbs a riser up to STEP (party-kart's), so it goes up a flight from its foot where
+  // the foot's tread is no more than that over what it leaves from; and off its top where that's no
+  // more than that under what it climbs to. Where an end meets the land it's at the terrain's height at
+  // 50 cm (DGT's, task 050), which the tiles' 2 m ground may not have; at a building, a door's landing.
+  const STEP = 0.3, KERB = 0.15;
+  const onFlat = index([...S.carriageways, ...S.pavements].filter((p) => p.level === 'ground'));
+  const onWay = index(S.paths.filter((p) => p.level === 'ground' || p.level === 'under'));
+  const flights = ways.filter((p) => p.kind === 'steps' && p.level === LEVEL.ground && p.pts.every(inOpen));
+  const what = (x, z) => {
+    const st = onFlat(x, z)[0];
+    if (st) return st.kind ? ['pavement', w.height(x, z) + KERB] : ['carriageway', w.height(x, z)];
+    const pa = onWay(x, z)[0];
+    if (pa) return pa.kind === 'steps' ? ['flight', null] : ['path', w.height(x, z) + (pa.raised ? KERB : 0)];
+    if (inBuilding(x, z).length) return ['building', null];
+    return ['land', w.height(x, z)];
+  };
+  const rows = [];
+  for (const p of flights) {
+    const pts = p.pts, L = pts.reduce((a, v, i) => (i ? a + Math.hypot(v[0] - pts[i - 1][0], v[1] - pts[i - 1][1]) : 0), 0);
+    const at = (s) => {
+      let r = s;
+      for (let i = 1; i < pts.length; i++) {
+        const [ax, az] = pts[i - 1], [bx, bz] = pts[i], d = Math.hypot(bx - ax, bz - az);
+        if (r <= d || i === pts.length - 1) return [ax + ((bx - ax) * r) / (d || 1), az + ((bz - az) * r) / (d || 1), (bx - ax) / (d || 1), (bz - az) / (d || 1)];
+        r -= d;
+      }
+    };
+    const mine = (x, z) => onWay(x, z).find((q) => q.kind === 'steps');
+    const treads = [];
+    for (let s = 0.025; s < L; s += 0.05) {
+      const t = mine(...at(s));
+      if (t) treads.push([s, t.ys[0][0], t]);
+    }
+    if (treads.length < 2) continue;
+    const own = new Set(treads.map((t) => t[2]));
+    const ends = [treads[0], treads.at(-1)].map(([s, y], k) => {
+      const [x, z, ux, uz] = at(s), dir = k ? 1 : -1;
+      for (let o = 0.1; o <= 1.5; o += 0.1) {
+        const [px, pz] = [x + ux * o * dir, z + uz * o * dir];
+        if (own.has(mine(px, pz))) continue;
+        const [kind, y2] = what(px, pz);
+        return { y, kind, by: y2 == null ? null : y - y2 };
+      }
+      return { y, kind: 'none', by: null };
+    });
+    const [foot, top] = ends[0].y <= ends[1].y ? ends : [ends[1], ends[0]];
+    rows.push({ id: p.id, at: pts[0].map(Math.round), foot, top });
+  }
+  const flat = (e) => e.kind === 'carriageway' || e.kind === 'pavement' || e.kind === 'path';
+  const up = rows.filter((r) => r.foot.by != null && r.foot.by <= STEP);
+  const footOff = rows.filter((r) => flat(r.foot) && r.foot.by > STEP), topOff = rows.filter((r) => flat(r.top) && r.top.by < -STEP);
+  const tally = (list, end) => Object.entries(list.reduce((o, r) => ((o[r[end].kind] = (o[r[end].kind] ?? 0) + 1), o), {})).map(([k, n]) => `${n} ${k}`).join(', ');
+  const worst = (list, end) => list.sort((a, b) => Math.abs(b[end].by) - Math.abs(a[end].by)).slice(0, 4).map((r) => `${r.id} at (${r.at.join(', ')}) ${r[end].by.toFixed(2)} m`).join(', ');
+  console.log(`${rows.length} flights on the ground in the area; a kart goes up ${up.length} from their foot (their feet at ${tally(rows, 'foot')}); a foot more than ${STEP} m over the street, pavement or path past it: ${footOff.length} (${worst(footOff, 'foot')}); a top more than ${STEP} m under it: ${topOff.length} (${worst(topOff, 'top')}); over the land: ${rows.filter((r) => r.foot.kind === 'land' && r.foot.by > STEP).length} feet`);
+  assert.ok(rows.length > 100, `${rows.length} flights`);
+  // Before task 051, 20 feet and 8 tops, and a kart up 112 of 140: the terrain's height at an end, not
+  // what it meets, and the treads under a carriageway cut away. What's left: those climbing to a door or
+  // a landing, a foot on the land, and a flight the map counts too few steps of (6 for 2 m).
+  assert.ok(footOff.length <= 2 && topOff.length <= 2, `${footOff.length} feet, ${topOff.length} tops`);
+  assert.ok(up.length >= rows.length * 0.9, `a kart up ${up.length} of ${rows.length}`);
 });
 
 test("a cycleway in a pavement is drawn there: the Avenida da Liberdade's red lanes at the road's level, a kerb behind", { skip }, () => {

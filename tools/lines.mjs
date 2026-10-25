@@ -173,13 +173,15 @@ const SHOWS = 0.08;
 // them, or the other way from the map's `incline`, the flight climbs to something the terrain doesn't
 // have, a door's landing or a terrace's: its foot is at the ground, the incline's lower end (or the
 // heights'), and each step a RISER up from it (the owner's answer, task 050). Returns { pts, ys, n,
-// counted }: pts the flight's line from its foot, ys each tread's height.
+// counted, foot, landing }: pts the flight's line from its foot, ys each tread's height, landing
+// whether it climbs to such a landing.
 export function flight(p, at) {
   const ya = at(p.nodes[0], ...p.pts[0]), yb = at(p.nodes.at(-1), ...p.pts.at(-1)), count = parseInt(p.t.step_count);
   const up = p.t.incline === 'up' ? true : p.t.incline === 'down' ? false : null;
   const rise = yb - ya, counted = count > 0;
+  const landing = counted && (Math.abs(rise) < SHOWS * count || (up !== null && up !== rise > 0));
   let foot, top, from;
-  if (counted && (Math.abs(rise) < SHOWS * count || (up !== null && up !== rise > 0))) {
+  if (landing) {
     from = (up ?? rise >= 0) ? 0 : 1;
     foot = from ? yb : ya;
     top = foot + RISER * count;
@@ -188,7 +190,7 @@ export function flight(p, at) {
     [foot, top] = from ? [yb, ya] : [ya, yb];
   }
   const n = counted ? count : Math.max(1, Math.round(Math.abs(rise) / RISER));
-  return { pts: from ? p.pts.slice().reverse() : p.pts, ys: Array.from({ length: n }, (_, i) => foot + ((top - foot) * (i + 1)) / n), n, counted, foot };
+  return { pts: from ? p.pts.slice().reverse() : p.pts, ys: Array.from({ length: n }, (_, i) => foot + ((top - foot) * (i + 1)) / n), n, counted, foot, landing };
 }
 
 // The paths (pathsOf) with what streets.mjs needs to make them surfaces, heights above elev0: a

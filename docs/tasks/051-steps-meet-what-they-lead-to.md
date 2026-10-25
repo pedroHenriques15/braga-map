@@ -54,9 +54,9 @@ Steps:
 
 ## Done when
 
-- [ ] A test says, for the flights in the open world's area, how many a kart can go up from their
+- [x] A test says, for the flights in the open world's area, how many a kart can go up from their
   foot, and that's most of them but those climbing to a door or a landing.
-- [ ] party-kart's tests pass, a kart up and down a flight among them.
+- [x] party-kart's tests pass, a kart up and down a flight among them.
 
 ## Out of scope
 
@@ -79,3 +79,27 @@ Steps:
   382878426 at (1236, 405)); their top more than 0.3 m under what's past it: 10 (7 a carriageway, 2 the
   land, 1 a footway). (What's past an end: the first thing that isn't a tread within 1.5 m along the
   flight's line; a pavement, island or raised path taken 15 cm over the tiles' ground.)
+- **Done, 2026-10-25 (braga-map on 1.39.1, party-kart on c8c2994):** steps 2 and 3 in `tools/streets.mjs`'s
+  `groundPaths`. A flight's treads are spread over what the carriageways leave of its line, unless that
+  makes them shallower than the tiles' 10 cm grid (then over all of it, those under a carriageway cut away
+  as before). An end that meets a carriageway, a pavement or a path is at its height as the tiles hold it
+  (a pavement a kerb over the ground), the risers between evened out; a flight up to a landing
+  (`lines.mjs`'s `flight` says which) keeps its rise, its top moving with its foot. The treads snap
+  rounded together, as the carriageways are (task 048): each rounded to 10 cm on its own, two came out a
+  5 cm crack apart on the 47 steps, where party-kart's walker fell in.
+- Measured, the test in `test/paths.test.js`: of 140 flights on the ground in the open world's area, a
+  kart goes up 131 from their foot (112 on 1.39.1). Feet more than 0.3 m over the street, pavement or path
+  past them: 2 (20 on 1.39.1): way 382878426 at (1236, 405), whose 3.5 m line a carriageway covers for
+  2.5 m (its 14 treads over the metre left would be 7 cm deep), and way 905929279 at (595, 809), 0.31 m,
+  its 6 risers 39 cm. Tops more than 0.3 m under what's past them: 0 (8).
+- party-kart, `test/ground.test.ts` (now bound at 90%): 213 flights of two treads or more, 180 with a
+  street, a pavement or a path at their foot, a kart going up 173 of them from it (229, 182 and 151 on
+  1.39.1). Tread edges more than a step over the street beside them: 169 of 429 (224 of 388). Risers more
+  than a step between treads: 66 (50), at the same places, where two flights meet at a corner (the Bom
+  Jesus' flights, the ones at (450, 1560)), cut into more and shorter edges by the snap rounding: their
+  length 38.1 m (44.0). A walker up the 47 steps never off the ground.
+- Viewpoints, party-kart's `shots/2026-10-25-before051` and `-after051` (Ultra and Low, the four with a
+  tread in frame within 50 m that moved more than 10 cm): travessa-fujacal's flight evened out, its lowest
+  riser no longer a plinth over the pavement; capela-santa-justa's step at the door; fujacal-west and
+  liberdade a few pixels. The budget: the same draw calls, 32 to 1665 triangles more at those four (under
+  0.02%), the tiles 6 KB more of 14.3 MB.

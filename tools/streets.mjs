@@ -14,6 +14,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { pathToFileURL } from 'node:url';
 import ClipperLib from 'clipper-lib';
+import { RISER } from './lines.mjs';
 import { COBBLE, driven, isOneway, lanesOf, openThin } from './osm.mjs';
 
 const C = ClipperLib;
@@ -716,14 +717,15 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height =
     return into.filter((c) => meets(b, c.box)).map((c) => [c, within(b, c.box) ? [sh] : shapes(meet(sh, c.path))]);
   });
   // Some shapes cut to the boxes (cutTo), each piece to the nearest 10 cm, as the tiles keep them
-  // (rounded), but a scrap under 0.25 m²; and along a deck's end, where it meets the ground's streets, a
-  // point every 2 m or less, so it follows the street's shape across. `snap`, for the carriageways
-  // (task 048): their pieces rounded alike (snapRounding), so that where two meet no crack opens
-  // between them; and every one kept, as a scrap of one surface left out of another is a hole.
-  const addCut = (kind, cut, props, ys, snap = null) => {
+  // (rounded), but a scrap under `least` (0.25 m²); and along a deck's end, where it meets the ground's
+  // streets, a point every 2 m or less, so it follows the street's shape across. `snap`, for the
+  // carriageways (task 048) and the flights' treads (task 051): their pieces rounded alike
+  // (snapRounding), so that where two meet no crack opens between them; the carriageways' every one
+  // kept, as a scrap of one carriageway left out of another is a hole.
+  const addCut = (kind, cut, props, ys, snap = null, least = snap ? 0 : 0.25) => {
     for (const [c, pieces] of cut) for (const piece of pieces) for (const snapped of rounded(snap ? piece.map(snap) : piece)) {
       const rings = snapped.map((r) => r.map((q) => [q.X / 10, q.Y / 10])).filter((r) => r.length > 2).map((r) => (ys?.join ? dense(r, ys.join) : r));
-      if (!rings.length || (!snap && Math.abs(C.Clipper.Area(snapped[0])) / 100 < 0.25)) continue;
+      if (!rings.length || Math.abs(C.Clipper.Area(snapped[0])) / 100 < least) continue;
       c.out[kind].push(withYs({ ...props, rings }, ys, 'rings', rings));
     }
   };
@@ -779,12 +781,18 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height =
     }
   }
   const pathLevel = (l) => ['ground', 'bridge', 'tunnel', 'under'][l];
+  // The flights' treads snap rounded together, as the carriageways are (task 048): each rounded on its
+  // own, two side by side came out of the tiles' 10 cm grid a crack apart, where a walker going up them
+  // stood on the land for a moment (task 051). A tread's piece is kept down to 0.05 m², as the flight
+  // made it: one 15 cm deep, spread over what a carriageway leaves, is 0.3 m² across a 2 m flight.
   const addPaths = (list) => {
-    for (const pc of list) {
+    const cuts = list.map((pc) => cutTo(shapes(pc.paths)));
+    const snap = snapRounding(list.flatMap((pc, i) => (pc.kind === 'steps' ? cuts[i].flatMap(([, pieces]) => pieces.flat()) : [])));
+    list.forEach((pc, i) => {
       const ys = pc.y === undefined ? pc.ys ?? null : Object.assign(() => pc.y, { cm: true });
-      addShapes('paths', shapes(pc.paths), { kind: pc.kind, surface: pc.surface, level: pc.level, raised: pc.raised }, ys);
+      addCut('paths', cuts[i], { kind: pc.kind, surface: pc.surface, level: pc.level, raised: pc.raised }, ys, pc.kind === 'steps' ? snap : null, pc.kind === 'steps' ? 0.05 : 0.25);
       stats.paths.m2[pc.kind] = (stats.paths.m2[pc.kind] ?? 0) + area(meet(pc.paths, boxPath));
-    }
+    });
   };
 
   for (const [key, g] of made) {
@@ -977,7 +985,7 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height =
     // to: the flights of steps and the cycleways.
     let flushed = [], lanes = [];
     if (level === 'ground') {
-      const got = groundPaths(walks.filter((p) => (p.kind === 'steps' ? !!p.flight : p.level === 0 || p.level === 3)), { U, kerbed: [...pave, ...theirs, ...res, ...islands], B, W, over, walled, boxPath, levelName: pathLevel });
+      const got = groundPaths(walks.filter((p) => (p.kind === 'steps' ? !!p.flight : p.level === 0 || p.level === 3)), { U, kerbed: [...pave, ...theirs, ...res, ...islands], B, W, over, walled, boxPath, levelName: pathLevel, height, elev0 });
       if (got.taken.length) {
         const T = union(got.taken);
         [pave, theirs, res, islands] = [minus(pave, T), minus(theirs, T), minus(res, T), minus(islands, T)];
@@ -1419,6 +1427,9 @@ function ease(a, s) {
 const PATH_ORDER = ['steps', 'cycleway', 'footway', 'path'];
 // A handrail's top over the steps' nosing, and how far in from the flight's side it runs.
 const RAIL = 0.9, RAIL_IN = 0.15;
+// The shallowest a flight's tread is made, spread over what the carriageways leave of its line: the
+// tiles' 10 cm grid, which rounds a shallower one to nothing.
+const TREAD = 0.1;
 // How much of a path either side of its line a wall leaves it (task 052): one the map draws along the
 // line, or nearly, stands on it, and is cut there.
 const PATH_KEEP = 0.3;
@@ -1485,7 +1496,11 @@ function stationOn(pts) {
 // ground (`over`). Then:
 // - a flight of steps (`flight`, lines.mjs) is a tread between each two risers, each at its own
 //   height, and takes the place of whatever else is there: the pavements, reservations and islands
-//   (`kerbed`) give way to it;
+//   (`kerbed`) give way to it. Its treads are spread over what the carriageways leave of its line, so
+//   where an end runs under one, its riser there is at the kerb; and an end that meets a carriageway,
+//   a pavement or a path is at its height as the tiles hold the ground (`height`), a pavement a kerb
+//   over it, as a deck's end is (decision 023), the risers between evened out; one that meets the
+//   land, a building or another flight as `flight` has it (task 051);
 // - and so they do to a cycleway: where it runs in one, it's drawn there, flush with it, a kerb over
 //   the ground (`flush`); or where it runs along the carriageway's edge, a lane at the carriageway's
 //   level, with the kerb behind it (`lanes`), as the Avenida da Liberdade's red lanes are;
@@ -1495,9 +1510,29 @@ function stationOn(pts) {
 // the flight's); what the kerbed areas give way to (`taken`); `flush` and `lanes`; the handrails
 // { pts, ys, level }; and how many treads rise more than `step` over the one before (or the
 // foot's ground), and how many flights there are.
-function groundPaths(list, { U, kerbed, B, W, over, walled = null, boxPath = null, step = 0.3, levelName }) {
+function groundPaths(list, { U, kerbed, B, W, over, walled = null, boxPath = null, step = 0.3, levelName, height = null, elev0 = 0 }) {
   const nearU = splitter(U), nearK = splitter(kerbed), nearB = splitter([...B, ...W]), nearO = splitter(over);
   const out = [], taken = [], rails = [], stats = { flights: 0, treads: 0, steep: 0, behind: 0 };
+  // Whether a point is in some pieces (those near it), and on which of the paths' lines (their bands).
+  const within = (near) => (x, z) => {
+    const q = { X: Math.round(x * S), Y: Math.round(z * S) };
+    let n = 0;
+    for (const r of near({ x0: x, x1: x, z0: z, z1: z })) if (C.Clipper.PointInPolygon(q, r) !== 0) n++;
+    return n % 2 === 1;
+  };
+  const inU = within(nearU), inK = within(nearK), inB = within(nearB);
+  const lineAt = segments(list.map((q) => q.pts), 10, list);
+  const onLine = (x, z, not) => lineAt.near({ x0: x, x1: x, z0: z, z1: z }).find(([ax, az, bx, bz, q]) => q !== not && segDist([x, z], [ax, az], [bx, bz]) <= q.w / 2)?.[4];
+  // The height a flight's end meets just past it, `s` metres along its line, going out (`dir`, -1 at
+  // its foot, 1 at its top): a carriageway's, a pavement's a kerb over it, a path's; or null.
+  const past = (p, pts, s, dir) => {
+    const { p: [x0, z0], t } = along(pts, s), [x, z] = [x0 + t[0] * dir * 0.15, z0 + t[1] * dir * 0.15];
+    if (inU(x, z)) return height(x, z) - elev0;
+    if (inK(x, z)) return height(x, z) - elev0 + KERB;
+    if (inB(x, z)) return null;
+    const q = onLine(x, z, p);
+    return q && q.kind !== 'steps' && (q.level === 0 || q.level === 3) ? height(x, z) - elev0 : null;
+  };
   // Cut back as everything is, and on the ground to the walls either side of its line (task 052),
   // which open where it passes through them (walls.mjs).
   const cut = (A, p, pts = p.pts) => {
@@ -1524,9 +1559,27 @@ function groundPaths(list, { U, kerbed, B, W, over, walled = null, boxPath = nul
     F = minus(F, treads.filter((t) => boxesMeet(t.b, fb)).flatMap((t) => t.paths));
     if (!F.length) continue;
     stats.flights++;
-    let before = [], last = f.foot;
-    f.ys.forEach((y, i) => {
-      const slab = band([toPath(stretch(f.pts, (i * L) / f.n, ((i + 1) * L) / f.n))], p.w / 2 + 0.05, true);
+    // Over what the carriageways leave of its line, unless that makes a tread shallower than TREAD (then
+    // over all of it, those under one cut away, as before task 051), and its ends at what they meet.
+    let s0 = 0, s1 = L;
+    while (s0 < L && inU(...along(f.pts, s0 + 0.025).p)) s0 += 0.05;
+    while (s1 > s0 && inU(...along(f.pts, s1 - 0.025).p)) s1 -= 0.05;
+    if (s1 - s0 < 0.3) [s0, s1] = [0, L];
+    let foot = f.foot, top = f.ys.at(-1), n = f.n;
+    if (height) {
+      const a = past(p, f.pts, s0, -1) ?? foot, b = f.landing ? a + top - foot : past(p, f.pts, s1, 1) ?? top;
+      if (b > a) {
+        [foot, top] = [a, b];
+        if (!f.counted) n = Math.max(1, Math.round((top - foot) / RISER));
+      }
+    }
+    if (s1 - s0 < n * TREAD) [s0, s1] = [0, L];
+    const ys = Array.from({ length: n }, (_, i) => foot + ((top - foot) * (i + 1)) / n), D = s1 - s0;
+    let before = [], last = foot;
+    ys.forEach((y, i) => {
+      // (The first from its line's start, the last to its end: what's left of the band beside a kerb
+      // across it at a slant.)
+      const slab = band([toPath(stretch(f.pts, i ? s0 + (i * D) / n : 0, i < n - 1 ? s0 + ((i + 1) * D) / n : L))], p.w / 2 + 0.05, true);
       const piece = minus(meet(F, slab), before);
       before = union(before, slab);
       if (y - last > step) stats.steep++;
@@ -1549,11 +1602,11 @@ function groundPaths(list, { U, kerbed, B, W, over, walled = null, boxPath = nul
       if (t['handrail:center'] === 'yes' || t['handrail:centre'] === 'yes') sides.push(0);
     }
     if (sides.length) {
-      const top = f.ys.at(-1), r = top - f.foot, at = stationOn(f.pts), b = boundsOfPaths(F);
-      const ys = (x, z) => Math.min(top, f.foot + r / f.n + (at(x, z) * r) / L) + RAIL;
+      const r = top - foot, at = stationOn(f.pts), b = boundsOfPaths(F);
+      const yr = (x, z) => Math.min(top, foot + r / n + (Math.max(0, at(x, z) - s0) * r) / D) + RAIL;
       for (const s of sides) {
         const line = cutLines(cutLines([toPath(shift(f.pts, s * (p.w / 2 - RAIL_IN)))], nearU(b), false), p.level === 0 ? nearB(b) : [], false);
-        rails.push(...line.map((q) => ({ path: q, ys, level: levelName(p.level) })));
+        rails.push(...line.map((q) => ({ path: q, ys: yr, level: levelName(p.level) })));
       }
     }
   }

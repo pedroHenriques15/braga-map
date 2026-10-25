@@ -127,7 +127,10 @@ map().groundKinds; // the kinds it says, each with its texture: [{ kind, texture
   steps is its treads, each its own piece at its height, as many as the map counts or its rise over
   16 cm, its ends on DGT's terrain at 50 cm; where the map counts the steps and the terrain shows
   less than 8 cm a step (a landing at a door isn't ground to it), from its foot 16 cm a step (the
-  owner's answer). Its handrails are lines at their tops (`world.streets.handrails`).
+  owner's answer). But an end that meets a carriageway, a pavement or a path is at its height as the
+  tiles hold it (a pavement a kerb over the ground), the risers between evened out, and where an end
+  runs under a carriageway its treads are spread over what's left of its line, its riser there at the
+  kerb, unless that would make them shallower than 10 cm (task 051). Its handrails are lines at their tops (`world.streets.handrails`).
 - So are its walls, fences, railings, hedges and gates (task 013, `world.walls`): every barrier
   OpenStreetMap has there, and the walls, hedges and retaining walls it lacks where DGT's LiDAR sees
   them (`source`), each as high as the LiDAR measured it (else the map's `height`), its top's height
@@ -614,7 +617,8 @@ streets; when a track moves enough to change the edge, run the three again until
   `pathLines` (a footbridge's and a path's tunnel's heights, as `levelHeights` makes a street's; a
   flight's treads, `flight`), each way's band cut back to the carriageways, the buildings, the water
   and a footbridge's end, against pieces of them split small (`splitter`) so it's quick; then a
-  flight of steps a tread at a time (each slab of its line, from the foot), the cycleways, the
+  flight of steps a tread at a time (each slab of what the carriageways leave of its line, from the
+  foot; its treads snap rounded together, as the carriageways are), the cycleways, the
   footways and the paths, each giving way to those before it. A cycleway in a pavement is a lane
   where, 40 cm out, the carriageway is beside it along half its length or more.
   `test/streets.test.js` checks it on made-up streets (a T junction, a roundabout, a reservation,
@@ -625,7 +629,9 @@ streets; when a track moves enough to change the edge, run the three again until
   width, and how much of the walls facing a street have pavement past them. `test/paths.test.js` checks the paths
   against the map's (`.cache/osm/paths.json`): each drawn, or what's there instead; the streets'
   own left to them; each at its level; each flight's treads a riser apart, as many as the map
-  counts; the Liberdade's lanes; and nothing on anything else.
+  counts; a kart's step at most from a flight's foot to the street, pavement or path it leaves from,
+  and from its top to what it climbs to, for all but two at most (task 051); the Liberdade's lanes;
+  and nothing on anything else.
 - `audit.mjs` is the street audit (task 006): over the Volta dos Amigos' box, the open world's area
   and the shooter's, every street, square, railway, footway, step, path and cycleway the map has,
   by class, its length and how much of it the world's tiles draw (a line of its own kind within

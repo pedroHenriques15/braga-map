@@ -524,12 +524,15 @@ test("every pavement, reservation and island on the ground, and every path flush
     }).filter((q) => q.d <= r).sort((p, q) => p.d - q.d);
   };
   const pieces = [...S.pavements.filter((p) => p.level === 'ground'), ...S.paths.filter((p) => p.raised && (p.level === 'ground' || p.level === 'under'))];
+  // A point's kerb: the way to it runs over the pavements (one across a wall is another pavement's).
+  const onPave = inside(pieces);
+  const over = (x, z, q) => q.d < 0.3 || (onPave((x + q.fx) / 2, (z + q.fz) / 2) && onPave(q.fx + ((x - q.fx) * 0.3) / q.d, q.fz + ((z - q.fz) * 0.3) / q.d));
   let points = 0, atKerb = 0, across = 0;
   const off = [], steep = [];
   for (const p of pieces) p.rings.forEach((r, i) => {
     assert.equal(p.ys?.[i]?.length, r.length, `a height at each point of a ${p.kind} at ${r[0]}`);
     r.forEach(([x, z], k) => {
-      const y = p.ys[i][k], near = feet(x, z, 2 * PAVE + 1), a = near[0];
+      const y = p.ys[i][k], near = feet(x, z, 2 * PAVE + 1), a = near.slice(0, 3).find((q) => over(x, z, q));
       points++;
       if (!a) return;
       const dropped = near.find((q) => !q.h)?.d ?? Infinity;
@@ -542,10 +545,13 @@ test("every pavement, reservation and island on the ground, and every path flush
         if (Math.abs(y - want) > 0.015) off.push(`${p.kind} at (${x}, ${z}) ${(y - want).toFixed(3)} m`);
         return;
       }
-      if (dropped < DROP + 0.1) return;
+      // (Past a pavement's width from its kerb, a map's sidewalk eases back to the land's.)
+      if (dropped < DROP + 0.1 || (p.kind !== 'reservation' && p.kind !== 'island' && a.d > PAVE)) return;
       across++;
       const top = w.height(a.fx, a.fz) + KERB;
-      if (Math.abs(y - top) <= 0.02 * a.d + 0.006) return;
+      // (2 cm for the kerb's points on the tiles' 10 cm grid, on a street up to 20% steep, and the
+      // heights' centimetres.)
+      if (Math.abs(y - top) <= 0.02 * a.d + 0.02) return;
       // Between two kerbs, one either way: a pavement's two no more than two pavements apart, a
       // reservation's or an island's anywhere.
       const span = p.kind === 'reservation' || p.kind === 'island' ? Infinity : 2 * PAVE + 1;

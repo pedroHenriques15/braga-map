@@ -100,6 +100,8 @@ up 131 of the 140 from their foot (051, decision 078).
 - **121** A steep bank the LiDAR finds isn't a retaining wall: Santo Adrião's (found by 111).
 - **116** The LiDAR's "buildings" on the map's car parks: 85, most of them vans, lorries or shade
   canopies drawn as buildings (found by 112).
+- **131** A building's storeys from its street: a drawn part standing under the street, a wall too
+  low (found by 086).
 - **115** The ground steps at a held street's edge, not slopes into it: the João XXI's upper lane,
   where the race still flies 0.3–0.4 s after 066's tilt (found by 066).
 - **076** The land at a flight of steps, never drawn over its treads nor far under them: 565 of

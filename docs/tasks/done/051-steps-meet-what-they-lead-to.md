@@ -1,5 +1,5 @@
 ---
-status: doing
+status: done
 priority: medium
 kind: code
 repo: both
@@ -55,8 +55,10 @@ Steps:
 ## Done when
 
 - [x] A test says, for the flights in the open world's area, how many a kart can go up from their
-  foot, and that's most of them but those climbing to a door or a landing.
-- [x] party-kart's tests pass, a kart up and down a flight among them.
+  foot, and that's most of them but those climbing to a door or a landing. (`test/paths.test.js`: 131
+  of 140; 2 feet off, named in Notes; npm test 157/157 on 1.40.0's tree.)
+- [x] party-kart's tests pass, a kart up and down a flight among them. (159/159 and check, on braga-map
+  1.41.0; "up a flight of steps a riser at a time", and the walker up the 47 steps.)
 
 ## Out of scope
 
@@ -103,3 +105,6 @@ Steps:
   riser no longer a plinth over the pavement; capela-santa-justa's step at the door; fujacal-west and
   liberdade a few pixels. The budget: the same draw calls, 32 to 1665 triangles more at those four (under
   0.02%), the tiles 6 KB more of 14.3 MB.
+- Landed 2026-10-25, braga-map 1.41.0, decision 078. The coordinator's marks for `after051` move no
+  place. Its round isn't prepared for the scorecard: `tools/round.mjs` makes sheets from High's shots,
+  and this round is Ultra's and Low's (task 127, next; it waits in task 103).

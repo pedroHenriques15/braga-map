@@ -2249,3 +2249,31 @@ What it costs: a frame at 720 pixels high of 3.45–7.51 ms (3.37–7.25 before)
 `falperra` at 2560 by 1440 (9.8); a gather of the near trees 1.8 ms (1.5). High and Low draw as before,
 to the pixel, and Medium with them, the wind and the limbs being Ultra's alone (party-kart's budget,
 "Ultra's trees in the wind").
+
+## 078 · A flight of steps meets the street, the pavement or the path at its height as the tiles hold it
+
+*2026-10-25 · task 051 · adds to decisions 023, 032 and 035*
+
+Since task 050 (decision 032) a flight's ends were at DGT's terrain at 50 cm (`MDT-50cm`), and the
+street, pavement or path it leaves from at the tiles' ground (`height(x, z)`, the 2 m means): where the
+two differed, the first riser stood over the others, and 20 of the 140 flights in the open world's area
+stood more than a kart's step (0.3 m) over what's at their foot, so a kart could only come down them.
+So:
+
+- **An end that meets a carriageway, a pavement or a path is at its height as the tiles hold it** (a
+  pavement or an island a kerb, 15 cm, over the ground), as a deck's end is (decision 023), and the risers
+  between even out. One that meets the land, a building or another flight stays on DGT's terrain. A flight
+  up to a door's or a terrace's landing (the map counting more steps than the terrain shows) keeps its
+  rise, its top moving with its foot.
+- **Where an end runs under a carriageway, its treads spread over what's left of its line,** its riser
+  there at the kerb; unless that makes a tread shallower than the tiles' 10 cm grid, which would round it
+  to nothing: then over all of its line as before, the lowest cut away (one flight so far, way 382878426,
+  whose line the carriageway covers for 2.5 m of 3.5).
+- **A flight's treads snap rounded together,** as the carriageways are (decision 035): rounded each on
+  its own to the tiles' 10 cm, two side by side came out a crack apart.
+
+A kart goes up 131 of the 140 flights from their foot (112 before); in party-kart, 173 of the 180 with a
+street, a pavement or a path at their foot (151 of 182).
+
+The alternative, the street held to the terrain at a flight's foot, would move the streets the tiles
+hold, and decision 023's decks with them, for a flight's sake.

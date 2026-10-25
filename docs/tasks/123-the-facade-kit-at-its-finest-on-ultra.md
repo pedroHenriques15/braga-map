@@ -1,5 +1,5 @@
 ---
-status: todo
+status: doing
 priority: medium
 kind: code
 repo: both
@@ -42,3 +42,16 @@ Ultra; the facades are a piece of work of their own, split from it (2026-10-24).
 ## Notes
 
 - Split from task 085 by the coordinator (2026-10-24), at worker-2's suggestion.
+- **High's kit isn't 40 px a metre:** each bay is drawn 256 px a side whatever its size, so High's kinds
+  run 71 to 91 px a metre (the old house 91 across, the 2000s block 71), a shop's 7.5 m bay 34 and the
+  glass office's 1.5 m bay 171; the surfaces 85 (render, concrete, glass) to 320 (mosaic). Ultra draws
+  them at twice High's, 512 a side (most kinds 142 to 182 px a metre), the surfaces' pixel-sized marks
+  (a speckle, a joint) kept as big in metres. Decided by the session, for the owner to confirm.
+- **The relief** (party-kart's `src/render/relief.ts`, `facades.ts`): each part of a bay drawn with how
+  far it stands out of its wall or into it: a window's frame 10 cm in its reveal and its glass 14 cm, a
+  sill 6 cm out, a stone frame 4 cm, a shutter's slats, a door's recess and its panels, a shop's glass
+  10 cm in, an arcade 80 cm. Softened over 1.5 cm, turned into normals, a third texture beside the
+  openings and the surfaces, which the walls' shader tilts its light by, as three.js tilts a normal
+  map's, in the wall's frame. On Ultra only.
+- **Its panes marked** (the coordinator, for task 117's reflections): the relief texture's alpha is 1
+  where a bay's drawing is a pane, 0 elsewhere.

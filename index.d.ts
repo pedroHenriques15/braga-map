@@ -200,6 +200,26 @@ export interface Plate {
 // outline squared from where the LiDAR saw building; Microsoft's outline of such a building, where
 // it lies closer over the LiDAR's; or invented, a house put on an empty frontage of a built-up
 // street where the LiDAR wasn't fetched (filled).
+// planes, groups, blocks and overhang (task 087): its roof as the LiDAR's points have it, where they
+// fit them better than its shape (`roof`, `dir`, `pitch`, `ends`, `ridge`), which stays for a game
+// that draws the shapes: the roof is the highest of each group's lowest plane, a plane's height over
+// the building's ground c + gx·x + gz·z on the map; what stands on it, each a box from the roof up to
+// its top (over the ground); how far the roof reaches past the walls, in metres, or null where the
+// points can't say. Any of them absent where the points add nothing to the shape.
+export interface RoofPlane {
+  c: number;
+  gx: number;
+  gz: number;
+}
+export interface RoofBlock {
+  x: number;
+  z: number;
+  ux: number;
+  uz: number;
+  l: number;
+  w: number;
+  top: number;
+}
 export interface Building {
   kind: number;
   roof: number;
@@ -217,6 +237,10 @@ export interface Building {
   source: 'osm' | 'lidar' | 'microsoft' | 'invented';
   filled: boolean;
   measured: boolean;
+  planes?: RoofPlane[];
+  groups?: number[][];
+  blocks?: RoofBlock[];
+  overhang?: number | null;
   pts: [number, number][];
 }
 

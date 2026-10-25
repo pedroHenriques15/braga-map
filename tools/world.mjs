@@ -57,7 +57,7 @@ const places = fs.existsSync(path.join(CACHE, 'places.json')) ? readCache('place
 const ground = await terrain();
 const inExt = (x, z, m = 0) => x >= EXT.x0 - m && x <= EXT.x1 + m && z >= EXT.z0 - m && z <= EXT.z1 + m;
 
-const tiles = new Map(allTiles().map(([i, j]) => [tileId(i, j), { id: tileId(i, j), box: tileBox(i, j), areas: [], lines: [], buildings: [], layouts: [], trees: [], streets: [], paths: [], rails: [], walls: [], furniture: [], signs: [], names: [], nameAt: new Map(), stops: [], plates: [], roads: [], turns: [] }]));
+const tiles = new Map(allTiles().map(([i, j]) => [tileId(i, j), { id: tileId(i, j), box: tileBox(i, j), areas: [], lines: [], buildings: [], layouts: [], roofs: [], trees: [], streets: [], paths: [], rails: [], walls: [], furniture: [], signs: [], names: [], nameAt: new Map(), stops: [], plates: [], roads: [], turns: [] }]));
 const tileAt = (x, z) => tiles.get(tileId(...tileOf(x, z)));
 const tilesOver = (b, m = 0) => [...tiles.values()].filter((t) => overlaps(t.box, b, m));
 
@@ -306,6 +306,10 @@ const COLORS = 8; // a number from each building's id, for a game's own variety
 const fps = buildingsOsm.elements.flatMap((el) => footprints({ elements: [el] }).map((e) => Object.assign(e, { name: `${el.type}/${el.id}` })));
 if (!fs.existsSync(path.join(CACHE, 'roofs.json'))) throw new Error('No measured roofs in .cache/roofs.json: node tools/roofs.mjs');
 const { buildings: roofs, found = [], seen: lidarTiles = [] } = readCache('roofs.json');
+// Each measured part's roof as its points have it (tools/planes.mjs, task 087): its planes, what stands
+// on it and its overhang, by building and part; none where planes.json wasn't made.
+const roofPlanes = fs.existsSync(path.join(CACHE, 'planes.json')) ? readCache('planes.json').buildings : {};
+if (!Object.keys(roofPlanes).length) console.log('no .cache/planes.json: the roofs as their shapes (node tools/planes.mjs)');
 // Where the point cloud was boiled down, so the LiDAR saw every building there is.
 const lidarSeen = new Set(lidarTiles);
 const lidarAt = (x, z) => lidarSeen.has(tileKey(...toTM(x, z)));
@@ -426,6 +430,18 @@ const putBuilding = (ring, cx, cz, b) => {
   // The ring as a game reads it back: its points at the half metres packPts keeps them at.
   const sides = f.layout ? layoutOnRing(f.layout, ring.map(([x, z]) => [Math.round(x * 2) / 2, Math.round(z * 2) / 2])) : null;
   if (sides) sides.forEach((st, k) => st && t.layouts.push([row, k, st.map((o) => o && o.flatMap(([kind, at, w]) => [OPENING[kind], dm(at), dm(w)]))]));
+  // Its roof as its points have it (task 087, tools/planes.mjs), from its ring's first point as a game
+  // reads it back and from its ground: each plane its height there in decimetres and its rise a metre
+  // east and south in thousandths; each group the planes in it, one bit each; each block its middle
+  // in decimetres, the way it's long in degrees, its half-length and half-width and its top in
+  // decimetres; and the overhang in decimetres (-1 where the points can't say).
+  if (b.planes) {
+    const [x0, z0] = [half(ring[0][0]) / 2, half(ring[0][1]) / 2], base = ELEV0 + b.y / 10, q = b.planes;
+    const planes = (q.planes ?? []).flatMap(([c, gx, gz]) => [dm(c + gx * x0 + gz * z0 - base), Math.round(gx * 1000), Math.round(gz * 1000)]);
+    const groups = (q.groups ?? []).map((g) => g.reduce((m, i) => m | (1 << i), 0));
+    const blocks = q.blocks.flatMap(([x, z, ux, uz, l, w, top]) => [dm(x - x0), dm(z - z0), Math.round((Math.atan2(uz, ux) * 180) / Math.PI), dm(l), dm(w), dm(top - base)]);
+    if (planes.length || blocks.length || q.over != null) t.roofs.push([row, planes, groups, blocks, q.over == null ? -1 : dm(q.over)]);
+  }
 };
 // The tile's rows in the order they're packed: in rows 20 m deep, west to east.
 const rowOrder = (list) => [...list].sort((a, b) => Math.floor(a[7] / 40) - Math.floor(b[7] / 40) || a[6] - b[6]);
@@ -476,13 +492,13 @@ let real = 0, lidar = 0, stands = 0, notBuildings = 0, measured = 0, parts = 0;
   };
   // A building as the LiDAR measured it: each part on its own ground, its eaves and ridge from there.
   // Its `color` number is its own, or with `color` a function, each part's own from where it is.
-  const putMeasured = (pts, t, m, color, source, name) => {
+  const putMeasured = (pts, t, m, color, source, name, planes) => {
     const a = ringArea(pts), seen = m.parts.filter((p) => p.roof), top = Math.max(...seen.map((p) => p.eaves));
     const low = ELEV0 + Math.min(...m.parts.map((p) => footY(p.pts ?? pts))) / 10;
     // One the map lacks, nobody has looked at, is a building to each part, as its kind is.
     const whole = source === 'osm' || seenFaces[name] ? facadeOf(name, pts, t, top - low) : null;
     let k = 0;
-    for (const p of m.parts) {
+    for (const [i, p] of m.parts.entries()) {
       const ring = simplify(p.pts ?? pts, 0.3);
       if (ring.length < 3) continue;
       const y = footY(ring), base = ELEV0 + y / 10;
@@ -501,7 +517,7 @@ let real = 0, lidar = 0, stands = 0, notBuildings = 0, measured = 0, parts = 0;
       }
       const face = whole ?? facadeOf(`${name}#${k++}`, ring, t, b.h);
       const floors = face.floors && p.roof && p.eaves >= top - 1 ? face.floors : null;
-      putBuilding(ring, px, pz, { ...b, color: typeof color === 'function' ? color(px, pz) : color, y, source, face, floors });
+      putBuilding(ring, px, pz, { ...b, color: typeof color === 'function' ? color(px, pz) : color, y, source, face, floors, planes: p.roof ? planes?.[i] : null });
       parts++;
     }
     measured++;
@@ -518,7 +534,7 @@ let real = 0, lidar = 0, stands = 0, notBuildings = 0, measured = 0, parts = 0;
     const color = Math.floor(rnd(e.id, 7) * COLORS), levels = Number(t['building:levels']);
     const m = roofs[e.id];
     if (isMeasured(m)) {
-      putMeasured(pts, t, m, color, 'osm', e.name);
+      putMeasured(pts, t, m, color, 'osm', e.name, roofPlanes[e.id]);
       real++;
       continue;
     }
@@ -548,13 +564,13 @@ let real = 0, lidar = 0, stands = 0, notBuildings = 0, measured = 0, parts = 0;
   const pitch = base.elements.find((e) => e.type === 'way' && e.id === 22660434);
   const grounds = pitch ? base.elements.filter((e) => e.type === 'way' && e.tags?.leisure === 'stadium').map((e) => e.geometry.map(P)).filter((r) => inside(r, ...P(pitch.geometry[0]))) : [];
   const colorAt = (x, z) => Math.floor(rnd(Math.round(x * 2) * 20011 + Math.round(z * 2), 7) * COLORS);
-  for (const f of found) {
+  for (const [n, f] of found.entries()) {
     const cx = f.pts.reduce((s, p) => s + p[0], 0) / f.pts.length, cz = f.pts.reduce((s, p) => s + p[1], 0) / f.pts.length;
     if (!inExt(cx, cz) || !isMeasured(f)) continue;
     if (grounds.some((r) => inside(r, cx, cz))) { stands++; continue; }
     const name = `lidar/x${Math.round(cx)}z${Math.round(cz)}`;
     if (seenFaces[name]?.not) { notBuildings++; continue; }
-    putMeasured(f.pts, { building: 'yes' }, f, colorAt, f.src, name);
+    putMeasured(f.pts, { building: 'yes' }, f, colorAt, f.src, name, roofPlanes[`found/${n}`]);
     lidar++;
   }
 }
@@ -1244,6 +1260,12 @@ for (const t of tiles.values()) {
   if (t.layouts.length) {
     const at = new Map(rowOrder(t.buildings).map((r, k) => [r, k]));
     p.part('layouts', [], { list: t.layouts.map(([row, k, st]) => [at.get(row), k, st]) });
+  }
+  // The roofs as their points have them, each [its building's place in the tile's buildings, its planes,
+  // its groups, its blocks, its overhang] (putBuilding).
+  if (t.roofs.length) {
+    const at = new Map(rowOrder(t.buildings).map((r, k) => [r, k]));
+    p.part('roofs', [], { list: t.roofs.map(([row, ...rest]) => [at.get(row), ...rest]) });
   }
   p.part('trees', t.trees);
   if (t.streets.length) p.part('streets', t.streets);

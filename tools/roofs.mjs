@@ -420,12 +420,12 @@ const toTM = (x, z) => {
 };
 // The top of the building points at (x, z) on the map: NaN where there are none, null where the
 // point cloud wasn't fetched.
-function topAt(x, z) {
+export function topAt(x, z) {
   const [e, n] = toTM(x, z), I = Math.floor(e / CELL), J = Math.floor(n / CELL), ti = Math.floor(I / N), tj = Math.floor(J / N);
   const r = rasterOf(ti + '_' + tj);
   return r ? r.top[(N - 1 - (J - tj * N)) * N + (I - ti * N)] : null;
 }
-function colourAt(x, z) {
+export function colourAt(x, z) {
   const [e, n] = toTM(x, z), ke = Math.floor(e / 1000), kn = Math.floor(n / 1000), t = orthoOf(ke + '_' + kn);
   if (!t) return null;
   const s = t.width / 1000, i = Math.min(t.width - 1, Math.floor((e - ke * 1000) * s)), j = Math.min(t.height - 1, Math.floor((kn * 1000 + 1000 - n) * s)), k = (j * t.width + i) * 3;

@@ -546,7 +546,22 @@ test("every pavement, reservation and island on the ground, and every path flush
     return Math.hypot(ax + dx * t - x, az + dz * t - z) <= r;
   });
   const pieces = [...S.pavements.filter((p) => p.level === 'ground'), ...S.paths.filter((p) => p.raised && (p.level === 'ground' || p.level === 'under'))];
-  let points = 0, atKerb = 0, off = 0, landed = 0;
+  // The paths on the land (not flush with a pavement, not a flight), their edges by 10 m cell; whether
+  // one's within 9.5 m of (x, z).
+  const walked = new Map();
+  for (const p of S.paths.filter((q) => !q.raised && q.kind !== 'steps' && (q.level === 'ground' || q.level === 'under'))) for (const r of p.rings) r.forEach((a, k) => {
+    const b = r[(k + 1) % r.length];
+    for (let i = Math.floor(Math.min(a[0], b[0]) / 10); i <= Math.floor(Math.max(a[0], b[0]) / 10); i++) for (let j = Math.floor(Math.min(a[1], b[1]) / 10); j <= Math.floor(Math.max(a[1], b[1]) / 10); j++) {
+      const key = i + ',' + j;
+      if (!walked.has(key)) walked.set(key, []);
+      walked.get(key).push([a, b]);
+    }
+  });
+  const byPath = (x, z) => {
+    for (let i = Math.floor((x - 9.5) / 10); i <= Math.floor((x + 9.5) / 10); i++) for (let j = Math.floor((z - 9.5) / 10); j <= Math.floor((z + 9.5) / 10); j++) if ((walked.get(i + ',' + j) ?? []).some(([a, b]) => segDist([x, z], a, b) <= 9.5)) return true;
+    return false;
+  };
+  let points = 0, atKerb = 0, off = 0, landed = 0, eased = 0;
   const bad = [], steep = [];
   for (const p of pieces) p.rings.forEach((r, i) => {
     assert.equal(p.ys?.[i]?.length, r.length, `a height at each point of a ${p.kind} at ${r[0]}`);
@@ -580,15 +595,20 @@ test("every pavement, reservation and island on the ground, and every path flush
       // two of its widths and a metre) or of a reservation or an island.
       if (theirs.some((q) => across(x, z, (x - q.fx) / q.d, (z - q.fz) / q.d, span - q.d))) return;
       // Or bounded by none, the way to each leaving the pavements: the land's and a kerb, as before.
-      if (Math.abs(y - w.height(x, z) - KERB) <= 0.015) return void landed++;
+      const draped = w.height(x, z) + KERB;
+      if (Math.abs(y - draped) <= 0.015) return void landed++;
+      // Or eased back to that where a path on the land leaves the pavements (within 9.5 m of one): between
+      // it and a kerb's.
+      if (byPath(x, z) && theirs.some((q) => { const t = w.height(q.fx, q.fz) + KERB, b = 0.02 * q.d + 0.02; return y >= Math.min(draped, t - b) - 0.02 && y <= Math.max(draped, t + b) + 0.02; })) return void eased++;
       steep.push(`${p.kind} at (${x}, ${z}) ${((Math.abs(y - w.height(a.fx, a.fz) - KERB) / a.d) * 100).toFixed(1)}% over ${a.d.toFixed(1)} m`);
     });
   });
-  console.log(`the ground's pavements: ${pieces.length} pieces, ${points} points; ${atKerb} on a kerb, ${bad.length} more than 1 cm off it${bad.length ? ` (${bad.slice(0, 5).join('; ')})` : ''}; ${off} off it within a pavement's width, ${landed} at the land's (no kerb bounding them), ${steep.length} steeper than 2% from a kerb and not between two${steep.length ? ` (${steep.slice(0, 5).join('; ')})` : ''}`);
+  console.log(`the ground's pavements: ${pieces.length} pieces, ${points} points; ${atKerb} on a kerb, ${bad.length} more than 1 cm off it${bad.length ? ` (${bad.slice(0, 5).join('; ')})` : ''}; ${off} off it within a pavement's width, ${landed} at the land's (no kerb bounding them), ${eased} eased towards it by a path leaving the pavements, ${steep.length} steeper than 2% from a kerb and not between two${steep.length ? ` (${steep.slice(0, 5).join('; ')})` : ''}`);
   assert.ok(atKerb > 10000 && off > 10000, `${atKerb} points on a kerb, ${off} off it`);
   assert.equal(bad.length, 0, bad.slice(0, 10).join('; '));
   assert.equal(steep.length, 0, steep.slice(0, 10).join('; '));
   assert.ok(landed < off * 0.03, `${landed} of ${off} at the land's`);
+  assert.ok(eased < off * 0.05, `${eased} of ${off} eased by a path's mouth`);
 });
 
 test('the street on the ground runs into every deck and tunnel on its own slope', () => {

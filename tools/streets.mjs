@@ -1096,7 +1096,16 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height =
     // A roundabout's island apart (task 014): a game draws it in what the ground is there.
     const pieceKinds = [[pave, { kind: 'pavement', level }], [theirs, { kind: 'pavement', level }], [res, { kind: 'reservation', level }], [minus(islands, ringed), { kind: 'island', level }], [meet(islands, ringed), { kind: 'island', round: true, level }]];
     if (kerbed) {
-      const [pys, rys] = [paveHeights(runs, height, elev0, kerbed, 2 * PAVE + 1, PAVE), paveHeights(runs, height, elev0, kerbed, 2 * KERB_FAR)];
+      const ways = walks.filter((p) => p.kind !== 'steps' && (p.level === 0 || p.level === 3));
+      const held = segments(stops.filter((w) => w.kind === 'retaining').map((w) => w.pts));
+      const onPath = insideOf(groundOut.filter((pc) => !pc.raised && pc.kind !== 'steps').flatMap((pc) => pc.paths));
+      const mouths = mouthsOf(ways, kerbed, (x, z) => !inU(x, z) && onPath(x, z), paveHeights(runs, height, elev0, kerbed, walled, held, 2 * PAVE + 1, PAVE), height, elev0);
+      const pys = paveHeights(runs, height, elev0, kerbed, walled, held, 2 * PAVE + 1, PAVE, mouths), wide = paveHeights(runs, height, elev0, kerbed, walled, held, 2 * KERB_FAR, Infinity, mouths);
+      // A reservation's or an island's points where it meets a pavement (or a path flush with one), within
+      // 10 cm of one as the pieces are rounded, at the pavement's heights, so the two meet without a step.
+      const paved = insideOf([...pave, ...theirs, ...flushed]), byPave = (x, z) => [[0, 0], ...Array.from({ length: 8 }, (_, k) => [Math.cos((k * Math.PI) / 4) * 0.1, Math.sin((k * Math.PI) / 4) * 0.1])].some(([a, b]) => paved(x + a, z + b));
+      const rys = Object.assign((x, z) => (byPave(x, z) ? pys(x, z) : wide(x, z)), { cm: true });
+      stats.mouths = (stats.mouths ?? 0) + mouths.length;
       const laid = (cut, y) => cut.map(([c, pieces]) => [c, pieces.map((piece) => piece.map((r) => follow(r, y)))]);
       const flush = groundOut.filter((pc) => pc.raised).map((pc) => [pc, laid(cutTo(shapes(pc.paths)), pys)]);
       const beside = pieceKinds.map(([ps, props]) => [laid(cutTo(shapes(ps)), props.kind === 'pavement' ? pys : rys), props, props.kind === 'pavement' ? pys : rys]);
@@ -1256,12 +1265,19 @@ function segments(lines, cell = 10, tags = null) {
 // by how near; down to a kerb dropped at a crossing over DROP. On its kerb (within ON of it, as the
 // tiles' 10 cm grid puts a ring's points), a point is at the carriageway's ground right there and
 // the kerb, so the kerb's face is the kerb's height. A kerb is a point's only if the way to it runs
-// over the pavements (`inside`): one across a wall or open ground is another pavement's. With none,
+// over the pavements (`inside`), crosses no wall they stop at (`walled`) and keeps 25 cm off a retaining
+// wall (`held`): one across a wall or open ground, or at a retaining wall's foot, is another pavement's.
+// With none,
 // the land's and a kerb, as before; and `ease` past the kerb, eased back to that over EASE_OUT (a
-// map's sidewalk out past a pavement's width). The kerbs to the 10 cm, as the tiles keep them. To the
-// centimetre, a ring's points where its heights need them (follow).
+// map's sidewalk out past a pavement's width). The kerbs to the 10 cm, as the tiles keep them. And
+// round where a path leaves the pavements onto the land (`mouths`, mouthsOf), back towards the land's
+// and a kerb. To the centimetre, a ring's points where its heights need them (follow).
 const EASE_OUT = 1.5, ON = 0.12;
-function paveHeights(runs, height, elev0, inside, span, ease = Infinity) {
+function paveHeights(runs, height, elev0, inside, walled, held, span, ease = Infinity, mouths = []) {
+  const opened = new Map();
+  for (const m of mouths) for (let i = Math.floor((m.x - m.R) / 10); i <= Math.floor((m.x + m.R) / 10); i++) for (let j = Math.floor((m.z - m.R) / 10); j <= Math.floor((m.z + m.R) / 10); j++) opened.set(i + ',' + j, [...(opened.get(i + ',' + j) ?? []), m]);
+  // How near (x, z) is to a mouth: 1 within its path's half width r, 0 its R away.
+  const open = (x, z) => Math.max(0, ...(opened.get(Math.floor(x / 10) + ',' + Math.floor(z / 10)) ?? []).map((m) => Math.min(1, (m.R - Math.hypot(m.x - x, m.z - z)) / (m.R - m.r))));
   const dm = (pts) => pts.map(([x, z]) => [Math.round(x * 10) / 10, Math.round(z * 10) / 10]);
   const all = segments(runs.map((r) => dm(r.pts)), 10, runs.map((r) => r.h)), low = segments(runs.filter((r) => !r.h).map((r) => dm(r.pts)), 10);
   const top = (x, z) => height(x, z) - elev0 + KERB;
@@ -1274,12 +1290,23 @@ function paveHeights(runs, height, elev0, inside, span, ease = Infinity) {
     return { fx, fz, h, d: Math.hypot(fx - x, fz - z) };
   }).filter((q) => q.d <= r).sort((p, q) => p.d - q.d);
   // Whether the way from (x, z) to a kerb's point q runs over the pavements: half way, and 30 cm short,
-  // each on one or within 5 cm of one either side of the way (along a pavement's edge).
+  // each on one or within 5 cm of one either side of the way (along a pavement's edge); crosses no wall;
+  // and past its first 30 cm (a pavement's back against one) keeps 25 cm off a retaining wall (round a
+  // retaining wall's end, from the pavement on its top to the street at its foot).
   const over = (x, z, q) => {
     if (q.d < 0.3) return true;
     const k = 0.3 / q.d, nx = ((q.fz - z) / q.d) * 0.05, nz = ((x - q.fx) / q.d) * 0.05;
     const on = (px, pz) => inside(px, pz) || inside(px + nx, pz + nz) || inside(px - nx, pz - nz);
-    return on((x + q.fx) / 2, (z + q.fz) / 2) && on(q.fx + (x - q.fx) * k, q.fz + (z - q.fz) * k);
+    if (!on((x + q.fx) / 2, (z + q.fz) / 2) || !on(q.fx + (x - q.fx) * k, q.fz + (z - q.fz) * k)) return false;
+    const [dx, dz] = [q.fx - x, q.fz - z], k0 = Math.min(1, 0.3 / q.d), [sx, sz] = [x + dx * k0, z + dz * k0];
+    const near = (ax, az, bx, bz) => Math.min(segDist([sx, sz], [ax, az], [bx, bz]), segDist([q.fx, q.fz], [ax, az], [bx, bz]), segDist([ax, az], [sx, sz], [q.fx, q.fz]), segDist([bx, bz], [sx, sz], [q.fx, q.fz])) < 0.25;
+    if (held?.near({ x0: Math.min(x, q.fx) - 0.25, x1: Math.max(x, q.fx) + 0.25, z0: Math.min(z, q.fz) - 0.25, z1: Math.max(z, q.fz) + 0.25 }).some(([ax, az, bx, bz]) => near(ax, az, bx, bz))) return false;
+    return !walled?.near({ x0: Math.min(x, q.fx), x1: Math.max(x, q.fx), z0: Math.min(z, q.fz), z1: Math.max(z, q.fz) }).some(([ax, az, bx, bz]) => {
+      const [ex, ez] = [bx - ax, bz - az], den = dx * ez - dz * ex;
+      if (!den) return false;
+      const t = ((ax - x) * ez - (az - z) * ex) / den, u = ((ax - x) * dz - (az - z) * dx) / den;
+      return t > 0 && t < 1 && u >= 0 && u <= 1;
+    });
   };
   const ys = (x, z) => {
     let near = feet(x, z, 10);
@@ -1300,11 +1327,44 @@ function paveHeights(runs, height, elev0, inside, span, ease = Infinity) {
       y = ta + Math.max(-CROSS * a.d, Math.min(CROSS * a.d, top(x, z) - ta));
       y += (top(x, z) - y) * Math.max(0, Math.min(1, (a.d - ease) / EASE_OUT));
     }
-    // From on it to off it over the next 10 cm.
-    return on + (y - drop - on) * Math.min(1, (a.d - ON) / 0.1);
+    // From on it to off it over the next 10 cm; and by a mouth, back to the land's.
+    y = on + (y - drop - on) * Math.min(1, (a.d - ON) / 0.1);
+    return y + (top(x, z) - drop - y) * open(x, z);
   };
   return Object.assign(ys, { cm: true });
 }
+// Where a path on the ground (or under something) leaves the pavements onto the land, its line crossing
+// out of them (`inside`) onto the path as it's drawn for a metre at least (`walked`), and the pavement there
+// (`ys`, 50 cm in) more than 10 cm off the land's and a kerb (50 cm out): { x, z, r, R }, the pavement
+// to ease back to that within the path's half width r, and from there over R round it, at RAMP of the
+// difference, DROP at least and MOUTH at most (task 044). A path that runs along a pavement's back, its line not crossing it, meets a wall there.
+const RAMP = 0.12, MOUTH = 8;
+function mouthsOf(ways, inside, walked, ys, height, elev0) {
+  const out = [];
+  for (const w of ways) {
+    const at = [];
+    w.pts.forEach(([bx, bz], i) => {
+      if (!i) return void at.push([bx, bz]);
+      const [ax, az] = w.pts[i - 1], n = Math.max(1, Math.ceil(Math.hypot(bx - ax, bz - az) / 0.25));
+      for (let k = 1; k <= n; k++) at.push([ax + ((bx - ax) * k) / n, az + ((bz - az) * k) / n]);
+    });
+    const on = at.map(([x, z]) => inside(x, z));
+    for (let k = 1; k < at.length; k++) {
+      if (on[k] === on[k - 1]) continue;
+      // The way out: from the last point on the pavements to the first off them, and on.
+      const step = on[k] ? -1 : 1, first = on[k] ? k - 1 : k, last = first - step;
+      const off = [0, 1, 2, 3].map((j) => at[first + j * step]);
+      if (off.some((q) => !q || inside(...q) || !walked(...q))) continue;
+      const inner = at[last - step] && on[last - step] ? at[last - step] : at[last];
+      const d = ys(...inner) - (height(...off[2]) - elev0 + KERB);
+      if (Math.abs(d) <= 0.1) continue;
+      const r = Math.min(1.5, (w.w ?? 2) / 2);
+      out.push({ x: (at[k][0] + at[k - 1][0]) / 2, z: (at[k][1] + at[k - 1][1]) / 2, r, R: r + Math.min(MOUTH, Math.max(DROP, Math.abs(d) / RAMP)) });
+    }
+  }
+  return out;
+}
+
 // The nearest point to (x, z) of the stretch from (ax, az) to (bx, bz) within 45° of the way (ux, uz)
 // from it (a unit vector), if any part of it is: { fx, fz, d }. The stretch clipped to the two sides
 // of that wedge, then the nearest of what's left.

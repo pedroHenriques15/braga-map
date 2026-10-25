@@ -47,12 +47,12 @@ and task 079's arenas' insides taking their doors and windows from the layouts t
 
 ## Done when
 
-- [ ] Every building in the shooter's area that a photo shows clearly enough to read has its street
+- [x] Every building in the shooter's area that a photo shows clearly enough to read has its street
   walls' layout (`docs/SHOOTER-AREA.md` counts 165 with a photo), checked by a test that it fits its
   wall; the rest counted as left, each with why (the coordinator's, 2026-10-24).
 - [ ] `fujacal-start`, `fujacal-west`, `alameda-fujacal`, `travessa-fujacal`, `conselheiro-lobato`
   and `lobato-east` shot again: the openings where the photos have them, rated no lower.
-- [ ] `npm test` here, `npm test` and `npm run check` in party-kart pass.
+- [x] `npm test` here, `npm test` and `npm run check` in party-kart pass.
 
 ## Out of scope
 
@@ -110,15 +110,18 @@ and task 079's arenas' insides taking their doors and windows from the layouts t
   read it); a side now takes a layout only when no more than a metre (or a fifth of it) is off the
   wall, and stays in its kind's rhythm otherwise. In party-kart a continuous balcony goes from a storey
   read with no balcony's door, as the other kinds already did.
-- **Shots** (High and Low, before on main's party-kart, after on 086's; `party-kart\shots\`
-  2026-10-25-before086 and party-kart-086's 2026-10-25-after086): the four viewpoints whose view takes
-  in a wall read. lobato-crossing: the corner face plain over the shop's glazing, as its photo has it
-  (its rhythm's windows gone). fujacal-west: way/165861842's face with two windows a storey where its
-  photo has them, in place of stacked glazed balconies. capela-santa-justa: the white house beside the
-  chapel, seen edge-on, a door's strip moved. travessa-fujacal: the same to the pixel (its wall read,
-  way/162945735, is out of its view). **Budget:** the same draw calls, triangles and textures in every
-  view at both levels; the frame within 0.06 ms, but for Low's travessa-fujacal, 0.55 ms before, 0.73
-  ms after, with the same pixels and the same calls (the machine, not the drawing).
+- **Shots** (High and Low; before on main's party-kart, b99b4cf on braga-map 1.41.0, in a worktree
+  of its own; after on 086's, both rebased on them; `party-kart\shots\` 2026-10-25-before086c and
+  2026-10-25-after086c): the six the Done when names and the two more whose view takes in a wall read
+  (lobato-crossing, capela-santa-justa). lobato-crossing: the corner face plain over the shop's
+  glazing, as its photo has it (its rhythm's windows gone). fujacal-west: way/165861842's face with
+  two windows a storey where its photo has them, in place of stacked glazed balconies; fujacal-start
+  the same face, far off. capela-santa-justa: the white house beside the chapel, seen edge-on, a
+  door's strip moved. alameda-fujacal, travessa-fujacal, conselheiro-lobato and lobato-east: the same
+  to the pixel (travessa-fujacal's wall read, way/162945735, is out of its view; the others have none
+  in theirs). **Budget:** the same draw calls and textures in every view at both levels, the same
+  triangles but for Low's capela-santa-justa (1.06 M to 1.07 M, a wall laid out in pieces); the frame
+  within 0.04 ms.
 - **Found on the way** (not changed here): fujacal-west's building's drawn part (way/165861842, 17 m
   high) stands from 3.1 m, with the street before it at 7.6 m: its ground floor is under the street,
   so the shops read on it don't show and its read storeys come one level low, the top one in the
@@ -127,3 +130,7 @@ and task 079's arenas' insides taking their doors and windows from the layouts t
   openings were read between its real ends and scaled to the map's length. The readers found the
   camera outlines `show` draws out by up to a bay or a storey (some on the road, one not in the frame),
   and `show --photos` gridding a frame named twice in a batch once, both said in their readings.
+  In party-kart, `npm install --no-save --install-links ../braga-map-086` kept the copy it had while
+  the version was the same (a first after round was shot without the layouts, the same to the pixel
+  as before): the copy is taken out first now. party-kart's `npm test` failed once in seven runs,
+  under the other sessions' load, and passed the other six; which test wasn't caught.

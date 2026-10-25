@@ -15,9 +15,8 @@ roadmap: Ultra · Braga at its most real
 Task 087 built each roof from the point cloud's planes, with what stands on it (chimneys, lift rooms,
 parapets) and the eaves' overhang. Two things its What asked for weren't made (087's Notes, "Left"):
 
-- **solar panels** (its What 2), "where the orthophoto's colour and the points' flatness say so": seen
-  from the hills (`picoto-top`, `monte-da-forca`, `sameiro`) Braga's roofs carry dark rectangles of
-  panels on many houses and flat blocks;
+- **solar panels** (its What 2), "where the orthophoto's colour and the points' flatness say so"
+  (how many roofs in the open world carry them isn't counted yet: step 1);
 - **gutters** (its What 3), "at the size the points show past the footprint": the line along a pitched
   roof's eaves that, close up, tells a house's roof from a lid.
 

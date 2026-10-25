@@ -623,14 +623,20 @@ streets; when a track moves enough to change the edge, run the three again until
   carriageways under a metre wide closed, a gap between two under 0.3 m wide filled, and an island
   kept as the map's lines leave it, but where it's under 20 cm wide (10 until task 026).
   A pavement, reservation or island on the ground, and a path flush with a pavement, is laid level
-  from its kerb (task 044, `paveHeights`): each point at its nearest kerb's top (the carriageway's
-  ground there and 15 cm), rising or falling towards its back as the land does, 2% across at most;
-  between two kerbs, one either way (a pavement's no more than two pavements apart, a reservation's or
-  an island's anywhere), from one's top to the other's; sloping down to a kerb dropped at a crossing
-  over 1.2 m; and with no kerb within 45 m, the land's and 15 cm, as before. Its heights are to the
-  centimetre, a point added along a ring wherever a straight line between two would be more than
-  1 cm off them (`follow`); the tiles mark such a piece (`LAID`) and keep its heights in
-  centimetres, each from the one before.
+  from its kerb (task 044, `paveHeights`): each point at its kerb's top (the carriageway's ground
+  there and 15 cm; on the kerb, exactly that), rising or falling towards its back as the land does, 2%
+  across at most; between two kerbs across from each other (within 45° of straight across: a
+  pavement's no more than two pavements apart, a reservation's or an island's anywhere), from one's
+  top to the other's; sloping down to a kerb dropped at a crossing over 1.2 m. Its kerb is the nearest
+  the way to which runs over the pavements, crosses no wall and keeps off a retaining wall's foot (a
+  kerb across a wall, or at the foot of the wall a pavement stands on, is another pavement's); with
+  none, the land's and 15 cm, as before. Where a path on the land leaves the pavements (`mouthsOf`),
+  the pavement eases back to the land's and 15 cm round it, so the path meets it with a kerb's step;
+  a path along a pavement's back meets a wall. A reservation or an island meets a pavement at the
+  pavement's heights. Its heights are to the centimetre, a point added along a ring wherever a
+  straight line between two would be more than 3 cm off them (`follow`); the tiles mark such a piece
+  (`LAID`) and keep its heights in centimetres, each from the one before. The ground's carriageways,
+  pavements and paths are snap-rounded together, so where two meet they share their points.
   Where a bridge or a tunnel meets the ground's streets (task 040), its carriageway takes the
   ground's place round its end, and a deck's end follows the ground as the tiles hold it, a point
   every 2 m across it, where that's within 0.5 m of the deck; wherever a deck or a tunnel's road is

@@ -1975,7 +1975,7 @@ function dense(r, test) {
 // more than FOLLOW off the straight line between its points (at a quarter, half or three quarters of
 // the way), halving the edge until they aren't or it's under 40 cm (task 044). The points are on the
 // edge, to the centimetre: snap rounded with what it meets, both keep them.
-const FOLLOW = 0.01;
+const FOLLOW = 0.03;
 function follow(r, ys) {
   const out = [], y = (q) => ys(q.X / S, q.Y / S);
   r.forEach((a, i) => {

@@ -304,6 +304,7 @@ npm run fetch    # the data, into .cache/ (about 20 MB, ignored by git): a few m
 node tools/fetch.mjs lidar ortho nir  # DGT's LiDAR, orthophoto and its near-infrared (about 5.8 GB, with a free account)
 node tools/fetch.mjs microsoft    # Microsoft's building footprints over the map (40 MB to download, 2 MB kept)
 node tools/roofs.mjs   # every building's height and roof, and those the map lacks: .cache/roofs.json (10 minutes the first time)
+node tools/planes.mjs  # each measured roof's own planes, what stands on it and its overhang: .cache/planes.json (2 minutes, after roofs.mjs)
 node tools/decks.mjs   # the bridges' decks DGT's point cloud saw: .cache/decks.json (10 minutes)
 node tools/carriageways.mjs  # where each street's carriageway really is, and the moves that put the map's lines there: .cache/carriageways.json (20 s, 4 minutes the first time)
 node tools/roundabouts.mjs   # where each roundabout's ring and island really are, and the statues in them: .cache/roundabouts.json (a minute; --check draws each over the orthophoto)
@@ -341,7 +342,7 @@ landmarks from `map/braga.json`, `open.mjs` the Volta dos Amigos, `world.mjs` ma
 on the tiles the tracks in `tracks/` run through and the open world's edge touches, the map page
 draws the edges (run `npm run page` again after `npm run open` or `npm run shooter`) and the street audit (again after
 `audit.mjs`, which reads the world's tiles), and `build.mjs` and `world.mjs` take the buildings'
-heights and roofs from `roofs.mjs`'s measurements, `world.mjs` the trees from `trees.mjs` (run it after
+heights and roofs from `roofs.mjs`'s measurements, `world.mjs` the roofs' own planes from `planes.mjs` (run it after `roofs.mjs`), the trees from `trees.mjs` (run it after
 `fetch.mjs trees`), and the walls from `walls.mjs` (run it
 after `roofs.mjs`, `npm run open` and `fetch.mjs barriers`), the street furniture from `furniture.mjs` (after `walls.mjs`, `trees.mjs` and `fetch.mjs furniture`), and the streets on their carriageways from `carriageways.mjs`
 and the roundabouts' rings from `roundabouts.mjs` (run them, in that order, before `walls.mjs`, `npm run open`, `npm run shooter`, `npm run world` and `npm run tracks`, which
@@ -395,6 +396,14 @@ streets; when a track moves enough to change the edge, run the three again until
   `test/footprints.test.js` on made-up buildings and on the world's tiles. `heights.mjs` checks what it measured against the map's `height`, `building:levels`
   (a storey comes out at 2.9 m), `roof:shape` and `roof:colour`, and lists the buildings where
   they differ most: the map, more often than the LiDAR.
+- `planes.mjs` (task 087) cuts each measured part's 50 cm cells into the planes they lie on, and
+  builds the roof back as the highest of a few groups' lowest plane: its ridges, hips and valleys
+  (an L's, a T's, a mansard). What rises over it by more than 40 cm becomes a box (a chimney, a
+  dormer, a lift's room, a water tank), and the eaves' overhang is measured past the walls. Where the
+  planes fit no better than the part's shape, or would stand past its points or raise its walls,
+  the shape stays. `node tools/planes.mjs --shooter` gives the fit over the shooter's area, and
+  `node tools/planes.mjs try <id>` draws one part. `test/planes.test.js` checks it on made-up roofs
+  and on the world's tiles.
 - `world.mjs` makes the world: the ground (every 2 m on the tiles within 60 m of a track, over the
   shooter's area and on every tile the open world's area touches, each the mean of the LiDAR's round
   it; every 10 m elsewhere), what the ground is (each area cut to the tiles it's on), every street

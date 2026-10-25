@@ -103,7 +103,26 @@ and task 079's arenas' insides taking their doors and windows from the layouts t
   and 1.2 m): it is cut at the bend, each side drawing its part (0.3 m or more, or the part holding its
   middle). `layouts.mjs read` merges its files by wall, the last file's word on a wall kept, so a second
   pass's readings join a building's first ones.
-- **Found on the way** (not changed here): way/383766229's front (the restaurant's bay on the square)
+- **Only on a side that is the wall:** the drawn buildings are the LiDAR's parts, whose sides don't
+  keep to the map's outline: lidar/x258z798's corner face (3.3 m) falls on two parts, one side of 2.1
+  m that is the wall, one of 4 m of which 1.1 m is and 2.9 m runs on past its end. That one first took
+  the layout over its whole length (its storeys read plain, its balconies' doors gone where no photo
+  read it); a side now takes a layout only when no more than a metre (or a fifth of it) is off the
+  wall, and stays in its kind's rhythm otherwise. In party-kart a continuous balcony goes from a storey
+  read with no balcony's door, as the other kinds already did.
+- **Shots** (High and Low, before on main's party-kart, after on 086's; `party-kart\shots\`
+  2026-10-25-before086 and party-kart-086's 2026-10-25-after086): the four viewpoints whose view takes
+  in a wall read. lobato-crossing: the corner face plain over the shop's glazing, as its photo has it
+  (its rhythm's windows gone). fujacal-west: way/165861842's face with two windows a storey where its
+  photo has them, in place of stacked glazed balconies. capela-santa-justa: the white house beside the
+  chapel, seen edge-on, a door's strip moved. travessa-fujacal: the same to the pixel (its wall read,
+  way/162945735, is out of its view). **Budget:** the same draw calls, triangles and textures in every
+  view at both levels; the frame within 0.06 ms, but for Low's travessa-fujacal, 0.55 ms before, 0.73
+  ms after, with the same pixels and the same calls (the machine, not the drawing).
+- **Found on the way** (not changed here): fujacal-west's building's drawn part (way/165861842, 17 m
+  high) stands from 3.1 m, with the street before it at 7.6 m: its ground floor is under the street,
+  so the shops read on it don't show and its read storeys come one level low, the top one in the
+  rhythm. way/383766229's front (the restaurant's bay on the square)
   is about 1.8 times as wide as its ground floor is high in its photo, some 7 m to the map's 4.8 m; its
   openings were read between its real ends and scaled to the map's length. The readers found the
   camera outlines `show` draws out by up to a bay or a storey (some on the road, one not in the frame),

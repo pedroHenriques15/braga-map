@@ -2383,3 +2383,25 @@ rectangle. Since task 087:
 
 What it costs on Ultra, at 720 pixels high: the same draw calls and textures, 3.6% to 6.2% more
 triangles, the frame within 0.2 ms. The tiles download 9.7% more (15,733 KB against 14,340).
+
+## 083 · On Ultra the facade kit is drawn at twice High's size, its bays in relief
+
+*2026-10-25 · task 123 · decided by the session with the coordinator, for the owner to confirm (task 103) · adds to decisions 036 and 069*
+
+Each kind's bay and each wall's material were drawn 256 px a side on every level but Low's 128: High's
+kinds at 71 to 91 px a metre (a shop's 7.5 m bay at 34, the glass office's 1.5 m one at 171), not the 40
+the task supposed. Since task 123, on Ultra only:
+
+- **Twice High's size,** 512 px a side, most kinds 142 to 182 px a metre; the surfaces' marks drawn a
+  pixel or two across (a speckle, a joint) kept as big in metres.
+- **The bays in relief:** each part of a bay drawn with how far it stands out of its wall or into it (a
+  window's frame 10 cm in its reveal and its glass 14 cm, a sill 6 cm out, a stone frame 4 cm, a
+  shutter's slats, a door's recess, a shop's glass 10 cm in, an arcade 80 cm), its edges softened over
+  3 cm and turned into normals. The walls' shader tilts its light by them in the wall's frame, as
+  three.js tilts a normal map's.
+- **The panes marked** in that texture's alpha, for a pane's reflections (task 117).
+- High, Medium and Low draw as before, to the pixel.
+
+What it costs on Ultra: textures 511 MB against 462 (the kit's three textures 59 MB with their mipmaps),
+the same draw calls and triangles, the frame the same within the runs' spread (6.2–6.7 ms at 1920 by
+1440 against 6.2–7.1), the city built about half a second slower; nothing more to download.

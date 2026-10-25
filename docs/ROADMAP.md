@@ -163,7 +163,8 @@ in leaf, turning and falling in its own year, the broadleaves that keep their le
 decision 081); and on Ultra each measured roof as its points have it where they fit it better than its
 shape, its ridges, hips and valleys, what stands on it as boxes and its overhang measured (087, decision
 082); and the bare trees' twigs dark against the sky, a soft grey-brown mass far off, not a pale haze
-(132).
+(132); and on Ultra the facade kit drawn at twice High's size, its bays in relief, their panes marked
+(123, decision 083).
 
 - **083** The ground at 50 cm over the whole map, finest near the player (after 038).
 - **084** On Ultra, the streets on the land's own triangles (after 083).
@@ -183,8 +184,6 @@ shape, its ridges, hips and valleys, what stands on it as boxes and its overhang
 - **118** On Ultra, the light bounced off a sunlit facade into a shaded street (found by 090).
 - **119** On Ultra, a volumetric haze and the clouds' shadows on the land (found by 090).
 - **120** On Ultra, shadows that soften with distance from what casts them (found by 090).
-- **123** The facade kit at its finest on Ultra: 80 px a metre, its bays with relief (split from
-  085).
 - **125** On Ultra, a facade's openings with depth: reveals, sills, frames, shutter boxes (split from
   086).
 - **126** The arenas' insides take their doors and windows from the facades' layouts (split from 086).

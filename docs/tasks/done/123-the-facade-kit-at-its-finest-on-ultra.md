@@ -1,5 +1,5 @@
 ---
-status: doing
+status: done
 priority: medium
 kind: code
 repo: both
@@ -30,8 +30,10 @@ Ultra; the facades are a piece of work of their own, split from it (2026-10-24).
 
 ## Done when
 
-- [ ] Up close on Ultra (`conselheiro-lobato`, `lobato-east`, `fujacal-start`) the facades are sharp
-  and their bays have relief, rated no lower.
+- [x] Up close on Ultra (`conselheiro-lobato`, `lobato-east`, `fujacal-start`) the facades are sharp
+  and their bays have relief, rated no lower (the round `2026-10-25-after123` against `2026-10-25-before123`,
+  at Ultra: no mark moved, mean 2.64, the coordinator's marks, `.cache/scorecard/marks/2026-10-25-after123.json`;
+  the sills' tops lit, the reveals, the tiles' joints and the frames finer and in relief, subtly).
 - [x] The cost in the budget's Ultra column; High and below unchanged; `npm test` and
   `npm run check` pass (party-kart's `docs/architecture.md`, "Ultra's facade kit"; High and Low the same
   to the pixel in the three views; party-kart's tests 169 of 169, four at a time, and `tsc` clean).

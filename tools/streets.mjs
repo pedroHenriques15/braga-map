@@ -28,6 +28,12 @@ const PAVE = 3.2;
 const SIDE_STEP = 0.5;
 // A kerb's height, and how far apart its points are looked at, along the edge of the carriageway.
 const KERB = 0.15, PIECE = 4;
+// A pavement on the ground is laid level from its kerb (task 044): how steep it slopes across, from the
+// kerb's top towards its back, as the land there does, at most (the owner's answer: Portugal's cap on
+// a footway's slope across); how far it slopes down to a kerb dropped at a crossing (party-kart's DROP);
+// and how far from a point its kerbs are looked for (a roundabout's island, ROUND_MAX, is about 80 m
+// across).
+const CROSS = 0.02, DROP = 1.2, KERB_FAR = 45;
 // The radius a kerb turns a corner at, by the smaller of the streets that meet there (osm.mjs's LINE
 // kinds: the fast roads, their links, primary, secondary, tertiary, residential, pedestrian, service,
 // track).
@@ -724,7 +730,7 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height =
   // kept, as a scrap of one carriageway left out of another is a hole.
   const addCut = (kind, cut, props, ys, snap = null, least = snap ? 0 : 0.25) => {
     for (const [c, pieces] of cut) for (const piece of pieces) for (const snapped of rounded(snap ? piece.map(snap) : piece)) {
-      const rings = snapped.map((r) => r.map((q) => [q.X / 10, q.Y / 10])).filter((r) => r.length > 2).map((r) => (ys?.join ? dense(r, ys.join) : r));
+      const rings = snapped.map((r) => r.map((q) => [q.X / 10, q.Y / 10])).filter((r) => r.length > 2).map((r) => (ys?.join ? dense(r, ys.join) : ys?.follow ? follow(r, ys) : r));
       if (!rings.length || Math.abs(C.Clipper.Area(snapped[0])) / 100 < least) continue;
       c.out[kind].push(withYs({ ...props, rings }, ys, 'rings', rings));
     }
@@ -983,7 +989,7 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height =
     }
     // The paths on the ground (task 050), and what the pavements, reservations and islands give way
     // to: the flights of steps and the cycleways.
-    let flushed = [], lanes = [];
+    let flushed = [], lanes = [], groundOut = [];
     if (level === 'ground') {
       const got = groundPaths(walks.filter((p) => (p.kind === 'steps' ? !!p.flight : p.level === 0 || p.level === 3)), { U, kerbed: [...pave, ...theirs, ...res, ...islands], B, W, over, walled, boxPath, levelName: pathLevel, height, elev0 });
       if (got.taken.length) {
@@ -991,7 +997,7 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height =
         [pave, theirs, res, islands] = [minus(pave, T), minus(theirs, T), minus(res, T), minus(islands, T)];
       }
       ({ flush: flushed, lanes } = got);
-      addPaths(got.out);
+      groundOut = got.out;
       for (const r of got.rails) addLines('handrails', [r.path], { level: r.level }, r.ys);
       for (const k of ['flights', 'treads', 'steep']) stats.paths[k] += got.stats[k];
       stats.walls.paths += got.stats.behind;
@@ -999,16 +1005,16 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height =
       stats.paths.flush += area(meet(flushed, boxPath));
     }
     [pave, theirs] = [pave, theirs].map((ps) => shapes(ps).filter((sh) => Math.abs(C.Clipper.Area(sh[0])) / (S * S) > 1).flat());
-    addShapes('pavements', shapes(pave), { kind: 'pavement', level }, ys);
-    addShapes('pavements', shapes(theirs), { kind: 'pavement', level }, ys);
-    addShapes('pavements', shapes(res), { kind: 'reservation', level }, ys);
-    // A roundabout's island apart (task 014): a game draws it in what the ground is there.
-    addShapes('pavements', shapes(minus(islands, ringed)), { kind: 'island', level }, ys);
-    addShapes('pavements', shapes(meet(islands, ringed)), { kind: 'island', round: true, level }, ys);
-    stats.m2.pavement = (stats.m2.pavement ?? 0) + area(meet([...pave, ...theirs], boxPath));
 
     // The kerbs: the edge of the carriageway wherever a pavement, a reservation or an island is
-    // behind it (or a cycleway flush with the pavement), dropped where a crossing meets it.
+    // behind it (or a cycleway flush with the pavement), dropped where a crossing meets it. Each run
+    // kept for the pavements' heights.
+    const runs = [];
+    const addKerb = (run, h) => {
+      addLines('kerbs', [toPath(run)], { h, level }, ys);
+      runs.push({ pts: [...run], h });
+      stats.km[h ? 'kerb' : 'dropped'] += lengthOf(run) / 1000;
+    };
     const inPave = insideOf([...pave, ...theirs, ...flushed]);
     const crossings = [];
     for (const e of g.list) e.nodes.forEach((n, i) => {
@@ -1031,10 +1037,7 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height =
       if (start < 0) start = 0;
       let run = [], h = hs[start];
       const flush = () => {
-        if (run.length > 1 && h !== null) {
-          addLines('kerbs', [toPath(run)], { h, level }, ys);
-          stats.km[h ? 'kerb' : 'dropped'] += lengthOf(run) / 1000;
-        }
+        if (run.length > 1 && h !== null) addKerb(run, h);
         run = [];
       };
       for (let j = 0; j < list.length; j++) {
@@ -1067,7 +1070,7 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height =
         }
         let run = [], h = null;
         const done = () => {
-          if (run.length > 1 && h !== null) { addLines('kerbs', [toPath(run)], { h, level }, ys); stats.km[h ? 'kerb' : 'dropped'] += lengthOf(run) / 1000; }
+          if (run.length > 1 && h !== null) addKerb(run, h);
           run = [];
         };
         segs.forEach(([p, q], i) => {
@@ -1078,6 +1081,21 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height =
         done();
       }
     }
+
+    // The pavements, reservations and islands, and the paths flush with them: on the ground each point
+    // at its height from its kerbs (task 044), on a deck or in a tunnel as its street is.
+    // A pavement is between two kerbs where two streets' pavements meet (two of PAVE and a metre); a
+    // reservation or an island wherever its kerbs are.
+    const kerbed = level === 'ground' && height && insideOf([...pave, ...theirs, ...res, ...islands, ...flushed]);
+    const [pys, rys] = kerbed ? [2 * PAVE + 1, 2 * KERB_FAR].map((span) => paveHeights(runs, height, elev0, kerbed, span)) : [ys, ys];
+    addPaths(groundOut.map((pc) => (pc.raised && pys ? { ...pc, ys: pys } : pc)));
+    addShapes('pavements', shapes(pave), { kind: 'pavement', level }, pys);
+    addShapes('pavements', shapes(theirs), { kind: 'pavement', level }, pys);
+    addShapes('pavements', shapes(res), { kind: 'reservation', level }, rys);
+    // A roundabout's island apart (task 014): a game draws it in what the ground is there.
+    addShapes('pavements', shapes(minus(islands, ringed)), { kind: 'island', level }, rys);
+    addShapes('pavements', shapes(meet(islands, ringed)), { kind: 'island', round: true, level }, rys);
+    stats.m2.pavement = (stats.m2.pavement ?? 0) + area(meet([...pave, ...theirs], boxPath));
 
     // The lines painted on each street, as many lanes as the map says, each lane at least 2.5 m:
     // between the lanes dashed, between the two ways dashed too, or solid with four lanes or more
@@ -1209,6 +1227,42 @@ function segments(lines, cell = 10, tags = null) {
     return [...got].map((k) => segs[k]);
   };
   return { segs, near };
+}
+// A ground pavement's heights (task 044), from the kerbs' runs [{ pts, h }] round it: at each point,
+// its nearest kerb's top (the carriageway's ground there, `height(x, z)`, and a kerb), rising or
+// falling towards the pavement's back as the land does, at most CROSS across; between two kerbs, one
+// either way no more than `span` apart (a pavement between two streets, a reservation, an island:
+// `inside`, the pavements, just short of the far one), from one's top to the other's, weighted by
+// how near; down to a kerb dropped at a crossing over DROP; and with no kerb within KERB_FAR, the
+// land's and a kerb, as before. To the centimetre, a ring's points where its heights need them
+// (follow).
+function paveHeights(runs, height, elev0, inside, span) {
+  const all = segments(runs.map((r) => r.pts), 10), low = segments(runs.filter((r) => !r.h).map((r) => r.pts), 10);
+  const top = (x, z) => height(x, z) - elev0 + KERB;
+  // How far (x, z) is from a dropped kerb, up to DROP.
+  const toDrop = (x, z) => Math.min(DROP, ...low.near({ x0: x - DROP, x1: x + DROP, z0: z - DROP, z1: z + DROP }).map(([ax, az, bx, bz]) => segDist([x, z], [ax, az], [bx, bz])));
+  // The kerbs' nearest points within r of (x, z), nearest first.
+  const feet = (x, z, r) => all.near({ x0: x - r, x1: x + r, z0: z - r, z1: z + r }).map(([ax, az, bx, bz]) => {
+    const dx = bx - ax, dz = bz - az, t = Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / (dx * dx + dz * dz || 1)));
+    const fx = ax + dx * t, fz = az + dz * t;
+    return { fx, fz, d: Math.hypot(fx - x, fz - z) };
+  }).filter((q) => q.d <= r).sort((p, q) => p.d - q.d);
+  const ys = (x, z) => {
+    let near = feet(x, z, 10);
+    if (!near.length) near = feet(x, z, KERB_FAR);
+    const drop = KERB * (1 - toDrop(x, z) / DROP);
+    if (!near.length) return top(x, z) - drop;
+    const a = near[0], ta = top(a.fx, a.fz);
+    // The nearest kerb the other way, the pavements on this side of it.
+    const b = (a.d + 10 < span ? feet(x, z, span - a.d) : near).find((q) => {
+      if ((q.fx - x) * (a.fx - x) + (q.fz - z) * (a.fz - z) >= 0 || a.d + q.d > span) return false;
+      const k = Math.min(0.3, q.d / 2) / (q.d || 1);
+      return inside(q.fx + (x - q.fx) * k, q.fz + (z - q.fz) * k);
+    });
+    if (b) return (ta * b.d + top(b.fx, b.fz) * a.d) / (a.d + b.d) - drop;
+    return ta + Math.max(-CROSS * a.d, Math.min(CROSS * a.d, top(x, z) - ta)) - drop;
+  };
+  return Object.assign(ys, { cm: true, follow: true });
 }
 const boxOf = (pts, m = 0) => ({ x0: Math.min(...pts.map((p) => p[0])) - m, x1: Math.max(...pts.map((p) => p[0])) + m, z0: Math.min(...pts.map((p) => p[1])) - m, z1: Math.max(...pts.map((p) => p[1])) + m });
 // The right of a line's stretch j (from its point j - 1 to j), as a unit vector.
@@ -1704,20 +1758,32 @@ const LEVELS = ['ground', 'bridge', 'tunnel'];
 // One tile's streets as 16-bit numbers, for index.js: each piece [what, ...], what its STREET code
 // and 16 times its level; points in decimetres, the first of each ring or line from the tile's
 // corner (x0, z0), each after it the step from the one before; and off the ground, the height of
-// each point after them, in decimetres above ELEV0.
+// each point after them, in decimetres above ELEV0. A pavement, reservation or island on the ground
+// laid at heights of its own (task 044) has LAID in its what, and after its points their heights to
+// the centimetre (cms).
 // - A carriageway, pavement, reservation or island (a roundabout's its own code): [what, rings, then
 //   each ring's n and points], its outline first, then its holes.
 // - A kerb: [what, its height in cm, 0, n, points]. A marking: [what, its width in cm, its dashes
 //   (DASHES's index: 1 the lanes' 3 m on and 4 m off, 2 a give-way line's) or 0, n, points]; a
 //   give-way triangle's outline closed, its last point its first.
+export const LAID = 64;
+// A piece's heights to the centimetre, in 16-bit numbers: the first in decimetres above ELEV0 and the
+// centimetres more, then each after it the centimetres from the one before.
+function cms(out, ys) {
+  const all = ys.flat().map((y) => Math.round(y * 100));
+  const d = Math.round(all[0] / 10);
+  out.push(d, all[0] - d * 10, ...all.slice(1).map((y, i) => y - all[i]));
+}
 export function packStreets(got, x0, z0) {
   const out = [], dmOf = (v) => Math.round(v * 10);
   const pts = (list) => { let px = 0, pz = 0; list.forEach(([x, z], i) => { const a = dmOf(x - x0), b = dmOf(z - z0); out.push(i ? a - px : a, i ? b - pz : b); px = a; pz = b; }); };
   const what = (name, level) => STREET.indexOf(name) + 16 * LEVELS.indexOf(level);
   for (const p of [...got.carriageways, ...got.pavements]) {
-    out.push(what(p.surface ?? (p.round ? 'roundabout' : p.kind), p.level), p.rings.length);
+    const laid = p.level === 'ground' && p.ys;
+    out.push(what(p.surface ?? (p.round ? 'roundabout' : p.kind), p.level) + (laid ? LAID : 0), p.rings.length);
     for (const r of p.rings) { out.push(r.length); pts(r); }
-    if (p.ys) for (const r of p.ys) for (const y of r) out.push(dmOf(y));
+    if (laid) cms(out, p.ys);
+    else if (p.ys) for (const r of p.ys) for (const y of r) out.push(dmOf(y));
   }
   for (const k of got.kerbs) {
     out.push(what('kerb', k.level), Math.round(k.h * 100), 0, k.pts.length);
@@ -1740,15 +1806,19 @@ const PATH_LEVELS = ['ground', 'bridge', 'tunnel', 'under'];
 // One tile's paths and handrails as 16-bit numbers, for index.js, points as packStreets has them.
 // - A path: [what, its surface (PATH_SURFACES), rings, then each ring's n and points], what its PATH
 //   code, 4 if it's raised and 8 times its level (PATH_LEVELS); then a tread's height, in decimetres
-//   above ELEV0 and the centimetres more, or on a bridge or in a tunnel each point's in decimetres.
+//   above ELEV0 and the centimetres more, or on a bridge or in a tunnel each point's in decimetres;
+//   or one on the ground (or under something at its level) flush with a pavement, LAID in its what
+//   and its points' heights as a pavement's (cms, task 044).
 // - A handrail, in `rails`: [its level, n, points, each point's height in decimetres].
 export function packPaths(got, x0, z0) {
   const paths = [], rails = [], dmOf = (v) => Math.round(v * 10);
   const pts = (out, list) => { let px = 0, pz = 0; list.forEach(([x, z], i) => { const a = dmOf(x - x0), b = dmOf(z - z0); out.push(i ? a - px : a, i ? b - pz : b); px = a; pz = b; }); };
   for (const p of got.paths) {
-    paths.push(PATH.indexOf(p.kind) + (p.raised ? 4 : 0) + 8 * PATH_LEVELS.indexOf(p.level), PATH_SURFACES.indexOf(p.surface), p.rings.length);
+    const laid = (p.level === 'ground' || p.level === 'under') && p.kind !== 'steps' && p.ys;
+    paths.push(PATH.indexOf(p.kind) + (p.raised ? 4 : 0) + 8 * PATH_LEVELS.indexOf(p.level) + (laid ? LAID : 0), PATH_SURFACES.indexOf(p.surface), p.rings.length);
     for (const r of p.rings) { paths.push(r.length); pts(paths, r); }
     if (p.kind === 'steps') { const y = p.ys[0][0], d = dmOf(y); paths.push(d, Math.round(y * 100 - d * 10)); }
+    else if (laid) cms(paths, p.ys);
     else if (p.ys) for (const r of p.ys) for (const y of r) paths.push(dmOf(y));
   }
   for (const h of got.handrails) {
@@ -1780,6 +1850,28 @@ function dense(r, test) {
     const j = (i + 1) % r.length, b = r[j], n = at[i] && at[j] ? Math.ceil(dist(a, b) / 2) : 1;
     return Array.from({ length: n }, (_, k) => (k ? [Math.round((a[0] + ((b[0] - a[0]) * k) / n) * 10) / 10, Math.round((a[1] + ((b[1] - a[1]) * k) / n) * 10) / 10] : a));
   });
+}
+
+// A ring with a point added wherever its heights `ys` would be more than FOLLOW off the straight line
+// between its points (at a quarter, half or three quarters of the way), halving each edge until they
+// aren't or it's under 40 cm, on the 10 cm grid (task 044).
+const FOLLOW = 0.01;
+function follow(r, ys) {
+  const out = [];
+  const split = (a, ya, b, yb) => {
+    if (dist(a, b) >= 0.4 && [0.25, 0.5, 0.75].some((t) => Math.abs(ys(a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t) - (ya + (yb - ya) * t)) > FOLLOW)) {
+      const m = [Math.round(((a[0] + b[0]) / 2) * 10) / 10, Math.round(((a[1] + b[1]) / 2) * 10) / 10], ym = ys(...m);
+      split(a, ya, m, ym);
+      out.push(m);
+      split(m, ym, b, yb);
+    }
+  };
+  const at = r.map(([x, z]) => ys(x, z));
+  r.forEach((a, i) => {
+    out.push(a);
+    split(a, at[i], r[(i + 1) % r.length], at[(i + 1) % r.length]);
+  });
+  return out;
 }
 
 // A rectangle centred on p, running along d: `across` either side of it, `ahead` along it each way.

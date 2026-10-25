@@ -119,6 +119,8 @@ const SOURCES = ['osm', 'lidar', 'microsoft', 'invented'];
 const NONE = 63;
 // A street's level (tools/world.mjs's LEVEL).
 const LEVELS = ['ground', 'bridge', 'tunnel', 'under'];
+// A street's or a path's piece on the ground laid at heights of its own (tools/streets.mjs's LAID).
+const LAID = 64;
 // What each piece of a street's surfaces is (tools/streets.mjs's STREET): the carriageways' surfaces,
 // what's beside them, the kerbs and the markings; a roundabout's island its own (task 014), read as an
 // island that's round. And a marking's dashes: none, the lanes', or a give-way line's.
@@ -492,10 +494,20 @@ export async function loadWorld(area) {
       }
       return pts;
     };
+    // A piece on the ground laid at heights of its own (task 044, LAID in its what): its points' to the
+    // centimetre, the first in decimetres and the centimetres more, then each the centimetres from the
+    // one before. Returns where the numbers after them start.
+    const cms = (rings, j, piece) => {
+      let y = nums[j] * 10 + nums[j + 1];
+      let k = j + 2;
+      piece.ys = rings.map((r, ri) => r.map((_, pi) => (ri || pi ? (y += nums[k++]) : y) / 100));
+      return k;
+    };
     for (let i = St.at; i < St.at + St.n; ) {
       const code = nums[i] & 15;
       const kind = code === ROUND ? 'island' : STREET[code];
-      const level = LEVELS[nums[i] >> 4];
+      const level = LEVELS[(nums[i] >> 4) & 3];
+      const laid = (nums[i] & LAID) !== 0;
       const off = level !== 'ground';
       if (code <= 6 || code === ROUND) {
         const rings = [];
@@ -506,7 +518,8 @@ export async function loadWorld(area) {
           j += 1 + n * 2;
         }
         const piece = code <= 3 ? { surface: kind, level, rings } : code === ROUND ? { kind, round: true, level, rings } : { kind, level, rings };
-        if (off) piece.ys = rings.map((r) => r.map(() => nums[j++] / 10));
+        if (laid) j = cms(rings, j, piece);
+        else if (off) piece.ys = rings.map((r) => r.map(() => nums[j++] / 10));
         (code <= 3 ? streets.carriageways : streets.pavements).push(piece);
         i = j;
       } else {
@@ -528,7 +541,7 @@ export async function loadWorld(area) {
     for (let i = Pa ? Pa.at : 0; Pa && i < Pa.at + Pa.n; ) {
       const what = nums[i];
       const kind = PATH[what & 3];
-      const level = PATH_LEVELS[what >> 3];
+      const level = PATH_LEVELS[(what >> 3) & 3];
       const rings = [];
       let j = i + 3;
       for (let r = 0; r < nums[i + 2]; r++) {
@@ -541,7 +554,8 @@ export async function loadWorld(area) {
         const y = (nums[j] * 10 + nums[j + 1]) / 100;
         piece.ys = rings.map((r) => r.map(() => y));
         j += 2;
-      } else if (level === 'bridge' || level === 'tunnel') piece.ys = rings.map((r) => r.map(() => nums[j++] / 10));
+      } else if (what & LAID) j = cms(rings, j, piece);
+      else if (level === 'bridge' || level === 'tunnel') piece.ys = rings.map((r) => r.map(() => nums[j++] / 10));
       streets.paths.push(piece);
       i = j;
     }

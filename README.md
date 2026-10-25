@@ -107,7 +107,9 @@ map().groundKinds; // the kinds it says, each with its texture: [{ kind, texture
   the ground is there),
   and brought back to a wall of the map's that stands in it, no narrower than its lanes (task 052);
   the kerbs (dropped at the crossings); the pavements behind them, up to the buildings and the walls,
-  and the map's own beside them where those don't reach (task 059);
+  and the map's own beside them where those don't reach (task 059), on the ground each laid level
+  from its kerb (task 044, its heights `ys`: at the kerb the carriageway's ground and the kerb,
+  rising or falling towards its back as the land does, 2% across at most);
   the central
   reservations; and the lines painted on them, from what the map says (lanes, the line between the
   two ways, zebras, stop lines at traffic lights, and at each roundabout's entry the give-way line
@@ -620,6 +622,15 @@ streets; when a track moves enough to change the edge, run the three again until
   crack opens between them; and before that, no sliver (task 048, decision 035): a notch into the
   carriageways under a metre wide closed, a gap between two under 0.3 m wide filled, and an island
   kept as the map's lines leave it, but where it's under 20 cm wide (10 until task 026).
+  A pavement, reservation or island on the ground, and a path flush with a pavement, is laid level
+  from its kerb (task 044, `paveHeights`): each point at its nearest kerb's top (the carriageway's
+  ground there and 15 cm), rising or falling towards its back as the land does, 2% across at most;
+  between two kerbs, one either way (a pavement's no more than two pavements apart, a reservation's or
+  an island's anywhere), from one's top to the other's; sloping down to a kerb dropped at a crossing
+  over 1.2 m; and with no kerb within 45 m, the land's and 15 cm, as before. Its heights are to the
+  centimetre, a point added along a ring wherever a straight line between two would be more than
+  1 cm off them (`follow`); the tiles mark such a piece (`LAID`) and keep its heights in
+  centimetres, each from the one before.
   Where a bridge or a tunnel meets the ground's streets (task 040), its carriageway takes the
   ground's place round its end, and a deck's end follows the ground as the tiles hold it, a point
   every 2 m across it, where that's within 0.5 m of the deck; wherever a deck or a tunnel's road is

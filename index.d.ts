@@ -329,6 +329,12 @@ export interface Carriageway {
 // round (a roundabout's, or a small one with nothing built on it). round: a roundabout's island (task
 // 014), its kerb where DGT's LiDAR measured it, for a game to draw in what the ground is there
 // (`groundCover`): grass, flower beds, paving; and what stands on it is in `sights` (a statue).
+// ys: on the ground (task 044), its top at each point above elev0, laid level from its kerb: at the
+// kerb its carriageway's ground and the kerb (the ground where it's dropped at a crossing, the
+// pavement sloping down to it over 1.2 m), rising or falling towards its back as the land does, 2%
+// across at most, and between two kerbs from one's top to the other's; a point every 2 m along each
+// ring, to the centimetre; a path flush with a pavement (`raised`) has them too. On a deck or in a
+// tunnel, its street's height at each point, the kerb over it.
 export interface Pavement {
   kind: 'pavement' | 'reservation' | 'island';
   round?: true;
@@ -374,11 +380,14 @@ export interface Marking {
 //   a lane at the carriageway's level, with a kerb behind it up to the pavement (a Kerb).
 // - A flight of steps is a tread between each two risers, each its own piece at its height (ys, the
 //   same at every point), from its foot to its top: as many as the map counts, or its rise over
-//   16 cm, the first riser at the foot and the last tread at the top's height. Its ends: on a
-//   bridge's deck where it ends on one, else DGT's terrain at 50 cm, else the ground as the tiles
-//   hold it; but where the map counts the steps and the terrain rises less than 8 cm a step, or the
-//   other way from the map's incline, it climbs to something the terrain doesn't have (a door's
-//   landing): from its foot at the ground, 16 cm a step. The pavements give way to it.
+//   16 cm, the first riser at the foot and the last tread at the top's height. Its ends: where one
+//   meets a carriageway, a pavement or a path, at its height as the tiles hold it (a pavement's
+//   top), the risers between evened out (task 051); else on a bridge's deck where it ends on one,
+//   else DGT's terrain at 50 cm, else the ground as the tiles hold it; but where the map counts the
+//   steps and the terrain rises less than 8 cm a step, or the other way from the map's incline, it
+//   climbs to something the terrain doesn't have (a door's landing): from its foot, 16 cm a step.
+//   Where an end runs under a carriageway, its treads are spread over what's left of its line,
+//   unless they'd be shallower than 10 cm. The pavements give way to it.
 // level: on the ground (the ground's height), under something at the ground's level (a passage under
 // a building, which a game opens as a carriageway's is; it reaches a metre past each mouth into the
 // open, and out of the building where the map ends it within 3 m of its outline: task 078, so a

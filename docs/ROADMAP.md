@@ -155,11 +155,13 @@ decision 070); and Ultra's light, on WebGL: the sun's shadows in four cascades t
 occlusion and the edges smoothed (090, decision 071); and Ultra's textures at their finest: each made
 texture at twice High's size, the ground's and the barks' relief, the streets' drawings four times
 finer, every texture filtered at the card's most (085, decision 076); and on Ultra the near trees in
-the wind, the deciduous kinds' limbs within 150 m, the far ones still billboards (089, decision 077).
+the wind, the deciduous kinds' limbs within 150 m, the far ones still billboards (089, decision 077);
+and each facade's doors and windows where its photo has them, for the 16 street walls in the shooter's
+area a photo shows clearly enough, read straight on by sessions, the rest in their kind's rhythm (086,
+decision 080).
 
 - **083** The ground at 50 cm over the whole map, finest near the player (after 038).
 - **084** On Ultra, the streets on the land's own triangles (after 083).
-- **086** Each facade's doors and windows where they are, read from its photos.
 - **087** Roofs as the point cloud has them: every plane, chimney, dormer and terrace.
 - **091** Each viewpoint shot at its photo's hour and weather (blocked: it changes decision 037).
 - **092** Night: the lamps lighting the streets, the windows lit, Bom Jesus floodlit.

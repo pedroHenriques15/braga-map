@@ -1,5 +1,5 @@
 ---
-status: doing
+status: done
 priority: medium
 kind: code
 repo: both
@@ -50,8 +50,11 @@ and task 079's arenas' insides taking their doors and windows from the layouts t
 - [x] Every building in the shooter's area that a photo shows clearly enough to read has its street
   walls' layout (`docs/SHOOTER-AREA.md` counts 165 with a photo), checked by a test that it fits its
   wall; the rest counted as left, each with why (the coordinator's, 2026-10-24).
-- [ ] `fujacal-start`, `fujacal-west`, `alameda-fujacal`, `travessa-fujacal`, `conselheiro-lobato`
-  and `lobato-east` shot again: the openings where the photos have them, rated no lower.
+- [x] `fujacal-start`, `fujacal-west`, `alameda-fujacal`, `travessa-fujacal`, `conselheiro-lobato`
+  and `lobato-east` shot again: the openings where the photos have them, rated no lower (the round
+  `2026-10-25-after086`, with `lobato-crossing` and `capela-santa-justa`, at High and Low: no mark moved,
+  the coordinator's marks, `.cache/scorecard/marks/2026-10-25-after086.json`; at High only, before
+  rule 18, accepted this once as the layouts draw the same on every level).
 - [x] `npm test` here, `npm test` and `npm run check` in party-kart pass.
 
 ## Out of scope

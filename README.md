@@ -184,7 +184,10 @@ map().groundKinds; // the kinds it says, each with its texture: [{ kind, texture
   with (render, small tiles, mosaic, azulejos, granite, stone slabs, brick, concrete, blocks, glass,
   metal, panels); its ground floor along a street (homes, shops, garages, an arcade, a blank wall,
   glass) and its colour where it isn't the walls'; its balconies; its shutters' colour; and its
-  storeys, as counted in its photo or from its height and its kind. Every building in the shooter's
+  storeys, as counted in its photo or from its height and its kind; and where a photo shows a street
+  wall clearly enough to read, its layout: each storey's windows, doors, garage doors, shop windows and
+  balconies' doors where the photo has them (task 086, 16 walls in the shooter's area, decision 080), a
+  wall without one in its kind's rhythm. Every building in the shooter's
   area and in view of a viewpoint was looked at in its photos by a session (`refs/buildings.json`,
   `seen`), and one the LiDAR found that the photo shows isn't a building (vans parked side by side,
   `not`) is left out (task 112); the rest are guessed from the map's tags, their size and their height, and from the
@@ -316,6 +319,7 @@ node tools/heights.mjs # the buildings checked against the map's own heights and
 node tools/levels.mjs  # the streets that cross on two levels round the track, and the room between them
 node tools/refs.mjs    # the viewpoints' and the reference photos, into .cache/refs/ (with Mapillary's free token)
 node tools/buildings.mjs  # the buildings whose facades to look at (refs/buildings.json), and with `mark` their photos marked (2 minutes)
+node tools/layouts.mjs    # the shooter's area's street walls a photo shows; `show`, `straight` and `read` to read their doors and windows (task 086)
 node tools/species.mjs mark  # each viewpoint's photo with the trees within 60 m of its camera numbered, and its orthophoto, for refs/trees.json (task 061, 10 s)
 node tools/species.mjs shooter  # the shooter's area's trees a photo shows, and the fewest photos to look at for those refs/trees.json hasn't (task 088)
 node tools/species.mjs summer   # Mapillary's panoramas in leaf round the shooter's area's trees, as reference photos in refs/photos.json (task 088)

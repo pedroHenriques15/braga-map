@@ -2293,3 +2293,35 @@ a round couldn't go up as it was judged. So:
 - **Its entry says which** (`level` in `refs/rounds.json`), and so does the page, beside the round's label,
   as the game names it: "Ultra" or "Alta". The 23 rounds already up are High, their sheets as they were.
 - **Low stays the budget's** (task 004): no round goes up at it.
+
+## 080 · A facade's doors and windows where its photo has them, read straight on by sessions
+
+*2026-10-25 · task 086 · adds to decisions 036 and 061; decided by the session, for the owner to confirm*
+
+Since task 017 (decision 036) a facade is its kind's bay repeated along each wall: the right kind,
+colours and storeys, but its doors and windows not where the building has them. The reference photos
+show where they are, and the rule is only that no photo is drawn (decision 061), not that none is read.
+But Mapillary's cameras are out by metres and degrees, too far to warp a wall straight on from where they
+say they were. So:
+
+- **A street wall's layout is read by a session off a photo of it made straight on from four corners**
+  read on the photo at the wall's real ends (a homography, `tools/layouts.mjs straight`), its length the
+  map's: each storey's openings from the ground up, left to right, a window, a door, a garage door, a
+  shop window or a balcony's door, at their edges in metres. Only what the photo shows clearly is read:
+  a storey seen in part, or above the line the photo's top is taken at, is left in the rhythm, and a wall
+  left says why (`refs/buildings.json`'s `layout` and `unread`). A reading off an image the session
+  didn't see is never kept.
+- **A wall is a run of the outline's sides within 12° of each other, 3 m or more, facing a street.**
+  The drawn building is the LiDAR's parts, whose sides don't keep to the outline: a side takes a layout
+  only when it runs along the wall within 1 m and no more than a metre of it (or a fifth) is off the
+  wall's ends; an opening round a bend in the wall is cut at it, each side drawing its part.
+- **A wall without a layout keeps its kind's rhythm,** as before, and so does a storey of a wall with
+  one that wasn't read. A balcony is drawn at a balcony's door on a storey read, none on a storey read
+  without one.
+
+16 walls of 15 buildings were read, of the 136 looked at (the shooter's area's street walls a photo
+shows within 60° of straight on at 25 px a metre or more, and one beside them); most of the others are left for which stretch of a continuous
+front the map's wall is, or an end in no photo: the photos are drive-by ones, along the streets.
+
+The alternative, the openings placed from the cameras' poses, put a block's foot on the road; and
+reading every wall a photo shows at all, however steep or far, would draw guesses as if they were seen.

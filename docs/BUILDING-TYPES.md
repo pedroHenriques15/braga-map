@@ -138,6 +138,8 @@ OpenStreetMap lacks, as `tools/buildings.mjs` names it):
 | `shutters` | The roller shutters' colour, or none | a colour, `none` |
 | `seen` | The photo it was looked at in | a reference photo's id, or `viewpoint:<id>` |
 | `notes` | What else the photo shows | |
+| `layout` | Its street walls' doors and windows, where a photo shows the wall clearly enough (task 086, decision 080): each wall by its ends on the outline (`from`, `to`, left to right from the street), the photo it was read from, and each storey from the ground up, its openings left to right, or null where the photo doesn't show it | `[{ from, to, photo, storeys: [[[kind, at, width], …] \| null, …] }]`, a kind one of `window`, `door`, `garage`, `shop`, `balcony` (a balcony's door), `at` from the wall's left end in metres |
+| `unread` | The street walls a session looked at and couldn't read, each with why | `[{ from, to, why }]` |
 
 The colours, as they look in even daylight: white, off-white, cream, pale-yellow, yellow, ochre,
 beige, sand, pale-pink, salmon, pink, terracotta, brick, brown, pale-grey, grey, dark-grey, blue-grey,

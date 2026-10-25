@@ -309,7 +309,44 @@ their lists are committed; `node tools/refs.mjs` fetches the photos into `.cache
   Rob Tuytel, Rico Cilliers) and `shrub_04`'s (the eucalyptus's, Rico Cilliers), laid along twigs
   into a spray by `tools/textures.mjs`. The same assets are the references now, with
   `japanese_zelkova_bark` (the planes'), `bark_brown_02` (the limes'), `sakura_bark` (the birches'),
-  `island_tree_01` (the planes' leaves) and `tree_small_02` (the limes' and the birches').
+  `island_tree_01` (the planes' leaves) and `tree_small_02` (the limes' and the birches'); and the
+  deciduous kinds' barks again, toned darker, for their bare twigs (task 093).
+
+## The trees' year
+
+Each kind's year in Braga (task 093, `tools/trees.mjs`'s `YEAR`): when its buds burst, its leaves are
+full, they turn and fall, their autumn colour, and when it flowers. Read on 2026-10-25; nothing is
+fetched or kept, only dates taken from what these say. No leaf phenology was found for Braga itself:
+the spring dates rest on measurements in Galicia (35 to 230 km off), the autumn's are estimates (no
+autumn average was found for anywhere in north-west Iberia), and every colour is an estimate.
+
+- **Planes' flowering**, Ourense and Santiago, 1993–2002 (Iglesias, Rodríguez-Rajo & Méndez 2007, J
+  Investig Allergol Clin Immunol 17:145, https://www.jiaci.org/issues/vol17issue03/3.pdf): the main
+  pollen season from 11 and 17 March on average; a plane's leaves open with its flowers or after, so
+  its buds burst about 25 March in Braga, and on the default 13 March the planes are bare, as that
+  day's photos have them.
+- **Birches' bud burst and leaf unfolding**, Ourense province, 2002–03 (Jato, Rodríguez-Rajo & Aira
+  2007, Ann Agric Environ Med 14,
+  https://minerva.usc.gal/entities/publication/615780ff-ece2-466d-a068-49ea62362791/full): *B.
+  pendula* at 112 m, buds bursting 10–21 March, leaves unfolding 23–29 March.
+- **Oaks' bud burst**, nine sites in north Galicia, 2012–13 (Guada et al. 2019, Agric For Meteorol
+  269–270:46, https://minerva.usc.gal/entities/publication/20c4899f-a1e0-4b42-bac8-a4b6a6cb279b/full):
+  *Q. robur*, day 107 ± 13 in 2012 and 98 ± 9 in 2013, the broadleaves' bud burst; and the satellite's
+  green-up of an oak wood at the Gerês (MODIS MCD12Q2, 2012–21, through the ORNL DAAC's subset API,
+  https://modis.ornl.gov/rst/api/v1/MCD12Q2/subset): about 1 May, dormant about 15 November.
+- **The autumn as AEMET's observers saw it** (its yearly autumn phenology reports, 2011–21,
+  https://www.aemet.es/documentos/es/serviciosclimaticos/datosclimatologicos/fenologia/feno_otono_2014.pdf
+  and the other years'): planes and birches colouring from late September in dry years on the Basque
+  coast, birches and poplars yellow, chestnuts copper-brown; and AEMET Galicia's trends for the
+  birches' and black poplars' leafing and leaf fall
+  (https://repositorio.aemet.es/bitstream/20.500.11765/2555/1/fenolog_galicia_cal2014.pdf).
+- **Flowers:** the limes in June (estimated; no Iberian count); the mimosa, *Acacia dealbata*, from
+  January to April in Portugal (invasoras.pt's sheet, https://invasoras.pt/en/node/25603), its peak
+  in the Minho estimated as February to early March; the Judas tree's, before its leaves, estimated
+  as late March to mid April (no north Portuguese record found).
+- **Not reached:** the International Phenological Garden in Porto (no. 45, since 1968) records
+  autumn colouring and leaf fall on cloned birches and oaks, among others; its data aren't online
+  (https://ipg.ku.de/en/observations/stations). It would be the first source for Braga's autumn.
 
 ## Sounds
 

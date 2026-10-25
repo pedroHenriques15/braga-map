@@ -7,6 +7,8 @@ import BASE from './world/base.js';
 import { TILES } from './world/tiles.js';
 import { SURFACES, TREES } from './world/textures.js';
 import { COVER, KINDS } from './world/cover.js';
+// A kind of tree drawn in another's bark and leaves (task 093): the evergreen broadleaf in the broadleaf's.
+const DRAWN_AS = { 'evergreen-broadleaf': 'broadleaf' };
 
 // A packed part of the map: a JSON header (where each part's numbers start, how many, and what
 // else it needs), then 16-bit numbers, in base64.
@@ -206,7 +208,7 @@ export function map() {
     // No photograph is drawn (task 082), so no photographer to credit.
     photoCredits: [],
     groundKinds: KINDS.map((kind) => ({ kind, texture: SURFACES[kind] ?? null })),
-    treeKinds: m.treeKinds.map(({ kind, evergreen }) => ({ kind, evergreen, bark: TREES[kind]?.bark ?? null, leaves: TREES[kind]?.leaves ?? null, twigs: TREES[kind]?.twigs ?? null, year: TREES[kind]?.year ?? null })),
+    treeKinds: m.treeKinds.map(({ kind, evergreen }) => ({ kind, evergreen, bark: (TREES[kind] ?? TREES[DRAWN_AS[kind]])?.bark ?? null, leaves: (TREES[kind] ?? TREES[DRAWN_AS[kind]])?.leaves ?? null, twigs: TREES[kind]?.twigs ?? null, year: TREES[kind]?.year ?? null })),
     elev0: m.elev0,
     ext: m.ext,
     tile: m.tile,

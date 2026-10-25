@@ -805,7 +805,7 @@ let nTrees = 0;
     if (inExt(x, z)) { plant(x, z, kind, h, crown, foot, mapped, cx, cz); why.planted++; }
   }
   // Where the point cloud wasn't fetched: the map's trees and the woods and parks filled in.
-  const SIZE = { [TREE_KINDS.indexOf('broadleaf')]: [9, 7, 2.5], [TREE_KINDS.indexOf('pine')]: [14, 6, 7], [TREE_KINDS.indexOf('eucalyptus')]: [22, 8, 11], [TREE_KINDS.indexOf('conifer')]: [12, 4, 1], [TREE_KINDS.indexOf('poplar')]: [16, 4, 3], [TREE_KINDS.indexOf('palm')]: [9, 5, 6.5], [TREE_KINDS.indexOf('plane')]: [18, 14, 5], [TREE_KINDS.indexOf('lime')]: [14, 10, 4], [TREE_KINDS.indexOf('birch')]: [12, 5, 3] };
+  const SIZE = { [TREE_KINDS.indexOf('broadleaf')]: [9, 7, 2.5], [TREE_KINDS.indexOf('pine')]: [14, 6, 7], [TREE_KINDS.indexOf('eucalyptus')]: [22, 8, 11], [TREE_KINDS.indexOf('conifer')]: [12, 4, 1], [TREE_KINDS.indexOf('poplar')]: [16, 4, 3], [TREE_KINDS.indexOf('palm')]: [9, 5, 6.5], [TREE_KINDS.indexOf('plane')]: [18, 14, 5], [TREE_KINDS.indexOf('lime')]: [14, 10, 4], [TREE_KINDS.indexOf('birch')]: [12, 5, 3], [TREE_KINDS.indexOf('evergreen-broadleaf')]: [9, 7, 2.5] };
   const guessed = (x, z, kind, flags) => { if (!inExt(x, z) || lidarTrees(x, z) || onStreet(x, z) || (flags & 2 && onPath(x, z))) return; const [h, crown, foot] = SIZE[kind]; plant(x, z, kind, h, crown, foot, flags); };
   for (const e of treesOsm.elements) {
     const named = osmKind(e.tags ?? {});

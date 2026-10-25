@@ -390,15 +390,20 @@ export async function treesOn(key, osm) {
 // broadleaf, but for the narrow and tall: a poplar where the photo sees a broadleaf's leaves (more
 // near-infrared), else a cypress or a cedar; a tree taller than the town's that holds its crown high, a
 // eucalyptus; and a tall tree that holds its crown high and is dark in the near-infrared, as needles are,
-// a pine (a quarter of the trees in COS2025's pine woods are, against 3 to 10% in its other woods).
+// a pine (a quarter of the trees in COS2025's pine woods are, against 3 to 10% in its other woods). A
+// broadleaf that keeps its leaves in winter is an evergreen broadleaf: where the map names an evergreen
+// species, in COS2025's broadleaf woods but the oaks' (the cork oaks', the acacias', the other
+// broadleaves'), and, no name telling otherwise, on its green spaces and its scrub, as the hills' woods
+// are green in the winter photos of the Picoto and the Falperra (task 093).
 
 // Nine kinds since task 061, each a shape and a bark and leaves of its own: the plane (pale, mottled bark,
 // big leaves, an open crown), the lime (a dense round crown of heart-shaped leaves, clipped into a ball on
-// the Imaculada Conceição) and the birch (white bark, fine twigs hanging) as the photos show them.
-// EVERGREEN: the kinds that keep their leaves in winter, for the seasons ("Later" in the roadmap).
-export const KINDS = ['broadleaf', 'pine', 'eucalyptus', 'conifer', 'poplar', 'palm', 'plane', 'lime', 'birch'];
-const [BROADLEAF, PINE, EUCALYPTUS, CONIFER, POPLAR, PALM, PLANE, LIME, BIRCH] = KINDS.keys();
-export const EVERGREEN = new Set(['pine', 'eucalyptus', 'conifer', 'palm']);
+// the Imaculada Conceição) and the birch (white bark, fine twigs hanging) as the photos show them; and a
+// tenth since task 093, the evergreen broadleaf, drawn as the broadleaf is, which keeps its leaves.
+// EVERGREEN: the kinds that keep their leaves in winter, for the seasons (task 093).
+export const KINDS = ['broadleaf', 'pine', 'eucalyptus', 'conifer', 'poplar', 'palm', 'plane', 'lime', 'birch', 'evergreen-broadleaf'];
+const [BROADLEAF, PINE, EUCALYPTUS, CONIFER, POPLAR, PALM, PLANE, LIME, BIRCH, EVERGREEN_BROADLEAF] = KINDS.keys();
+export const EVERGREEN = new Set(['pine', 'eucalyptus', 'conifer', 'palm', 'evergreen-broadleaf']);
 // YEAR: each kind's year in Braga (task 093), for a game to draw its leaves by the date, in days of the
 // year (1 on 1 January): when its buds burst (`bud`), its leaves are full (`full`), they begin to turn
 // (`turn`), half of them are down (`fall`) and the last are (`bare`); the colour they turn (`autumn`);
@@ -406,13 +411,13 @@ export const EVERGREEN = new Set(['pine', 'eucalyptus', 'conifer', 'palm']);
 // its leaves come). An evergreen kind has no row but for its flowers. The rows past the nine are ready
 // for kinds still to come (task 130). Where each date comes from: docs/SOURCES.md, "The trees' year".
 export const YEAR = {
-  broadleaf: { bud: 100, full: 140, turn: 295, fall: 325, bare: 350, autumn: '#9a7a3c' },
-  poplar: { bud: 80, full: 115, turn: 290, fall: 315, bare: 335, autumn: '#cfae45' },
-  plane: { bud: 100, full: 135, turn: 290, fall: 320, bare: 345, autumn: '#b08a4a' },
-  lime: { bud: 95, full: 130, turn: 280, fall: 305, bare: 325, autumn: '#c9a83a', flowers: { from: 160, to: 185, colour: '#d8d48a' } },
-  birch: { bud: 85, full: 120, turn: 285, fall: 310, bare: 330, autumn: '#d9b23a' },
-  'judas-tree': { bud: 105, full: 140, turn: 290, fall: 315, bare: 335, autumn: '#c9a94a', flowers: { from: 80, to: 110, colour: '#c8508a', bare: true } },
-  acacia: { flowers: { from: 35, to: 85, colour: '#f2d22e' } },
+  broadleaf: { bud: 105, full: 140, turn: 300, fall: 330, bare: 352, autumn: '#a8823e' },
+  poplar: { bud: 80, full: 130, turn: 292, fall: 322, bare: 340, autumn: '#e2c23e' },
+  plane: { bud: 84, full: 135, turn: 298, fall: 332, bare: 355, autumn: '#b48a4a' },
+  lime: { bud: 95, full: 125, turn: 272, fall: 310, bare: 330, autumn: '#d8b840', flowers: { from: 160, to: 185, colour: '#d8d48a' } },
+  birch: { bud: 82, full: 115, turn: 288, fall: 325, bare: 340, autumn: '#e3c13b' },
+  'judas-tree': { bud: 100, full: 135, turn: 295, fall: 320, bare: 340, autumn: '#c9a94a', flowers: { from: 85, to: 105, colour: '#c8508a', bare: true } },
+  acacia: { flowers: { from: 35, to: 75, colour: '#f2d22e' } },
 };
 
 // The kind OpenStreetMap's tags name, or -1.
@@ -427,21 +432,25 @@ export function osmKind(tags) {
   if (/phoenix|washingtonia|trachycarpus|chamaerops|butia|syagrus|palm|cordyline/.test(name) || tags.leaf_type === 'palm') return PALM;
   if (/cupressus|chamaecyparis|cedrus|taxus|thuja|cryptomeria|sequoia|abies|picea|araucaria|juniperus|cipreste|cedro|teixo/.test(name)) return CONIFER;
   if (tags.leaf_type === 'needleleaved') return CONIFER;
+  if (/quercus (suber|ilex|rotundifolia)|sobreiro|azinheira|magnolia grandiflora|camellia|cam[eé]lia|laurus|loureiro|olea|oliveira|citrus|laranjeira|limoeiro|ilex|azevinho|arbutus|medronheiro|pittosporum|ligustrum|nerium|loendro|eriobotrya|nespereira|prunus (laurocerasus|lusitanica)|viburnum tinus/.test(name) || tags.leaf_cycle === 'evergreen' && tags.leaf_type === 'broadleaved') return EVERGREEN_BROADLEAF;
   if (name || tags.leaf_type === 'broadleaved') return BROADLEAF;
   return -1;
 }
 
 // COS2025's woods (its classes 4 and 5, the agroforestry and the forests) on a grid of 2 m over the
-// map: the kind each one's main species is, or -1.
-const COS_KIND = { '5.1.1.6': EUCALYPTUS, '5.1.2.1': PINE, '5.1.2.2': PINE, '5.1.2.3': CONIFER };
+// map: the kind each one's main species is, a broadleaf wood's an evergreen broadleaf but the oaks'
+// (task 093); GREEN on its green spaces (1.8.1.1) and its scrub (6), where a broadleaf no name tells
+// otherwise is an evergreen one; or -1.
+const COS_KIND = { '5.1.1.6': EUCALYPTUS, '5.1.2.1': PINE, '5.1.2.2': PINE, '5.1.2.3': CONIFER, '5.1.1.3': BROADLEAF, '4.1.1.3': BROADLEAF, '4.2.1.3': BROADLEAF };
+export const GREEN = -2;
 export function woods() {
   const S = 2, X0 = EXT.x0 - 200, Z0 = EXT.z0 - 200, NX = Math.ceil((EXT.x1 - EXT.x0 + 400) / S), NZ = Math.ceil((EXT.z1 - EXT.z0 + 400) / S);
   const grid = new Int8Array(NX * NZ).fill(-1);
   const file = path.join(DGT, 'cos2025.json');
   if (fs.existsSync(file)) for (const f of JSON.parse(fs.readFileSync(file, 'utf8')).features) {
     const c = f.properties.cos25v1_n4_c;
-    if (!/^[45]\./.test(c)) continue;
-    const kind = COS_KIND[c] ?? (/^5\.1\.2/.test(c) ? CONIFER : BROADLEAF);
+    if (!/^[456]\./.test(c) && c !== '1.8.1.1') continue;
+    const kind = /^[16]\./.test(c) ? GREEN : COS_KIND[c] ?? (/^5\.1\.2/.test(c) ? CONIFER : EVERGREEN_BROADLEAF);
     for (const poly of f.geometry.type === 'MultiPolygon' ? f.geometry.coordinates : [f.geometry.coordinates]) {
       const rings = poly.map((r) => r.map(([lon, lat]) => P({ lat, lon })));
       const zs = rings[0].map((p) => p[1]);
@@ -466,11 +475,12 @@ export function kindOf(t, wood, ref = null) {
   if (named === CONIFER && tags.leaf_type === 'needleleaved') return wood === PINE || t.foot > 0.45 * t.h ? PINE : CONIFER;
   if (named >= 0) return named;
   if (wood >= 0) return wood;
+  const broadleaf = wood === GREEN ? EVERGREEN_BROADLEAF : BROADLEAF;
   const leafy = (t.colour[0] - t.colour[1]) / (t.colour[0] + t.colour[1]);
   if (t.h >= 8 && t.h >= 2.8 * t.crown) return leafy >= 0.12 ? POPLAR : CONIFER;
   if (t.h >= 22 && t.foot >= 0.45 * t.h) return EUCALYPTUS;
   if (t.h >= 10 && t.foot >= 0.4 * t.h && t.colour[0] < 150) return PINE;
-  return BROADLEAF;
+  return broadleaf;
 }
 
 // ---------------------------------------------------------------------------------------------
@@ -526,7 +536,7 @@ export function refsOf(trees, seen = JSON.parse(fs.readFileSync(SEEN, 'utf8'))) 
 // --check: the orthophoto round a point, with each crown found outlined in its kind's colour and its
 // top marked, as .cache/trees/<x>_<z>.png.
 
-const SHOW = [[255, 255, 255], [255, 60, 60], [80, 160, 255], [255, 220, 0], [120, 255, 120], [255, 0, 255], [255, 140, 0], [0, 255, 255], [190, 190, 190]];
+const SHOW = [[255, 255, 255], [255, 60, 60], [80, 160, 255], [255, 220, 0], [120, 255, 120], [255, 0, 255], [255, 140, 0], [0, 255, 255], [190, 190, 190], [0, 120, 40]];
 async function check(x, z, r, osm, wood) {
   const { default: sharp } = await import('sharp');
   const box = { x0: x - r, x1: x + r, z0: z - r, z1: z + r }, step = 0.25, o = orthoGrid(box, step), tm = mapToTM(box);
@@ -560,7 +570,7 @@ async function check(x, z, r, osm, wood) {
   const file = path.join(CACHE, 'trees', `${x}_${z}.png`);
   fs.mkdirSync(path.dirname(file), { recursive: true });
   await sharp(px, { raw: { width: nx, height: nz, channels: 3 } }).png().toFile(file);
-  console.log(`  ${path.relative(CACHE, file)}: ${KINDS.map((k, i) => `${k} ${['white', 'red', 'blue', 'yellow', 'green', 'magenta', 'orange', 'cyan', 'grey'][i]}`).join(', ')}`);
+  console.log(`  ${path.relative(CACHE, file)}: ${KINDS.map((k, i) => `${k} ${['white', 'red', 'blue', 'yellow', 'green', 'magenta', 'orange', 'cyan', 'grey', 'dark green'][i]}`).join(', ')}`);
 }
 
 // ---------------------------------------------------------------------------------------------

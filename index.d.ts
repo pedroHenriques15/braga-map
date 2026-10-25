@@ -483,7 +483,9 @@ export interface Furniture {
 //   it; else on the hills the main species of the wood it stands in (DGT's COS2025); else a broadleaf,
 //   but for the narrow and tall (a poplar where the photo sees a broadleaf's leaves, else a cypress or a
 //   cedar) and a tree taller than the town's with its crown held high (a eucalyptus). The planes, limes,
-//   birches and palms only where a photo or the map has them.
+//   birches and palms only where a photo or the map has them. An evergreen broadleaf (task 093) where a
+//   photo or the map names an evergreen one, in COS2025's broadleaf woods but the oaks', and on its
+//   green spaces and scrub; a broadleaf elsewhere.
 // - h: its height over the ground; crown: its crown's width (as a disc as big as the crown seen from
 //   above); foot: how high its crown's lowest leaves are (where its trunk goes into it), in metres.
 // - trunk: how thick its trunk is at a person's height, in metres: as thick as a tree that tall and that
@@ -491,7 +493,7 @@ export interface Furniture {
 // - mapped: OpenStreetMap has it too (or only it does: planted since July 2025, or under 3 m then, at
 //   the height and crown the map gives or a young tree's); filled: planted in a wood or a park where
 //   neither the LiDAR nor the map has trees.
-export type TreeKind = 'broadleaf' | 'pine' | 'eucalyptus' | 'conifer' | 'poplar' | 'palm' | 'plane' | 'lime' | 'birch';
+export type TreeKind = 'broadleaf' | 'pine' | 'eucalyptus' | 'conifer' | 'poplar' | 'palm' | 'plane' | 'lime' | 'birch' | 'evergreen-broadleaf';
 export interface Tree {
   x: number;
   z: number;
@@ -672,7 +674,8 @@ export interface TreeYear {
   flowers?: { from: number; to: number; colour: string; bare?: boolean };
 }
 // evergreen: whether the kind keeps its leaves in winter (task 061): the pines, eucalyptus, cypresses and
-// cedars, and palms; the broadleaves, poplars, planes, limes and birches lose theirs. twigs: a deciduous
+// cedars, palms and the evergreen broadleaves (task 093, drawn in the broadleaf's bark and leaves); the
+// broadleaves, poplars, planes, limes and birches lose theirs. twigs: a deciduous
 // kind's bare twigs, a card of them as its leaves are (task 093); year: its year (task 093), null for
 // an evergreen kind that shows no flowers.
 export interface TreeKindOf {

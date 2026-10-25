@@ -13,10 +13,10 @@
   "cedar": { "name": "Cedrus", "pt": "cedro", "kind": "conifer", "leaves": "evergreen" },
   "cypress": { "name": "Cupressus", "pt": "cipreste", "kind": "conifer", "leaves": "evergreen" },
   "conifer": { "name": null, "pt": null, "kind": "conifer", "leaves": "evergreen" },
-  "evergreen": { "name": null, "pt": null, "kind": "broadleaf", "leaves": "evergreen" },
+  "evergreen": { "name": null, "pt": null, "kind": "evergreen-broadleaf", "leaves": "evergreen" },
   "judas-tree": { "name": "Cercis siliquastrum", "pt": "olaia", "kind": "broadleaf", "leaves": "deciduous" },
   "araucaria": { "name": "Araucaria heterophylla", "pt": "araucária", "kind": "conifer", "leaves": "evergreen" },
-  "oleander": { "name": "Nerium oleander", "pt": "loendro", "kind": "broadleaf", "leaves": "evergreen" },
+  "oleander": { "name": "Nerium oleander", "pt": "loendro", "kind": "evergreen-broadleaf", "leaves": "evergreen" },
   "broadleaf": { "name": null, "pt": null, "kind": "broadleaf", "leaves": "deciduous" }
  },
  "trees": [

@@ -5,7 +5,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { test } from 'node:test';
-import { CELL, M, W, canopyOf, crowns, EVERGREEN, kindOf, KINDS, layers, measure, mergeSlivers, mergeStemless, osmKind, refsOf, YEAR } from '../tools/trees.mjs';
+import { CELL, M, W, canopyOf, crowns, EVERGREEN, kindOf, KINDS, layers, measure, mergeSlivers, mergeStemless, osmKind, refsOf, GREEN, YEAR } from '../tools/trees.mjs';
 import { inView, NEAR } from '../tools/species.mjs';
 import { viewCamera } from '../tools/buildings.mjs';
 import { loadWorld, map } from '../index.js';
@@ -79,9 +79,9 @@ test("a limb with no trunk under it is its tree's; a narrow tree with its own tr
 });
 
 test("a tree's kind: as it was seen, else the map's name for it, else its row's, else its wood's, else its shape's", () => {
-  const [BROADLEAF, PINE, EUCALYPTUS, CONIFER, POPLAR, PALM, PLANE, LIME, BIRCH] = KINDS.keys();
-  assert.deepEqual(KINDS, ['broadleaf', 'pine', 'eucalyptus', 'conifer', 'poplar', 'palm', 'plane', 'lime', 'birch']);
-  assert.deepEqual([...EVERGREEN].sort(), ['conifer', 'eucalyptus', 'palm', 'pine']);
+  const [BROADLEAF, PINE, EUCALYPTUS, CONIFER, POPLAR, PALM, PLANE, LIME, BIRCH, EVERGREEN_BROADLEAF] = KINDS.keys();
+  assert.deepEqual(KINDS, ['broadleaf', 'pine', 'eucalyptus', 'conifer', 'poplar', 'palm', 'plane', 'lime', 'birch', 'evergreen-broadleaf']);
+  assert.deepEqual([...EVERGREEN].sort(), ['conifer', 'eucalyptus', 'evergreen-broadleaf', 'palm', 'pine']);
   assert.equal(osmKind({ genus: 'Platanus' }), PLANE);
   assert.equal(osmKind({ species: 'Tilia cordata' }), LIME);
   assert.equal(osmKind({ 'species:pt': 'Bétula' }), BIRCH);
@@ -91,6 +91,9 @@ test("a tree's kind: as it was seen, else the map's name for it, else its row's,
   assert.equal(osmKind({ leaf_type: 'palm' }), PALM);
   assert.equal(osmKind({ species: 'Cupressus sempervirens' }), CONIFER);
   assert.equal(osmKind({ species: 'Quercus robur' }), BROADLEAF);
+  assert.equal(osmKind({ species: 'Quercus suber' }), EVERGREEN_BROADLEAF);
+  assert.equal(osmKind({ genus: 'Camellia' }), EVERGREEN_BROADLEAF);
+  assert.equal(osmKind({ leaf_type: 'broadleaved', leaf_cycle: 'evergreen' }), EVERGREEN_BROADLEAF);
   assert.equal(osmKind({ natural: 'tree' }), -1);
   const t = (h, crown, foot, leafy, tags) => ({ h, crown, foot, colour: [180, 180 * (1 - leafy) / (1 + leafy), 130, 130], osm: tags ? { tags } : null });
   assert.equal(kindOf(t(12, 8, 4, 0.2, { leaf_type: 'needleleaved' }), -1), CONIFER);
@@ -98,6 +101,12 @@ test("a tree's kind: as it was seen, else the map's name for it, else its row's,
   assert.equal(kindOf(t(12, 8, 4, 0.2), EUCALYPTUS), EUCALYPTUS);
   assert.equal(kindOf(t(12, 8, 4, 0.2, { species: 'Quercus robur' }), PINE), BROADLEAF);
   assert.equal(kindOf(t(12, 8, 4, 0.2), -1), BROADLEAF);
+  // On a green space or in scrub a broadleaf no name tells otherwise keeps its leaves (task 093); in a
+  // broadleaf wood it's the wood's, an oak wood's deciduous, the others' evergreen.
+  assert.equal(kindOf(t(12, 8, 4, 0.2), GREEN), EVERGREEN_BROADLEAF);
+  assert.equal(kindOf(t(12, 8, 4, 0.2, { species: 'Quercus robur' }), GREEN), BROADLEAF);
+  assert.equal(kindOf(t(16, 4, 3, 0.2), GREEN), POPLAR);
+  assert.equal(kindOf(t(12, 8, 4, 0.2), EVERGREEN_BROADLEAF), EVERGREEN_BROADLEAF);
   assert.equal(kindOf(t(16, 4, 3, 0.2), -1), POPLAR);
   assert.equal(kindOf(t(16, 4, 3, 0.05), -1), CONIFER);
   assert.equal(kindOf(t(26, 10, 14, 0.15), -1), EUCALYPTUS);
@@ -230,7 +239,8 @@ test("each kind of tree has its bark and its leaves at every level, made", () =>
   const m = map();
   for (const { kind, bark, leaves } of m.treeKinds) {
     assert.ok(bark && leaves, kind);
-    assert.equal(TREES[kind].bark, bark);
+    // The evergreen broadleaf is drawn in the broadleaf's (task 093).
+    assert.equal((TREES[kind] ?? TREES.broadleaf).bark, bark);
     assert.ok(bark.metres > 0.3 && bark.metres < 4, `${kind}: its bark ${bark.metres} m a side`);
     assert.ok(leaves.cover > 0.1 && leaves.cover < 0.8, `${kind}: its leaves cover ${leaves.cover} of the card`);
     for (const t of [bark, leaves]) {

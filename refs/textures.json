@@ -95,8 +95,8 @@
       "tree": "broadleaf",
       "generator": "twigs",
       "twigs": { "fan": 0.9, "len": 0.4, "branches": 6, "depth": 3, "forks": 3, "from": 0.3, "shorten": 0.55, "spread": [25, 60], "wander": 0.45, "droop": 0.02, "width": 0.01, "tones": [[90, 80, 70], [120, 105, 90]] },
-      "ref": { "polyhaven": "chinese_hackberry_bark" },
-      "match": { "mean": [85, 71, 51], "contrast": 8.6 },
+      "ref": { "polyhaven": "chinese_hackberry_bark", "tone": { "mean": 80, "contrast": 1.2, "tint": [255, 225, 190] } },
+      "match": { "mean": [80, 71, 60], "contrast": 9.2 },
       "notes": "Bare twigs, a street tree's in winter: grey-brown, forking every way from a few limbs, as the avenues' hackberries and the woods' oaks stand from December to April."
     },
     {
@@ -193,8 +193,8 @@
       "tree": "poplar",
       "generator": "twigs",
       "twigs": { "fan": 0.45, "len": 0.5, "branches": 6, "depth": 2, "forks": 4, "from": 0.2, "shorten": 0.55, "spread": [10, 30], "wander": 0.2, "droop": 0, "width": 0.01, "tones": [[110, 105, 95], [140, 130, 115]] },
-      "ref": { "polyhaven": "bark_willow" },
-      "match": { "mean": [66, 53, 42], "contrast": 9.3 },
+      "ref": { "polyhaven": "bark_willow", "tone": { "mean": 88, "contrast": 1.2, "tint": [255, 240, 215] } },
+      "match": { "mean": [88, 83, 74], "contrast": 10.7 },
       "notes": "A poplar's or a willow's bare twigs: long, straight and held up close to the upright, grey."
     },
     {
@@ -247,9 +247,9 @@
       "tree": "plane",
       "generator": "twigs",
       "twigs": { "fan": 0.9, "len": 0.38, "branches": 5, "depth": 3, "forks": 3, "from": 0.3, "shorten": 0.55, "spread": [30, 60], "wander": 0.35, "droop": 0, "width": 0.012, "tones": [[120, 110, 95], [150, 140, 120]], "balls": 0.25 },
-      "ref": { "polyhaven": "japanese_zelkova_bark" },
-      "match": { "mean": [154, 132, 110], "contrast": 16.4 },
-      "notes": "A plane's bare twigs, zigzag and stout, grey-brown (its trunk's bark untoned: the twigs are darker than its pale patches), and its seed balls hanging on their stalks through the winter, as the Alameda do Fujacal's in February (facade-way-383776389)."
+      "ref": { "polyhaven": "japanese_zelkova_bark", "tone": { "mean": 90, "contrast": 1.2, "tint": [255, 222, 190] } },
+      "match": { "mean": [90, 78, 67], "contrast": 17.7 },
+      "notes": "A plane's bare twigs, zigzag and stout, grey-brown (its trunk's bark toned darker, as twigs are than any trunk), and its seed balls hanging on their stalks through the winter, as the Alameda do Fujacal's in February (facade-way-383776389)."
     },
     {
       "id": "tree-lime-bark",
@@ -279,8 +279,8 @@
       "tree": "lime",
       "generator": "twigs",
       "twigs": { "fan": 0.9, "len": 0.4, "branches": 7, "depth": 3, "forks": 4, "from": 0.25, "shorten": 0.5, "spread": [25, 55], "wander": 0.5, "droop": 0.02, "width": 0.009, "tones": [[85, 55, 40], [110, 70, 50]] },
-      "ref": { "polyhaven": "bark_brown_02" },
-      "match": { "mean": [95, 86, 64], "contrast": 27.3 },
+      "ref": { "polyhaven": "bark_brown_02", "tone": { "mean": 78, "contrast": 1.2, "tint": [255, 196, 160] } },
+      "match": { "mean": [78, 60, 49], "contrast": 26.4 },
       "notes": "A lime's bare twigs: dense, fine and zigzag, red-brown."
     },
     {
@@ -311,9 +311,9 @@
       "tree": "birch",
       "generator": "twigs",
       "twigs": { "fan": 0.8, "len": 0.42, "branches": 7, "depth": 3, "forks": 4, "from": 0.2, "shorten": 0.6, "spread": [20, 45], "wander": 0.3, "droop": 0.12, "width": 0.007, "tones": [[70, 45, 40], [95, 60, 50]] },
-      "ref": { "polyhaven": "sakura_bark" },
-      "match": { "mean": [123, 105, 88], "contrast": 14 },
-      "notes": "A birch's bare twigs: fine, dark red-brown (a cherry's bark untoned, not its white trunk's) and hanging from the limbs."
+      "ref": { "polyhaven": "sakura_bark", "tone": { "mean": 70, "contrast": 1.2, "tint": [255, 200, 185] } },
+      "match": { "mean": [70, 55, 51], "contrast": 14 },
+      "notes": "A birch's bare twigs: fine, dark red-brown (a cherry's bark toned so, not its white trunk's) and hanging from the limbs."
     }
   ]
 }

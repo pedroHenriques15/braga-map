@@ -1,5 +1,5 @@
 ---
-status: doing
+status: done
 priority: medium
 kind: code
 repo: braga-map
@@ -55,3 +55,4 @@ was judged, and the scorecard would show High where the marks are Ultra's.
   a round without writing the shared `.cache` before it lands.
 - `tools/scorecard.mjs` needed nothing: it works from each round's sheets and shots, whatever their
   level.
+- Landed 2026-10-25, decision 079; no version or tag (the scorecard's tools, as 057, 062 and 064 landed).

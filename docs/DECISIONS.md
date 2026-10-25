@@ -2277,3 +2277,19 @@ street, a pavement or a path at their foot (151 of 182).
 
 The alternative, the street held to the terrain at a flight's foot, would move the streets the tiles
 hold, and decision 023's decks with them, for a flight's sake.
+
+## 079 · A round goes up at the level it's judged at: Ultra since task 081
+
+*2026-10-25 · task 127 · changes decision 012's "High shots", after decision 069*
+
+Decision 012 set each viewpoint's photo over the game's High shot, realism being judged on the best the
+game draws. Since task 081 (decision 069) the best is Ultra: the rounds are shot at Ultra and Low, and
+Claude's marks are given at Ultra. But `tools/round.mjs` made a round's sheets from its `high/` shots, so
+a round couldn't go up as it was judged. So:
+
+- **A round goes up at the level it was shot at for its marks:** Ultra for one shot with party-kart's
+  `shots.mjs --ultra`, High for one shot without it (those before 081, and 059's, 111's and 112's). `--level`
+  says otherwise, and a round prepared again keeps its level.
+- **Its entry says which** (`level` in `refs/rounds.json`), and so does the page, beside the round's label,
+  as the game names it: "Ultra" or "Alta". The 23 rounds already up are High, their sheets as they were.
+- **Low stays the budget's** (task 004): no round goes up at it.

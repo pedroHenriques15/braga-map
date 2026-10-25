@@ -5,7 +5,7 @@
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import { test } from 'node:test';
-import { CELL, M, W, canopyOf, crowns, EVERGREEN, kindOf, KINDS, layers, measure, mergeSlivers, mergeStemless, osmKind, refsOf } from '../tools/trees.mjs';
+import { CELL, M, W, canopyOf, crowns, EVERGREEN, kindOf, KINDS, layers, measure, mergeSlivers, mergeStemless, osmKind, refsOf, YEAR } from '../tools/trees.mjs';
 import { inView, NEAR } from '../tools/species.mjs';
 import { viewCamera } from '../tools/buildings.mjs';
 import { loadWorld, map } from '../index.js';
@@ -201,6 +201,29 @@ test('the trees near the viewpoints are the species their photos show', async ()
   // four of the Imaculada Conceição's hackberries).
   assert.ok(rows > 25 && areas > 50, `${rows} trees in rows, ${areas} in places`);
   assert.equal(off, 0, `${off} trees of a row or a place not of its kind`);
+});
+
+test("each deciduous kind has its bare twigs, made, and its year in order; an evergreen kind neither (task 093)", () => {
+  const day = (d) => Number.isInteger(d) && d >= 1 && d <= 365;
+  const ok = (kind, y) => {
+    if (y.bud !== undefined) {
+      assert.ok([y.bud, y.full, y.turn, y.fall, y.bare].every(day), `${kind}: ${JSON.stringify(y)}`);
+      assert.ok(y.bud < y.full && y.full < y.turn && y.turn < y.fall && y.fall < y.bare, `${kind}: its year in order`);
+      assert.match(y.autumn, /^#[0-9a-f]{6}$/, kind);
+    }
+    if (y.flowers) {
+      assert.ok(day(y.flowers.from) && day(y.flowers.to) && y.flowers.from < y.flowers.to, `${kind}: its flowers`);
+      assert.match(y.flowers.colour, /^#[0-9a-f]{6}$/, kind);
+    }
+  };
+  for (const { kind, evergreen, twigs, year } of map().treeKinds) {
+    assert.equal(!twigs, evergreen, `${kind}: twigs only where its leaves come down`);
+    assert.equal(year?.bud === undefined, evergreen, `${kind}: a year of leaves only where they come down`);
+    if (twigs) assert.ok(twigs.cover > 0.03 && twigs.cover < 0.3 && twigs.made.generator === 'twigs', `${kind}: its twigs cover ${twigs.cover} of the card`);
+    if (year) ok(kind, year);
+  }
+  // The rows ready for the kinds still to come (task 130) are as sound.
+  for (const [kind, y] of Object.entries(YEAR)) ok(kind, y);
 });
 
 test("each kind of tree has its bark and its leaves at every level, made", () => {

@@ -11,11 +11,11 @@ import { SURFACES, TREES } from '../world/textures.js';
 const { textures } = JSON.parse(fs.readFileSync(new URL('../refs/textures.json', import.meta.url), 'utf8'));
 const LEVELS = ['high', 'medium', 'low'];
 const KTX2 = Buffer.from([0xab, 0x4b, 0x54, 0x58, 0x20, 0x32, 0x30, 0xbb, 0x0d, 0x0a, 0x1a, 0x0a]);
-const index = [...Object.values(SURFACES), ...Object.values(TREES).flatMap((t) => [t.bark, t.leaves])];
+const index = [...Object.values(SURFACES), ...Object.values(TREES).flatMap((t) => [t.bark, t.leaves, t.twigs].filter(Boolean))];
 
 test('no texture is made from a photograph: each recipe names a generator, and its references only measure', () => {
   for (const t of textures) {
-    assert.ok(['surface', 'bark', 'leaves'].includes(t.kind), `${t.id}: a ${t.kind} (a facade or the orthophoto would be a photo)`);
+    assert.ok(['surface', 'bark', 'leaves', 'twigs'].includes(t.kind), `${t.id}: a ${t.kind} (a facade or the orthophoto would be a photo)`);
     // What a photo texture's recipe had: a photo, a Poly Haven asset, a quad of a photo, a wall, a tile.
     for (const k of ['photo', 'asset', 'diff', 'alpha', 'quad', 'wall', 'tile']) assert.ok(!(k in t), `${t.id}: ${k}`);
     assert.ok(GENERATORS[t.kind === 'surface' ? 'ground' : t.kind].includes(t.generator), `${t.id}: ${t.generator}`);
@@ -26,7 +26,7 @@ test('no texture is made from a photograph: each recipe names a generator, and i
 });
 
 // Ultra's files (task 085), by what each kind of texture has.
-const ULTRA = { surface: ['ultra', 'ultra-normal'], bark: ['ultra', 'ultra-normal', 'ultra-rough'], leaves: ['ultra'] };
+const ULTRA = { surface: ['ultra', 'ultra-normal'], bark: ['ultra', 'ultra-normal', 'ultra-rough'], leaves: ['ultra'], twigs: ['ultra'] };
 // A KTX2 file's supercompression (1 Basis's ETC1S, 2 Zstandard's, as UASTC is here) and its transfer
 // function (2 sRGB, 1 linear), off its header and its data format descriptor.
 const ktx2Of = (b) => ({ scheme: b.readUInt32LE(44), transfer: b[b.readUInt32LE(48) + 14] });
@@ -79,7 +79,7 @@ test('a generator wraps both ways, and makes the same texture from the same seed
   }
   // A texture's opposite edges are as alike as its neighbouring rows and columns are.
   const n = 128;
-  for (const t of textures.filter((t) => t.kind !== 'leaves')) {
+  for (const t of textures.filter((t) => t.kind === 'surface' || t.kind === 'bark')) {
     const d = make(t.kind, t.generator, n, { metres: t.metres, ...t.params }, 11);
     assert.ok(d.equals(make(t.kind, t.generator, n, { metres: t.metres, ...t.params }, 11)), `${t.id}: the same from a seed`);
     const diff = (a, b) => { let s = 0; for (let k = 0; k < n; k++) for (let c = 0; c < 3; c++) s += Math.abs(d[a(k) * 3 + c] - d[b(k) * 3 + c]); return s / n; };

@@ -29,7 +29,8 @@ import path from 'node:path';
 import sharp from 'sharp';
 import { CACHE, ROOT } from './geo.mjs';
 import { four, js, ktx2, ktx2Size, resize } from './ktx2.mjs';
-import { leafSprites, make, match, measure, seedOf } from './made.mjs';
+import { leafSprites, make, match, measure, rng, seedOf, twigsSVG } from './made.mjs';
+import { YEAR } from './trees.mjs';
 
 const OUT = path.join(ROOT, 'world', 'textures');
 const WORK = path.join(CACHE, 'textures');
@@ -54,11 +55,12 @@ const RELIEF = {
 };
 const reliefOf = (t) => RELIEF[t.kind === 'surface' ? t.generator : 'bark'];
 // Ultra's files, by what they are: a kind of ground's texture and its relief, a bark's and its roughness,
-// the leaves alone.
+// the leaves and the twigs alone.
 const ULTRA_FILES = {
   surface: { colour: 'ultra', normal: 'ultra-normal' },
   bark: { colour: 'ultra', normal: 'ultra-normal', roughness: 'ultra-rough' },
   leaves: { colour: 'ultra' },
+  twigs: { colour: 'ultra' },
 };
 
 // The mean of an image's pixels (those not see-through) in linear light, as a graphics card reads it, in
@@ -168,6 +170,22 @@ async function leaves(t, S = TREE.high) {
   return { img, place: { tree: t.tree, mean, cover: +(cover / (S * S)).toFixed(2) } };
 }
 
+// A deciduous kind's bare twigs (task 093), as its crown's cards show them when its leaves are down:
+// made.mjs's twigsSVG as the recipe's `twigs` says, RGBA, matched to its references, what's see-through
+// in the twigs' mean colour as a spray's is. `S` pixels a side, High's or Ultra's.
+async function twigs(t, S = TREE.high) {
+  const svg = Buffer.from(twigsSVG(t.twigs, S, rng(seedOf(t.id))));
+  const { data } = await sharp({ create: { width: S, height: S, channels: 4, background: { r: 0, g: 0, b: 0, alpha: 0 } } }).composite([{ input: svg, left: 0, top: 0 }]).raw().toBuffer({ resolveWithObject: true });
+  match(data, 4, t.match);
+  const img = { w: S, h: S, data, channels: 4 }, mean = meanOf(img);
+  let cover = 0;
+  for (let i = 0; i < data.length; i += 4) {
+    if (data[i + 3] >= 128) cover++;
+    else { data[i] = mean[0]; data[i + 1] = mean[1]; data[i + 2] = mean[2]; }
+  }
+  return { img, place: { tree: t.tree, mean, cover: +(cover / (S * S)).toFixed(2) } };
+}
+
 // ---- Measuring the references (--measure) ----
 
 // What a recipe's references measure: a Poly Haven texture's (CC0, kept as a reference in
@@ -232,16 +250,18 @@ function writeIndex(entries) {
   const ultra = (e, dir, pad) => `ultra: { ${Object.entries(ULTRA_FILES[e.kind]).map(([k, f]) => `${k}: ${file(dir, `${e.id}-${f}.ktx2`)}`).join(`,\n${pad}`)} }`;
   // Each kind of ground's, by the kind it's of.
   const surfaces = entries.filter((e) => e.kind === 'surface').map((e) => `  ${e.place.ground}: { id: ${js(e.id)}, metres: ${e.place.metres}, mean: ${js(e.place.mean)}, roughness: ${e.place.roughness},\n    files: { ${files(e, 'surfaces').join(',\n      ')} },\n    ${ultra(e, 'surfaces', '      ')},\n    made: ${js(e.made)} },`);
-  // Each kind of tree's bark and leaves (task 019), by the kind they're of.
+  // Each kind of tree's bark and leaves (task 019) and a deciduous kind's twigs (task 093), by the kind
+  // they're of; and its year (tools/trees.mjs's YEAR).
   const trees = new Map();
   for (const e of entries.filter((e) => e.kind !== 'surface')) {
     const { tree, ...place } = e.place;
     if (!trees.has(tree)) trees.set(tree, []);
     trees.get(tree).push(`    ${e.kind}: { id: ${js(e.id)}, ${Object.entries(place).map(([k, v]) => `${k}: ${js(v)}`).join(', ')},\n      files: { ${files(e, 'trees').join(',\n        ')} },\n      ${ultra(e, 'trees', '        ')},\n      made: ${js(e.made)} },`);
   }
+  for (const [tree, parts] of trees) parts.push(`    year: ${js(YEAR[tree] ?? null)},`);
   fs.writeFileSync(
     path.join(ROOT, 'world', 'textures.js'),
-    `// Made by tools/textures.mjs (task 082): each kind of ground's texture (task 016) and each kind of tree's\n// bark and leaves (task 019), made, not photographed, each matched to its references.\nexport const SURFACES = {\n${surfaces.join('\n')}\n};\nexport const TREES = {\n${[...trees].map(([tree, parts]) => `  ${tree}: {\n${parts.join('\n')}\n  },`).join('\n')}\n};\n`,
+    `// Made by tools/textures.mjs (task 082): each kind of ground's texture (task 016) and each kind of tree's\n// bark and leaves (task 019) and a deciduous kind's bare twigs (task 093), made, not photographed, each\n// matched to its references; and each kind's year (task 093).\nexport const SURFACES = {\n${surfaces.join('\n')}\n};\nexport const TREES = {\n${[...trees].map(([tree, parts]) => `  ${tree}: {\n${parts.join('\n')}\n  },`).join('\n')}\n};\n`,
   );
 }
 
@@ -277,7 +297,7 @@ for (const t of recipes) {
   const t0 = Date.now(), dir = dirOf(t);
   const made = { generator: t.generator, ref: refName(t.ref), match: t.match };
   const stale = !only.length || only.includes(t.id) || namesOf(t).some((g) => !fs.existsSync(path.join(OUT, dir, g)));
-  const out = t.kind === 'leaves' ? await leaves(t) : texture(t);
+  const out = t.kind === 'leaves' ? await leaves(t) : t.kind === 'twigs' ? await twigs(t) : texture(t);
   entries.push({ id: t.id, kind: t.kind, place: out.place, made });
   if (!stale) continue;
   console.log(t.id);
@@ -292,14 +312,14 @@ for (const t of recipes) {
   }
   // Ultra's, made at its own size (High's above stays as it was), in ETC1S as the others are; its relief
   // in UASTC; a bark's roughness at half its size, as it changes slowly.
-  const up = t.kind === 'leaves' ? await leaves(t, ULTRA.tree) : texture(t, t.kind === 'surface' ? ULTRA.surface : ULTRA.tree);
+  const up = t.kind === 'leaves' ? await leaves(t, ULTRA.tree) : t.kind === 'twigs' ? await twigs(t, ULTRA.tree) : texture(t, t.kind === 'surface' ? ULTRA.surface : ULTRA.tree);
   const write = async (name, img, opts) => {
     const bytes = await ktx2(img, opts);
     fs.writeFileSync(path.join(OUT, dir, `${t.id}-${name}.ktx2`), bytes);
     sizes.push(`${name} ${img.w}×${img.h} ${(bytes.length / 1024).toFixed(0)} KB`);
   };
   await write('ultra', up.img, {});
-  if (t.kind !== 'leaves') {
+  if (t.kind === 'surface' || t.kind === 'bark') {
     const r = relief(up.img, t.metres, reliefOf(t));
     await write('ultra-normal', r.normal, { uastc: true, normal: true });
     if (t.kind === 'bark') await write('ultra-rough', await resize(r.roughness, up.img.w / 2, up.img.h / 2), { linear: true });

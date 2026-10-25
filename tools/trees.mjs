@@ -399,6 +399,21 @@ export async function treesOn(key, osm) {
 export const KINDS = ['broadleaf', 'pine', 'eucalyptus', 'conifer', 'poplar', 'palm', 'plane', 'lime', 'birch'];
 const [BROADLEAF, PINE, EUCALYPTUS, CONIFER, POPLAR, PALM, PLANE, LIME, BIRCH] = KINDS.keys();
 export const EVERGREEN = new Set(['pine', 'eucalyptus', 'conifer', 'palm']);
+// YEAR: each kind's year in Braga (task 093), for a game to draw its leaves by the date, in days of the
+// year (1 on 1 January): when its buds burst (`bud`), its leaves are full (`full`), they begin to turn
+// (`turn`), half of them are down (`fall`) and the last are (`bare`); the colour they turn (`autumn`);
+// and when it's in flower and in what colour (`flowers`: from, to, colour; `bare` where it flowers before
+// its leaves come). An evergreen kind has no row but for its flowers. The rows past the nine are ready
+// for kinds still to come (task 130). Where each date comes from: docs/SOURCES.md, "The trees' year".
+export const YEAR = {
+  broadleaf: { bud: 100, full: 140, turn: 295, fall: 325, bare: 350, autumn: '#9a7a3c' },
+  poplar: { bud: 80, full: 115, turn: 290, fall: 315, bare: 335, autumn: '#cfae45' },
+  plane: { bud: 100, full: 135, turn: 290, fall: 320, bare: 345, autumn: '#b08a4a' },
+  lime: { bud: 95, full: 130, turn: 280, fall: 305, bare: 325, autumn: '#c9a83a', flowers: { from: 160, to: 185, colour: '#d8d48a' } },
+  birch: { bud: 85, full: 120, turn: 285, fall: 310, bare: 330, autumn: '#d9b23a' },
+  'judas-tree': { bud: 105, full: 140, turn: 290, fall: 315, bare: 335, autumn: '#c9a94a', flowers: { from: 80, to: 110, colour: '#c8508a', bare: true } },
+  acacia: { flowers: { from: 35, to: 85, colour: '#f2d22e' } },
+};
 
 // The kind OpenStreetMap's tags name, or -1.
 export function osmKind(tags) {

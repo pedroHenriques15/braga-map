@@ -658,13 +658,30 @@ export interface TreeTexture {
   ultra: UltraTexture;
   made: MadeTexture;
 }
+// A kind's year in Braga (task 093), in days of the year (1 on 1 January): when its buds burst, its
+// leaves are full, they begin to turn, half of them are down and the last are; the colour they turn (a
+// CSS hex colour); and when it's in flower and in what colour (`bare` where it flowers before its leaves
+// come). An evergreen kind has only its flowers, if it shows them.
+export interface TreeYear {
+  bud?: number;
+  full?: number;
+  turn?: number;
+  fall?: number;
+  bare?: number;
+  autumn?: string;
+  flowers?: { from: number; to: number; colour: string; bare?: boolean };
+}
 // evergreen: whether the kind keeps its leaves in winter (task 061): the pines, eucalyptus, cypresses and
-// cedars, and palms; the broadleaves, poplars, planes, limes and birches lose theirs.
+// cedars, and palms; the broadleaves, poplars, planes, limes and birches lose theirs. twigs: a deciduous
+// kind's bare twigs, a card of them as its leaves are (task 093); year: its year (task 093), null for
+// an evergreen kind that shows no flowers.
 export interface TreeKindOf {
   kind: TreeKind;
   evergreen: boolean;
   bark: TreeTexture | null;
   leaves: TreeTexture | null;
+  twigs: TreeTexture | null;
+  year: TreeYear | null;
 }
 export interface GroundKindOf {
   kind: GroundKind;

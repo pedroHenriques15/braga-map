@@ -1,5 +1,6 @@
 // Made by tools/textures.mjs (task 082): each kind of ground's texture (task 016) and each kind of tree's
-// bark and leaves (task 019), made, not photographed, each matched to its references.
+// bark and leaves (task 019) and a deciduous kind's bare twigs (task 093), made, not photographed, each
+// matched to its references; and each kind's year (task 093).
 export const SURFACES = {
   asphalt: { id: 'surface-asphalt', metres: 4, mean: [135, 130, 127], roughness: 0.92,
     files: { high: { url: new URL('./textures/surfaces/surface-asphalt-high.ktx2', import.meta.url).href, w: 1024, h: 1024, bytes: 215100 },
@@ -60,6 +61,13 @@ export const TREES = {
         low: { url: new URL('./textures/trees/tree-broadleaf-leaves-low.ktx2', import.meta.url).href, w: 128, h: 128, bytes: 10348 } },
       ultra: { colour: { url: new URL('./textures/trees/tree-broadleaf-leaves-ultra.ktx2', import.meta.url).href, w: 1024, h: 1024, bytes: 182679 } },
       made: { generator: 'spray', ref: 'Poly Haven\'s island_tree_02', match: { mean: [93, 101, 33], contrast: 16.9 } } },
+    twigs: { id: 'tree-broadleaf-twigs', mean: [85, 71, 51], cover: 0.07,
+      files: { high: { url: new URL('./textures/trees/tree-broadleaf-twigs-high.ktx2', import.meta.url).href, w: 512, h: 512, bytes: 43073 },
+        medium: { url: new URL('./textures/trees/tree-broadleaf-twigs-medium.ktx2', import.meta.url).href, w: 256, h: 256, bytes: 25903 },
+        low: { url: new URL('./textures/trees/tree-broadleaf-twigs-low.ktx2', import.meta.url).href, w: 128, h: 128, bytes: 9168 } },
+      ultra: { colour: { url: new URL('./textures/trees/tree-broadleaf-twigs-ultra.ktx2', import.meta.url).href, w: 1024, h: 1024, bytes: 97920 } },
+      made: { generator: 'twigs', ref: 'Poly Haven\'s chinese_hackberry_bark', match: { mean: [85, 71, 51], contrast: 8.6 } } },
+    year: { bud: 100, full: 140, turn: 295, fall: 325, bare: 350, autumn: '#9a7a3c' },
   },
   pine: {
     bark: { id: 'tree-pine-bark', metres: 2, mean: [104, 84, 65],
@@ -76,6 +84,7 @@ export const TREES = {
         low: { url: new URL('./textures/trees/tree-pine-leaves-low.ktx2', import.meta.url).href, w: 128, h: 128, bytes: 10403 } },
       ultra: { colour: { url: new URL('./textures/trees/tree-pine-leaves-ultra.ktx2', import.meta.url).href, w: 1024, h: 1024, bytes: 230862 } },
       made: { generator: 'spray', ref: 'Poly Haven\'s pine_tree_01', match: { mean: [66, 72, 46], contrast: 22 } } },
+    year: null,
   },
   eucalyptus: {
     bark: { id: 'tree-eucalyptus-bark', metres: 1.8, mean: [91, 79, 67],
@@ -92,6 +101,7 @@ export const TREES = {
         low: { url: new URL('./textures/trees/tree-eucalyptus-leaves-low.ktx2', import.meta.url).href, w: 128, h: 128, bytes: 11038 } },
       ultra: { colour: { url: new URL('./textures/trees/tree-eucalyptus-leaves-ultra.ktx2', import.meta.url).href, w: 1024, h: 1024, bytes: 185765 } },
       made: { generator: 'spray', ref: 'Poly Haven\'s shrub_04', match: { mean: [115, 124, 83], contrast: 14.2 } } },
+    year: null,
   },
   conifer: {
     bark: { id: 'tree-conifer-bark', metres: 2.27, mean: [85, 65, 48],
@@ -108,6 +118,7 @@ export const TREES = {
         low: { url: new URL('./textures/trees/tree-conifer-leaves-low.ktx2', import.meta.url).href, w: 128, h: 128, bytes: 10080 } },
       ultra: { colour: { url: new URL('./textures/trees/tree-conifer-leaves-ultra.ktx2', import.meta.url).href, w: 1024, h: 1024, bytes: 194979 } },
       made: { generator: 'spray', ref: 'Poly Haven\'s fir_tree_01', match: { mean: [79, 94, 47], contrast: 17.1 } } },
+    year: null,
   },
   poplar: {
     bark: { id: 'tree-poplar-bark', metres: 1, mean: [67, 54, 43],
@@ -124,6 +135,13 @@ export const TREES = {
         low: { url: new URL('./textures/trees/tree-poplar-leaves-low.ktx2', import.meta.url).href, w: 128, h: 128, bytes: 10539 } },
       ultra: { colour: { url: new URL('./textures/trees/tree-poplar-leaves-ultra.ktx2', import.meta.url).href, w: 1024, h: 1024, bytes: 192732 } },
       made: { generator: 'spray', ref: 'Poly Haven\'s island_tree_02', match: { mean: [93, 101, 33], contrast: 16.9 } } },
+    twigs: { id: 'tree-poplar-twigs', mean: [67, 53, 43], cover: 0.08,
+      files: { high: { url: new URL('./textures/trees/tree-poplar-twigs-high.ktx2', import.meta.url).href, w: 512, h: 512, bytes: 35988 },
+        medium: { url: new URL('./textures/trees/tree-poplar-twigs-medium.ktx2', import.meta.url).href, w: 256, h: 256, bytes: 19635 },
+        low: { url: new URL('./textures/trees/tree-poplar-twigs-low.ktx2', import.meta.url).href, w: 128, h: 128, bytes: 7315 } },
+      ultra: { colour: { url: new URL('./textures/trees/tree-poplar-twigs-ultra.ktx2', import.meta.url).href, w: 1024, h: 1024, bytes: 87060 } },
+      made: { generator: 'twigs', ref: 'Poly Haven\'s bark_willow', match: { mean: [66, 53, 42], contrast: 9.3 } } },
+    year: { bud: 80, full: 115, turn: 290, fall: 315, bare: 335, autumn: '#cfae45' },
   },
   palm: {
     bark: { id: 'tree-palm-bark', metres: 1.3, mean: [159, 147, 131],
@@ -140,6 +158,7 @@ export const TREES = {
         low: { url: new URL('./textures/trees/tree-palm-leaves-low.ktx2', import.meta.url).href, w: 128, h: 128, bytes: 8235 } },
       ultra: { colour: { url: new URL('./textures/trees/tree-palm-leaves-ultra.ktx2', import.meta.url).href, w: 1024, h: 1024, bytes: 111503 } },
       made: { generator: 'spray', ref: 'Poly Haven\'s island_tree_02', match: { mean: [93, 101, 33], contrast: 16.9 } } },
+    year: null,
   },
   plane: {
     bark: { id: 'tree-plane-bark', metres: 1.8, mean: [139, 143, 127],
@@ -156,6 +175,13 @@ export const TREES = {
         low: { url: new URL('./textures/trees/tree-plane-leaves-low.ktx2', import.meta.url).href, w: 128, h: 128, bytes: 10336 } },
       ultra: { colour: { url: new URL('./textures/trees/tree-plane-leaves-ultra.ktx2', import.meta.url).href, w: 1024, h: 1024, bytes: 167063 } },
       made: { generator: 'spray', ref: 'Poly Haven\'s island_tree_01', match: { mean: [93, 101, 33], contrast: 16.9 } } },
+    twigs: { id: 'tree-plane-twigs', mean: [155, 133, 111], cover: 0.08,
+      files: { high: { url: new URL('./textures/trees/tree-plane-twigs-high.ktx2', import.meta.url).href, w: 512, h: 512, bytes: 41231 },
+        medium: { url: new URL('./textures/trees/tree-plane-twigs-medium.ktx2', import.meta.url).href, w: 256, h: 256, bytes: 23389 },
+        low: { url: new URL('./textures/trees/tree-plane-twigs-low.ktx2', import.meta.url).href, w: 128, h: 128, bytes: 8471 } },
+      ultra: { colour: { url: new URL('./textures/trees/tree-plane-twigs-ultra.ktx2', import.meta.url).href, w: 1024, h: 1024, bytes: 92971 } },
+      made: { generator: 'twigs', ref: 'Poly Haven\'s japanese_zelkova_bark', match: { mean: [154, 132, 110], contrast: 16.4 } } },
+    year: { bud: 100, full: 135, turn: 290, fall: 320, bare: 345, autumn: '#b08a4a' },
   },
   lime: {
     bark: { id: 'tree-lime-bark', metres: 1, mean: [101, 91, 67],
@@ -172,6 +198,13 @@ export const TREES = {
         low: { url: new URL('./textures/trees/tree-lime-leaves-low.ktx2', import.meta.url).href, w: 128, h: 128, bytes: 9915 } },
       ultra: { colour: { url: new URL('./textures/trees/tree-lime-leaves-ultra.ktx2', import.meta.url).href, w: 1024, h: 1024, bytes: 177811 } },
       made: { generator: 'spray', ref: 'Poly Haven\'s tree_small_02', match: { mean: [98, 115, 56], contrast: 20.9 } } },
+    twigs: { id: 'tree-lime-twigs', mean: [101, 91, 67], cover: 0.1,
+      files: { high: { url: new URL('./textures/trees/tree-lime-twigs-high.ktx2', import.meta.url).href, w: 512, h: 512, bytes: 57201 },
+        medium: { url: new URL('./textures/trees/tree-lime-twigs-medium.ktx2', import.meta.url).href, w: 256, h: 256, bytes: 26629 },
+        low: { url: new URL('./textures/trees/tree-lime-twigs-low.ktx2', import.meta.url).href, w: 128, h: 128, bytes: 8807 } },
+      ultra: { colour: { url: new URL('./textures/trees/tree-lime-twigs-ultra.ktx2', import.meta.url).href, w: 1024, h: 1024, bytes: 128711 } },
+      made: { generator: 'twigs', ref: 'Poly Haven\'s bark_brown_02', match: { mean: [95, 86, 64], contrast: 27.3 } } },
+    year: { bud: 95, full: 130, turn: 280, fall: 305, bare: 325, autumn: '#c9a83a', flowers: { from: 160, to: 185, colour: '#d8d48a' } },
   },
   birch: {
     bark: { id: 'tree-birch-bark', metres: 1.6, mean: [205, 203, 199],
@@ -188,5 +221,12 @@ export const TREES = {
         low: { url: new URL('./textures/trees/tree-birch-leaves-low.ktx2', import.meta.url).href, w: 128, h: 128, bytes: 10206 } },
       ultra: { colour: { url: new URL('./textures/trees/tree-birch-leaves-ultra.ktx2', import.meta.url).href, w: 1024, h: 1024, bytes: 138269 } },
       made: { generator: 'spray', ref: 'Poly Haven\'s tree_small_02', match: { mean: [98, 115, 56], contrast: 20.9 } } },
+    twigs: { id: 'tree-birch-twigs', mean: [125, 106, 89], cover: 0.12,
+      files: { high: { url: new URL('./textures/trees/tree-birch-twigs-high.ktx2', import.meta.url).href, w: 512, h: 512, bytes: 70264 },
+        medium: { url: new URL('./textures/trees/tree-birch-twigs-medium.ktx2', import.meta.url).href, w: 256, h: 256, bytes: 35639 },
+        low: { url: new URL('./textures/trees/tree-birch-twigs-low.ktx2', import.meta.url).href, w: 128, h: 128, bytes: 10449 } },
+      ultra: { colour: { url: new URL('./textures/trees/tree-birch-twigs-ultra.ktx2', import.meta.url).href, w: 1024, h: 1024, bytes: 160946 } },
+      made: { generator: 'twigs', ref: 'Poly Haven\'s sakura_bark', match: { mean: [123, 105, 88], contrast: 14 } } },
+    year: { bud: 85, full: 120, turn: 285, fall: 310, bare: 330, autumn: '#d9b23a' },
   },
 };

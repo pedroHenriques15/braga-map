@@ -206,7 +206,7 @@ export function map() {
     // No photograph is drawn (task 082), so no photographer to credit.
     photoCredits: [],
     groundKinds: KINDS.map((kind) => ({ kind, texture: SURFACES[kind] ?? null })),
-    treeKinds: m.treeKinds.map(({ kind, evergreen }) => ({ kind, evergreen, bark: TREES[kind]?.bark ?? null, leaves: TREES[kind]?.leaves ?? null })),
+    treeKinds: m.treeKinds.map(({ kind, evergreen }) => ({ kind, evergreen, bark: TREES[kind]?.bark ?? null, leaves: TREES[kind]?.leaves ?? null, twigs: TREES[kind]?.twigs ?? null, year: TREES[kind]?.year ?? null })),
     elev0: m.elev0,
     ext: m.ext,
     tile: m.tile,

@@ -464,9 +464,52 @@ export async function leafSprites(leaf, seed) {
   return out;
 }
 
+// ---- Twigs (task 093): a deciduous kind's crown when its leaves are down ----
+
+// A card of a kind's bare twigs, laid as its sprays of leaves are (task 019's), fanning up from the
+// card's foot over `fan` radians either side of the upright, `len` of the card long: `branches` from it,
+// each forking `depth` times (`forks` along each twig, from `from` of
+// the way up it), each fork shorter (`shorten`) and thinner, spreading `spread` degrees from its twig,
+// wandering (`wander`) and, the further out, hanging (`droop`: a birch's); each twig in a tone between
+// the two of `tones`, thinning to its tip, `width` its foot's share of the card; and a plane's seed
+// balls hanging from a share of its last twigs (`balls`). `S` pixels a side, as SVG.
+export function twigsSVG(p, S, r) {
+  const lines = [], rgb = (c) => `rgb(${c.map((v) => Math.max(0, Math.min(255, Math.round(v)))).join(',')})`, SEG = 6;
+  const grow = (x, y, a, len, w, level) => {
+    const c = rgb(mix3(p.tones[0], p.tones[1], r())), pts = [[x, y]];
+    for (let k = 1; k <= SEG; k++) {
+      a += (r() - 0.5) * (p.wander ?? 0.3) + (p.droop ?? 0) * level * Math.cos(a);
+      x += (Math.cos(a) * len) / SEG;
+      y += (Math.sin(a) * len) / SEG;
+      pts.push([x, y]);
+    }
+    for (let k = 1; k <= SEG; k++) {
+      const [x0, y0] = pts[k - 1], [x1, y1] = pts[k];
+      lines.push(`<line x1="${x0.toFixed(1)}" y1="${y0.toFixed(1)}" x2="${x1.toFixed(1)}" y2="${y1.toFixed(1)}" stroke="${c}" stroke-width="${Math.max(0.8, w * (1 - (0.45 * k) / SEG)).toFixed(2)}" stroke-linecap="round"/>`);
+    }
+    if (level === p.depth) {
+      if (p.balls && r() < p.balls) {
+        const d = S * 0.035;
+        lines.push(`<line x1="${x.toFixed(1)}" y1="${y.toFixed(1)}" x2="${x.toFixed(1)}" y2="${(y + d).toFixed(1)}" stroke="${c}" stroke-width="0.8"/><circle cx="${x.toFixed(1)}" cy="${(y + d).toFixed(1)}" r="${(S * 0.011).toFixed(1)}" fill="${rgb(p.tones[0].map((v) => v * 0.8))}"/>`);
+      }
+      return;
+    }
+    for (let f = 0; f < p.forks; f++) {
+      const at = Math.min(SEG, Math.round(SEG * (p.from + (1 - p.from) * ((f + r() * 0.8) / p.forks)))), side = (f + level) % 2 ? 1 : -1;
+      const [fx, fy] = pts[at], [px, py] = pts[at - 1], dir = Math.atan2(fy - py, fx - px);
+      grow(fx, fy, dir + (side * (p.spread[0] + r() * (p.spread[1] - p.spread[0])) * Math.PI) / 180, len * p.shorten * (0.8 + r() * 0.4), w * 0.62, level + 1);
+    }
+  };
+  for (let b = 0; b < p.branches; b++) {
+    const a = -Math.PI / 2 + (b / Math.max(1, p.branches - 1) - 0.5) * 2 * (p.fan ?? 1) + (r() - 0.5) * 0.25;
+    grow(S / 2 + (r() - 0.5) * S * 0.08, S * 0.96, a, S * (p.len ?? 0.45) * (0.9 + r() * 0.3), S * p.width, 0);
+  }
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="${S}" height="${S}">${lines.join('')}</svg>`;
+}
+
 // ---- What each recipe's `generator` names ----
 
-export const GENERATORS = { ground: Object.keys(GROUND), bark: Object.keys(BARK), leaves: ['spray'] };
+export const GENERATORS = { ground: Object.keys(GROUND), bark: Object.keys(BARK), leaves: ['spray'], twigs: ['twigs'] };
 
 // A kind of ground's or a bark's texture, n pixels a side: its bytes, RGB.
 export function make(kind, generator, n, params, seed) {

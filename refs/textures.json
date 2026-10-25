@@ -90,6 +90,16 @@
       "notes": "Broad, glossy green leaves, finely toothed, on fanning twigs: a street tree or an oak from a few metres off."
     },
     {
+      "id": "tree-broadleaf-twigs",
+      "kind": "twigs",
+      "tree": "broadleaf",
+      "generator": "twigs",
+      "twigs": { "fan": 0.9, "len": 0.4, "branches": 6, "depth": 3, "forks": 3, "from": 0.3, "shorten": 0.55, "spread": [25, 60], "wander": 0.45, "droop": 0.02, "width": 0.01, "tones": [[90, 80, 70], [120, 105, 90]] },
+      "ref": { "polyhaven": "chinese_hackberry_bark" },
+      "match": { "mean": [85, 71, 51], "contrast": 8.6 },
+      "notes": "Bare twigs, a street tree's in winter: grey-brown, forking every way from a few limbs, as the avenues' hackberries and the woods' oaks stand from December to April."
+    },
+    {
       "id": "tree-pine-bark",
       "kind": "bark",
       "tree": "pine",
@@ -178,6 +188,16 @@
       "notes": "A poplar's triangular leaves on long stalks, small and close along upright twigs."
     },
     {
+      "id": "tree-poplar-twigs",
+      "kind": "twigs",
+      "tree": "poplar",
+      "generator": "twigs",
+      "twigs": { "fan": 0.45, "len": 0.5, "branches": 6, "depth": 2, "forks": 4, "from": 0.2, "shorten": 0.55, "spread": [10, 30], "wander": 0.2, "droop": 0, "width": 0.01, "tones": [[110, 105, 95], [140, 130, 115]] },
+      "ref": { "polyhaven": "bark_willow" },
+      "match": { "mean": [66, 53, 42], "contrast": 9.3 },
+      "notes": "A poplar's or a willow's bare twigs: long, straight and held up close to the upright, grey."
+    },
+    {
       "id": "tree-palm-bark",
       "kind": "bark",
       "tree": "palm",
@@ -222,6 +242,16 @@
       "notes": "A plane's broad leaves, five-lobed."
     },
     {
+      "id": "tree-plane-twigs",
+      "kind": "twigs",
+      "tree": "plane",
+      "generator": "twigs",
+      "twigs": { "fan": 0.9, "len": 0.38, "branches": 5, "depth": 3, "forks": 3, "from": 0.3, "shorten": 0.55, "spread": [30, 60], "wander": 0.35, "droop": 0, "width": 0.012, "tones": [[120, 110, 95], [150, 140, 120]], "balls": 0.25 },
+      "ref": { "polyhaven": "japanese_zelkova_bark" },
+      "match": { "mean": [154, 132, 110], "contrast": 16.4 },
+      "notes": "A plane's bare twigs, zigzag and stout, grey-brown (its trunk's bark untoned: the twigs are darker than its pale patches), and its seed balls hanging on their stalks through the winter, as the Alameda do Fujacal's in February (facade-way-383776389)."
+    },
+    {
       "id": "tree-lime-bark",
       "kind": "bark",
       "tree": "lime",
@@ -244,6 +274,16 @@
       "notes": "Heart-shaped, toothed leaves, close and many: a lime's dense crown."
     },
     {
+      "id": "tree-lime-twigs",
+      "kind": "twigs",
+      "tree": "lime",
+      "generator": "twigs",
+      "twigs": { "fan": 0.9, "len": 0.4, "branches": 7, "depth": 3, "forks": 4, "from": 0.25, "shorten": 0.5, "spread": [25, 55], "wander": 0.5, "droop": 0.02, "width": 0.009, "tones": [[85, 55, 40], [110, 70, 50]] },
+      "ref": { "polyhaven": "bark_brown_02" },
+      "match": { "mean": [95, 86, 64], "contrast": 27.3 },
+      "notes": "A lime's bare twigs: dense, fine and zigzag, red-brown."
+    },
+    {
       "id": "tree-birch-bark",
       "kind": "bark",
       "tree": "birch",
@@ -264,6 +304,16 @@
       "ref": { "polyhaven": "tree_small_02", "file": "leaves_diff", "alpha": "leaves_alpha" },
       "match": { "mean": [98, 115, 56], "contrast": 20.9 },
       "notes": "Small diamond-shaped, double-toothed leaves along fine twigs hanging from the branch, as a weeping birch's."
+    },
+    {
+      "id": "tree-birch-twigs",
+      "kind": "twigs",
+      "tree": "birch",
+      "generator": "twigs",
+      "twigs": { "fan": 0.8, "len": 0.42, "branches": 7, "depth": 3, "forks": 4, "from": 0.2, "shorten": 0.6, "spread": [20, 45], "wander": 0.3, "droop": 0.12, "width": 0.007, "tones": [[70, 45, 40], [95, 60, 50]] },
+      "ref": { "polyhaven": "sakura_bark" },
+      "match": { "mean": [123, 105, 88], "contrast": 14 },
+      "notes": "A birch's bare twigs: fine, dark red-brown (a cherry's bark untoned, not its white trunk's) and hanging from the limbs."
     }
   ]
 }

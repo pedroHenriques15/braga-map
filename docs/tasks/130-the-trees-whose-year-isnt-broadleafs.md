@@ -8,7 +8,7 @@ depends-on: [093]
 roadmap: Ultra · Braga at its most real
 ---
 
-# 130 · The trees whose year isn't a broadleaf's: the evergreen broadleaves, the Judas trees, the acacias
+# 130 · The trees whose year isn't a broadleaf's: the Judas trees and the acacias
 
 ## Why
 
@@ -21,15 +21,14 @@ would go bare with them (worker-1, task 093, 2026-10-25).
 
 ## What
 
-1. New kinds in `tools/trees.mjs`'s `KINDS` for what's drawn differently through the year: an
-   evergreen broadleaf, the Judas tree and the acacia, each with its leaves and bark (`refs/textures.json`,
-   toned, as 070's three were) and its entry in `EVERGREEN`. The tiles hold a tree's kind in 4 bits
-   (16 kinds, 9 used): no change of format. Each species to its kind in `kindOf` (088's photos, the
+1. New kinds in `tools/trees.mjs`'s `KINDS` for what's drawn differently through the year: the Judas
+   tree and the acacia, each with its leaves and bark (`refs/textures.json`, toned, as 070's three were)
+   and its entry in `EVERGREEN`. The tiles hold a tree's kind in 4 bits (16 kinds, 10 used after 093):
+   no change of format. Each species to its kind in `kindOf` (088's photos, the
    acacia woods from COS2025's class).
 2. `npm run world`; a version.
 3. party-kart draws each new kind (its shape, as 070's three) on every level, and 093's year on Ultra:
-   the Judas trees in flower in spring, the acacias yellow in February and March, the evergreens in leaf
-   all year.
+   the Judas trees in flower in spring, the acacias yellow in February and March.
 4. Shoot at Ultra in March where they stand; measure the frame.
 
 ## Read first
@@ -39,10 +38,9 @@ would go bare with them (worker-1, task 093, 2026-10-25).
 
 ## Done when
 
-- [ ] The Judas trees, the evergreen broadleaves and the acacia woods are kinds of their own in the
-  tiles; `npm test` checks each species seen is its kind.
-- [ ] On Ultra at `?time=` in March, the acacias in flower and the Judas trees budding, the evergreens
-  in leaf, beside reference photos of that season; rated no lower.
+- [ ] The Judas trees and the acacia woods are kinds of their own in the tiles; `npm test` checks each species seen is its kind.
+- [ ] On Ultra at `?time=` in March, the acacias in flower and the Judas trees budding, beside
+  reference photos of that season; rated no lower.
 - [ ] `npm test` here, `npm test` and `npm run check` in party-kart pass.
 
 ## Notes
@@ -50,3 +48,8 @@ would go bare with them (worker-1, task 093, 2026-10-25).
 - Found by worker-1 in task 093 (2026-10-25), drafted by the coordinator. worker-1 proposed carrying a
   tree's species into the tiles (a format change); the kind field's 7 free values do it without one, as
   decision 070's "a kind is a look to draw" has it.
+- Narrowed 2026-10-25 (the coordinator, decided by the session for the owner to confirm): the
+  evergreen broadleaf moved into 093, which needed it (with every broadleaf deciduous the hills went
+  bare in March, where `picoto-top`'s and `falperra`'s photos are green). It's broadleaf's look kept in
+  leaf, given to the unnamed broadleaves on COS2025's green spaces, woods and scrub and to the named
+  evergreen ones; 130 keeps the Judas trees and the acacias.

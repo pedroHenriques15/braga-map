@@ -184,7 +184,7 @@ the wind, the deciduous kinds' limbs within 150 m, the far ones still billboards
 - **128** On Ultra, the far trees as impostors baked from each kind's near tree (found by 089).
 - **129** On Ultra, the near trees' shadows for less: cheaper crowns in the near cascades (found by
   089).
-- **130** The evergreen broadleaves, the Judas trees and the acacias as kinds of their own, for their
+- **130** The Judas trees and the acacias as kinds of their own, for their
   year on Ultra (found by 093).
 - **099** The whole map at the open world's detail, the open world grown over it (after 038). Held by
   the owner (2026-10-24): not done for now, for its cost (its Notes).

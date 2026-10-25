@@ -49,8 +49,8 @@ its ridge's direction, pitch, eaves and ridge heights and parts where the roof s
   (`node tools/planes.mjs --shooter`: over its 517 measured roofs, 0.28 m against the shapes' 0.45; the
   pitched ones 0.41 against 0.78).
 - [x] `npm test` here, `npm test` and `npm run check` in party-kart pass; the cost in the budget (here
-  166 of 166, four files at a time; party-kart's 164 of 164, four at a time (its rule since 2026-10-25),
-  and `tsc` clean; the cost in Notes).
+  168 of 168, four files at a time, on main's 1.43.0; party-kart's 165 of 165, four at a time (the
+  workers' rule since 2026-10-25), and `tsc` clean; the cost in Notes).
 
 ## Out of scope
 
@@ -91,42 +91,53 @@ its ridge's direction, pitch, eaves and ridge heights and parts where the roof s
   Forum's hall keeps its shape, its α under its wall's top, and nothing round the Estádio 1.º de Maio's
   stands rises past its shape (a test).
 - **The tiles:** each roof's planes, groups, blocks and overhang in a part of the tile's 16-bit numbers
-  (`roofs`; `index.js` gives a building `planes`, `groups`, `blocks` and `overhang`): 15,683 KB in all
-  against 1.42.0's 14,684, 7% more (in the header's JSON it was 18%).
+  (`roofs`; `index.js` gives a building `planes`, `groups`, `blocks` and `overhang`): 15,733 KB of
+  files against 1.43.0's 14,340 KB (as 1.42.0's), 9.7% more; in the tiles' JSON headers it was about
+  twice that. A plane is written with its slopes to a thousandth and its height taken at its part's
+  middle after them: at first its height was taken at the map's origin, so a thousandth's rounding moved
+  a roof by up to 65 cm 1.3 km out (2.4 m at the map's east edge). The fit and its checks were made
+  before the rounding and missed it; the first rounds were drawn with it (bom-jesus's white house below).
+  A test now writes an L 4 km out, turned, and finds its planes as true as at its middle.
 - **party-kart** (`src/render/roofs.ts`, `src/render/city.ts`), on Ultra only: a building's roof is its
   own planes where the map has them (not over a room's stairs), each group's faces where it's the
   highest; the eaves out as far as the overhang measured (0.4 m where it isn't); a flat roof's deck
   inside its parapet; what stands on it as boxes, their sides the walls' colour and their tops the
   roof's. High and Low draw today's shapes.
-- **Shots** (Ultra, High and Low; before on main's party-kart, 8ee2879 on braga-map 1.42.0 by `npm ci`,
-  in a worktree of its own; after on 087's; `party-kart\shots\` 2026-10-25-before087 and
-  2026-10-25-after087): the four the Done when names, and lobato-crossing and fujacal-west. High and
-  Low are the same to the pixel in all six. On Ultra:
-  - picoto-top (7.0% of the pixels): the low building on the left loses the big dark hipped roof the
+- **Shots** (Ultra, High and Low): before on main's party-kart (cf1806f, braga-map 1.43.0 by `npm ci`,
+  in a worktree of its own), after on 087's rebased on it; `party-kart\shots\` 2026-10-25-before087b
+  and 2026-10-25-after087b. The six views: the four the Done when names, and lobato-crossing and
+  fujacal-west. (The first rounds, before087 and after087 on 1.42.0, were drawn with the planes' fault
+  above.) High and Low are the same to the pixel in all six. On Ultra:
+  - picoto-top (7.3% of the pixels): the low building on the left loses the big dark hipped roof the
     shape gave it; its points have it near flat, as its photo does, a deck behind its walls.
-  - monte-da-forca (1.6%): the building on the left has a flat roof behind a parapet where it had a
-    pitched one; the orange-roofed house's hips are steeper, as its points have them.
-  - bom-jesus (2.6%): the white house on the left shows a gable end to the street where the shape
-    gave it a hip. Its points (2025) and the orthophoto have its ridge along the row, its planes
-    meeting its neighbours'; its 2019 photo seems to show a hip.
-  - sameiro (0.2%): a far building's roof, barely.
-  - lobato-crossing (1.4%): a lift room on the big block's roof.
-  - fujacal-west (1.2%): the grey pitched roof behind the trees is flat with boxes on it, as its photo
-    shows it.
+  - monte-da-forca (2.4%): the two buildings on the left stand as their points have them (within 10 to
+    20 cm along their walls): the nearer gabled at its ends, its walls 0.5 to 1 m over the shape's
+    eaves; the orange-roofed house's hips steeper.
+  - bom-jesus (3.6%): the white house on the left (178311165). Its end toward the camera (10 m wide) is
+    hipped in its points: along the ridge's line they stand 3.0 m over its eaves 6 m in, then 2.6, 2.2,
+    1.8, 1.4, 1.0 m every metre after, and 0.7 m at the wall. Its planes have that hip, the wall's top
+    0.3 to 0.5 m over the eaves. Its ridge is off-centre, 3.5 m from the long side toward the camera
+    (24 m) and 8.5 m from the other: across the house the points rise from −0.6 m at the far side's
+    eaves to 2.9 m and fall to 1.3 m within 25 cm of the near side. So that side stands 0.9 to 1.2 m
+    over the shape's eaves, where the shape had it level with the others. The first round's planes were
+    0.7 m off it (the fault), and that side stood 1.7 to 2.0 m up, which read as a gable.
+  - sameiro (1.0%): far buildings' roofs, a hip moved and some roofs as their points.
+  - lobato-crossing (1.9%): a lift room on the big block's roof.
+  - fujacal-west (2.9%): the grey pyramid of a roof behind the trees is flat with boxes on it, as its
+    photo shows it.
   - The four named views are from the street: they show roofs from below, a valley or a chimney little.
-  - The first run's walls raised at monte-da-forca and bom-jesus are gone (the checks above). The 20 m
-    cap on blocks came after a first after round and changes none of the six views by a pixel.
-- **Budget** (Ultra; High and Low unchanged): the same draw calls (lobato-crossing's one fewer) and
-  textures (462 MB). The triangles are 4% to 7% more: picoto-top 13.18 to 13.78 M, sameiro 11.56 to
-  12.06 M, lobato-crossing 9.37 to 10.00 M, bom-jesus 7.82 to 8.16 M. The frame is 0.02 to 0.6 ms
-  longer (lobato-crossing 4.81 to 5.43 ms; High's frames moved as much with nothing changed). The
-  download: the tiles 7% more.
+  - The 20 m cap on blocks came after a first after round and changed none of the six views by a pixel.
+- **Budget** (Ultra; High and Low unchanged), against 1.43.0: the same draw calls (lobato-crossing's
+  one fewer) and textures (462 MB). The triangles are 3.6% to 6.2% more: picoto-top 14.02 to 14.63 M,
+  sameiro 12.62 to 13.13 M, lobato-crossing 10.44 to 11.09 M, bom-jesus 9.58 to 9.92 M. The frame is
+  within 0.2 ms (picoto-top 7.13 to 7.31 ms; Low's monte-da-forca moved 1.3 ms with nothing changed).
+  The download: the tiles 9.7% more.
 - **Decided by the session, for the owner to confirm:**
   - On Ultra only: High keeps today's cost and look.
   - The thresholds above.
-  - The bom-jesus house's gable stays as its points have it.
-- **Left:** solar panels (What 2) and gutters (What 3) aren't made here.
+  - bom-jesus's white house as its points have it, its near side's eaves over the far side's.
+- **Left:** solar panels (What 2) and gutters (What 3), drafted as task 134 by the coordinator.
 - **Found on the way:** with 28 cores, braga-map's `npm test` runs 27 test files at once, each loading
   the world. Once, after the rebuild, it hung: a test's process at 2.4 GB for nearly three hours. Four
-  at a time (`node --test --test-concurrency=4`), it passes, 166 tests in 75 s. Most likely the memory, as in
-  party-kart's; not shown.
+  at a time (`node --test --test-concurrency=4`), it passes, 168 tests in 74 s. Most likely the memory, as
+  in party-kart's; not shown. The workers' rule 19 now runs braga-map's tests four at a time too.

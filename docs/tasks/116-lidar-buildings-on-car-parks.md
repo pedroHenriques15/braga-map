@@ -76,9 +76,10 @@ too wide for.
 - **The result:**
   - Of the 107 on car parks, 47 are gone: 32 tents, 11 pieces of the solar canopies, 2 flat awnings
     and 2 pieces at a tent's end. 59 are left: 34 under 4.6 m (82 before), 7 in the open area (13).
-  - Kept that are canopies: a long thin row of tents at (408, -974); two the map's car park doesn't
-    take in by their middle, (2063, 420) and (1852, 915); a flat dark solar canopy at (-265, -1818);
-    a row of vans; and six small pieces of tents, measured otherwise than the rule needs.
+  - Kept that are canopies: a long thin row of tents at (408, -974); one the map's car park doesn't
+    take in by its middle, (2063, 420); another at (1852, 915); a flat dark solar canopy at (-265,
+    -1818); a row of vans; and six small pieces of tents. The rule measures these otherwise than my
+    look did.
   - `test/roofs.test.js`: made-up canopies and not. `test/footprints.test.js`: at most 40 under
     4.6 m on a car park (34). npm test 165/165.
 - **The viewpoints:** none sees one. Two have one inside their view's angle, far off:

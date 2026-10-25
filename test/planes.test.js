@@ -4,7 +4,7 @@
 // carry them to a game.
 import assert from 'node:assert/strict';
 import { test } from 'node:test';
-import { loadWorld } from '../index.js';
+import { loadWorld, map } from '../index.js';
 import { planesOf, roofHeight, shapeHeight } from '../tools/planes.mjs';
 import { SHOOTER_BOX } from '../tools/sections.mjs';
 
@@ -65,4 +65,27 @@ test('the tiles carry the roofs of their own planes to a game, each a roof over 
   const blocks = world.buildings.flatMap((b) => b.blocks ?? []);
   assert.ok(blocks.length >= 100, `${blocks.length} blocks`);
   for (const q of blocks) assert.ok(q.l > 0 && q.w > 0 && q.l < 25 && Math.abs(Math.hypot(q.ux, q.uz) - 1) < 1e-6);
+});
+
+test('the Altice Forum and the Estádio 1.º de Maio keep their sights', async () => {
+  const { sights } = map();
+  const top = (b, x, z) => (b.planes ? roofHeight(b.planes.map((p) => ({ c: p.c, ga: p.gx, gb: p.gz })), b.groups, x, z) : b.h);
+  const toWall = (b, x, z) => Math.min(...b.pts.map(([ax, az], i) => {
+    const [bx, bz] = b.pts[(i + 1) % b.pts.length], vx = bx - ax, vz = bz - az, t = Math.max(0, Math.min(1, ((x - ax) * vx + (z - az) * vz) / (vx * vx + vz * vz)));
+    return Math.hypot(x - ax - t * vx, z - az - t * vz);
+  }));
+  // The α, 6 m high, on the Forum's hall's west face: the wall over it as high as ever.
+  const a = sights.find((s) => s.kind === 'altice');
+  const near = await loadWorld({ x0: a.x - 80, x1: a.x + 80, z0: a.z - 80, z1: a.z + 80 });
+  const hall = near.buildings.find((b) => toWall(b, a.x, a.z) < 1 && b.h > 10);
+  assert.ok(hall, 'no hall under the α');
+  assert.ok(top(hall, a.x, a.z) > a.h + 3, `the hall's wall ${top(hall, a.x, a.z).toFixed(1)} m high, the α's top ${a.h + 3} m`);
+  // The stadium's stands are measured as its own (tools/sights.mjs); nothing round them rises past its
+  // shape for its points.
+  const s = sights.find((q) => q.kind === 'stadium');
+  const round = await loadWorld({ x0: s.x - 130, x1: s.x + 130, z0: s.z - 130, z1: s.z + 130 });
+  for (const b of round.buildings.filter((b) => b.pts.some(([x, z]) => Math.hypot(x - s.x, z - s.z) < 130))) {
+    for (const [x, z] of b.pts) assert.ok(top(b, x, z) <= b.ridge + 1, `a roof ${top(b, x, z).toFixed(1)} m up over one ${b.ridge.toFixed(1)} m high`);
+    for (const q of b.blocks ?? []) assert.ok(q.top <= b.ridge + 4, `a block to ${q.top} m on a roof ${b.ridge.toFixed(1)} m high`);
+  }
 });

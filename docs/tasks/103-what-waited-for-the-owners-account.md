@@ -309,8 +309,8 @@ picks it up can go on from here.
     the bare trees' twigs take no sun's sheen (it made them white, pink in the warm light) and their
     dither is resolved: dark lattices close up, a grey-brown mass far off. Its round (33 at Ultra
     against `after093`, which stood for main's: its world unchanged since): no mark moved; High and
-    Low 0 pixels. Found: 135, the pollarded avenue trees. Not verified: a fine hatch far off at
-    1:1 (`estadio`'s band), judged as met.
+    Low 0 pixels. Found: 135, the pollarded avenue trees. Left: a fine hatch far off at 1:1
+    (`estadio`'s band), judged by the coordinator as meeting its "no stipple". Not verified: Medium.
   - **Memory ran critically low at 14:2x on 2026-10-25** (a party-kart `npm test`, 11 or more processes
     of 0.6-0.8 GB, beside 093's shots): Claude Code stopped the coordinator's watcher and worker-3's
     wait for the lock, and 044 paused until 16:38. The workers' brief since: party-kart's tests four

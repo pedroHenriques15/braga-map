@@ -262,7 +262,9 @@ picks it up can go on from here.
     `b99b4cf`, pinned to v1.41.0. A flight of steps meets the street, the pavement or the path at its
     height, its treads snapped together: a kart goes up 131 of 140 flights from their foot (112 before),
     173 of 180 in party-kart; the walker climbs the 47 steps without falling into a crack. Its round (4
-    places at Ultra): no mark moved, `travessa-fujacal`'s lowest step no longer a plinth.
+    places at Ultra): no mark moved, `travessa-fujacal`'s lowest step no longer a plinth. Its shots saw
+    the last build (worker-3: `node_modules/braga-map` installed afresh at 12:47, the shots from 12:50;
+    `scripts/shots.mjs` bundles Vite's deps again on every run, `optimizeDeps.force`).
   - **127** (worker-3): landed braga-map `321d1f8` (decision 079), no version. A round goes up at the
     level it's judged at: `tools/round.mjs` takes `--level`, Ultra by default for a round shot with it,
     and records it in `refs/rounds.json` (the 23 rounds there say `high`); the scorecard says a round's

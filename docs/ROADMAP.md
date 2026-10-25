@@ -160,11 +160,12 @@ and each facade's doors and windows where its photo has them, for the 16 street 
 area a photo shows clearly enough, read straight on by sessions, the rest in their kind's rhythm (086,
 decision 080); and on Ultra the trees in their season by the date, each deciduous kind bare, budding,
 in leaf, turning and falling in its own year, the broadleaves that keep their leaves a tenth kind (093,
-decision 081).
+decision 081); and on Ultra each measured roof as its points have it where they fit it better than its
+shape, its ridges, hips and valleys, what stands on it as boxes and its overhang measured (087, decision
+082).
 
 - **083** The ground at 50 cm over the whole map, finest near the player (after 038).
 - **084** On Ultra, the streets on the land's own triangles (after 083).
-- **087** Roofs as the point cloud has them: every plane, chimney, dormer and terrace.
 - **091** Each viewpoint shot at its photo's hour and weather (blocked: it changes decision 037).
 - **092** Night: the lamps lighting the streets, the windows lit, Bom Jesus floodlit.
 - **094** Life in the streets: traffic, the TUB's buses, people (after 020).

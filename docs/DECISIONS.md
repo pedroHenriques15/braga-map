@@ -2356,3 +2356,30 @@ avenues' planes and limes are bare. Since task 093:
 What it costs, on Ultra at 2560 by 1440 on 13 March: 0.1–0.8 ms a frame (`falperra` 10.6 ms against 10.0),
 the gathers as they were; at 720 pixels high, 11 more draw calls and about 0.9 M more triangles (median).
 The twigs download 7 to 162 KB a file, Ultra's 87 to 162 KB.
+
+## 082 · On Ultra a roof is its own planes where its points fit them better than its shape
+
+*2026-10-25 · task 087 · decided by the session with the coordinator, for the owner to confirm (task 103) · adds to decisions 025, 038 and 069*
+
+Every measured roof was one of four shapes (flat, gabled, hipped, one slope) over its footprint's
+rectangle. Since task 087:
+
+- **Its own planes** (`tools/planes.mjs`, into `.cache/planes.json`, then the tiles' `roofs`): each
+  measured part's 50 cm cells cut into the planes they lie on, and the roof built back as the
+  highest of a few groups' lowest plane. A group's planes meet in its ridges and hips, and two
+  groups' in a valley (an L's, a T's, a mansard). Over the shooter's area's 517 roofs, the median
+  misfit is 0.28 m against the shapes' 0.45, and 0.41 against 0.78 for the pitched ones. Of the
+  map's 34,163 parts, 13,972 take them.
+- **The shape stays** where the planes fit no better. It also stays where they'd stand past the
+  part's points or under a metre over its ground, or would raise its walls over the points within a
+  metre inside them.
+- **What stands on a roof**, more than 40 cm over it, is a box at its measured size: a chimney, a
+  dormer, a lift's room, a water tank (42,033 of them). The eaves overhang as far as the points
+  reach past the walls.
+- **On Ultra only:** High, Medium and Low draw the shapes as before, to the pixel.
+- **A plane is written true at its part's middle,** its slopes to a thousandth. Taken at the map's
+  origin, that rounding moved a roof by up to 65 cm 1.3 km out; a test writes one 4 km out.
+- **Left for a task of its own:** the solar panels and the gutters (task 134).
+
+What it costs on Ultra, at 720 pixels high: the same draw calls and textures, 3.6% to 6.2% more
+triangles, the frame within 0.2 ms. The tiles download 9.7% more (15,733 KB against 14,340).

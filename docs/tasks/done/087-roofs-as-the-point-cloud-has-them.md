@@ -1,5 +1,5 @@
 ---
-status: doing
+status: done
 priority: medium
 kind: code
 repo: both
@@ -43,8 +43,11 @@ its ridge's direction, pitch, eaves and ridge heights and parts where the roof s
 
 ## Done when
 
-- [ ] From `picoto-top`, `monte-da-forca`, `bom-jesus` and `sameiro`, the roofs show their valleys,
-  chimneys and terraces on Ultra, rated no lower.
+- [x] From `picoto-top`, `monte-da-forca`, `bom-jesus` and `sameiro`, the roofs show their valleys,
+  chimneys and terraces on Ultra, rated no lower (the round `2026-10-25-after087b` against
+  `2026-10-25-before087b`, both on 1.43.0, with `lobato-crossing` and `fujacal-west`, at Ultra: no mark
+  moved, mean 2.64, the coordinator's marks, `.cache/scorecard/marks/2026-10-25-after087b.json`; the
+  views are from the street, so they show roofs from below and a valley or a chimney little).
 - [x] The fit's median residual over the shooter's area's roofs is lower than today's shapes'
   (`node tools/planes.mjs --shooter`: over its 517 measured roofs, 0.28 m against the shapes' 0.45; the
   pitched ones 0.41 against 0.78).

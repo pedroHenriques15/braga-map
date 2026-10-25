@@ -239,6 +239,18 @@ export interface Facade {
   balconies: 'none' | 'french' | 'projecting' | 'continuous' | 'enclosed' | 'recessed';
   shutters: string | null;
   seen: boolean;
+  // Where its doors and windows are (task 086), on the walls a photo showed clearly: for each side of
+  // its outline (pts[k] to pts[k + 1]), null where none was read, else each storey's openings (the ground
+  // floor's first), null for a storey the photo didn't show across the wall. A side without one, or a
+  // storey null, has its kind's windows in their rhythm, as every facade has.
+  layout?: ((FacadeOpening[] | null)[] | null)[];
+}
+// A door or window in a facade (task 086): what it is, its near edge's metres along its side of the
+// outline from pts[k], and its width. A balcony's is a door or a full-height window onto a balcony.
+export interface FacadeOpening {
+  kind: 'window' | 'door' | 'garage' | 'shop' | 'balcony';
+  at: number;
+  w: number;
 }
 // A kind of building's real proportions, in metres: a storey's height, the ground floor's, a window's
 // width and height, its sill over its floor, a window's spacing along a wall (middle to middle), and

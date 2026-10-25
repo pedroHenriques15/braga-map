@@ -38,7 +38,7 @@ import { packFurniture } from './furniture.mjs';
 import { roadsOf } from './roads.mjs';
 import { EVERGREEN as TREE_EVERGREEN, KINDS as TREE_KINDS, osmKind, TREES } from './trees.mjs';
 import { PLATE, platesOf } from './plates.mjs';
-import { BALCONIES, BALCONY, COLOUR, COLOURS, floorsOf, GROUND, GROUND_OF, guesser, MATERIAL, MATERIALS, TYPE, TYPES } from './facades.mjs';
+import { BALCONIES, BALCONY, COLOUR, COLOURS, floorsOf, GROUND, GROUND_OF, guesser, layoutOnRing, MATERIAL, MATERIALS, OPENING, OPENINGS, TYPE, TYPES } from './facades.mjs';
 
 // The streets on their carriageways where the LiDAR measured them (lines.mjs's onCarriageways, task 026),
 // and the paths that end on them with them.
@@ -57,7 +57,7 @@ const places = fs.existsSync(path.join(CACHE, 'places.json')) ? readCache('place
 const ground = await terrain();
 const inExt = (x, z, m = 0) => x >= EXT.x0 - m && x <= EXT.x1 + m && z >= EXT.z0 - m && z <= EXT.z1 + m;
 
-const tiles = new Map(allTiles().map(([i, j]) => [tileId(i, j), { id: tileId(i, j), box: tileBox(i, j), areas: [], lines: [], buildings: [], trees: [], streets: [], paths: [], rails: [], walls: [], furniture: [], signs: [], names: [], nameAt: new Map(), stops: [], plates: [], roads: [], turns: [] }]));
+const tiles = new Map(allTiles().map(([i, j]) => [tileId(i, j), { id: tileId(i, j), box: tileBox(i, j), areas: [], lines: [], buildings: [], layouts: [], trees: [], streets: [], paths: [], rails: [], walls: [], furniture: [], signs: [], names: [], nameAt: new Map(), stops: [], plates: [], roads: [], turns: [] }]));
 const tileAt = (x, z) => tiles.get(tileId(...tileOf(x, z)));
 const tilesOver = (b, m = 0) => [...tiles.values()].filter((t) => overlaps(t.box, b, m));
 
@@ -379,7 +379,7 @@ const faceOf = (name, facts) => {
   const e = seenFaces[name];
   if (!e?.seen) return { ...guessFace(name, facts), floors: null, seen: false };
   const g = guessFace(name, { ...facts, type: e.type ?? undefined });
-  return { type: e.type ?? g.type, colour: e.colour ?? g.colour, material: e.material ?? g.material, ground: e.ground ?? g.ground, base: e.base ?? null, balconies: e.balconies ?? g.balconies, shutters: e.shutters ?? g.shutters, floors: e.floors ?? null, seen: true };
+  return { type: e.type ?? g.type, colour: e.colour ?? g.colour, material: e.material ?? g.material, ground: e.ground ?? g.ground, base: e.base ?? null, balconies: e.balconies ?? g.balconies, shutters: e.shutters ?? g.shutters, floors: e.floors ?? null, seen: true, layout: e.layout ?? null };
 };
 // The shops, cafés, banks and offices with a name (fetch.mjs's `shops`), for their buildings' ground
 // floors and signs.
@@ -418,11 +418,20 @@ const putBuilding = (ring, cx, cz, b) => {
   const face = TYPE[f.type] | (MATERIAL[f.material] << 4) | (GROUND_OF[f.ground] << 8) | (BALCONY[f.balconies] << 11) | (f.seen ? 1 << 14 : 0);
   const colours = COLOUR[f.colour] | ((f.shutters === 'none' ? NONE : COLOUR[f.shutters]) << 6);
   const baseOf = f.base ? COLOUR[f.base.colour] | (MATERIAL[f.base.material] << 6) : NONE;
-  tileAt(cx, cz).buildings.push([ring.length, what, roof, dm(b.h), b.y, Math.max(0, dm(b.ridge - b.h)), ...packPts(ring), face, colours, baseOf | (floors << 10)]);
+  const row = [ring.length, what, roof, dm(b.h), b.y, Math.max(0, dm(b.ridge - b.h)), ...packPts(ring), face, colours, baseOf | (floors << 10)], t = tileAt(cx, cz);
+  t.buildings.push(row);
+  // Where its doors and windows are on the walls a photo showed (task 086): on each side of its ring a
+  // wall read runs along, the side's openings, each storey's [kind, its near edge, its width] (in OPENINGS,
+  // decimetres), null for a storey not read; by its row once the tile's rows are in order (packBuildings).
+  // The ring as a game reads it back: its points at the half metres packPts keeps them at.
+  const sides = f.layout ? layoutOnRing(f.layout, ring.map(([x, z]) => [Math.round(x * 2) / 2, Math.round(z * 2) / 2])) : null;
+  if (sides) sides.forEach((st, k) => st && t.layouts.push([row, k, st.map((o) => o && o.flatMap(([kind, at, w]) => [OPENING[kind], dm(at), dm(w)]))]));
 };
+// The tile's rows in the order they're packed: in rows 20 m deep, west to east.
+const rowOrder = (list) => [...list].sort((a, b) => Math.floor(a[7] / 40) - Math.floor(b[7] / 40) || a[6] - b[6]);
 const packBuildings = (list) => {
   let x = 0, z = 0, y = 0;
-  return [...list].sort((a, b) => Math.floor(a[7] / 40) - Math.floor(b[7] / 40) || a[6] - b[6]).flatMap((r) => {
+  return rowOrder(list).flatMap((r) => {
     const out = [...r];
     out[4] -= y, out[6] -= x, out[7] -= z;
     if (r[0] === 4) out[12] += r[8], out[13] += r[9];
@@ -1231,6 +1240,11 @@ for (const t of tiles.values()) {
   p.part('areas', t.areas);
   p.part('lines', t.lines);
   p.part('buildings', packBuildings(t.buildings));
+  // The layouts, each [its building's place in the tile's buildings, its side, its storeys] (putBuilding).
+  if (t.layouts.length) {
+    const at = new Map(rowOrder(t.buildings).map((r, k) => [r, k]));
+    p.part('layouts', [], { list: t.layouts.map(([row, k, st]) => [at.get(row), k, st]) });
+  }
   p.part('trees', t.trees);
   if (t.streets.length) p.part('streets', t.streets);
   if (t.paths.length) p.part('paths', t.paths);
@@ -1268,7 +1282,7 @@ out.header.meta = {
   treeKinds: TREE_KINDS.map((kind) => ({ kind, evergreen: TREE_EVERGREEN.has(kind) })),
   storey: [STOREY, BASE],
   plate: [PLATE.w, PLATE.h],
-  facades: { types: TYPES, colours: COLOURS, materials: MATERIALS, ground: GROUND, balconies: BALCONIES },
+  facades: { types: TYPES, colours: COLOURS, materials: MATERIALS, ground: GROUND, balconies: BALCONIES, openings: OPENINGS },
   landmarks,
   sights,
   open: { pts: OPEN, gates, tiles: OPEN_TILES, seen: OPEN_SEEN },

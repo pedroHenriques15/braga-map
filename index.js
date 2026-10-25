@@ -329,6 +329,7 @@ export async function loadWorld(area) {
     // its last less where the other three would put it.
     const B = head.buildings;
     const F = facades;
+    const first = buildings.length;
     let y = 0;
     let x0 = 0;
     let z0 = 0;
@@ -382,6 +383,18 @@ export async function loadWorld(area) {
         pts,
       });
       i = j + 3;
+    }
+    // Where a seen building's doors and windows are (task 086): [its place among the tile's buildings, its
+    // side, its storeys] each, in the header, each storey null or [kind, near edge, width] each in decimetres.
+    for (const [k, side, storeys] of head.layouts?.list ?? []) {
+      const b = buildings[first + k];
+      b.facade.layout ??= b.pts.map(() => null);
+      b.facade.layout[side] = storeys.map((st) => {
+        if (!st) return null;
+        const out = [];
+        for (let q = 0; q < st.length; q += 3) out.push({ kind: F.openings[st[q]], at: st[q + 1] / 10, w: st[q + 2] / 10 });
+        return out;
+      });
     }
     // The shops' signs: [x0, z0, x1, z1, y, h, colour, text] each, in the header.
     for (const [x0, z0, x1, z1, sy, sh, c, text] of head.signs?.list ?? []) signs.push({ text, colour: F.colours[c][0], from: [x0, z0], to: [x1, z1], y: sy, h: sh });

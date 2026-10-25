@@ -99,7 +99,7 @@ export function photoCamera(photo, heading, pitch, roll, fov, aspect, height, ey
 const ray = (c, a, b) => unit([0, 1, 2].map((k) => c.f[k] + a * c.tx * c.r[k] + b * c.ty * c.d[k]));
 
 // Where a ray from o along d first meets a part (a prism from its ground y0 to its top y1), or Infinity.
-function hitPart(o, d, p) {
+export function hitPart(o, d, p) {
   let best = Infinity;
   const pts = p.pts;
   for (let k = 0; k < pts.length; k++) {

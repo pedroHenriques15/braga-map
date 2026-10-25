@@ -87,6 +87,42 @@ export const GROUND_OF = Object.fromEntries(GROUND.map((g, k) => [g, k]));
 export const BALCONIES = ['none', 'french', 'projecting', 'continuous', 'enclosed', 'recessed'];
 export const BALCONY = Object.fromEntries(BALCONIES.map((b, k) => [b, k]));
 
+// What an opening in a facade is (task 086's layouts): a window, a door into the building, a garage's
+// door, a shop's window or glazed front, a door or a full-height window onto a balcony.
+export const OPENINGS = ['window', 'door', 'garage', 'shop', 'balcony'];
+export const OPENING = Object.fromEntries(OPENINGS.map((o, k) => [o, k]));
+
+// A building's layout (refs/buildings.json's `layout`: each wall read, by its ends `from` and `to`, left to
+// right seen from outside, and each storey's openings [kind, its left edge's metres from `from`, its
+// width]) on each side of a ring of its outline (a part's, as the world packs it): for each side k, from
+// ring[k] to ring[k + 1], null where no wall read runs along it (within 12° and a metre of its line, over
+// a metre of it), else each storey's openings on it (null for a storey not read), each [kind, its near
+// edge's metres from ring[k], its width], an opening on the side if its middle is.
+export function layoutOnRing(layout, ring) {
+  const n = ring.length, out = new Array(n).fill(null);
+  for (let k = 0; k < n; k++) {
+    const a = ring[k], b = ring[(k + 1) % n], L = Math.hypot(b[0] - a[0], b[1] - a[1]);
+    if (L < 1) continue;
+    for (const w of layout) {
+      const WL = Math.hypot(w.to[0] - w.from[0], w.to[1] - w.from[1]), ux = (w.to[0] - w.from[0]) / WL, uz = (w.to[1] - w.from[1]) / WL;
+      // Along the wall from `from`, and off its line, of each end of the side.
+      const along = (p) => (p[0] - w.from[0]) * ux + (p[1] - w.from[1]) * uz, off = (p) => Math.abs((p[0] - w.from[0]) * uz - (p[1] - w.from[1]) * ux);
+      const cos = Math.abs(((b[0] - a[0]) * ux + (b[1] - a[1]) * uz) / L);
+      if (cos < Math.cos((12 * Math.PI) / 180) || off(a) > 1 || off(b) > 1) continue;
+      const sa = along(a), sb = along(b), lo = Math.max(0, Math.min(sa, sb)), hi = Math.min(WL, Math.max(sa, sb));
+      if (hi - lo < 1) continue;
+      // The side runs with the wall (sa < sb) or against it.
+      const fwd = sb > sa;
+      out[k] = w.storeys.map((st) => st && st.filter(([, at, ow]) => { const m = at + ow / 2; return m >= lo && m <= hi; }).map(([kind, at, ow]) => {
+        const near = fwd ? at - sa : sa - (at + ow), r = Math.round;
+        return [kind, r(Math.max(0, Math.min(L - ow, near)) * 10) / 10, ow];
+      }));
+      break;
+    }
+  }
+  return out.some(Boolean) ? out : null;
+}
+
 // How many storeys a building of a kind has, from its eaves' height over its ground: its ground floor,
 // then its storeys, and 0.6 m more (a parapet, the slab on top).
 export const floorsOf = (type, eaves) => {

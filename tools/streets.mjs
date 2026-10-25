@@ -1100,10 +1100,13 @@ export function streetSurfaces({ lines, heights = new Map(), elev0 = 0, height =
       const laid = (cut, y) => cut.map(([c, pieces]) => [c, pieces.map((piece) => piece.map((r) => follow(r, y)))]);
       const flush = groundOut.filter((pc) => pc.raised).map((pc) => [pc, laid(cutTo(shapes(pc.paths)), pys)]);
       const beside = pieceKinds.map(([ps, props]) => [laid(cutTo(shapes(ps)), props.kind === 'pavement' ? pys : rys), props, props.kind === 'pavement' ? pys : rys]);
-      const snap = putCarriageways([...flush, ...beside].flatMap(([, cut]) => cut.flatMap(([, pieces]) => pieces.flat())));
-      addPaths(groundOut.filter((pc) => !pc.raised));
-      for (const [pc, cut] of flush) {
-        addCut('paths', cut, { kind: pc.kind, surface: pc.surface, level: pc.level, raised: true }, pys, snap, 0.25);
+      // The other paths on the ground or under something too (a passage's floor meets the street where
+      // it comes out), but the flights, snapped among themselves (addPaths).
+      const rest = groundOut.filter((pc) => !pc.raised && pc.kind !== 'steps').map((pc) => [pc, cutTo(shapes(pc.paths))]);
+      const snap = putCarriageways([...flush, ...rest].map(([, cut]) => cut).concat(beside.map(([cut]) => cut)).flatMap((cut) => cut.flatMap(([, pieces]) => pieces.flat())));
+      addPaths(groundOut.filter((pc) => !pc.raised && pc.kind === 'steps'));
+      for (const [pc, cut] of [...flush, ...rest]) {
+        addCut('paths', cut, { kind: pc.kind, surface: pc.surface, level: pc.level, raised: pc.raised }, pc.raised ? pys : pc.ys ?? null, snap, 0.25);
         stats.paths.m2[pc.kind] = (stats.paths.m2[pc.kind] ?? 0) + area(meet(pc.paths, boxPath));
       }
       for (const [cut, props, y] of beside) addCut('pavements', cut, props, y, snap, 0.25);
@@ -1248,47 +1251,77 @@ function segments(lines, cell = 10, tags = null) {
 // A ground pavement's heights (task 044), from the kerbs' runs [{ pts, h }] round it: at each point,
 // its nearest kerb's top (the carriageway's ground there, `height(x, z)`, and a kerb), rising or
 // falling towards the pavement's back as the land does, at most CROSS across; between two kerbs, one
-// either way no more than `span` apart (a pavement between two streets, a reservation, an island),
-// from one's top to the other's, weighted by how near; down to a kerb dropped at a crossing over DROP.
-// A kerb is a point's only if the way to it runs over the pavements (`inside`): one across a wall or
-// open ground is another pavement's. With none, the land's and a kerb, as before; and `ease` past
-// the kerb, eased back to that over EASE_OUT (a map's sidewalk out past a pavement's width).
-// To the centimetre, a ring's points where its heights need them (follow).
-const EASE_OUT = 1.5;
+// across from the other (within 45° of straight across, nearestAcross) no more than `span` apart (a
+// pavement between two streets, a reservation, an island), from one's top to the other's, weighted
+// by how near; down to a kerb dropped at a crossing over DROP. On its kerb (within ON of it, as the
+// tiles' 10 cm grid puts a ring's points), a point is at the carriageway's ground right there and
+// the kerb, so the kerb's face is the kerb's height. A kerb is a point's only if the way to it runs
+// over the pavements (`inside`): one across a wall or open ground is another pavement's. With none,
+// the land's and a kerb, as before; and `ease` past the kerb, eased back to that over EASE_OUT (a
+// map's sidewalk out past a pavement's width). The kerbs to the 10 cm, as the tiles keep them. To the
+// centimetre, a ring's points where its heights need them (follow).
+const EASE_OUT = 1.5, ON = 0.12;
 function paveHeights(runs, height, elev0, inside, span, ease = Infinity) {
-  const all = segments(runs.map((r) => r.pts), 10), low = segments(runs.filter((r) => !r.h).map((r) => r.pts), 10);
+  const dm = (pts) => pts.map(([x, z]) => [Math.round(x * 10) / 10, Math.round(z * 10) / 10]);
+  const all = segments(runs.map((r) => dm(r.pts)), 10, runs.map((r) => r.h)), low = segments(runs.filter((r) => !r.h).map((r) => dm(r.pts)), 10);
   const top = (x, z) => height(x, z) - elev0 + KERB;
   // How far (x, z) is from a dropped kerb, up to DROP.
   const toDrop = (x, z) => Math.min(DROP, ...low.near({ x0: x - DROP, x1: x + DROP, z0: z - DROP, z1: z + DROP }).map(([ax, az, bx, bz]) => segDist([x, z], [ax, az], [bx, bz])));
   // The kerbs' nearest points within r of (x, z), nearest first.
-  const feet = (x, z, r) => all.near({ x0: x - r, x1: x + r, z0: z - r, z1: z + r }).map(([ax, az, bx, bz]) => {
+  const feet = (x, z, r) => all.near({ x0: x - r, x1: x + r, z0: z - r, z1: z + r }).map(([ax, az, bx, bz, h]) => {
     const dx = bx - ax, dz = bz - az, t = Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / (dx * dx + dz * dz || 1)));
     const fx = ax + dx * t, fz = az + dz * t;
-    return { fx, fz, d: Math.hypot(fx - x, fz - z) };
+    return { fx, fz, h, d: Math.hypot(fx - x, fz - z) };
   }).filter((q) => q.d <= r).sort((p, q) => p.d - q.d);
-  // Whether the way from (x, z) to a kerb's point q runs over the pavements: half way, and 30 cm short.
+  // Whether the way from (x, z) to a kerb's point q runs over the pavements: half way, and 30 cm short,
+  // each on one or within 5 cm of one either side of the way (along a pavement's edge).
   const over = (x, z, q) => {
     if (q.d < 0.3) return true;
-    const k = 0.3 / q.d;
-    return inside((x + q.fx) / 2, (z + q.fz) / 2) && inside(q.fx + (x - q.fx) * k, q.fz + (z - q.fz) * k);
+    const k = 0.3 / q.d, nx = ((q.fz - z) / q.d) * 0.05, nz = ((x - q.fx) / q.d) * 0.05;
+    const on = (px, pz) => inside(px, pz) || inside(px + nx, pz + nz) || inside(px - nx, pz - nz);
+    return on((x + q.fx) / 2, (z + q.fz) / 2) && on(q.fx + (x - q.fx) * k, q.fz + (z - q.fz) * k);
   };
   const ys = (x, z) => {
     let near = feet(x, z, 10);
     if (!near.length) near = feet(x, z, KERB_FAR);
     const drop = KERB * (1 - toDrop(x, z) / DROP);
-    // Its kerb: the nearest of the three nearest the way to which runs over the pavements.
-    const own = near.slice(0, 3).find((q) => over(x, z, q));
-    if (!own) return top(x, z) - drop;
-    // On a kerb (within 10 cm, as the tiles' 10 cm grid puts its points), the carriageway's ground
-    // right there and the kerb.
-    const a = own, ta = top(a.fx, a.fz) + (top(x, z) - top(a.fx, a.fz)) * Math.max(0, 1 - a.d / 0.1);
-    // The nearest kerb the other way, the pavements on this side of it.
-    const b = (a.d + 10 < span ? feet(x, z, span - a.d) : near).find((q) => (q.fx - x) * (a.fx - x) + (q.fz - z) * (a.fz - z) < 0 && a.d + q.d <= span && over(x, z, q));
-    if (b) return (ta * b.d + top(b.fx, b.fz) * a.d) / (a.d + b.d) - drop;
-    const y = ta + Math.max(-CROSS * a.d, Math.min(CROSS * a.d, top(x, z) - ta));
-    return y + (top(x, z) - y) * Math.max(0, Math.min(1, (a.d - ease) / EASE_OUT)) - drop;
+    // Its kerb: the nearest, within a metre of the nearest, the way to which runs over the pavements.
+    const a = near.find((q) => q.d <= near[0].d + 1 && over(x, z, q));
+    if (!a) return top(x, z) - drop;
+    // On it, the carriageway's ground right there and the kerb (none where it's dropped).
+    const on = a.h ? top(x, z) - drop : top(x, z) - KERB;
+    if (a.d <= ON) return on;
+    // Off it: the nearest kerb across, the pavements on this side of it; or its own.
+    const ta = top(a.fx, a.fz), r = span - a.d, ux = (x - a.fx) / a.d, uz = (z - a.fz) / a.d;
+    const b = all.near({ x0: x - r, x1: x + r, z0: z - r, z1: z + r }).map(([ax, az, bx, bz]) => nearestAcross(x, z, ux, uz, ax, az, bx, bz)).filter((q) => q && q.d <= r).sort((p, q) => p.d - q.d).find((q) => over(x, z, q));
+    let y;
+    if (b) y = (ta * b.d + top(b.fx, b.fz) * a.d) / (a.d + b.d);
+    else {
+      y = ta + Math.max(-CROSS * a.d, Math.min(CROSS * a.d, top(x, z) - ta));
+      y += (top(x, z) - y) * Math.max(0, Math.min(1, (a.d - ease) / EASE_OUT));
+    }
+    // From on it to off it over the next 10 cm.
+    return on + (y - drop - on) * Math.min(1, (a.d - ON) / 0.1);
   };
   return Object.assign(ys, { cm: true });
+}
+// The nearest point to (x, z) of the stretch from (ax, az) to (bx, bz) within 45° of the way (ux, uz)
+// from it (a unit vector), if any part of it is: { fx, fz, d }. The stretch clipped to the two sides
+// of that wedge, then the nearest of what's left.
+function nearestAcross(x, z, ux, uz, ax, az, bx, bz) {
+  const c = Math.SQRT1_2, dx = bx - ax, dz = bz - az;
+  let t0 = 0, t1 = 1;
+  for (const [nx, nz] of [[(ux + uz) * c, (uz - ux) * c], [(ux - uz) * c, (ux + uz) * c]]) {
+    // Inside the side whose normal is (nx, nz): f(t) = n · (a + t d - p) >= 0.
+    const f0 = nx * (ax - x) + nz * (az - z), df = nx * dx + nz * dz;
+    if (Math.abs(df) < 1e-12) {
+      if (f0 < 0) return null;
+    } else if (df > 0) t0 = Math.max(t0, -f0 / df);
+    else t1 = Math.min(t1, -f0 / df);
+  }
+  if (t0 > t1) return null;
+  const t = Math.max(t0, Math.min(t1, ((x - ax) * dx + (z - az) * dz) / (dx * dx + dz * dz || 1))), fx = ax + dx * t, fz = az + dz * t;
+  return { fx, fz, d: Math.hypot(fx - x, fz - z) };
 }
 const boxOf = (pts, m = 0) => ({ x0: Math.min(...pts.map((p) => p[0])) - m, x1: Math.max(...pts.map((p) => p[0])) + m, z0: Math.min(...pts.map((p) => p[1])) - m, z1: Math.max(...pts.map((p) => p[1])) + m });
 // The right of a line's stretch j (from its point j - 1 to j), as a unit vector.

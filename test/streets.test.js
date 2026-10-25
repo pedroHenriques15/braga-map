@@ -513,56 +513,82 @@ test("every pavement, reservation and island on the ground, and every path flush
       cells.get(key).push(n);
     }
   });
-  // The kerbs' nearest points within r of (x, z), nearest first: where, how far, and the kerb's h.
-  const feet = (x, z, r) => {
+  const segsNear = (x, z, r) => {
     const got = new Set();
     for (let i = Math.floor((x - r) / 10); i <= Math.floor((x + r) / 10); i++) for (let j = Math.floor((z - r) / 10); j <= Math.floor((z + r) / 10); j++) for (const n of cells.get(i + ',' + j) ?? []) got.add(n);
-    return [...got].map((n) => {
-      const [ax, az, bx, bz, h] = segs[n], dx = bx - ax, dz = bz - az, t = Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / (dx * dx + dz * dz || 1)));
-      const fx = ax + dx * t, fz = az + dz * t;
-      return { fx, fz, h, d: Math.hypot(fx - x, fz - z) };
-    }).filter((q) => q.d <= r).sort((p, q) => p.d - q.d);
+    return [...got].map((n) => segs[n]);
   };
+  // The kerbs' nearest points within r of (x, z), nearest first: where, how far, and the kerb's h.
+  const feet = (x, z, r) => segsNear(x, z, r).map(([ax, az, bx, bz, h]) => {
+    const dx = bx - ax, dz = bz - az, t = Math.max(0, Math.min(1, ((x - ax) * dx + (z - az) * dz) / (dx * dx + dz * dz || 1)));
+    const fx = ax + dx * t, fz = az + dz * t;
+    return { fx, fz, h, d: Math.hypot(fx - x, fz - z) };
+  }).filter((q) => q.d <= r).sort((p, q) => p.d - q.d);
+  // The kerbs' points within r of (x, z): each stretch's nearest, and every 10 cm along it.
+  const along = (x, z, r) => segsNear(x, z, r).flatMap(([ax, az, bx, bz]) => {
+    const L = Math.hypot(bx - ax, bz - az), n = Math.ceil(L / 0.1), t = Math.max(0, Math.min(1, ((x - ax) * (bx - ax) + (z - az) * (bz - az)) / (L * L || 1)));
+    return [t, ...Array.from({ length: n + 1 }, (_, i) => i / n)].map((u) => ({ fx: ax + (bx - ax) * u, fz: az + (bz - az) * u })).map((q) => ({ ...q, d: Math.hypot(q.fx - x, q.fz - z) })).filter((q) => q.d <= r && q.d > 0);
+  });
+  // Whether a kerb's within r of (x, z) and within 45° of straight across from it, the way (ux, uz):
+  // each stretch cut to that wedge, and the nearest of what's left.
+  const across = (x, z, ux, uz, r) => segsNear(x, z, r).some(([ax, az, bx, bz]) => {
+    const c = Math.SQRT1_2, dx = bx - ax, dz = bz - az;
+    let t0 = 0, t1 = 1;
+    for (const [nx, nz] of [[(ux + uz) * c, (uz - ux) * c], [(ux - uz) * c, (ux + uz) * c]]) {
+      const f0 = nx * (ax - x) + nz * (az - z), df = nx * dx + nz * dz;
+      if (Math.abs(df) < 1e-12) {
+        if (f0 < 0) return false;
+      } else if (df > 0) t0 = Math.max(t0, -f0 / df);
+      else t1 = Math.min(t1, -f0 / df);
+    }
+    if (t0 > t1) return false;
+    const t = Math.max(t0, Math.min(t1, ((x - ax) * dx + (z - az) * dz) / (dx * dx + dz * dz || 1)));
+    return Math.hypot(ax + dx * t - x, az + dz * t - z) <= r;
+  });
   const pieces = [...S.pavements.filter((p) => p.level === 'ground'), ...S.paths.filter((p) => p.raised && (p.level === 'ground' || p.level === 'under'))];
-  // A point's kerb: the way to it runs over the pavements (one across a wall is another pavement's).
-  const onPave = inside(pieces);
-  const over = (x, z, q) => q.d < 0.3 || (onPave((x + q.fx) / 2, (z + q.fz) / 2) && onPave(q.fx + ((x - q.fx) * 0.3) / q.d, q.fz + ((z - q.fz) * 0.3) / q.d));
-  let points = 0, atKerb = 0, across = 0;
-  const off = [], steep = [];
+  let points = 0, atKerb = 0, off = 0, landed = 0;
+  const bad = [], steep = [];
   for (const p of pieces) p.rings.forEach((r, i) => {
     assert.equal(p.ys?.[i]?.length, r.length, `a height at each point of a ${p.kind} at ${r[0]}`);
     r.forEach(([x, z], k) => {
-      const y = p.ys[i][k], near = feet(x, z, 2 * PAVE + 1), a = near.slice(0, 3).find((q) => over(x, z, q));
+      const y = p.ys[i][k], near = feet(x, z, 10);
       points++;
-      if (!a) return;
-      const dropped = near.find((q) => !q.h)?.d ?? Infinity;
+      if (!near.length) return;
+      const a = near[0], dropped = near.find((q) => !q.h)?.d ?? Infinity;
       if (a.d <= 0.1) {
-        // On a kerb (the ring's points on the 10 cm grid): its carriageway's ground and the kerb, or
-        // the ground where it's dropped; by a dropped kerb, sloping between the two.
-        if (a.h && dropped < DROP) return;
+        // On its kerb (the ring's points on the 10 cm grid): its carriageway's ground and the kerb, or
+        // the ground where it's dropped; by a dropped kerb, sloping between the two, and where one ends
+        // at the other either.
+        if ((a.h && dropped < DROP + 0.2) || (!a.h && near.some((q) => q.h && q.d <= 0.2))) return;
         atKerb++;
         const want = w.height(x, z) + a.h;
-        if (Math.abs(y - want) > 0.015) off.push(`${p.kind} at (${x}, ${z}) ${(y - want).toFixed(3)} m`);
+        if (Math.abs(y - want) > 0.015) bad.push(`${p.kind} at (${x}, ${z}) ${(y - want).toFixed(3)} m`);
         return;
       }
-      // (Past a pavement's width from its kerb, a map's sidewalk eases back to the land's.)
-      if (dropped < DROP + 0.1 || (p.kind !== 'reservation' && p.kind !== 'island' && a.d > PAVE)) return;
-      across++;
-      const top = w.height(a.fx, a.fz) + KERB;
-      // (2 cm for the kerb's points on the tiles' 10 cm grid, on a street up to 20% steep, and the
-      // heights' centimetres.)
-      if (Math.abs(y - top) <= 0.02 * a.d + 0.02) return;
-      // Between two kerbs, one either way: a pavement's two no more than two pavements apart, a
-      // reservation's or an island's anywhere.
-      const span = p.kind === 'reservation' || p.kind === 'island' ? Infinity : 2 * PAVE + 1;
-      if (feet(x, z, 45).some((q) => (q.fx - x) * (a.fx - x) + (q.fz - z) * (a.fz - z) < 0 && a.d + q.d <= span)) return;
-      steep.push(`${p.kind} at (${x}, ${z}) ${((Math.abs(y - top) / a.d) * 100).toFixed(1)}% over ${a.d.toFixed(1)} m`);
+      // Off it, but from on it to off it (25 cm), by a dropped kerb, past a pavement's width (where a
+      // map's sidewalk eases back to the land's), or by the area's edge, its kerbs cut off beyond.
+      const edge = Math.min(x - OPEN_BOX.x0, OPEN_BOX.x1 - x, z - OPEN_BOX.z0, OPEN_BOX.z1 - z);
+      if (a.d <= 0.25 || dropped < DROP + 0.1 || (p.kind !== 'reservation' && p.kind !== 'island' && a.d > PAVE - 0.1) || edge < 2 * PAVE + 1) return;
+      off++;
+      // Level from a kerb that bounds it, within 2% (and 2 cm, for the kerbs' points on the tiles' 10
+      // cm grid on a street up to 20% steep, and the heights' centimetres): its own, which the way to
+      // runs over the pavements, any kerb's point within a metre and a half of the nearest, however
+      // the kerbs are split into stretches; a pavement's past its width eases it back to the land's.
+      const wide = p.kind === 'reservation' || p.kind === 'island', span = wide ? 45 : 2 * PAVE + 1, theirs = along(x, z, a.d + 1.5);
+      if (theirs.some((q) => (!wide && q.d > PAVE - 0.1) || Math.abs(y - w.height(q.fx, q.fz) - KERB) <= 0.02 * q.d + 0.02)) return;
+      // Or from one to another across (within 45° of straight across), both of one pavement (within
+      // two of its widths and a metre) or of a reservation or an island.
+      if (theirs.some((q) => across(x, z, (x - q.fx) / q.d, (z - q.fz) / q.d, span - q.d))) return;
+      // Or bounded by none, the way to each leaving the pavements: the land's and a kerb, as before.
+      if (Math.abs(y - w.height(x, z) - KERB) <= 0.015) return void landed++;
+      steep.push(`${p.kind} at (${x}, ${z}) ${((Math.abs(y - w.height(a.fx, a.fz) - KERB) / a.d) * 100).toFixed(1)}% over ${a.d.toFixed(1)} m`);
     });
   });
-  console.log(`the ground's pavements: ${pieces.length} pieces, ${points} points; ${atKerb} on a kerb, ${off.length} more than 1 cm off it${off.length ? ` (${off.slice(0, 5).join('; ')})` : ''}; ${across} off it within ${2 * PAVE + 1} m, ${steep.length} steeper than 2% from it and not between two kerbs${steep.length ? ` (${steep.slice(0, 5).join('; ')})` : ''}`);
-  assert.ok(atKerb > 10000 && across > 10000, `${atKerb} points on a kerb, ${across} off it`);
-  assert.equal(off.length, 0, off.slice(0, 10).join('; '));
+  console.log(`the ground's pavements: ${pieces.length} pieces, ${points} points; ${atKerb} on a kerb, ${bad.length} more than 1 cm off it${bad.length ? ` (${bad.slice(0, 5).join('; ')})` : ''}; ${off} off it within a pavement's width, ${landed} at the land's (no kerb bounding them), ${steep.length} steeper than 2% from a kerb and not between two${steep.length ? ` (${steep.slice(0, 5).join('; ')})` : ''}`);
+  assert.ok(atKerb > 10000 && off > 10000, `${atKerb} points on a kerb, ${off} off it`);
+  assert.equal(bad.length, 0, bad.slice(0, 10).join('; '));
   assert.equal(steep.length, 0, steep.slice(0, 10).join('; '));
+  assert.ok(landed < off * 0.03, `${landed} of ${off} at the land's`);
 });
 
 test('the street on the ground runs into every deck and tunnel on its own slope', () => {

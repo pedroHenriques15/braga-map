@@ -111,8 +111,10 @@ test('each path is at its level: a footbridge on its deck, a passage under its b
   console.log(`${n} footbridges and passages, ${off.length} off their level`);
   assert.ok(n > 30);
   assert.ok(off.length <= n / 20, off.join('; '));
+  // A height at each point of a path on a deck, in a tunnel or a flight's tread, and of one flush with
+  // a pavement on the ground or under something (the pavement's, task 044); none on the others'.
   for (const p of S.paths) {
-    if (p.level === 'bridge' || p.level === 'tunnel' || p.kind === 'steps') assert.ok(p.ys && p.ys.every((r, i) => r.length === p.rings[i].length), 'a height at each point');
+    if (p.level === 'bridge' || p.level === 'tunnel' || p.kind === 'steps' || (p.raised && (p.level === 'ground' || p.level === 'under'))) assert.ok(p.ys && p.ys.every((r, i) => r.length === p.rings[i].length), 'a height at each point');
     else assert.ok(!p.ys);
   }
 });

@@ -55,33 +55,53 @@ too wide for.
   - 12 pieces of solar canopies over the bays (one at (1960-2000, 500-560), one at (1960-1980,
     1040-1090), and (-265, -1818));
   - 5 long flat white awnings;
-  - about 5 rows of vans or site cabins;
-  - about 7 kiosks and sheds;
+  - 2 rows of white site cabins (prefabs), along a car park's edge at (-180 to -160, 485-495) and a
+    building site's at (1440-1460, -517 to -512): buildings, which stay;
+  - about 10 kiosks, booths and sheds, among them three grey-roofed booths by a sandy patch at the
+    big shops' car parks, (1291, -1514), (1234, -1425) and (1316, -1552), and a red one at (-1035,
+    -515);
   - 19 parts of buildings beside the map's, outlines a little off them;
   - 15 whole buildings over 4.6 m (houses and blocks a car park's outline takes in).
-  The vehicle rule had already left out the cars and lorries standing alone. What was left as
-  buildings were mostly canopies.
+  No row of vehicles is left among them: the vehicle rule had already left out the cars, vans and
+  lorries standing alone, and the white rows that looked like vans are site cabins, close up. What
+  was left as buildings were mostly canopies.
 - **The rule** (`tools/roofs.mjs`, `canopyOf` and `topShape`): on a car park, under 4.6 m and not
   beside a building the map has (30% of its outline within 1.5 m of one), a "building" is left out as
   a canopy if one of these holds (decided by the session, for the owner to confirm):
   - **solar:** dark (under 140 of 255), one plane (under 20 cm off one), and tilted 10% or more or
     blue;
   - **tent:** light (160 or more), its top as bumpy as pyramids are (20 to 45 cm off a plane, or
-    18 cm and 5 m long or more: a kiosk 4 m across, (-1063, 1134), is 18 cm);
+    18 cm and 5 m long or more: a kiosk 4 m across, (-1063, 1134), is 18 cm), and sloping all over
+    as their faces do (half its cells 12% or steeper): a row of site cabins is as bumpy, its flat
+    tops at steps;
   - **flat:** light (175 or more), under 20 cm off a plane, and 10 m long or more.
   The games don't draw a canopy (a thin roof on posts), so it's left out rather than drawn as a
   kind of its own (the task's either); a game that draws one can take the LiDAR's back later.
-  `tools/roofs.mjs` drops 35 of the LiDAR's buildings this way (its pieces of them; the world splits
+  `tools/roofs.mjs` drops 30 of the LiDAR's buildings this way (its pieces of them; the world splits
   some into parts).
 - **The result:**
-  - Of the 107 on car parks, 47 are gone: 32 tents, 11 pieces of the solar canopies, 2 flat awnings
-    and 2 pieces at a tent's end. 59 are left: 34 under 4.6 m (82 before), 7 in the open area (13).
+  - Of the 107 on car parks, 43 are gone: 28 tents, 11 pieces of the solar canopies, 2 flat awnings
+    and 2 pieces at a tent's end. 63 are left (the world on 1.43.0): 38 under 4.6 m (82 before), 8 in
+    the open area (13). The site cabins and the booths stay.
   - Kept that are canopies: a long thin row of tents at (408, -974); one the map's car park doesn't
-    take in by its middle, (2063, 420); another at (1852, 915); a flat dark solar canopy at (-265,
-    -1818); a row of vans; and six small pieces of tents. The rule measures these otherwise than my
-    look did.
-  - `test/roofs.test.js`: made-up canopies and not. `test/footprints.test.js`: at most 40 under
-    4.6 m on a car park (34). npm test 165/165.
+    take in by its middle, (2063, 420); a tent row at (1579, 1152) and the grey canopy over a car
+    park's charging bays at (-959, 1876), flatter than pyramids; one at (1852, 915); a flat dark solar
+    canopy at (-265, -1818); a long white one's piece at (1862, 377), under 10 m; and six small pieces
+    of tents. The rule measures these otherwise than my look did.
+  - `test/roofs.test.js`: made-up canopies and not (a kiosk, a row of site cabins, a house).
+    `test/footprints.test.js`: at most 40 under 4.6 m on a car park (38). 166/166, four at a time.
+- **What else reads roofs.json** (rule 16's other half), each run privately on roofs-116.json, its
+  writes kept out of the shared .cache and tools/ (a preloaded redirect), and diffed:
+  - `tools/walls.mjs` (`.cache/walls.json`): it changes. Beside the two long flat awnings removed at
+    (1780-1854, 360-435), nine of the map's retaining walls are concrete where they were granite (the
+    buildings round a wall say what it's made of), and three of the LiDAR's retaining walls and one
+    hedge (1.25-3.29 m high) are gone. Run on main's roofs.json it gives the shared walls.json byte for
+    byte, so that's 116's doing. At landing it's made again into the shared .cache, and the world
+    built from it (as this branch's was, from the private copy).
+  - `tools/open.mjs` and `tools/shooter.mjs` (`tools/open.json`, `tools/shooter.json`): the same,
+    byte for byte.
+  - `tools/furniture.mjs` reads only the shifts, and `tools/heights.mjs` only the map's own buildings
+    (`buildings`, `shifts`): roofs.mjs --lacking leaves both as they were (compared).
 - **The viewpoints:** none sees one. Two have one inside their view's angle, far off:
   pascoal-fernandes at 380 m, egidio-guimaraes at 230-260 m. Both were shot before (main's 1.42.0,
   from a fresh worktree) and after, at Ultra, High and Low (`2026-10-25-before116`,

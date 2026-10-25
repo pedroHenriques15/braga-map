@@ -88,12 +88,18 @@ test('a shed with one slope falls the way it faces', () => {
 });
 
 // A "building" the LiDAR sees on a car park, under 4.6 m (task 116): its cells every 50 cm over its
-// rectangle and how high each is over the ground (`h(x, z)`, with the LiDAR's noise), and the
-// orthophoto's colour over it, as canopyOf takes them.
+// rectangle and how high each is over the ground (`h(x, z)`, with the LiDAR's noise), how steep its top
+// is at each (from the cells either side, its middle), and the orthophoto's colour over it, as
+// canopyOf takes them.
 const onPark = (L, W, h, [r, g, b]) => {
-  const at = [], rise = [];
-  for (let x = 0.25; x < L; x += 0.5) for (let z = 0.25; z < W; z += 0.5) { at.push([x, z]); rise.push(h(x, z) + noise()); }
-  return canopyOf({ ...topShape(at, rise), bright: (r + g + b) / 3, blue: b - (r + g) / 2, L });
+  const at = [], rise = [], slopes = [];
+  for (let x = 0.25; x < L; x += 0.5) for (let z = 0.25; z < W; z += 0.5) {
+    at.push([x, z]);
+    rise.push(h(x, z) + noise());
+    if (x > 0.5 && x < L - 0.5 && z > 0.5 && z < W - 0.5) slopes.push(Math.hypot(h(x + 0.5, z) - h(x - 0.5, z) + noise(), h(x, z + 0.5) - h(x, z - 0.5) + noise()));
+  }
+  const slope = slopes.sort((p, q) => p - q)[Math.floor(slopes.length / 2)] ?? 0;
+  return canopyOf({ ...topShape(at, rise), slope, bright: (r + g + b) / 3, blue: b - (r + g) / 2, L });
 };
 // A row of pyramid awnings, each 5 m square, 2.5 m at its edges and 3.3 m at its peak.
 const tents = (x, z) => 2.5 + 0.8 * (1 - Math.max(Math.abs((x % 5) - 2.5), Math.abs((z % 5) - 2.5)) / 2.5);
@@ -105,8 +111,9 @@ test("a car park's canopies aren't buildings: solar panels, a row of tents, a lo
   assert.equal(onPark(30, 6, () => 2.8, [215, 215, 210]), 'flat', 'a long white awning, flat');
 });
 
-test("but a kiosk, a house or a dark flat roof on one is (task 116)", () => {
+test("but a kiosk, a row of site cabins, a house or a dark flat roof on one is (task 116)", () => {
   assert.equal(onPark(4, 4, () => 2.8, [215, 215, 210]), null, 'a white kiosk, flat');
+  assert.equal(onPark(30, 3, (x) => 2.6 + 0.7 * (Math.floor(x / 6) % 2), [215, 215, 210]), null, 'five white cabins in a row, every other one stacked higher');
   assert.equal(onPark(10, 7, (x, z) => 3 + (3.5 - Math.abs(z - 3.5)) * 0.6, [180, 90, 70]), null, 'a gabled house, its tiles red');
   assert.equal(onPark(12, 8, () => 3.5, [110, 105, 100]), null, 'a flat grey roof');
 });

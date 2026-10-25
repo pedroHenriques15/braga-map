@@ -518,15 +518,17 @@ export function topShape(at, rise) {
 }
 // A LiDAR "building" on a car park under 4.6 m (task 116): a canopy over the cars, or not (null), by
 // its top (topShape) and the orthophoto over it (its mean brightness and how much bluer than red and
-// green, 0-255) and how long it is (L, m). A solar canopy: dark, one plane, tilted or blue. A tent (a
-// row of white or grey pyramid awnings, one or many): light, its top bumpy as the pyramids are, 20 to
-// 45 cm off a plane, or 18 cm and 5 m long or more (a kiosk 4 m across can be that bumpy). A flat
-// one: light, flat, 10 m long or more (a long awning, or a row of vans under one). Of the 107 on the
-// map's car parks in October 2026, looked at: 43 tents, 12 solar canopies, 5 flat ones, a few rows of
-// vans and site cabins; the rest kiosks, sheds and buildings, which stay.
-export function canopyOf({ rms, tilt, bright, blue, L }) {
+// green, 0-255), how steep its top is at the middle of its cells (slope, from each cell's neighbours)
+// and how long it is (L, m). A solar canopy: dark, one plane, tilted or blue. A tent (a row of white or
+// grey pyramid awnings, one or many): light, its top bumpy as the pyramids are, 20 to 45 cm off a
+// plane, or 18 cm and 5 m long or more (a kiosk 4 m across can be that bumpy), and sloping all over as
+// their faces do (a row of site cabins is as bumpy, its flat tops at steps). A flat one: light, flat,
+// 10 m long or more (a long awning). Of the 107 on the map's car parks in October 2026, looked at:
+// 43 tents, 12 solar canopies, 5 flat ones, two rows of site cabins; the rest kiosks, sheds and
+// buildings, which stay.
+export function canopyOf({ rms, tilt, slope = 0, bright, blue, L }) {
   if (bright < 140 && rms < 0.2 && (tilt >= 0.1 || blue >= 13)) return 'solar';
-  if (bright >= 160 && rms <= 0.45 && (rms >= 0.2 || (rms >= 0.18 && L >= 5))) return 'tent';
+  if (bright >= 160 && rms <= 0.45 && (rms >= 0.2 || (rms >= 0.18 && L >= 5)) && slope >= 0.12) return 'tent';
   if (bright >= 175 && rms < 0.2 && L >= 10) return 'flat';
   return null;
 }
@@ -581,12 +583,15 @@ function missing(list, field, ground, box, ms, msField, parked = () => false) {
       // Its height over the ground, and how green the photo is over it, from up to 300 of its cells.
       const cells = [];
       for (let k = 0; k < b.label.length; k++) if (b.label[k] === b.id) cells.push(k);
-      const every = Math.max(1, Math.floor(cells.length / 300)), rise = [], at = [], rgb = [0, 0, 0];
+      const every = Math.max(1, Math.floor(cells.length / 300)), rise = [], at = [], rgb = [0, 0, 0], slopes = [];
       let green = 0, seen = 0;
       for (let q = 0; q < cells.length; q += every) {
         const k = cells[q], x = (k % b.w) + b.x0, y = Math.floor(k / b.w) + b.y0, [px, pz] = cellXZ(x + 0.5, y + 0.5);
         rise.push(top[y * W + x] - ground.at(px, pz));
         at.push([x * CELL, y * CELL]);
+        // How steep its top is there, from the cells either side (where they're its too).
+        const [l, r2, u, d] = [top[y * W + x - 1], top[y * W + x + 1], top[(y - 1) * W + x], top[(y + 1) * W + x]];
+        if (l === l && r2 === r2 && u === u && d === d) slopes.push(Math.hypot(r2 - l, d - u) / (2 * CELL));
         const c = colourAt(px, pz);
         if (c) { seen++; if (2 * c[1] - c[0] - c[2] > 20) green++; rgb[0] += c[0]; rgb[1] += c[1]; rgb[2] += c[2]; }
       }
@@ -608,7 +613,7 @@ function missing(list, field, ground, box, ms, msField, parked = () => false) {
       const sh = field.at(cx, cz) ?? { dx: 0, dz: 0 };
       const pts = onMap.map(([x, z]) => [Math.round((x - sh.dx) * 100) / 100, Math.round((z - sh.dz) * 100) / 100]);
       if (tall < 4.6 && parked(cx - sh.dx, cz - sh.dz) && seen) {
-        const canopy = canopyOf({ ...topShape(at, rise), bright: (rgb[0] + rgb[1] + rgb[2]) / 3 / seen, blue: (rgb[2] - (rgb[0] + rgb[1]) / 2) / seen, L: r.L });
+        const canopy = canopyOf({ ...topShape(at, rise), slope: slopes.length ? quantile(slopes, 0.5) : 0, bright: (rgb[0] + rgb[1] + rgb[2]) / 3 / seen, blue: (rgb[2] - (rgb[0] + rgb[1]) / 2) / seen, L: r.L });
         if (canopy && !beside(pts)) { why.canopy++; dropped.push([Math.round(cx), Math.round(cz), 'canopy']); continue; }
       }
       out.push({ src, fit: Math.round(fits * 100) / 100, tall: Math.round(tall * 10) / 10, pts });

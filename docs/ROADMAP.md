@@ -190,6 +190,8 @@ decision 080).
   089).
 - **130** The Judas trees and the acacias as kinds of their own, for their
   year on Ultra (found by 093).
+- **132** The bare trees' twigs dark against the sky, as in March, not a pale haze (found in
+  093's round; before the deploy).
 - **099** The whole map at the open world's detail, the open world grown over it (after 038). Held by
   the owner (2026-10-24): not done for now, for its cost (its Notes).
 - **100** The street furniture the point cloud finds, for 020 to draw: done (decision 062), braga-map

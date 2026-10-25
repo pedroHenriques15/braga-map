@@ -98,14 +98,14 @@ const projector = (c, w, h) => ([x, y, z]) => {
   return [((a + 1) / 2) * w, ((b + 1) / 2) * h];
 };
 
-// The reference photos and the viewpoints' photos, each with its camera and file: a frame named twice
-// (a facade's photo that's also a kind's example, or a panorama cut the same way) once, by its facade's
-// name where it has one.
-function cameras(world) {
+// The reference photos and the viewpoints' photos, each with its camera and file; with `unique`, a frame
+// named twice (a facade's photo that's also a kind's example, or a panorama cut the same way) once, by its
+// facade's name where it has one.
+function cameras(world, unique = false) {
   const all = JSON.parse(fs.readFileSync(path.join(ROOT, 'refs', 'photos.json'), 'utf8')).photos, frames = new Set();
   const photos = [...all.filter((p) => p.id.startsWith('facade-')), ...all.filter((p) => !p.id.startsWith('facade-'))].filter((p) => {
     const key = `${p.photo.source}:${p.photo.id}:${p.photo.pano ? `${p.heading},${p.pitch}` : ''}`;
-    return !frames.has(key) && frames.add(key);
+    return !unique || (!frames.has(key) && frames.add(key));
   });
   const views = JSON.parse(fs.readFileSync(path.join(ROOT, 'refs', 'viewpoints.json'), 'utf8')).viewpoints.filter((v) => v.kind !== 'skyline');
   const files = fs.readdirSync(path.join(CACHE, 'refs', 'photos'));
@@ -160,7 +160,7 @@ const r1 = (v) => Math.round(v * 10) / 10;
 async function makeList() {
   const { list, find, world, parts, roads } = await prepare();
   const seen = JSON.parse(fs.readFileSync(path.join(ROOT, 'refs', 'buildings.json'), 'utf8')).buildings;
-  const phs = cameras(world);
+  const phs = cameras(world, true);
   const todo = [];
   for (const b of list) {
     const e = seen[b.id];
@@ -318,23 +318,30 @@ export function badLayout(storeys, L) {
 // node tools/layouts.mjs read <readings.json>…: the sessions' readings (by building, its walls read, each
 // its number in .cache/layouts/todo.json, its photo and its storeys, and those left, each with why) into
 // refs/buildings.json: each building's `layout` (the walls read, by their ends) and `unread` (those left).
+// A wall in more than one file (a second pass over those a first left) takes the last file's word on it.
 async function read(files) {
   const todo = new Map(JSON.parse(fs.readFileSync(path.join(OUT, 'todo.json'), 'utf8')).map((t) => [t.id, t]));
   const file = path.join(ROOT, 'refs', 'buildings.json'), doc = JSON.parse(fs.readFileSync(file, 'utf8'));
-  let read = 0, left = 0;
-  const bad = [];
+  const bad = [], byId = new Map();
   for (const f of files) for (const [id, r] of Object.entries(JSON.parse(fs.readFileSync(f, 'utf8')))) {
     const t = todo.get(id), e = doc.buildings[id];
     if (!t || !e) { bad.push(`${id}: not in the list or refs/buildings.json`); continue; }
-    const layout = [], unread = [];
+    if (!byId.has(id)) byId.set(id, new Map());
+    const ws = byId.get(id);
     for (const w of r.walls ?? []) {
       const tw = t.walls[w.k], why = tw ? badLayout(w.storeys, tw.L) : `no wall ${w.k}`;
-      if (why) { bad.push(`${id} w${w.k}: ${why}`); continue; }
+      if (why) bad.push(`${id} w${w.k}: ${why}`);
       // To a decimetre, the edges as read.
-      layout.push({ from: tw.from, to: tw.to, photo: w.photo, storeys: w.storeys.map((st) => st && st.map(([kind, at, ow]) => [kind, Math.round(Math.max(0, at) * 10) / 10, Math.round(ow * 10) / 10])) });
-      read++;
+      else ws.set(w.k, { from: tw.from, to: tw.to, photo: w.photo, storeys: w.storeys.map((st) => st && st.map(([kind, at, ow]) => [kind, Math.round(Math.max(0, at) * 10) / 10, Math.round(ow * 10) / 10])) });
     }
-    for (const w of r.left ?? []) { const tw = t.walls[w.k]; if (tw) { unread.push({ from: tw.from, to: tw.to, why: w.why }); left++; } }
+    for (const w of r.left ?? []) { const tw = t.walls[w.k]; if (tw) ws.set(w.k, { from: tw.from, to: tw.to, why: w.why }); }
+  }
+  let read = 0, left = 0;
+  for (const [id, ws] of byId) {
+    const e = doc.buildings[id], all = [...ws].sort((a, c) => a[0] - c[0]).map(([, w]) => w);
+    const layout = all.filter((w) => w.storeys), unread = all.filter((w) => w.why);
+    read += layout.length;
+    left += unread.length;
     if (layout.length) e.layout = layout; else delete e.layout;
     if (unread.length) e.unread = unread; else delete e.unread;
   }

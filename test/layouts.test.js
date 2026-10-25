@@ -37,7 +37,8 @@ test('every layout read fits its wall: a wall of its building, its openings on i
       walls++;
     }
   }
-  assert.ok(walls >= 60, `${walls} walls read`);
+  // The 16 the photos showed clearly enough of the 136 given to be read (task 086's Notes).
+  assert.ok(walls >= 16, `${walls} walls read`);
 });
 
 test('a layout comes onto the sides of a ring that run along its wall, whichever way round', () => {
@@ -52,6 +53,9 @@ test('a layout comes onto the sides of a ring that run along its wall, whichever
   // The other way round: each opening's near edge from the side's start.
   const b = layoutOnRing(layout, [[0, -8], [10, -8], [10, 0], [0, 0]]);
   assert.deepEqual(b[2], [[['door', 3, 1]], [['window', 6.5, 1.5]]]);
+  // A shop window 4–6.5 m along runs round the cut at x = 5: each side has its part.
+  const c = layoutOnRing([{ ...layout[0], storeys: [[['shop', 4, 2.5]]] }], [[0, 0], [5, 0], [10, 0], [10, -8], [0, -8]]);
+  assert.deepEqual([c[0], c[1]], [[[['shop', 4, 1]]], [[['shop', 0, 1.5]]]]);
   // Nowhere near it: none.
   assert.equal(layoutOnRing(layout, [[0, 5], [10, 5], [10, 9], [0, 9]]), null);
   assert.deepEqual(OPENINGS, ['window', 'door', 'garage', 'shop', 'balcony']);

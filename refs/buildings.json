@@ -31,7 +31,29 @@
    "seen": "facade-way-440314425",
    "patch": [302, 451, 438, 466],
    "sure": true,
-   "notes": "The corner block across the street: pale straw-beige brick-pattern tiles, paired windows with white roller shutters and iron rails across them, projecting balconies round its left side, a top floor set back behind a dark green-grey parapet. Shops behind blue and glass fronts under a dark fascia; the shop sign is half hidden ('… informática')."
+   "notes": "The corner block across the street: pale straw-beige brick-pattern tiles, paired windows with white roller shutters and iron rails across them, projecting balconies round its left side, a top floor set back behind a dark green-grey parapet. Shops behind blue and glass fronts under a dark fascia; the shop sign is half hidden ('… informática').",
+   "unread": [
+    {
+     "from": [-150.1, 853.7],
+     "to": [-153.5, 851.5],
+     "why": "Its right end isn't marked in any photo. In facade-lidar-x-157z848 the outline (x 655-790) takes the left part of a flat brick face (x 650-945, two window columns, to a downpipe joint) that measures about 6-7 m by its storey heights, and nothing on that face marks where a 4 m piece ends; in facade-way-982774306 (outline x 905-990) and facade-way-383766235 (about 25 px a metre) the same face shows whole, about 7 m, with no edge or bend at 4 m."
+    },
+    {
+     "from": [-151.6, 858.7],
+     "to": [-150.1, 853.7],
+     "why": "A 5.2 m piece of the stepped front: facade-lidar-x-157z848 shows only the lowest four of its seven storeys, and the far photos (facade-way-982774306, facade-way-383766235, 52-57 m off at 22-31 px a metre) show the whole height, but its short stepped pieces (2 m set-backs, a 17-degree bend) can't be told apart there."
+    },
+    {
+     "from": [-147, 866.1],
+     "to": [-149.5, 858.1],
+     "why": "Its left end, the slight bend into w3, shows no edge. In facade-lidar-x-157z848 the outline's left end (x 45) falls inside a column of loggias running out of the photo's left edge, and its top three storeys are above the frame; in facade-way-982774306 and facade-way-383766235 that end is right at the edge of the near white block in front (x 550-600 and x 940-965) and behind a bare tree, so where the 8.4 m wall begins can't be told (its right end, the corner before the angled piece, shows at x 860 in facade-way-982774306)."
+    },
+    {
+     "from": [-146.9, 870.8],
+     "to": [-147, 866.1],
+     "why": "Only in the far photos (facade-way-982774306, facade-way-383766235, 54-57 m off): the building in front hides most of it in the first, and in the second it is a narrow strip seen at a steep angle."
+    }
+   ]
   },
   "lidar/x-171z1609": {
    "seen": null,
@@ -84,7 +106,14 @@
    "seen": "facade-lidar-x-234z972",
    "patch": [192, 269, 243, 333],
    "sure": false,
-   "notes": "The near block on the left of the street: pale grey render (perhaps white under the photo's cyan cast), windows with white reveals and no balconies on this face, the Talho Amores butcher's on the ground floor; its top is cut by the frame. The outline spans the whole left side of the street, so which part of the row this small footprint is cannot be told."
+   "notes": "The near block on the left of the street: pale grey render (perhaps white under the photo's cyan cast), windows with white reveals and no balconies on this face, the Talho Amores butcher's on the ground floor; its top is cut by the frame. The outline spans the whole left side of the street, so which part of the row this small footprint is cannot be told.",
+   "unread": [
+    {
+     "from": [-234.7, 979.6],
+     "to": [-231.6, 980.1],
+     "why": "Where the outline falls, both photos look along the street itself, the row of blocks beside it seen edge-on: no wall of 3.1 m faces the camera there to read."
+    }
+   ]
   },
   "lidar/x-259z1620": {
    "seen": null,
@@ -106,7 +135,14 @@
    "seen": "facade-way-983551351",
    "patch": null,
    "sure": false,
-   "notes": "Not seen here: its outline covers the old granite-framed corner house on the left, which hides it. In facade-way-473734202 (#3) and -383764627 (#5) it is the narrow terraced pair down the side street: a mauve-lilac front with a wide garage door and an iron balcony beside a salmon-pink one, white frames and a bracketed cornice."
+   "notes": "Not seen here: its outline covers the old granite-framed corner house on the left, which hides it. In facade-way-473734202 (#3) and -383764627 (#5) it is the narrow terraced pair down the side street: a mauve-lilac front with a wide garage door and an iron balcony beside a salmon-pink one, white frames and a bracketed cornice.",
+   "unread": [
+    {
+     "from": [-277.5, 1057.1],
+     "to": [-280.8, 1057.1],
+     "why": "Second pass, its three gridded photos seen (facade-way-473734202, -383764627 and -473734203; facade-way-983551353 isn't gridded for this wall): it is 63-83 m off at 20-26 px a metre, the outline a small box (about 60 by 50 px) at the foot of the narrow pink and purple houses by a garage door, in 473734203 on a parked car; too small to tell a window from a door, and its 2.7 m eaves match none of the fronts there, so which front it is isn't clear either."
+    }
+   ]
   },
   "lidar/x-284z1615": {
    "seen": null,
@@ -176,7 +212,17 @@
    "seen": "facade-way-525884709",
    "patch": null,
    "sure": false,
-   "notes": "A low cream rendered box by the lane with a blank front and small meter boxes, below the houses on the slope."
+   "notes": "A low cream rendered box by the lane with a blank front and small meter boxes, below the houses on the slope.",
+   "layout": [
+    {
+     "from": [-311.4, 901],
+     "to": [-310.5, 906.9],
+     "photo": "facade-way-525884709",
+     "storeys": [
+      []
+     ]
+    }
+   ]
   },
   "lidar/x-308z998": {
    "seen": null,
@@ -222,7 +268,19 @@
    "seen": "facade-way-284713325",
    "patch": null,
    "sure": false,
-   "notes": "Dusk photo, its top cut off: a tall block with stacked balconies with rounded, glazed fronts. Looks cream here, but white in the low sun of facade-lidar-x-288z1043."
+   "notes": "Dusk photo, its top cut off: a tall block with stacked balconies with rounded, glazed fronts. Looks cream here, but white in the low sun of facade-lidar-x-288z1043.",
+   "unread": [
+    {
+     "from": [-341.9, 1025],
+     "to": [-347.5, 1025.3],
+     "why": "Second pass, both photos seen. The tall block stands at the frames' right edge, close, its top above the frame in both. In facade-way-284713326 the outline starts at x 1375-1400 and runs off the frame's right edge, on the block's edge. In facade-way-284713325 the outline (x 1105-1205) is on the block's narrow end face beside the sky, but whether that face is this set-back 5.7 m wall or the step beside it isn't clear (the map has w2 3.6 m behind w0, and the camera's distances, 31 m for it and 13 m for the block's near front, don't fit how close the block looks), and parked cars and a van stand across its foot."
+    },
+    {
+     "from": [-358.4, 1021.2],
+     "to": [-367.3, 1021.7],
+     "why": "Second pass: its only photo (facade-way-284713325) has it as the tall block's near front with the round-fronted balconies, the outline starting at x 1240 and running out of the frame's right edge (where a dark smudge on the lens is), so its right end isn't in the photo; its top is above the frame and parked cars hide its ground floor."
+    }
+   ]
   },
   "lidar/x-373z1211": {
    "seen": null,
@@ -787,7 +845,25 @@
    "seen": "facade-lidar-x217z708",
    "patch": [265, 470, 300, 505],
    "sure": true,
-   "notes": "One uniform 1950s-60s front in three sections split by concrete fins; this is the middle one. Weathered, grimy grey render; a balcony along each floor with thin iron railings, a flat roof with a thin overhanging slab. A dim photo."
+   "notes": "One uniform 1950s-60s front in three sections split by concrete fins; this is the middle one. Weathered, grimy grey render; a balcony along each floor with thin iron railings, a flat roof with a thin overhanging slab. A dim photo.",
+   "layout": [
+    {
+     "from": [220.7, 713.3],
+     "to": [217.2, 702.8],
+     "photo": "facade-lidar-x217z708",
+     "storeys": [
+      [
+       ["window", 2.1, 2.8],
+       ["window", 5.8, 2.8],
+       ["door", 10.7, 0.3]
+      ],
+      null,
+      null,
+      null,
+      null
+     ]
+    }
+   ]
   },
   "lidar/x222z1634": {
    "seen": null,
@@ -808,7 +884,19 @@
    "seen": "facade-lidar-x230z734",
    "patch": null,
    "sure": false,
-   "notes": "A close-up looking up from the pavement. The outline spans two sections of the same old terrace: on the right (under the number) weathered beige render with a balcony along each floor, lattice railings and a pale marble door surround; on the left balconies with dark green fronts, planters and a ground floor of dark slate slabs, which facade-lidar-x237z752 (#1) suggests is this building. Grimy and stained."
+   "notes": "A close-up looking up from the pavement. The outline spans two sections of the same old terrace: on the right (under the number) weathered beige render with a balcony along each floor, lattice railings and a pale marble door surround; on the left balconies with dark green fronts, planters and a ground floor of dark slate slabs, which facade-lidar-x237z752 (#1) suggests is this building. Grimy and stained.",
+   "unread": [
+    {
+     "from": [230, 734.2],
+     "to": [228.6, 730.5],
+     "why": "Second pass, both photos seen: close-ups from the pavement about 8 m off, a wide lens. In facade-lidar-x230z734 the outline runs from x 1090 (top) to 1560 (foot) and off the frame's right edge, across the marble-framed door; in trees-1663394537780435-225 it starts at x 1210, on the shuttered window right of that door, and runs off the frame's right. Its right end is in neither, and only the ground floor and the balconies' undersides are in the frames."
+    },
+    {
+     "from": [234.9, 744.5],
+     "to": [231.5, 735.7],
+     "why": "Second pass, its three photos seen. Its left end is the corner with the pink house, seen only in facade-lidar-x237z752 (x 1000), where the slate ground floor runs on out of the frame's right edge. In trees-1663394537780435-225 and facade-lidar-x230z734 the slate ground floor runs out of the frames' left edge, and the outlines (x 200-940 and x 375-1250) disagree by a whole bay over where its right end is (by the marble-framed door, or in its middle; the balconies change from dark to light at x 880-940 in the second, which may be a joint). No photo shows both its ends, and at 8 m the balconies' slabs hide the upper storeys, the top out of all three frames."
+    }
+   ]
   },
   "lidar/x232z782": {
    "seen": null,
@@ -854,7 +942,14 @@
    "seen": "facade-lidar-x237z752",
    "patch": [876, 788, 986, 876],
    "sure": true,
-   "notes": "A narrow block in soft dusty pink render (between pale-pink and pink), every window in a broad frame of dressed granite, a granite border up its right edge and a low granite plinth; on its left a stack of curved concrete balconies with ornate iron railings. White PVC windows and roller shutters. Seen steeply from below, so the top floor may be cut off."
+   "notes": "A narrow block in soft dusty pink render (between pale-pink and pink), every window in a broad frame of dressed granite, a granite border up its right edge and a low granite plinth; on its left a stack of curved concrete balconies with ornate iron railings. White PVC windows and roller shutters. Seen steeply from below, so the top floor may be cut off.",
+   "unread": [
+    {
+     "from": [236.8, 750.7],
+     "to": [235.4, 745.7],
+     "why": "Its left end can't be placed. In facade-lidar-x237z752 (a wide-angle close-up from 7 m, looking up, its lines bent by the lens) the pink front's right end is clear (its grey corner strip against the dark grey neighbour with the air-conditioning unit, x about 990 at the foot), but nothing marks a left end: the camera's outline puts it through the ground floor's right window (x about 590), while the ground floor runs on unbroken past it (a second window, the entrance, then a shop at the frame's left edge) and the curved balconies above run off the frame too. By the ground-floor windows' size, 5.1 m from the right end would fall somewhere about the entrance or the shop, but the lens's curvature and the steep angle leave no line to fix it by. Only the ground floor and three storeys show; the storeys over the third and the eaves are above the frame. facade-lidar-x230z734 and trees-1663394537780435-225 (14-15 m) put the outline on the dark grey building with the planted balconies next door, not on the pink front; in trees-1002479414580038-0 (82 m by the tool) it is a 30 px sliver under the shop's curved canopy."
+    }
+   ]
   },
   "lidar/x241z1071": {
    "seen": null,
@@ -878,7 +973,41 @@
    "seen": "facade-lidar-x258z798",
    "patch": [445, 450, 560, 465],
    "sure": false,
-   "notes": "The LiDAR's outline is a long thin strip over the whole terrace: the star's block is a weathered grey-beige concrete one with bands of windows and pale blue-grey panels between them, a top floor set back with plants, the shoe shop's red fascia below. The same outline also covers a narrow white block, a white block with continuous balconies and a salmon one to its right. As viewpoint:lobato-crossing shows it: A modernist corner block of grimy off-white render: long ribbon windows in grey frames, a concrete planter ledge along the first floor, a tall blank column at the corner; the ground floor glazed all round the corner in frosted panels over a half-sunk dark base, a canopy on the side street. Its top is out of frame; block-1950s by its age and form (its ribbon windows are unlike the kind's)."
+   "notes": "The LiDAR's outline is a long thin strip over the whole terrace: the star's block is a weathered grey-beige concrete one with bands of windows and pale blue-grey panels between them, a top floor set back with plants, the shoe shop's red fascia below. The same outline also covers a narrow white block, a white block with continuous balconies and a salmon one to its right. As viewpoint:lobato-crossing shows it: A modernist corner block of grimy off-white render: long ribbon windows in grey frames, a concrete planter ledge along the first floor, a tall blank column at the corner; the ground floor glazed all round the corner in frosted panels over a half-sunk dark base, a canopy on the side street. Its top is out of frame; block-1950s by its age and form (its ribbon windows are unlike the kind's).",
+   "layout": [
+    {
+     "from": [265.7, 821.7],
+     "to": [268.2, 819.6],
+     "photo": "viewpoint:lobato-crossing",
+     "storeys": [
+      [
+       ["shop", 0, 3]
+      ],
+      [],
+      [],
+      null,
+      null,
+      null
+     ]
+    }
+   ],
+   "unread": [
+    {
+     "from": [260.4, 802],
+     "to": [248.7, 772.9],
+     "why": "Its left end and the left third of its upper storeys are behind the street tree, and its ground floor is crossed by poles. In its one face-on photo (facade-lidar-x258z798, 30 m off across the crossing) the front is three facades with their tops at three heights (the grey stone-and-render block over the shoe shop, a narrow white one, a white balconied block); its right end is likely the white block's joint with the orange building (x about 1050; the camera's outline ends some 40 px short of it), and 31.4 m from there at the photo's 26 px a metre falls at x about 205, about where the camera puts the left end and where the lower building on the left (dark roof, ivy) seems to meet the grey block, but that joint is behind the tree and the backs of the road signs, which hide the front from x about 20 to 430 between the ground floor's sign band and the top storey. So the storeys over the ground floor can't be read across their whole width, and the ground floor (the shoe shop's fronts, the white blocks' shops) is crossed by the traffic light's pole (x 545-585, some 1.5 m), the signal pole, the tree's trunk and pedestrians. trees-1039370801121754-195 looks along the front from its own pavement, steeply oblique (a marble-clad ground floor with shuttered windows close by, the balconies and the shoe shop's sign receding past the street trees), with no outline of the wall in it; in facade-lidar-x302z819 (65 m) the outline is at the frame's left edge behind a tree."
+    },
+    {
+     "from": [263.1, 806.8],
+     "to": [263.1, 803.8],
+     "why": "Not read in any of its four photos: in trees-1002479414580038-0 (taken along its own pavement) the camera's outline (x 55-320) is a steep sliver over the shop's glazing under the curved canopy, the front running on past it with no 3 m face to tell apart, its upper storeys above the frame; in viewpoint:lobato-crossing it is a sliver seen edge-on right of the corner face (x 580-605); in facade-lidar-x258z798 it is at the frame's left edge (x 0-105) behind the street tree; in trees-1607082650142855-300 it is about 4 px a metre, 103 m off, behind a tree."
+    },
+    {
+     "from": [242.4, 760.6],
+     "to": [238.1, 759.2],
+     "why": "Its photo (facade-lidar-x237z752) looks steeply up the pink block from close by: the wall's left end is out of the frame, and its storeys are behind the curved balconies stacked over it."
+    }
+   ]
   },
   "lidar/x269z1657": {
    "seen": null,
@@ -1366,7 +1495,14 @@
    "seen": "facade-way-1141066272",
    "patch": [1702, 154, 1766, 256],
    "sure": true,
-   "notes": "A low flat-roofed corner building in front of the tall block: a long band of big shop windows over a low half-sunk base (a car park entrance round the corner), a green-painted ledge above it, and a top floor of off-white render, stained with mould, with a white louvred shutter. The outline reaches up into the taller block behind, which the LiDAR's 7 floors may belong to."
+   "notes": "A low flat-roofed corner building in front of the tall block: a long band of big shop windows over a low half-sunk base (a car park entrance round the corner), a green-painted ledge above it, and a top floor of off-white render, stained with mould, with a white louvred shutter. The outline reaches up into the taller block behind, which the LiDAR's 7 floors may belong to.",
+   "unread": [
+    {
+     "from": [254.3, 824.8],
+     "to": [263.9, 821.7],
+     "why": "Second pass, its four photos seen. In facade-way-1141066272 (12 m) the low commercial building with the long glazed first floor starts at its corner (x 1085) and runs, close and steeply oblique, out of the frame's right edge, a parked SUV across its ground floor. In facade-way-1141066273 (a 640 px frame) it starts at x 370-415 and runs out of the frame's right edge too. In viewpoint:lobato-crossing only its right end is in the frame (x 360, the wall running out of the left edge), with traffic lights in front of it. In facade-lidar-x280z889 (100 m, 19 px a metre) the outline is on a far six-storey block, too small to read. Its other end is in none of them."
+    }
+   ]
   },
   "way/1141066273": {
    "type": "block-1970s-90s",
@@ -1380,7 +1516,14 @@
    "seen": "facade-way-1141066273",
    "patch": null,
    "sure": false,
-   "notes": "A narrow bay of a tall block: concrete balconies with dark metal railings stacked between two pale grey rendered pilasters, a glazed entrance on the ground floor. At least six storeys, its top hidden by a tree, though the map gives it two; small, dim photo."
+   "notes": "A narrow bay of a tall block: concrete balconies with dark metal railings stacked between two pale grey rendered pilasters, a glazed entrance on the ground floor. At least six storeys, its top hidden by a tree, though the map gives it two; small, dim photo.",
+   "unread": [
+    {
+     "from": [244, 817.2],
+     "to": [248, 826.9],
+     "why": "Which wall this is can't be told in any of its photos. In facade-lidar-x232z854 (54 m off; type-old-town-house-2 is the same frame, gridded once) the camera's outline (x 110-395) falls on the street's left side behind a bare tree, across the ground floor of the tall balconied block with the pharmacy's green cross and the lower building's glazed corner beyond it; no 10.5 m wall with 7.2 m eaves can be told there. In type-old-town-house-1 the outline is at the frame's left edge (x 0-175), running off it, on the same tall block's two lowest storeys (the pharmacy's sign), behind a parked car. In viewpoint:lobato-pavement (88 m off) the outline (x 395-550) falls on the road, in front of no building."
+    }
+   ]
   },
   "way/1141066274": {
    "type": "block-1970s-90s",
@@ -1408,7 +1551,14 @@
    "seen": "facade-way-1141072177",
    "patch": [1715, 256, 1792, 358],
    "sure": true,
-   "notes": "A sliver (23 m²) of a long block rendered in dusty pink: its outline holds the stack of projecting balconies with white concrete balustrades by the rounded corner. Grey-framed windows, a white cornice under a deep flat eave, six floors over a dark glazed ground floor of car showrooms. Seven storeys but 1950s-60s by its balustrades, rounded corner and window surrounds."
+   "notes": "A sliver (23 m²) of a long block rendered in dusty pink: its outline holds the stack of projecting balconies with white concrete balustrades by the rounded corner. Grey-framed windows, a white cornice under a deep flat eave, six floors over a dark glazed ground floor of car showrooms. Seven storeys but 1950s-60s by its balustrades, rounded corner and window surrounds.",
+   "unread": [
+    {
+     "from": [173.6, 609.9],
+     "to": [168.3, 611.5],
+     "why": "Which face it is is clearer than in the first pass, but its openings still can't be read. In the map w1 continues way/162945717's long arm and w0 its other front, so w0 should run from the block's corner: in facade-way-1141072177 that is the rounded corner wrapped by balconies (about x 1070-1140), and the tower's flat front from there to its right edge (x 1140-1305) measures about 6 m by the photo's storey heights, near the 5.6 m; the plain face right of it (x 1305-1505, about 7 m) fits less well. Both outlines (here and in facade-way-162945717) sit about 4 m right of that, on the plain face. But its left end is lost in the rounded corner, on each of its six upper storeys the one opening (about x 1215-1250) is behind the balcony's railing, so whether it's a balcony door or a window can't be told, and the showroom's glazing on the ground floor has no clear edges and a pedestrian before it. facade-way-162945717 is at dusk and about 20 px a metre and shows no more."
+    }
+   ]
   },
   "way/1141083231": {
    "seen": null,
@@ -2080,7 +2230,14 @@
    "seen": "facade-way-149897943",
    "patch": [1862, 166, 1888, 192],
    "sure": false,
-   "notes": "Seen over a weathered, cracked concrete canopy in front of its ground floor: pale rendered walls and piers with balconies along the front whose solid parapets are painted green, a second colour in bands. A ground-floor shop under the canopy with a half-cut estate agent's sign; top floors partly out of the frame. Strong blue cast."
+   "notes": "Seen over a weathered, cracked concrete canopy in front of its ground floor: pale rendered walls and piers with balconies along the front whose solid parapets are painted green, a second colour in bands. A ground-floor shop under the canopy with a half-cut estate agent's sign; top floors partly out of the frame. Strong blue cast.",
+   "unread": [
+    {
+     "from": [-39.3, 849.1],
+     "to": [-35.1, 847.7],
+     "why": "Second pass: its two photos are still the same image (facade-way-383762299 isn't gridded again for this wall), 48 m off. The green-bayed block shows only above the raised walkway's slab and rail (x 1130-1600, its corner against the sky at x 1130), its ground floor and first storey behind the walkway's slab, its pillar and the sign-boarded shop under it. The outline (x 1160-1270) is on its first bay, but the walkway rail's post (x 1245-1255) stands right where its right end would be, and nothing else on the block's front marks the 4.4 m wall's ends."
+    }
+   ]
   },
   "way/1549370737": {
    "type": "block-1970s-90s",
@@ -2191,7 +2348,14 @@
    "seen": "facade-way-162945717",
    "patch": [1286, 659, 1325, 710],
    "sure": true,
-   "notes": "A 1960s-looking block of 7 floors in dusky pink render with pale grey window surrounds and string courses; balustraded balconies wrap its rounded left corner, recessed loggias on the right part; a hipped tile roof. The ground floor's sign ('Brag...') is hidden; the outline's right end spills onto the nearer orange-and-white block."
+   "notes": "A 1960s-looking block of 7 floors in dusky pink render with pale grey window surrounds and string courses; balustraded balconies wrap its rounded left corner, recessed loggias on the right part; a hipped tile roof. The ground floor's sign ('Brag...') is hidden; the outline's right end spills onto the nearer orange-and-white block.",
+   "unread": [
+    {
+     "from": [168.3, 611.5],
+     "to": [143, 618.8],
+     "why": "Neither photo has both ends. In facade-way-162945717 (at dusk, 64 m off) the pink block's front shows from its left end, but a nearer block with white balconies stands in front of it from about a third of the way along. In facade-way-1141072177 its left end is past the corner piece, but it runs off the photo's right edge."
+    }
+   ]
   },
   "way/162945718": {
    "seen": null,
@@ -2213,7 +2377,14 @@
    "seen": "facade-way-162945720",
    "patch": [51, 550, 128, 602],
    "sure": true,
-   "notes": "Small 3-storey block with a hipped roof, blue-grey render with off-white bands at each floor and a cream stair bay with stacked balconies (white railings). Could be 1960s; its wide windows and slab balconies put it later."
+   "notes": "Small 3-storey block with a hipped roof, blue-grey render with off-white bands at each floor and a cream stair bay with stacked balconies (white railings). Could be 1960s; its wide windows and slab balconies put it later.",
+   "unread": [
+    {
+     "from": [-224.7, 734.7],
+     "to": [-239.2, 739.2],
+     "why": "In facade-way-162945720 its left end is out of the photo and a tree trunk hides its middle; facade-way-439166597 is 31 m off, backlit, and the wall is small and behind bare trees."
+    }
+   ]
   },
   "way/162945721": {
    "seen": null,
@@ -2235,7 +2406,19 @@
    "seen": "facade-way-162945724",
    "patch": [685, 442, 774, 506],
    "sure": true,
-   "notes": "A 1960s-70s detached house in pale grey render, its left part in a rough stipple render; a hipped roof with deep eaves on exposed rafters, a balcony with a white parapet and a dark rail slung out over the ground floor, and a lower wing on the left under a tiled roof with a brown boarded gable. Behind a granite-slab wall with a white railing."
+   "notes": "A 1960s-70s detached house in pale grey render, its left part in a rough stipple render; a hipped roof with deep eaves on exposed rafters, a balcony with a white parapet and a dark rail slung out over the ground floor, and a lower wing on the left under a tiled roof with a brown boarded gable. Behind a granite-slab wall with a white railing.",
+   "unread": [
+    {
+     "from": [-71.8, 690.5],
+     "to": [-77.5, 692.3],
+     "why": "As wall 1: the map's set-back right 6 m isn't in the photo. The house ends at its right corner (x 875) and side face (to x 960), and the camera's outline for it (x 800-1290) falls on that side face and on a lower block of flats further off. The ground floor is behind the hedge and the fence."
+    },
+    {
+     "from": [-64.3, 686.2],
+     "to": [-72.3, 688.8],
+     "why": "The photo's house front doesn't match the map's two walls. In the photo (about 62 px a metre by its upper storey's height) the front is a set-back left part, about 4 m of stipple render (x 100-350 on the gridded photo, under a deeper soffit with its rafters showing), then a forward right part about 8.5 m long (smooth render, x 350-875, with the balcony). The house's side face recedes from x 875. The map has it the other way round: the left 8.5 m (wall 1) forward and the right 6 m (wall 0) set back 1.6 m, with nothing of the house right of x 960 in the photo where wall 0 would be. So which face is wall 1 can't be told (the forward part has its length, the left part its place). And its ground floor is behind the lower wing's roof, the hedge and the fence."
+    }
+   ]
   },
   "way/162945725": {
    "type": "house",
@@ -2252,7 +2435,23 @@
    "seen": "facade-way-162945725",
    "patch": [614, 333, 659, 384],
    "sure": false,
-   "notes": "The right half of a semi-detached pair: a pink upper floor round a recessed balcony under the wide eave, a pale grey raised ground floor reached by outside stairs over a half-sunk garage. Its outline also covers the left half, whose upper floor is in cream and dark blue checked tiles; facade-way-440182287 puts that half under another id. Low warm sun."
+   "notes": "The right half of a semi-detached pair: a pink upper floor round a recessed balcony under the wide eave, a pale grey raised ground floor reached by outside stairs over a half-sunk garage. Its outline also covers the left half, whose upper floor is in cream and dark blue checked tiles; facade-way-440182287 puts that half under another id. Low warm sun.",
+   "layout": [
+    {
+     "from": [-91.6, 695],
+     "to": [-98.7, 697.3],
+     "photo": "facade-way-440182287",
+     "storeys": [
+      null,
+      null,
+      [
+       ["window", 0.2, 0.9],
+       ["window", 2.4, 1],
+       ["balcony", 4.7, 1.2]
+      ]
+     ]
+    }
+   ]
   },
   "way/162945726": {
    "seen": null,
@@ -2270,7 +2469,14 @@
    "seen": "facade-way-162945727",
    "patch": [1498, 384, 1542, 461],
    "sure": true,
-   "notes": "A 1960s-looking block of three storeys in slate blue-grey render, with beige bands along the sills and slab edges, beige window surrounds and wide beige eaves. Projecting balconies with dark iron railings; set back in a garden behind a low wall with a railing. Taken as block-1950s for its iron-railed balconies and banded render."
+   "notes": "A 1960s-looking block of three storeys in slate blue-grey render, with beige bands along the sills and slab edges, beige window surrounds and wide beige eaves. Projecting balconies with dark iron railings; set back in a garden behind a low wall with a railing. Taken as block-1950s for its iron-railed balconies and banded render.",
+   "unread": [
+    {
+     "from": [-253.5, 743.5],
+     "to": [-266.9, 747.5],
+     "why": "The close photo (16 m off) has its right end out of the frame and its right part behind a fir, with a plane tree's trunk across its left end. The far one (36 m) has its left part behind a fir and its right end behind a plane tree's trunk, with the trees' branches across its upper storeys and its ground floor behind the hedge and the fence."
+    }
+   ]
   },
   "way/162945728": {
    "type": "house",
@@ -2284,7 +2490,14 @@
    "seen": "facade-way-162945744",
    "patch": null,
    "sure": false,
-   "notes": "Behind trees here; seen better in facade-way-440159798: the dusty-pink half of a semi-detached pair, with panels of blue and white mosaic over the windows and a balcony along the first floor."
+   "notes": "Behind trees here; seen better in facade-way-440159798: the dusty-pink half of a semi-detached pair, with panels of blue and white mosaic over the windows and a balcony along the first floor.",
+   "unread": [
+    {
+     "from": [-113.9, 702.1],
+     "to": [-122.1, 704.7],
+     "why": "In facade-way-162945744 the pink house is behind a tree and the front garden's wall and railing, with only patches of its wall between the branches, and its left end off the photo's left edge. In facade-way-440159798 its left end is there (the pink front next to the cream house, x about 1140; the outline starts at 1305), but it runs off the photo's right edge."
+    }
+   ]
   },
   "way/162945729": {
    "type": "block-1970s-90s",
@@ -2324,7 +2537,14 @@
    "seen": "facade-way-162945733",
    "patch": null,
    "sure": true,
-   "notes": "The right end and side of a 1950s-60s semi-detached pair under one hipped terracotta roof with deep eaves: panels of grey granite-chip render, a column and panels of pale grey glazed tiles, a pale grey rendered band at the first floor and under the eaves. In the shade of a low sun behind it; its outline takes the corner and the side, the rest of the front falls in 1's."
+   "notes": "The right end and side of a 1950s-60s semi-detached pair under one hipped terracotta roof with deep eaves: panels of grey granite-chip render, a column and panels of pale grey glazed tiles, a pale grey rendered band at the first floor and under the eaves. In the shade of a low sun behind it; its outline takes the corner and the side, the rest of the front falls in 1's.",
+   "unread": [
+    {
+     "from": [-193.7, 726.2],
+     "to": [-200.9, 728.5],
+     "why": "The right half of a semi-detached pair (with way/440179239) whose front reads as one under one hipped roof: where the halves meet isn't seen in either photo. In facade-lidar-x-204z735 (straight on but small) palms hide its right end and both storeys there; in facade-way-162945733 (oblique) shrubs and the front fence hide its ground floor."
+    }
+   ]
   },
   "way/162945734": {
    "type": "block-1970s-90s",
@@ -2355,7 +2575,25 @@
    "seen": "facade-way-162945735",
    "patch": [768, 390, 791, 429],
    "sure": true,
-   "notes": "A corner block under a hipped tile roof: pale yellow-cream render, with panels of pale blue mosaic under and beside the windows; balconies with iron railings, one wrapping the corner; the ground floor faced in dark tiles, with white-framed windows and garage doors at its right end."
+   "notes": "A corner block under a hipped tile roof: pale yellow-cream render, with panels of pale blue mosaic under and beside the windows; balconies with iron railings, one wrapping the corner; the ground floor faced in dark tiles, with white-framed windows and garage doors at its right end.",
+   "layout": [
+    {
+     "from": [-298.3, 757.4],
+     "to": [-296.4, 771.3],
+     "photo": "facade-way-162945735",
+     "storeys": [
+      null,
+      [
+       ["window", 2.2, 1.6],
+       ["window", 5.4, 1.6],
+       ["window", 8.7, 1.6],
+       ["window", 12.2, 1.6]
+      ],
+      null,
+      null
+     ]
+    }
+   ]
   },
   "way/162945736": {
    "seen": null,
@@ -2377,7 +2615,14 @@
    "seen": "facade-way-162945738",
    "patch": [102, 410, 192, 538],
    "sure": true,
-   "notes": "a deep loggia under a wide eave, its back walls in pale grey granite slabs, the frame and side walls a warm grey render; a corner balcony with a white curled iron railing on a pillar. Behind a pale blue metal fence on a granite plinth."
+   "notes": "a deep loggia under a wide eave, its back walls in pale grey granite slabs, the frame and side walls a warm grey render; a corner balcony with a white curled iron railing on a pillar. Behind a pale blue metal fence on a granite plinth.",
+   "unread": [
+    {
+     "from": [-46.7, 676.4],
+     "to": [-55.9, 679.1],
+     "why": "Its left end is in no photo. Its only photo (facade-way-162945738, 11 m off) has the house's right corner against the sky (x about 880), but the front runs on past the frame's left edge (a window shows cut at x 0), where 9.6 m from that corner would fall well off the frame (the camera's outline runs from x 45 to some 400 px past the corner, over the trees). Its ground floor is behind the high boundary wall and gate, and the photo is smeared by motion (its verticals lean)."
+    }
+   ]
   },
   "way/162945739": {
    "type": "block-1970s-90s",
@@ -2412,7 +2657,14 @@
    "seen": "facade-way-162945742",
    "patch": [672, 544, 755, 595],
    "sure": true,
-   "notes": "A 1950s-60s house under a hipped terracotta roof with deep flat white eaves: a big dark grey granite-chip panel across the upper front, white render elsewhere, a corner porch with a white column and a balcony with an iron railing; the ground floor in pale beige brick-pattern tiles. Behind a garden wall with a green gate."
+   "notes": "A 1950s-60s house under a hipped terracotta roof with deep flat white eaves: a big dark grey granite-chip panel across the upper front, white render elsewhere, a corner porch with a white column and a balcony with an iron railing; the ground floor in pale beige brick-pattern tiles. Behind a garden wall with a green gate.",
+   "unread": [
+    {
+     "from": [-154.2, 714],
+     "to": [-162, 716.5],
+     "why": "Its left end isn't seen in any photo. In facade-way-162945742 (17 m off) the plane tree's trunk stands across the photo's left (x 0-300), hiding the wall's left end and left part on both storeys (only a bit of an upper window shows through it at x 265-290), and the ground floor's lower half is behind the green gate, the garden wall and the shrubs. In facade-way-162945733 and facade-way-440179239 it is tiny (about 16 px a metre), behind a parked car, the hedge, trees and the brick house in front; closeup-road-sign-1 puts it out of its left edge."
+    }
+   ]
   },
   "way/162945744": {
    "type": "house",
@@ -2426,7 +2678,14 @@
    "seen": "facade-way-162945744",
    "patch": [1690, 576, 1766, 640],
    "sure": true,
-   "notes": "Detached house with deep overhanging eaves and a low tiled roof; a dark red garage door, an iron railing across the first-floor window, vertical grooves in the render by the garage. Warmer than the white garden wall, close to cream."
+   "notes": "Detached house with deep overhanging eaves and a low tiled roof; a dark red garage door, an iron railing across the first-floor window, vertical grooves in the render by the garage. Warmer than the white garden wall, close to cream.",
+   "unread": [
+    {
+     "from": [-128.6, 706.4],
+     "to": [-139.9, 710],
+     "why": "Neither photo has both ends. In facade-way-162945744 the cream house's left end is at x about 1000, but its right part is behind a tree trunk and off the photo's right edge (about 7.7 of its 11.9 m in view), with its ground floor behind the garden wall and railing. In facade-way-440165529 its left part runs off the photo's left edge, and its ground floor is behind the gate and pillars."
+    }
+   ]
   },
   "way/162945745": {
    "type": "house",
@@ -2440,7 +2699,14 @@
    "seen": "facade-way-162945745",
    "patch": [1414, 410, 1450, 460],
    "sure": true,
-   "notes": "A 1970s-80s house: two storeys over a lower ground floor, a projecting bay with a railed balcony on each floor, cream bands round some windows, a tiled roof with wide eaves; a white garden wall with iron gates in front. Backlit and through windscreen glare."
+   "notes": "A 1970s-80s house: two storeys over a lower ground floor, a projecting bay with a railed balcony on each floor, cream bands round some windows, a tiled roof with wide eaves; a white garden wall with iron gates in front. Backlit and through windscreen glare.",
+   "unread": [
+    {
+     "from": [-213.6, 731.1],
+     "to": [-218.7, 732.8],
+     "why": "Second pass, its photos seen (garden-2 and type-detached-house-2 are still the same image). Which face it is isn't clear: in garden-2 the camera's outline starts on the low wing right of the gabled three-storey house and runs off the frame's right, and in facade-way-162945745 it falls across that low wing and the left edge of the grey three-storey block beyond it, neither matching three storeys and 8.2 m eaves; if it is the right half of the gabled front (a semi-detached pair with way/440180650), where the halves meet isn't marked and lens flare covers that front's right part in garden-2, and in 162945745 parked cars hide its ground floor. In facade-lidar-x-204z735 (49 m) the outline is at the frame's right edge behind a hedge and a pole."
+    }
+   ]
   },
   "way/163836411": {
    "seen": null,
@@ -2586,7 +2852,44 @@
    "seen": "facade-way-165861842",
    "patch": [1690, 384, 1766, 461],
    "sure": true,
-   "notes": "A block clad in small off-white oblong tiles laid like brick (cream in this low sun), with boxed bay windows in bronze-brown aluminium frames stacked up the front and projecting balconies with black railings at the corner; empty glazed shopfronts in dark frames below. The top floors are out of the frame (the LiDAR says 8). As viewpoint:fujacal-west shows it: Seen whole here, its flat top against the sky: three rows of white-shuttered windows over the glazed shops (UM sign), so 4 storeys, not the LiDAR's 8. This end has iron-railed corner balconies; the bays are on the front this photo doesn't see."
+   "notes": "A block clad in small off-white oblong tiles laid like brick (cream in this low sun), with boxed bay windows in bronze-brown aluminium frames stacked up the front and projecting balconies with black railings at the corner; empty glazed shopfronts in dark frames below. The top floors are out of the frame (the LiDAR says 8). As viewpoint:fujacal-west shows it: Seen whole here, its flat top against the sky: three rows of white-shuttered windows over the glazed shops (UM sign), so 4 storeys, not the LiDAR's 8. This end has iron-railed corner balconies; the bays are on the front this photo doesn't see.",
+   "layout": [
+    {
+     "from": [-271, 829.7],
+     "to": [-278.4, 830.8],
+     "photo": "viewpoint:fujacal-west",
+     "storeys": [
+      [
+       ["shop", 0.1, 5.1],
+       ["shop", 5.6, 1.7]
+      ],
+      [
+       ["window", 1.1, 1.8],
+       ["window", 4.2, 1.8]
+      ],
+      [
+       ["window", 1.3, 1.8],
+       ["window", 4.4, 1.8]
+      ],
+      [
+       ["window", 1.4, 1.7],
+       ["window", 4.6, 1.7]
+      ]
+     ]
+    }
+   ],
+   "unread": [
+    {
+     "from": [-278.1, 832.7],
+     "to": [-281.5, 833.1],
+     "why": "Not in any of its photos. In viewpoint:fujacal-west the face read as wall 1 (the plain grey face over the shop, x 100-280) is seen at an angle, and right of its right corner (x 280) there is only the sky and the trees beyond: this wall, set back about 2 m behind it, is hidden by it, and the camera's outline for it (x 175-240) falls on wall 1's face. In facade-way-440209470 (57 m) the building's end (x 350-450) is seen behind the bare trees, with only trees beyond its right corner. In facade-way-165861842 the camera's outline (x 1310-1530) falls at the frame's right edge on the part with black-railed balconies over a shop front, right of the long tiled front with the bay windows (a downpipe at x 1300 between them), running off the frame, its top above it. In facade-way-440208499 (91 m off) the outline (x 940-1010) is over the far end of the road, on the sky and the distant buildings there; in facade-way-162945734 and facade-way-440314433 it is 9 and 5 px a metre, behind the bare street trees."
+    },
+    {
+     "from": [-267.4, 831.5],
+     "to": [-270.7, 831.9],
+     "why": "Which face it is isn't sure and none of its photos shows it whole. In facade-way-165861842 the camera's outline (x 745-1000) falls across the long tiled front's bay windows (a bay window's corner at x 800, a downpipe at x 910), its top above the frame; the part with the black-railed balconies right of the front (x 1300 on), which may be it, runs off the frame's right edge. In viewpoint:fujacal-west the black-railed balconies at the frame's left edge (x 0-100) run off it. In facade-way-440209470 (47 m) its outline (x 170-270) is behind a bare tree's trunk and branches, its ground floor behind the fence and a tow truck; in facade-way-162945734 and facade-way-440314433 it is 12 and 6 px a metre behind the bare trees."
+    }
+   ]
   },
   "way/166231240": {
    "seen": null,
@@ -2904,7 +3207,14 @@
    "seen": "facade-way-185016794",
    "patch": null,
    "sure": false,
-   "notes": "Hidden here behind the parked silver minivan; described from facade-way-383765428 (#5): the Repsol station's car wash, a flat canopy over white walls and open bays behind a grille, under a blue fascia that reads 'Autolavagem'."
+   "notes": "Hidden here behind the parked silver minivan; described from facade-way-383765428 (#5): the Repsol station's car wash, a flat canopy over white walls and open bays behind a grille, under a blue fascia that reads 'Autolavagem'.",
+   "unread": [
+    {
+     "from": [157.3, 836.8],
+     "to": [155.5, 831.4],
+     "why": "Small and far in both photos (under 30 px a metre); in one a parked car fills the outline, in the other (the petrol station's car wash) a parked car, the flagpoles and the hedge hide its lower half."
+    }
+   ]
   },
   "way/185016802": {
    "type": "commercial",
@@ -2918,7 +3228,14 @@
    "seen": "facade-way-185016802",
    "patch": null,
    "sure": false,
-   "notes": "The petrol station's shop, almost wholly hidden behind a conifer and the station's price pylon ('Repshop', 'Solred'): only bits of a low pale wall show, under the forecourt canopy's black fascia lettered 'Repsol'."
+   "notes": "The petrol station's shop, almost wholly hidden behind a conifer and the station's price pylon ('Repshop', 'Solred'): only bits of a low pale wall show, under the forecourt canopy's black fascia lettered 'Repsol'.",
+   "unread": [
+    {
+     "from": [139.8, 843.5],
+     "to": [143.7, 855.2],
+     "why": "Its only photo has it at the frame's left edge (its left end out of the frame), behind the fuel price totem, a fir and the parked cars and van."
+    }
+   ]
   },
   "way/185016829": {
    "type": "commercial",
@@ -2938,7 +3255,14 @@
    "seen": "facade-way-383765428",
    "patch": null,
    "sure": true,
-   "notes": "A petrol station's canopy over the pumps, a deep black fascia with the name in white, white underneath, on white pillars; under and behind it a small white shop with a glazed front and a car wash with a blue fascia."
+   "notes": "A petrol station's canopy over the pumps, a deep black fascia with the name in white, white underneath, on white pillars; under and behind it a small white shop with a glazed front and a car wash with a blue fascia.",
+   "unread": [
+    {
+     "from": [166.3, 850],
+     "to": [161.9, 836.6],
+     "why": "It's the fuel station's canopy. In facade-way-383765428 the outline is on it: a roof on columns over the pumps, open underneath, with the car wash behind and the kiosk on its left (other buildings), so there's no wall here to read. In facade-way-185016794 it's far off behind parked cars and a tree."
+    }
+   ]
   },
   "way/217575801": {
    "type": "civic",
@@ -3483,7 +3807,14 @@
    "seen": "facade-way-284713314",
    "patch": null,
    "sure": true,
-   "notes": "A wing stepping forward on the right with a stack of projecting concrete balconies with iron railings, the lowest one glazed in. Ground floor of garages and small windows, a carport under a canopy. Shot in low evening light through a blue-tinted windscreen, so the wall reads blue-grey; the cream is judged from its neighbour in its other photo."
+   "notes": "A wing stepping forward on the right with a stack of projecting concrete balconies with iron railings, the lowest one glazed in. Ground floor of garages and small windows, a carport under a canopy. Shot in low evening light through a blue-tinted windscreen, so the wall reads blue-grey; the cream is judged from its neighbour in its other photo.",
+   "unread": [
+    {
+     "from": [-378.6, 928],
+     "to": [-377.1, 933.2],
+     "why": "Its right end isn't clear, and most of what would be its openings can't be read. In facade-way-284713314 (the only photo) the step from w1 shows as a vertical edge at x 245, but from there the front is a blank face (x 245-410, about 3 m) and then a bay of projecting balconies and a glazed loggia (x 410-590, its corner into the receding side wall at x 590): the 5.4 m wall ends either inside the bay or at its corner (about 6.5 m), which the photo doesn't settle, and the outline (x 160-450) doesn't either. The bay is in shadow, its balconies seen from the side across the doors behind them, the ground floor is behind a parked car, and the top storey is above the frame."
+    }
+   ]
   },
   "way/284713307": {
    "seen": null,
@@ -3501,7 +3832,14 @@
    "seen": "facade-way-284713309",
    "patch": [1754, 454, 1792, 544],
    "sure": true,
-   "notes": "A plain rendered block, pale grey to off-white, in deep evening shade; a stack of balconies with iron railings recessed into its corner, single windows with roller shutters on the flat side. A flat roof."
+   "notes": "A plain rendered block, pale grey to off-white, in deep evening shade; a stack of balconies with iron railings recessed into its corner, single windows with roller shutters on the flat side. A flat roof.",
+   "unread": [
+    {
+     "from": [-339.3, 887.7],
+     "to": [-356.4, 892.7],
+     "why": "Second pass: its only photo (facade-way-284713309) is from close by, looking along the wall. The block's front starts at its corner (x 1075-1105) and its 17.8 m run out of the frame's right edge (the foot of the camera's outline leaves the frame at x 1600), so its right end isn't in the photo; parked cars hide its ground floor."
+    }
+   ]
   },
   "way/284713310": {
    "type": "block-1970s-90s",
@@ -3601,7 +3939,44 @@
    "seen": "facade-way-284713326",
    "patch": null,
    "sure": true,
-   "notes": "Small square tiles: the left bay, a little forward with wide sliding windows and no balconies, looks greyer than the yellowish right part with its concrete balconies and a grey tile panel round one window. A flat roof; a dusk photo, the front in shade."
+   "notes": "Small square tiles: the left bay, a little forward with wide sliding windows and no balconies, looks greyer than the yellowish right part with its concrete balconies and a grey tile panel round one window. A flat roof; a dusk photo, the front in shade.",
+   "layout": [
+    {
+     "from": [-331.8, 1010.3],
+     "to": [-331.2, 1028.8],
+     "photo": "facade-way-284713326",
+     "storeys": [
+      [
+       ["window", 1.3, 1.9],
+       ["window", 4.3, 1.9],
+       ["door", 7.6, 2],
+       ["window", 11, 1.5],
+       ["window", 14.2, 1.5]
+      ],
+      [
+       ["window", 0.4, 3.5],
+       ["window", 4.3, 3.3],
+       ["window", 8.1, 1.5],
+       ["balcony", 11.1, 1.5],
+       ["window", 14.3, 1.5]
+      ],
+      [
+       ["window", 0.5, 3.4],
+       ["window", 4.3, 3.3],
+       ["window", 8.1, 1.5],
+       ["balcony", 11.2, 1.5],
+       ["balcony", 14.3, 1.6]
+      ],
+      [
+       ["window", 0.5, 3.4],
+       ["window", 4.4, 3.3],
+       ["window", 8.2, 1.6],
+       ["balcony", 11.3, 1.6],
+       ["balcony", 14.5, 1.6]
+      ]
+     ]
+    }
+   ]
   },
   "way/323646321": {
    "type": "block-1970s-90s",
@@ -3624,7 +3999,47 @@
    "seen": "facade-way-323646321",
    "patch": [774, 256, 826, 333],
    "sure": true,
-   "notes": "A corner block in small pale-grey tiles with two columns of glazed-in balconies up the front, white-framed windows and white roller shutters. Its ground floor of shops is recessed behind black stone pillars, under grey stone fascias: an insurance agency with a green band and a supermarket at the corner. The top is out of frame here; its far end counts six storeys in facade-way-983551354."
+   "notes": "A corner block in small pale-grey tiles with two columns of glazed-in balconies up the front, white-framed windows and white roller shutters. Its ground floor of shops is recessed behind black stone pillars, under grey stone fascias: an insurance agency with a green band and a supermarket at the corner. The top is out of frame here; its far end counts six storeys in facade-way-983551354.",
+   "layout": [
+    {
+     "from": [-259.6, 985],
+     "to": [-258.5, 988.6],
+     "photo": "facade-way-323646321",
+     "storeys": [
+      null,
+      [
+       ["window", 1.4, 0.5],
+       ["window", 2.1, 1.5]
+      ],
+      [
+       ["window", 1.4, 0.5],
+       ["window", 2.1, 1.5]
+      ],
+      [
+       ["window", 1.4, 0.5],
+       ["window", 2.1, 1.5]
+      ],
+      null,
+      null
+     ]
+    },
+    {
+     "from": [-263.9, 978.6],
+     "to": [-261.7, 985.6],
+     "photo": "facade-way-383763155",
+     "storeys": [
+      [
+       ["shop", 0, 2.6],
+       ["shop", 3.4, 3.9]
+      ],
+      null,
+      null,
+      null,
+      null,
+      null
+     ]
+    }
+   ]
   },
   "way/323647900": {
    "type": "old-house",
@@ -3669,7 +4084,14 @@
    "seen": "facade-way-323651067",
    "patch": [832, 128, 858, 166],
    "sure": true,
-   "notes": "Its outline spans three fronts over one row of glazed shops: in the middle (where the star is) pale grey stone slabs on a tower bay and on balconies running along the front, white render behind them, a top floor set back under a slab roof; on the left a pale grey rendered block with corner balconies; on the right a pale pink rendered block with white shutters."
+   "notes": "Its outline spans three fronts over one row of glazed shops: in the middle (where the star is) pale grey stone slabs on a tower bay and on balconies running along the front, white render behind them, a top floor set back under a slab roof; on the left a pale grey rendered block with corner balconies; on the right a pale pink rendered block with white shutters.",
+   "unread": [
+    {
+     "from": [190.8, 808.4],
+     "to": [201.9, 841.4],
+     "why": "Its right end is in no photo. In facade-way-323651067 (35 m) its left end shows (the grey stone-clad tower's left corner, x about 490; the camera puts it at 545), but the 34.8 m front (the tower, the balconied block, the cream block with the glazed shop fronts) runs off the photo's right edge, the cream block's top above the frame, and parked cars and the street's bare trees stand across its ground floor. In viewpoint:lobato-pavement the outline (x 0-305) is across the street at the photo's left edge, behind parked cars and bare trees, running off the left. In facade-way-185016802 (98 m) the outline (x 85-590) is behind a petrol station's price sign and a conifer, about 17 px a metre."
+    }
+   ]
   },
   "way/365405515": {
    "seen": null,
@@ -3753,7 +4175,14 @@
    "seen": "facade-way-383761122",
    "patch": [1792, 614, 1920, 653],
    "sure": true,
-   "notes": "A one-storey white corner shop whose plain parapet hides an old, rusty gabled roof of terracotta tiles behind; big shop windows covered in the showroom's vinyl (white, and a red panel). Its outline also takes the lower part of the weathered cream old house to its left, behind a plane tree."
+   "notes": "A one-storey white corner shop whose plain parapet hides an old, rusty gabled roof of terracotta tiles behind; big shop windows covered in the showroom's vinyl (white, and a red panel). Its outline also takes the lower part of the weathered cream old house to its left, behind a plane tree.",
+   "unread": [
+    {
+     "from": [-287, 811],
+     "to": [-278.3, 808.1],
+     "why": "In its only photo (facade-way-383761122) the shop front runs on past the photo's right edge, so its right end isn't seen; its left part is seen at a steep angle."
+    }
+   ]
   },
   "way/383761123": {
    "type": "block-1970s-90s",
@@ -3767,7 +4196,14 @@
    "seen": "viewpoint:travessa-fujacal",
    "patch": [538, 77, 666, 205],
    "sure": true,
-   "notes": "White tiled walls; only the lowest floors are in frame: a projecting white first floor with air-conditioning units, a stack of glazed-in balconies on the corner, and a ground floor of glazed office or clinic fronts (one window filled with an advert) up marble steps, over garage doors in grey render where the lane drops."
+   "notes": "White tiled walls; only the lowest floors are in frame: a projecting white first floor with air-conditioning units, a stack of glazed-in balconies on the corner, and a ground floor of glazed office or clinic fronts (one window filled with an advert) up marble steps, over garage doors in grey render where the lane drops.",
+   "unread": [
+    {
+     "from": [-272, 798.3],
+     "to": [-268.6, 797.2],
+     "why": "Its left end isn't marked in its only photo (viewpoint:travessa-fujacal, 11 m off). The right end is clear (the corner with the downpipe where wall 1's glazed ground floor begins, x about 710), but left of the entrance the white wall runs on flush at ground level, past the air-conditioning units, into the lower building with the poster and the roof-terrace railing, with no joint, downpipe or change of finish. The camera puts the left end on that plain wall (x about 320), while the only edge there, the left end of the upper storeys' overhang, is at x about 400, so which is the wall's end isn't sure, and the photo's scale doesn't settle it. The storeys over the entrance run above the frame's top (the eaves are 16.3 m; only the plain face of the first storey over the overhang shows, x 400-710), so they can't be counted. What shows is the recessed porch: marble steps up to a brown-framed glazed door with a louvred transom, under the overhang."
+    }
+   ]
   },
   "way/383762299": {
    "type": "block-1970s-90s",
@@ -3822,7 +4258,14 @@
    "seen": "facade-way-383763155",
    "patch": [1114, 676, 1203, 707],
    "sure": true,
-   "notes": "The two-storey corner podium under a tall pale grey block: glazed shopfronts between grey stone pillars, a grey stone fascia with an orange supermarket band, and above it a band of dark windows over a green-striped Tranquilidade sign. The block above is a different building."
+   "notes": "The two-storey corner podium under a tall pale grey block: glazed shopfronts between grey stone pillars, a grey stone fascia with an orange supermarket band, and above it a band of dark windows over a green-striped Tranquilidade sign. The block above is a different building.",
+   "unread": [
+    {
+     "from": [-264.2, 966.1],
+     "to": [-262.9, 972.9],
+     "why": "Too small to read in both photos: in one only a tree and a billboard where the outline is, at the frame's edge; in the other about 20 px a metre, a part of a supermarket's continuous ground-floor front under a tower block, its ends not to be told, with a pedestrian and a tree in front."
+    }
+   ]
   },
   "way/383763156": {
    "seen": null,
@@ -3840,7 +4283,19 @@
    "seen": "facade-way-383764627",
    "patch": [198, 640, 294, 755],
    "sure": false,
-   "notes": "The tall single-storey building on the left corner: a white rendered side wall with one dark doorway, dressed granite blocks at the corner and a terracotta roof, the belfry's stack at its end. facade-way-983551348 shows the chapel's all-granite gable front with a cross and the arched bell gable behind; the outline here mostly covers the street beyond it."
+   "notes": "The tall single-storey building on the left corner: a white rendered side wall with one dark doorway, dressed granite blocks at the corner and a terracotta roof, the belfry's stack at its end. facade-way-983551348 shows the chapel's all-granite gable front with a cross and the arched bell gable behind; the outline here mostly covers the street beyond it.",
+   "layout": [
+    {
+     "from": [-261.9, 1006.7],
+     "to": [-270.7, 1009.4],
+     "photo": "facade-way-473734203",
+     "storeys": [
+      [
+       ["door", 4, 1.1]
+      ]
+     ]
+    }
+   ]
   },
   "way/383764628": {
    "type": "block-1950s",
@@ -3857,7 +4312,14 @@
    "seen": "facade-way-383764628",
    "patch": [1692, 364, 1741, 412],
    "sure": true,
-   "notes": "A worn 1950s-60s block: warm grey-beige render in a frame of dark grey bands, stained concrete balconies with iron bar railings, white roller shutters, a flat roof edge. Car-repair workshops in its dark ground floor ('Reparações Gerais em Automóveis', a red oil-can emblem), no name readable."
+   "notes": "A worn 1950s-60s block: warm grey-beige render in a frame of dark grey bands, stained concrete balconies with iron bar railings, white roller shutters, a flat roof edge. Car-repair workshops in its dark ground floor ('Reparações Gerais em Automóveis', a red oil-can emblem), no name readable.",
+   "unread": [
+    {
+     "from": [-242.1, 999.7],
+     "to": [-252.1, 1002.4],
+     "why": "Its only photo looks along the street at it: at the photo's right edge, far too oblique, with its right end off the photo, its balconies standing out across it, and a parked car across its ground floor (a car repair shop's front)."
+    }
+   ]
   },
   "way/383764895": {
    "type": "block-1950s",
@@ -3922,7 +4384,14 @@
    "seen": "facade-way-383765124",
    "patch": [530, 761, 548, 809],
    "sure": true,
-   "notes": "A terrace of old two-storey houses under one outline: dressed granite frames and cornice, iron balconies on stone slabs, green wooden doors, dormers in the terracotta roof. The left end is under scaffolding and sheeting."
+   "notes": "A terrace of old two-storey houses under one outline: dressed granite frames and cornice, iron balconies on stone slabs, green wooden doors, dormers in the terracotta roof. The left end is under scaffolding and sheeting.",
+   "unread": [
+    {
+     "from": [276.8, 878.4],
+     "to": [254, 840.5],
+     "why": "Most of its 44 m is hidden: in facade-way-383765124 a scaffold's sheeting covers its left part, a bus shelter's post its middle and trees its right end; in trees-3904151073187946-210 trees hide almost all of it."
+    }
+   ]
   },
   "way/383765200": {
    "type": "block-1970s-90s",
@@ -3962,7 +4431,32 @@
    "seen": "facade-way-383765428",
    "patch": null,
    "sure": true,
-   "notes": "A corner block in small pale grey tiles, with a bay of pink tiles and a white-framed glazed stair on its left end; balconies set into the front with iron railings, one full of pot plants. A dusk photo with a cyan cast. The shop fronts are glazed under a cream fascia; the café's name in brown script."
+   "notes": "A corner block in small pale grey tiles, with a bay of pink tiles and a white-framed glazed stair on its left end; balconies set into the front with iron railings, one full of pot plants. A dusk photo with a cyan cast. The shop fronts are glazed under a cream fascia; the café's name in brown script.",
+   "layout": [
+    {
+     "from": [150.2, 824.1],
+     "to": [162.2, 820.2],
+     "photo": "facade-way-383765428",
+     "storeys": [
+      null,
+      [
+       ["balcony", 2.1, 1.9],
+       ["balcony", 4.6, 1.2],
+       ["window", 8.8, 1.9]
+      ],
+      [
+       ["balcony", 2.2, 1.9],
+       ["balcony", 4.7, 1.1],
+       ["window", 8.8, 1.9]
+      ],
+      [
+       ["balcony", 2.2, 1.8],
+       ["balcony", 4.8, 1.1],
+       ["window", 8.9, 1.9]
+      ]
+     ]
+    }
+   ]
   },
   "way/383766229": {
    "type": "block-1970s-90s",
@@ -3976,7 +4470,24 @@
    "seen": "facade-way-383766229",
    "patch": null,
    "sure": false,
-   "notes": "Only its ground floor shows here: pale render, the restaurant's cream awnings carried on from its neighbour, a passage through under the building on square pillars, and a greengrocer's with crates. From facade-way-982804048: upper floors in white render with grey-green balcony fronts and white roller shutters, and a section faced in dark-green tiles over the greengrocer's."
+   "notes": "Only its ground floor shows here: pale render, the restaurant's cream awnings carried on from its neighbour, a passage through under the building on square pillars, and a greengrocer's with crates. From facade-way-982804048: upper floors in white render with grey-green balcony fronts and white roller shutters, and a section faced in dark-green tiles over the greengrocer's.",
+   "layout": [
+    {
+     "from": [-10.8, 839.6],
+     "to": [-6.2, 838.1],
+     "photo": "facade-way-982804048",
+     "storeys": [
+      [
+       ["shop", 0.8, 1.6],
+       ["door", 2.7, 1.2]
+      ],
+      null,
+      null,
+      null,
+      null
+     ]
+    }
+   ]
   },
   "way/383766235": {
    "type": "block-1970s-90s",
@@ -3993,7 +4504,19 @@
    "seen": "facade-way-383766235",
    "patch": [749, 192, 800, 358],
    "sure": true,
-   "notes": "White render with a band of dark green brick-shaped tiles on each balcony's parapet, the balconies glazed in; the ground floor rendered pale yellow, its wide windows behind white roller shutters. Only the two lowest storeys show here, through a cyan-tinted windscreen; the five storeys counted in facade-way-982804043."
+   "notes": "White render with a band of dark green brick-shaped tiles on each balcony's parapet, the balconies glazed in; the ground floor rendered pale yellow, its wide windows behind white roller shutters. Only the two lowest storeys show here, through a cyan-tinted windscreen; the five storeys counted in facade-way-982804043.",
+   "unread": [
+    {
+     "from": [-107.3, 853],
+     "to": [-110.7, 854.1],
+     "why": "Which piece of the block's front it is still can't be told. In the far photo (facade-way-982804043, 57 m) the front alternates green balconied bays and white strips (about 5.5, 2.8 and 5.2 m from x 1000 to 1390), which doesn't fit the map's 3.6 m forward piece, 2.5 m recess and 5 m piece, and the outline (x 1105-1190) falls across a bay's right part and the strip. In the near photo facade-way-383766235 the outline falls on the yellow ground floor under a wide green bay that runs out of the photo's left, so its left end isn't seen; facade-way-982774306 (its other near photo) has w3's outline at its left edge, this wall out of the frame."
+    },
+    {
+     "from": [-113.1, 854.9],
+     "to": [-117.8, 856.4],
+     "why": "As w2, which bay it is can't be told: in facade-way-982804043 the outline (x 1245-1360) falls on the green bay at x 1240-1390, but in both near photos (facade-way-383766235 x 475-615, facade-way-982774306 x 0-150) it falls on a white strip over the grey, recessed ground floor, two bays short of the block's end, and in facade-way-982774306 its left end is out of the photo's left edge."
+    }
+   ]
   },
   "way/383776389": {
    "type": "block-1970s-90s",
@@ -4007,7 +4530,14 @@
    "seen": "facade-way-383776389",
    "patch": [384, 622, 412, 643],
    "sure": true,
-   "notes": "Walls in small brick-shaped cream tiles, behind the avenue's bare plane trees; a glazed ground floor up a flight of steps over a half-sunk floor with small windows, long balconies with dark iron railings, white roller shutters. Its top floors are out of the frame."
+   "notes": "Walls in small brick-shaped cream tiles, behind the avenue's bare plane trees; a glazed ground floor up a flight of steps over a half-sunk floor with small windows, long balconies with dark iron railings, white roller shutters. Its top floors are out of the frame.",
+   "unread": [
+    {
+     "from": [-167.5, 873.5],
+     "to": [-162.3, 889.2],
+     "why": "Hidden behind the avenue's bare plane trees in both photos. In facade-way-383776389 (outline x 20-690) two trunks (x 100-160, x 400-440) and the crowns' branches stand across the whole wall, its top is above the photo and its left end at the photo's left edge; in viewpoint:alameda-fujacal (outline x 125-530) three trunks and their dense crowns cover most of it and the garden wall its foot."
+    }
+   ]
   },
   "way/383776702": {
    "type": "civic",
@@ -4035,7 +4565,14 @@
    "seen": "facade-way-383777777",
    "patch": [1728, 486, 1856, 563],
    "sure": true,
-   "notes": "A long blank grey wall of a garage block on top of a grassy bank, a thin flat roof with a strip of corrugated sheet at its left end; its doors face away. Its outline's foot runs down the bank."
+   "notes": "A long blank grey wall of a garage block on top of a grassy bank, a thin flat roof with a strip of corrugated sheet at its left end; its doors face away. Its outline's foot runs down the bank.",
+   "unread": [
+    {
+     "from": [-262.1, 770.6],
+     "to": [-256.5, 774.7],
+     "why": "A grassy bank in front hides it in its only photo (facade-way-383777777): only the tops of blank walls show over the bank, running on out of the photo to the right, and which of them is this annex's isn't sure."
+    }
+   ]
   },
   "way/383777939": {
    "type": "annex",
@@ -4049,7 +4586,14 @@
    "seen": "facade-way-383777777",
    "patch": [384, 256, 576, 333],
    "sure": false,
-   "notes": "A rough wall of granite blocks on top of the bank, a corrugated sheet roof showing over its right end; it may be partly a boundary wall in front of the garage."
+   "notes": "A rough wall of granite blocks on top of the bank, a corrugated sheet roof showing over its right end; it may be partly a boundary wall in front of the garage.",
+   "unread": [
+    {
+     "from": [-272, 773.8],
+     "to": [-263.4, 771.9],
+     "why": "Neither end can be placed. In facade-way-383777777 (12 m, from the road below the bank) it is a blank rubble-stone wall at the top of a steep grassy bank, running from the blue block's wall (x about 875) to behind the pole at the frame's left edge. A corrugated roof shows only over its right part (x 540-875, some 2.5 m), and left of that the same stone wall runs on with nothing above it, so where the annex ends and a boundary wall begins isn't seen; the camera's outline (x 0-700) has its right end under the roof and its left end off the frame. The bank's grass and weeds hide its foot. In viewpoint:travessa-fujacal it is 33 m off: about 3.5 m of a stone wall at the top of the same bank shows (x 1185-1385), the rest behind the building on the right."
+    }
+   ]
   },
   "way/383778920": {
    "type": "annex",
@@ -4095,7 +4639,14 @@
    "seen": "facade-way-383783708",
    "patch": [1472, 256, 1523, 333],
    "sure": true,
-   "notes": "An abandoned old house: faded yellowish-beige render with granite window frames and a granite cornice, granite pinnacles at its corners, a terracotta tiled roof; the upper windows walled up, a barred ground-floor window, ivy over much of the front and a big billboard on it."
+   "notes": "An abandoned old house: faded yellowish-beige render with granite window frames and a granite cornice, granite pinnacles at its corners, a terracotta tiled roof; the upper windows walled up, a barred ground-floor window, ivy over much of the front and a big billboard on it.",
+   "unread": [
+    {
+     "from": [-311.4, 763.1],
+     "to": [-326.1, 767.9],
+     "why": "In both photos a billboard covers most of its upper storey and ivy the rest; its ground floor's windows are boarded up behind posters, ivy and parked cars in front; its right end is out of the frame in one and unclear in the other."
+    }
+   ]
   },
   "way/383785797": {
    "type": "block-1970s-90s",
@@ -4109,7 +4660,14 @@
    "seen": "facade-way-383785797",
    "patch": null,
    "sure": false,
-   "notes": "Only its corner at the photo's right edge: glazed-in balconies with dark frames over concrete slabs with pale railings, the upper floors overhanging a ground floor of windows; weathered, stained render. The outline sits too far left, over the grey block #1; a strong blue cast and shade make the colour a guess."
+   "notes": "Only its corner at the photo's right edge: glazed-in balconies with dark frames over concrete slabs with pale railings, the upper floors overhanging a ground floor of windows; weathered, stained render. The outline sits too far left, over the grey block #1; a strong blue cast and shade make the colour a guess.",
+   "unread": [
+    {
+     "from": [-145.6, 814.8],
+     "to": [-143.9, 819.5],
+     "why": "Second pass: its two photos are still the same image (facade-way-982766803 and facade-way-383785797, gridded the same). The camera's outline starts at x 1250-1300 and its foot runs off the frame's bottom right: the wall is the yellow balconied block at the right edge (x 1450-1600), seen at a steep angle from about 11 m, its near end out of the frame and its ground floor behind the parked silver car, so neither its two ends nor a line across it at both ends can be read."
+    }
+   ]
   },
   "way/383788526": {
    "seen": null,
@@ -4197,7 +4755,14 @@
    "seen": "facade-way-982763825",
    "patch": [1395, 435, 1536, 499],
    "sure": true,
-   "notes": "An old, disused industrial hall: one tall storey under a terracotta tile roof, its long faded cream rendered front divided by pilasters into blind recessed panels, with graffiti; the lower wall is pasted over with posters, and ivy climbs its left end."
+   "notes": "An old, disused industrial hall: one tall storey under a terracotta tile roof, its long faded cream rendered front divided by pilasters into blind recessed panels, with graffiti; the lower wall is pasted over with posters, and ivy climbs its left end.",
+   "unread": [
+    {
+     "from": [-349.8, 775],
+     "to": [-372.1, 782.1],
+     "why": "Its only photo has its left end: the outline starts on the ivy-covered corner of the taller old building (x about 440), and the single-storey wall with blind panels and posters starts at x about 700. But it runs off the photo's right edge, about 15 of the map's 23.5 m in view."
+    }
+   ]
   },
   "way/393579619": {
    "type": "block-1970s-90s",
@@ -4268,7 +4833,14 @@
    "seen": "facade-way-439164648",
    "patch": [1709, 179, 1743, 275],
    "sure": true,
-   "notes": "Beige render with panels of pale blue-white mosaic round and under the windows, a ground floor in dark navy-black mosaic, balconies with solid parapets and a thin white rail, white-framed windows. Set back behind a garden wall and railings; its top is out of the frame. As viewpoint:travessa-fujacal shows it: This photo sees its back over the stone retaining wall: very light cream render with a stack of pale-yellow panels between the windows, white roller shutters, a terracotta hipped roof, no mosaic or balconies on this side; much lighter than beige, and the same as its neighbour 4 (recorded cream), whose front matches it."
+   "notes": "Beige render with panels of pale blue-white mosaic round and under the windows, a ground floor in dark navy-black mosaic, balconies with solid parapets and a thin white rail, white-framed windows. Set back behind a garden wall and railings; its top is out of the frame. As viewpoint:travessa-fujacal shows it: This photo sees its back over the stone retaining wall: very light cream render with a stack of pale-yellow panels between the windows, white roller shutters, a terracotta hipped roof, no mosaic or balconies on this side; much lighter than beige, and the same as its neighbour 4 (recorded cream), whose front matches it.",
+   "unread": [
+    {
+     "from": [-273.4, 749.4],
+     "to": [-281.9, 752.1],
+     "why": "No photo shows both its ends. In facade-way-439164648 it runs from x 1170 out of the photo's right (its top out of the top), behind the hedge and a plane tree's trunk; in facade-way-439164650 (close up, 110 px a metre) its right end is at x 330-380 and it runs out of the photo's left, its top out of the top; in facade-way-162945735 it is a narrow steep strip (x 285-350) at 9 px a metre, too small to read."
+    }
+   ]
   },
   "way/439164650": {
    "type": "block-1950s",
@@ -4285,7 +4857,14 @@
    "seen": "facade-way-439164650",
    "patch": [742, 192, 806, 294],
    "sure": true,
-   "notes": "Cream render, grimy in this dull photo, with projecting balconies with solid fronts and thin iron rails, and panels of pale-blue mosaic above and below the windows of its middle bay. The raised ground floor is in near-black blue mosaic, with entrance doors patterned in black and white behind a front garden; its top is out of the frame, the floors counted in facade-way-162945735."
+   "notes": "Cream render, grimy in this dull photo, with projecting balconies with solid fronts and thin iron rails, and panels of pale-blue mosaic above and below the windows of its middle bay. The raised ground floor is in near-black blue mosaic, with entrance doors patterned in black and white behind a front garden; its top is out of the frame, the floors counted in facade-way-162945735.",
+   "unread": [
+    {
+     "from": [-281.9, 752.1],
+     "to": [-290.7, 754.9],
+     "why": "Second pass: facade-way-439164650 (from 12 m) shows the dark-mosaic raised ground floor and the first storey clearly, but where this block of the continuous row begins and ends isn't marked: the balconies' rails change from white to black at a column at x 315 and back to white at x 1140, by the pair of entrances under one canopy, but at the ground floor the mosaic runs on unbroken and the left entrance's surround (x 210-340) straddles the left change, while the camera puts its ends at x 375 and 1280. A straight-on try between the rail changes put a part of that entrance inside the wall, so its ends are left unread. Its foot is behind the front garden's plinth wall, railing and shrubs, the first storey's openings are behind the balconies' slabs and rails, and the two storeys above are out of the frame. facade-way-162945735 has it at 12 px a metre, steeply sideways past the corner block."
+    }
+   ]
   },
   "way/439166597": {
    "type": "block-1970s-90s",
@@ -4299,7 +4878,14 @@
    "seen": "facade-way-439166597",
    "patch": [1280, 461, 1344, 506],
    "sure": true,
-   "notes": "Partly behind trees and a bus shelter, its ground floor hidden; seen better as #1 in facade-way-162945720: blue-grey render with off-white bands at the floors, balconies with railings. A storey taller than the block to its left; late light makes it read neutral grey here."
+   "notes": "Partly behind trees and a bus shelter, its ground floor hidden; seen better as #1 in facade-way-162945720: blue-grey render with off-white bands at the floors, balconies with railings. A storey taller than the block to its left; late light makes it read neutral grey here.",
+   "unread": [
+    {
+     "from": [-245.6, 741.2],
+     "to": [-253.5, 743.5],
+     "why": "Second pass, its photos seen (facade-way-439166597 and type-block-1970s-1990s-3 are still the same image). In facade-way-439166597 the outline (x 720-1390) spans the grey three-storey block and the blue block beyond it, with the bus shelter, a parked car, a bare tree and palms in front and the blue block's top out of the frame. In facade-way-162945720 the outline starts at the blue block's front corner (x 1235) and runs out of the frame's right edge (4.4 m of its 8.2 m in the photo), a palm and shrubs in front of its ground floor. In facade-way-162945727 the outline falls left of the blue block, on a house behind the bare trees' trunks and branches, the bus shelter and a car. No photo shows both its ends unhidden, and which block it is isn't sure."
+    }
+   ]
   },
   "way/439181118": {
    "type": "house",
@@ -4355,7 +4941,21 @@
    "seen": "facade-way-440159798",
    "patch": [947, 294, 1050, 384],
    "sure": true,
-   "notes": "Semi-detached, its right neighbour the deep pink house: off-white render with panels of small pale pink tiles over and under each window, a balcony with a railing over the porch and the side door. A terracotta hipped roof; behind a garden wall of beige stone slabs with a grey driveway gate."
+   "notes": "Semi-detached, its right neighbour the deep pink house: off-white render with panels of small pale pink tiles over and under each window, a balcony with a railing over the porch and the side door. A terracotta hipped roof; behind a garden wall of beige stone slabs with a grey driveway gate.",
+   "layout": [
+    {
+     "from": [-104.8, 699.2],
+     "to": [-113.9, 702.1],
+     "photo": "facade-way-440159798",
+     "storeys": [
+      null,
+      [
+       ["balcony", 0.6, 1.6],
+       ["window", 5.5, 2.7]
+      ]
+     ]
+    }
+   ]
   },
   "way/440164781": {
    "type": "annex",
@@ -4369,7 +4969,14 @@
    "seen": "facade-way-440165529",
    "patch": null,
    "sure": false,
-   "notes": "Behind the neighbour's gate and a bush: only a low white wall with a railing above a driveway ramp, which looks like the edge of a garage sunk below it."
+   "notes": "Behind the neighbour's gate and a bush: only a low white wall with a railing above a driveway ramp, which looks like the edge of a garage sunk below it.",
+   "unread": [
+    {
+     "from": [-135.7, 723.2],
+     "to": [-139.3, 724.3],
+     "why": "A small low annex at the back of a sloping drive between the two houses, seen through the front gate's bars over the garden wall. The outline (x 578-735, y 645-757) holds only a strip of a low grey wall and a shrub between the bars, too little to tell its ends or any opening."
+    }
+   ]
   },
   "way/440164782": {
    "seen": null,
@@ -4387,7 +4994,14 @@
    "seen": "facade-way-440165529",
    "patch": [1318, 333, 1626, 538],
    "sure": true,
-   "notes": "A 1950s-60s house in rectangular tiles laid like bricks, cream with grey-beige ones mixed in, with panels of grey granite-chip render, black-and-white chequered tiles beside the windows and a concrete band at the first floor; deep eaves under a hipped terracotta roof. A balcony with a decorative iron railing set into the upper right corner; dark brown wooden louvred shutters on the ground floor's right."
+   "notes": "A 1950s-60s house in rectangular tiles laid like bricks, cream with grey-beige ones mixed in, with panels of grey granite-chip render, black-and-white chequered tiles beside the windows and a concrete band at the first floor; deep eaves under a hipped terracotta roof. A balcony with a decorative iron railing set into the upper right corner; dark brown wooden louvred shutters on the ground floor's right.",
+   "unread": [
+    {
+     "from": [-146.6, 711.6],
+     "to": [-154.2, 714],
+     "why": "In facade-way-440165529 a post hides its left corner and its right end is out of the photo (at about 100 px a metre its 8 m run past the edge); its ground floor is behind the fence's green mesh. In facade-way-162945742 the camera puts it behind a tree trunk."
+    }
+   ]
   },
   "way/440165530": {
    "type": "annex",
@@ -4415,7 +5029,14 @@
    "seen": "facade-way-440178377",
    "patch": null,
    "sure": false,
-   "notes": "A modern flat-roofed house of orange brick: a top floor of windows behind grey louvres under a dark roof edge, tall windows with louvred shutters, behind a high hedge; its face is in shade here. The outline sits right of it, over the hedge and the white house's end; the brick house is what the other photos name (facade-way-162945742 #1)."
+   "notes": "A modern flat-roofed house of orange brick: a top floor of windows behind grey louvres under a dark roof edge, tall windows with louvred shutters, behind a high hedge; its face is in shade here. The outline sits right of it, over the hedge and the white house's end; the brick house is what the other photos name (facade-way-162945742 #1).",
+   "unread": [
+    {
+     "from": [-169.3, 718.5],
+     "to": [-178.1, 721.2],
+     "why": "No photo shows the orange-brick house's front whole. In closeup-road-sign-1 (x 520-890 on the gridded photo, across the road behind its hedge) a big tree hides its left part, a street lamp stands in front of its right part, and the hedge and a passing car hide its ground floor. The camera's outline falls on the tree and the house's left part. In facade-way-440178377 the house is at the frame's left edge (its left end out of the frame), a lamp post is in front of it, and the hedge hides its ground floor. The outline there falls on the hedge and the white house to its right. In facade-way-162945733 it is seen at an angle (about 28 px a metre), behind the gantry's post and a bare tree, with the white garden wall in front of its ground floor."
+    }
+   ]
   },
   "way/440179239": {
    "type": "house",
@@ -4429,7 +5050,14 @@
    "seen": "facade-way-440179239",
    "patch": [1421, 512, 1472, 563],
    "sure": true,
-   "notes": "One half of a semi-detached house in white render under a terracotta-tiled roof with skylights. Its right bay is faced in grey speckled granite up both floors around a brown wooden door, with a balcony on a white scrolled iron railing that carries a lawyers' plaque. A solid white balcony parapet on the left, behind a low wall with a railing; backlit."
+   "notes": "One half of a semi-detached house in white render under a terracotta-tiled roof with skylights. Its right bay is faced in grey speckled granite up both floors around a brown wooden door, with a balcony on a white scrolled iron railing that carries a lawyers' plaque. A solid white balcony parapet on the left, behind a low wall with a railing; backlit.",
+   "unread": [
+    {
+     "from": [-186.3, 723.9],
+     "to": [-193.7, 726.2],
+     "why": "Its one photo (given twice) is soft and under 50 px a metre; the outline falls where the hipped-roof house's corner turns (its left side and the left part of its front both in it), so which face is this 7.7 m wall can't be told for sure; its ground floor is behind a cordyline, palms and the front wall and hedge."
+    }
+   ]
   },
   "way/440180650": {
    "type": "house",
@@ -4443,7 +5071,14 @@
    "seen": "facade-way-440180650",
    "patch": null,
    "sure": false,
-   "notes": "Mostly hidden by a big plane tree's trunk: a two-storey house in grey granite-chip render with strips of pale glazed tiles, white roller shutters, a terracotta roof with a chimney, and a dark-roofed porch on its right. Low evening sun; the house left of the tree is 1, not this one."
+   "notes": "Mostly hidden by a big plane tree's trunk: a two-storey house in grey granite-chip render with strips of pale glazed tiles, white roller shutters, a terracotta roof with a chimney, and a dark-roofed porch on its right. Low evening sun; the house left of the tree is 1, not this one.",
+   "unread": [
+    {
+     "from": [-208.9, 729.6],
+     "to": [-213.6, 731.1],
+     "why": "Which part of the house this wall is can't be told, so its ends can't be placed. In garden-2 (the same frame as type-detached-house-2) and facade-way-162945745 the house is one grey gabled front (three bays of glazed doors on two balconied storeys over a plinth; x 795-1215 in garden-2, x 435-690 in facade-way-162945745, some 5.5-6 m by the cameras' scales but 7-8 m by its storeys' height), with a downpipe at its right corner and, right of it under the main roof's long slope, a part with a lower porch roof before the next house, a three-storey one with balconies. The map has this building (5 m) and way/162945745 (5.4 m) right of it. If this wall is the balconied front, the porch part is way/162945745; refs/buildings.json takes way/162945745 for the three-storey house, which would make this wall the front and the porch part together. Nothing on the front marks a joint (its bays and balconies run across it alike), and the cameras settle neither: both put this wall on the front's right end and the porch part (garden-2 x 1085-1385, facade-way-162945745 x 630-790). Lens flare also covers the porch part and the front's right edge in garden-2, and in facade-way-162945745 a parked car hides the plinth. In facade-way-440180650 the house is at the frame's right edge (x 1340 on), running off it, the outline's left part on a plane tree's trunk and the brick-clad house behind it."
+    }
+   ]
   },
   "way/440180651": {
    "seen": null,
@@ -4468,7 +5103,26 @@
    "seen": "facade-way-440182287",
    "patch": null,
    "sure": true,
-   "notes": "Its outline covers the two middle houses of a terrace of four under one low hipped roof: their upper floors faced in patterned glazed tiles, cream with a navy stripe on each, in a grey frame; cream render below with railings across the wide windows, garage doors at street level behind the gate. The neighbours: off-white with a balcony on the left, pale pink on the right. What the kit lacks (task 082, read off its photo, which was drawn on it until then): the azulejos' own pattern: cream tiles each with a navy stripe, set to make a zigzag, in a grey frame round the upper floor."
+   "notes": "Its outline covers the two middle houses of a terrace of four under one low hipped roof: their upper floors faced in patterned glazed tiles, cream with a navy stripe on each, in a grey frame; cream render below with railings across the wide windows, garage doors at street level behind the gate. The neighbours: off-white with a balcony on the left, pale pink on the right. What the kit lacks (task 082, read off its photo, which was drawn on it until then): the azulejos' own pattern: cream tiles each with a navy stripe, set to make a zigzag, in a grey frame round the upper floor.",
+   "layout": [
+    {
+     "from": [-85.4, 693],
+     "to": [-91.6, 695],
+     "photo": "facade-way-440182287",
+     "storeys": [
+      null,
+      [
+       ["window", 2.7, 0.6],
+       ["balcony", 4.3, 2.2]
+      ],
+      [
+       ["balcony", 1.3, 1.3],
+       ["window", 3.3, 1],
+       ["window", 5.5, 0.9]
+      ]
+     ]
+    }
+   ]
   },
   "way/440182894": {
    "seen": null,
@@ -4492,7 +5146,14 @@
    "seen": "viewpoint:fujacal-west",
    "patch": null,
    "sure": true,
-   "notes": "A one-storey flat-roofed wing in white render at the foot of the block behind it, a row of tall dark-framed windows, the clinic's name and big faces printed on the glass. The photo is backlit, its front in shade."
+   "notes": "A one-storey flat-roofed wing in white render at the foot of the block behind it, a row of tall dark-framed windows, the clinic's name and big faces printed on the glass. The photo is backlit, its front in shade.",
+   "unread": [
+    {
+     "from": [-269.6, 805.2],
+     "to": [-271.6, 799.5],
+     "why": "In viewpoint:fujacal-west it is 28 m off, dark against the sun, parked cars hide the lower part of its glazed front, and its right end shows no edge against the white wall it runs on into; in viewpoint:travessa-fujacal only its right end is in the photo."
+    }
+   ]
   },
   "way/440208499": {
    "type": "commercial",
@@ -4506,7 +5167,14 @@
    "seen": "facade-way-440208499",
    "patch": [1101, 864, 1139, 893],
    "sure": false,
-   "notes": "A low box down the street beside the white block of flats, seen only as a blank, stained greyish rendered wall with a railing round its flat roof; its front faces away. The outline reaches far above it into the sky."
+   "notes": "A low box down the street beside the white block of flats, seen only as a blank, stained greyish rendered wall with a railing round its flat roof; its front faces away. The outline reaches far above it into the sky.",
+   "unread": [
+    {
+     "from": [-287.9, 794.1],
+     "to": [-292.2, 795.5],
+     "why": "In facade-way-440208499 (type-tiled-front-1 is the same picture) it is 52 m down the street (x 855-965 on the gridded photo), about 25 px a metre. It is a blank grey rendered wall with a passing car in front of its whole lower half, so its one storey can't be read across. In facade-way-440208500 (type-old-town-house-3 is the same picture) the camera puts it at x 465-575, on the derelict house's ivy-covered left end under the Aeroporto billboard, and no low box is seen there."
+    }
+   ]
   },
   "way/440208500": {
    "type": "house",
@@ -4534,7 +5202,14 @@
    "seen": "facade-way-440314433",
    "patch": [1384, 625, 1402, 650],
    "sure": true,
-   "notes": "The next block along, built to the same design as ★: ochre balcony fronts with glazed or aluminium balustrades on a cream front, four rows of balconies over the ground floor."
+   "notes": "The next block along, built to the same design as ★: ochre balcony fronts with glazed or aluminium balustrades on a cream front, four rows of balconies over the ground floor.",
+   "unread": [
+    {
+     "from": [-221.7, 774.1],
+     "to": [-236.4, 778.9],
+     "why": "Seen only far off (about 22 px a metre) at the end of a driveway, between the side walls of the two nearer blocks, which hide both its ends; a satellite dish and a shrub in front of its garages."
+    }
+   ]
   },
   "way/440209470": {
    "type": "block-1970s-90s",
@@ -4576,7 +5251,14 @@
    "seen": "facade-way-440314417",
    "patch": [1615, 64, 1649, 128],
    "sure": true,
-   "notes": "One of a terrace of alike blocks: pale grey render with deep projecting balcony boxes painted mustard yellow, white railings at their sides; white roller shutters. Shops on the ground floor, one with a square white sign. Dusk light."
+   "notes": "One of a terrace of alike blocks: pale grey render with deep projecting balcony boxes painted mustard yellow, white railings at their sides; white roller shutters. Shops on the ground floor, one with a square white sign. Dusk light.",
+   "unread": [
+    {
+     "from": [-107.3, 736.5],
+     "to": [-121.6, 741.2],
+     "why": "Its only photo has it 51 m off, behind a cream house's gate and boundary wall and a Norfolk pine: only a small patch of it shows between the pine and that house."
+    }
+   ]
   },
   "way/440314418": {
    "type": "block-1970s-90s",
@@ -4593,7 +5275,14 @@
    "seen": "facade-way-440314418",
    "patch": [1818, 326, 1958, 371],
    "sure": true,
-   "notes": "A narrow slice at the right edge of a long greyish-beige rendered block over a row of garages (grey-brown doors between pale pilasters, barred vents above); further along the upper floors overhang the street with glazed-in balconies. Top floors out of the frame, the count leans on the LiDAR height."
+   "notes": "A narrow slice at the right edge of a long greyish-beige rendered block over a row of garages (grey-brown doors between pale pilasters, barred vents above); further along the upper floors overhang the street with glazed-in balconies. Top floors out of the frame, the count leans on the LiDAR height.",
+   "unread": [
+    {
+     "from": [-117, 755.1],
+     "to": [-111.3, 753.2],
+     "why": "Second pass, its three gridded photos seen (facade-way-440314437, in the batch, isn't gridded for this wall). The photos put it on opposite sides of the block: in type-block-1970s-1990s-1 and facade-way-440314417 (on the avenue) the outline straddles two of the row's identical stepped bays with projecting balconies (x 1220-1515 and 1025-1160), so which bay it is isn't clear, and parked cars and a person stand across the shops; in facade-way-440314418 (the back lane of garage doors) its left end is at the wide pier at x 1385, but it runs off the frame's right edge. No photo shows both its ends."
+    }
+   ]
   },
   "way/440314419": {
    "type": "block-1970s-90s",
@@ -4607,7 +5296,14 @@
    "seen": "facade-way-440314419",
    "patch": [1741, 230, 1818, 333],
    "sure": true,
-   "notes": "One garage bay under a long block: grey metal roller door between pale render pillars, the wall above a greenish-khaki grey. The upper floors overhang the street with glazed-in fronts, out of view here, so its storeys can't be counted."
+   "notes": "One garage bay under a long block: grey metal roller door between pale render pillars, the wall above a greenish-khaki grey. The upper floors overhang the street with glazed-in fronts, out of view here, so its storeys can't be counted.",
+   "unread": [
+    {
+     "from": [-122.6, 756.9],
+     "to": [-117, 755.1],
+     "why": "Second pass, its four photos seen. In facade-way-440314419 and facade-way-440314418 (the back lane of garage doors, at a grazing angle) the outline sits on the garage doors and piers (x 1330-1545 and 1225-1390), with nothing marking its ends along the continuous front: in 440314419 it runs to the frame's right edge, and its tops are out of both. In type-block-1970s-1990s-1 and facade-way-440314417 (on the avenue, the block's other side) the outline straddles two of the row's identical stepped balcony bays (x 1090-1230, and 960-1040 at 19 px a metre), so which bay it is isn't clear, and parked cars hide the shops under them."
+    }
+   ]
   },
   "way/440314420": {
    "type": "block-1970s-90s",
@@ -4621,7 +5317,14 @@
    "seen": "facade-way-440314420",
    "patch": [1869, 614, 1946, 768],
    "sure": true,
-   "notes": "One stretch of a long block along a sloping back lane: a tall plain ground floor with high windows behind curly iron grilles (garage doors further along), shuttered windows above and the top floors cantilevered out over the lane. The cyan cast makes the render read grey; the other views show it beige, with enclosed balconies on the back."
+   "notes": "One stretch of a long block along a sloping back lane: a tall plain ground floor with high windows behind curly iron grilles (garage doors further along), shuttered windows above and the top floors cantilevered out over the lane. The cyan cast makes the render read grey; the other views show it beige, with enclosed balconies on the back.",
+   "unread": [
+    {
+     "from": [-121.6, 741.2],
+     "to": [-135.8, 745.8],
+     "why": "Its only photo (facade-way-440165529) sees the block only through the gap between two houses across the street, about 3-4 m of its upper storeys at x 610-900 on the gridded photo (enclosed balconies, windows). Its left part is behind the white house's gable, where the camera's outline mostly falls, and its right part behind the house with the tiled front and a lamp post. Its lower storeys are behind the garden walls, the gate and a tree. Neither of its ends shows."
+    }
+   ]
   },
   "way/440314421": {
    "type": "block-1970s-90s",
@@ -4635,7 +5338,14 @@
    "seen": "facade-way-440314421",
    "patch": [1818, 614, 1997, 794],
    "sure": false,
-   "notes": "A narrow slice at the near end of the long rendered block along the lane: a tall plain ground floor with a window behind an ornamental iron grille, a window above; further on its upper floors step out over the lane. The top is out of the frame and the photo has a strong blue cast."
+   "notes": "A narrow slice at the near end of the long rendered block along the lane: a tall plain ground floor with a window behind an ornamental iron grille, a window above; further on its upper floors step out over the lane. The top is out of the frame and the photo has a strong blue cast.",
+   "unread": [
+    {
+     "from": [-131.2, 759.7],
+     "to": [-125.2, 757.8],
+     "why": "All four photos look steeply along the lane from close by, and none shows both its ends or its top: in facade-way-440314421 and facade-way-440314422 it runs out of the frame's right from x 1350 and x 1475; in facade-way-440314420 the outline (x 1255-1450) falls on the long plain wall with nothing at 6.3 m to mark its ends, its upper storeys out of the top; in facade-way-440314419 (sunlit) it sits on the first garage door (x 1140-1265) of a run that continues out of the right, its upper storeys out of the top."
+    }
+   ]
   },
   "way/440314422": {
    "type": "block-1970s-90s",
@@ -4649,7 +5359,14 @@
    "seen": "facade-way-440314422",
    "patch": [1766, 640, 1882, 717],
    "sure": false,
-   "notes": "A narrow slice of a long block, seen from its back lane under a strong cyan cast: plain pale render, a window with a scrolled iron grille and grey garage doors on the ground floor, the upper floors jutting out over it. Its front on Rua do Fujacal (facade-way-440314423) is warm cream render with projecting yellow-painted balconies with white railings over a shop; five storeys counted there."
+   "notes": "A narrow slice of a long block, seen from its back lane under a strong cyan cast: plain pale render, a window with a scrolled iron grille and grey garage doors on the ground floor, the upper floors jutting out over it. Its front on Rua do Fujacal (facade-way-440314423) is warm cream render with projecting yellow-painted balconies with white railings over a shop; five storeys counted there.",
+   "unread": [
+    {
+     "from": [-136.8, 761.6],
+     "to": [-131.2, 759.7],
+     "why": "Second pass, all four photos seen. In facade-way-440314422, -421 and -420 (along the narrow street, at a grazing angle) the camera's outline sits on a continuous rendered front of garage doors, barred windows and windows a little right of a downpipe, with nothing marking its right end: in 440314422 and 440314421 the front runs on past the outline out of the frame's right edge, and in 440314420 (28 px a metre) the outline ends on a blank stretch of wall left of a barred window. In facade-way-440314423 (along the avenue) its left end is at a white downpipe (x 1415-1445) but the wall runs out of the frame's right edge, its ground floor behind a parked red car. Its right end isn't seen in any of them."
+    }
+   ]
   },
   "way/440314423": {
    "type": "block-1970s-90s",
@@ -4677,7 +5394,14 @@
    "seen": "facade-way-440314424",
    "patch": [1702, 723, 1756, 796],
    "sure": false,
-   "notes": "A narrow slice of the long rendered block along the lane's right, its back: a tall ground floor of garage doors and small barred windows, the upper floors stepping out over the lane further on. The top is out of the frame; a strong blue cast in the photo (the white garage door looks blue too)."
+   "notes": "A narrow slice of the long rendered block along the lane's right, its back: a tall ground floor of garage doors and small barred windows, the upper floors stepping out over the lane further on. The top is out of the frame; a strong blue cast in the photo (the white garage door looks blue too).",
+   "unread": [
+    {
+     "from": [-145.4, 764.4],
+     "to": [-139.5, 762.5],
+     "why": "Which face, and which 6.2 m of it, this is can't be told: its photos show two different faces. In facade-way-440314423 (19 m, from the main street) it is one of a row of yellow bays with projecting balconies, seen at a sharp angle; the outline (x 1100-1300) straddles a bay of glazed-in balconies and one of open railed ones, the map's pieces of the row (all about 6 m, on one straight line) fit no joint in it, its top storey runs off the photo's top, and parked cars stand across its ground floor. The other three (facade-way-440314424, -440314422, -440314421) look up a back lane at a plain wall with garage doors, small barred windows and downpipes, and their cameras don't agree on where: two put it right of the downpipe by the no-entry sign, on a grey garage door, one left of the downpipe over the sign; the wall runs on past their top with no joint."
+    }
+   ]
   },
   "way/440314425": {
    "type": "block-1970s-90s",
@@ -4697,7 +5421,14 @@
    "seen": "facade-way-440314425",
    "patch": [1833, 314, 1897, 384],
    "sure": true,
-   "notes": "A small mapped piece of the long block: the stack of mustard-ochre balconies over the fruit shop, the upper ones glazed in with aluminium frames, the lowest open with a white railing; the walls behind them pale grey. A green awning over the shop."
+   "notes": "A small mapped piece of the long block: the stack of mustard-ochre balconies over the fruit shop, the upper ones glazed in with aluminium frames, the lowest open with a white railing; the walls behind them pale grey. A green awning over the shop.",
+   "unread": [
+    {
+     "from": [-150.7, 766.1],
+     "to": [-145.4, 764.4],
+     "why": "Which 5.5 m of the row this is isn't sure. facade-way-440314425's camera (15 m) puts it on the yellow bay with the glazed-in balconies and the fruit shop below (outline x 1230-1550, the bay x 1235-1520), whose paint joints mark both its ends; facade-way-440314428's (28 m) puts its left end at x about 1410, in the middle of that same bay (x 1210-1510 there), running off the photo's right edge. So the map's piece and the bay don't line up, and the map's split of the row into 3 m and 6 m pieces fits no joint in the front. The two photos don't agree on its storeys either: in facade-way-440314428 the yellow bay shows a ground floor and three storeys (one open balcony, two glazed in) under a yellow band at the frame's top, in facade-way-440314425 a ground floor and four, the top one cut by the frame's top (the batch has five), so where its eaves are isn't sure. Parked cars and the shop's awning hide its ground floor in both. facade-way-440314427 and facade-way-440314426 are the same frame as facade-way-440314428 (the tool grids it once)."
+    }
+   ]
   },
   "way/440314426": {
    "type": "block-1970s-90s",
@@ -4717,7 +5448,14 @@
    "seen": "facade-way-440314426",
    "patch": [1485, 320, 1536, 422],
    "sure": true,
-   "notes": "Beige render, its front mostly a stack of glazed-in corner balconies whose concrete fronts and top parapet are painted ochre; a fruit shop under a green awning on the ground floor. Its outline is a narrow strip over the middle of it. Blue-tinted windscreen."
+   "notes": "Beige render, its front mostly a stack of glazed-in corner balconies whose concrete fronts and top parapet are painted ochre; a fruit shop under a green awning on the ground floor. Its outline is a narrow strip over the middle of it. Blue-tinted windscreen.",
+   "unread": [
+    {
+     "from": [-153.7, 767.1],
+     "to": [-150.7, 766.1],
+     "why": "Its three photos are one picture (facade-way-440314428 is a larger copy of facade-way-440314427 and facade-way-440314426). In it the building's street face is the ochre projecting stack of glazed-in balconies over the Frutas Delgado shop (x 1210-1510 on the gridded photo). That is about 6 m wide at about 50 px a metre (its storeys are about 150 px high), where the map's wall is 3.2 m, and the camera's outline is a strip in its middle, so which part of it is this wall can't be told. Also, the ground floor is behind the shop's green awning, fruit stalls, a young tree and a parked car, and the first storey is behind the tree and two hanging sheets."
+    }
+   ]
   },
   "way/440314427": {
    "type": "block-1970s-90s",
@@ -4737,7 +5475,14 @@
    "seen": "facade-way-440314427",
    "patch": [1498, 128, 1542, 205],
    "sure": false,
-   "notes": "Its outline spans the right end of the beige block 2 names (projecting balconies, a glazed-in balcony), a narrow recessed bay of plain beige wall with a drainpipe, and the left edge of the ochre block with glazed-in corner balconies; its 23 m² footprint fits the narrow recessed bay. Frutas Delgado's green awning starts under that bay; the photo is blue-tinted."
+   "notes": "Its outline spans the right end of the beige block 2 names (projecting balconies, a glazed-in balcony), a narrow recessed bay of plain beige wall with a drainpipe, and the left edge of the ochre block with glazed-in corner balconies; its 23 m² footprint fits the narrow recessed bay. Frutas Delgado's green awning starts under that bay; the photo is blue-tinted.",
+   "unread": [
+    {
+     "from": [-159.6, 769.1],
+     "to": [-153.7, 767.1],
+     "why": "As way/440314428 w0, its neighbour on the left: in facade-way-440314428 (the same frame as facade-way-440314427 and facade-way-440314426) its outline (x 920-1250) runs from the middle of the balcony column with the glazed first floor across the downpipe at x 1140 into the yellow-trimmed block, and nothing on the cream front marks where this 6.2 m building begins; its ground floor is behind the lorry and the cars. In facade-way-440314425 it is seen steeply along the street, its ends lost among the row's balconies and its ground floor behind parked cars."
+    }
+   ]
   },
   "way/440314428": {
    "type": "block-1970s-90s",
@@ -4751,7 +5496,14 @@
    "seen": "facade-way-440314428",
    "patch": [1736, 397, 1959, 570],
    "sure": true,
-   "notes": "A slice of a long block of flats: the plain beige rendered bay with one window per floor (the stair, it seems) and the stack of balconies and glazed-in sun rooms to its right; at least five storeys, the top cut by the frame. Its ground floor is hidden by a lorry; the laundrette and Brilho Necessário signs to its left fall in the next outline. What the kit lacks (task 082, read off its photo, which was drawn on it until then): the glazed-in sun rooms stacked beside the open balconies."
+   "notes": "A slice of a long block of flats: the plain beige rendered bay with one window per floor (the stair, it seems) and the stack of balconies and glazed-in sun rooms to its right; at least five storeys, the top cut by the frame. Its ground floor is hidden by a lorry; the laundrette and Brilho Necessário signs to its left fall in the next outline. What the kit lacks (task 082, read off its photo, which was drawn on it until then): the glazed-in sun rooms stacked beside the open balconies.",
+   "unread": [
+    {
+     "from": [-165.1, 770.9],
+     "to": [-159.6, 769.1],
+     "why": "Its ends can't be told on the continuous row of blocks. In facade-way-440314428 (the tool grids it once for facade-way-440314427 and facade-way-440314426 too, all one frame), nearly straight on at about 55 px a metre, the cream front runs from a downpipe at x 300 to another at x 1140 (about 15 m) with nothing between to mark where one 6 m building ends and the next begins (a window column, a balcony column, a window column, a balcony column with a glazed first floor); the outline (x 570-920) starts mid-way along the laundry's shopfront. Its ground floor is behind the lorry and the parked cars. In facade-way-440314429 (13 m off) only its left part shows, at the right edge behind the lorry, its outline starting inside the laundry's front too."
+    }
+   ]
   },
   "way/440314429": {
    "type": "block-1970s-90s",
@@ -4771,7 +5523,14 @@
    "seen": "facade-way-440314429",
    "patch": [1491, 335, 1536, 384],
    "sure": true,
-   "notes": "Part of a long uniform block of pale beige render with deep projecting concrete balconies and white railings; a self-service laundry on the ground floor. The windscreen gives the photo a strong blue cast; the colour is judged against the white shutters."
+   "notes": "Part of a long uniform block of pale beige render with deep projecting concrete balconies and white railings; a self-service laundry on the ground floor. The windscreen gives the photo a strong blue cast; the colour is judged against the white shutters.",
+   "unread": [
+    {
+     "from": [-168.1, 771.8],
+     "to": [-165.1, 770.9],
+     "why": "Where its 3.1 m begins and ends can't be told. Both near photos (facade-way-440314429 at 13 m, facade-way-440314428 at 21 m) put it on the long flat cream front over the laundrette's two shop fronts (the outline starting inside the first one's sign in both), with balconies above; the front runs on to both sides with no step, joint or change of finish at either end (the nearest downpipe is about 1 m left of its left end), so its ends are only the cameras', not the photo's. Its top storeys and the eaves are above both photos' top, and a parked van and a lorry stand across its ground floor. In facade-way-440314425 it is 13 px a metre, far down the street. facade-way-440314427 and facade-way-440314426 are the same frame as facade-way-440314428 (the tool grids it once)."
+    }
+   ]
   },
   "way/440314430": {
    "type": "block-1970s-90s",
@@ -4791,7 +5550,14 @@
    "seen": "facade-way-440314430",
    "patch": [326, 237, 397, 301],
    "sure": true,
-   "notes": "One bay of a long block of flats in light beige render: concrete-slab balconies with white railings jutting out, white roller shutters, a deep slab over the top floor, shops along the street. The photo's blue cast makes the wall read blue-grey. The outline sits a little left of the shop it's named for; the laundry next door is in 2's."
+   "notes": "One bay of a long block of flats in light beige render: concrete-slab balconies with white railings jutting out, white roller shutters, a deep slab over the top floor, shops along the street. The photo's blue cast makes the wall read blue-grey. The outline sits a little left of the shop it's named for; the laundry next door is in 2's.",
+   "unread": [
+    {
+     "from": [-174, 773.8],
+     "to": [-168.1, 771.8],
+     "why": "Where its 6.2 m begins and ends can't be told: it is a piece of the same continuous cream front (balconies alternating with plain window bays, a stair door, downpipes), and neither end falls on a joint: in facade-way-440314429 (13 m) the outline runs from just right of the stair door (x 465) to inside the laundrette's first sign (x 1030), with the pair of downpipes between them about 1 m from its right end; in facade-way-440314428 its right end is at x about 380, inside the same sign, and its left end off the photo's left edge. In facade-way-440314429 its top storey is cut by the photo's top and the eaves are above it; parked cars, a tree and a van stand across the ground floor in both. facade-way-440314427 and facade-way-440314426 are the same frame as facade-way-440314428 (the tool grids it once)."
+    }
+   ]
   },
   "way/440314431": {
    "type": "block-1970s-90s",
@@ -4805,7 +5571,14 @@
    "seen": "facade-way-440314431",
    "patch": [433, 559, 471, 576],
    "sure": false,
-   "notes": "The left end of the long cream block across the street's end, in shade: concrete slab balconies with white railings, white roller shutters, a slab over the top floor's balconies. Its outline also covers the nearer tiled corner block (dark railings, a dark balcony band) that hides most of it; facade-way-440314429 (#2) shows it plainly."
+   "notes": "The left end of the long cream block across the street's end, in shade: concrete slab balconies with white railings, white roller shutters, a slab over the top floor's balconies. Its outline also covers the nearer tiled corner block (dark railings, a dark balcony band) that hides most of it; facade-way-440314429 (#2) shows it plainly.",
+   "unread": [
+    {
+     "from": [-188.9, 778.8],
+     "to": [-174, 773.8],
+     "why": "Its left end isn't seen in any photo. In facade-way-440314431 and facade-way-982766803 (facade-way-383785797 is the same frame, which the tool grids once), looking down the street, the near tiled block on the left hides the cream block's wall up to x 255-330, so only its right part shows, and parked cars and a van stand across its ground floor. In facade-way-440314429, close to, its right end is at x 470 and it runs out of the frame's left, its top storey out of the frame's top."
+    }
+   ]
   },
   "way/440314432": {
    "type": "block-1970s-90s",
@@ -4847,7 +5620,14 @@
    "seen": "facade-way-440314434",
    "patch": [1728, 563, 1786, 640],
    "sure": true,
-   "notes": "One bay of a long terrace of blocks: each floor has a deep balcony with a mustard-yellow (ochre) front and white railings; a glazed shopfront below, with no sign readable. The photo's cyan cast makes the cream wall look greenish."
+   "notes": "One bay of a long terrace of blocks: each floor has a deep balcony with a mustard-yellow (ochre) front and white railings; a glazed shopfront below, with no sign readable. The photo's cyan cast makes the cream wall look greenish.",
+   "unread": [
+    {
+     "from": [-93.8, 747.5],
+     "to": [-88.3, 745.7],
+     "why": "Second pass, its three photos seen. In facade-way-440314434 and -440314436 it is the nearest stepped bay with projecting balconies, seen steeply along the street: the outline starts at the bay's corner (x 1300 and 1400-1435) and runs out of the frame's right edge, so its right end isn't in either, and parked cars stand across its ground floor. In facade-way-982771811 (27 px a metre) the outline (x 1050-1155) straddles two of the row's identical stepped bays, with a street tree, a school sign and parked cars in front of its lower storeys, so which bay it is isn't clear."
+    }
+   ]
   },
   "way/440314435": {
    "type": "block-1970s-90s",
@@ -4895,7 +5675,14 @@
    "seen": "facade-way-440314437",
    "patch": [1674, 243, 1692, 358],
    "sure": true,
-   "notes": "A section of the same Fujacal terrace: pale cream render, deep balconies with mustard-yellow parapets and white railings, the first floor's balcony glazed in with white frames. A shop window lettered in blue on the ground floor, its first word unreadable. Five storeys counted against the neighbours' balconies, though the map says four."
+   "notes": "A section of the same Fujacal terrace: pale cream render, deep balconies with mustard-yellow parapets and white railings, the first floor's balcony glazed in with white frames. A shop window lettered in blue on the ground floor, its first word unreadable. Five storeys counted against the neighbours' balconies, though the map says four.",
+   "unread": [
+    {
+     "from": [-108.2, 752.2],
+     "to": [-102.7, 750.4],
+     "why": "All three photos look steeply along the street at the row of balconied blocks: in facade-way-440314417 (the same frame as facade-way-440314437) it's at the right edge, its right end out of the frame and its top storeys cut by the frame's top; in facade-way-440314436 and facade-way-440314434 (25-29 m off, about 20 px a metre) its outline is a narrow slanting strip among the repeating balconies, its ends not marked, and in all three its ground floor is behind parked cars and a van (and a tree in the last two)."
+    }
+   ]
   },
   "way/443426548": {
    "seen": null,
@@ -5156,7 +5943,14 @@
    "seen": "facade-way-473734202",
    "patch": [1843, 576, 1971, 717],
    "sure": true,
-   "notes": "A terraced old house in pale yellow render, tall white-framed French windows in pale grey mouldings, an ornate iron balcony on carved brackets, a decorated frieze under the cornice; a deeper yellow dado band and a pale grey plinth along the ground floor. The outlines in facade-way-383764627 and facade-way-983551348 straddle it and the blue-tiled house next door."
+   "notes": "A terraced old house in pale yellow render, tall white-framed French windows in pale grey mouldings, an ornate iron balcony on carved brackets, a decorated frieze under the cornice; a deeper yellow dado band and a pale grey plinth along the ground floor. The outlines in facade-way-383764627 and facade-way-983551348 straddle it and the blue-tiled house next door.",
+   "unread": [
+    {
+     "from": [-279.7, 1018.6],
+     "to": [-281.6, 1004.1],
+     "why": "Where the map's 14.7 m begins along the row can't be placed. Its right end is likely the joint between the big yellow two-storey house and the taller blue-and-white-tiled block (the map's way/473734203 next to it; x about 1215 in facade-way-383764627), but left of the yellow house the row runs on (a cream house with the restaurant signs, then purple and pink ones), and the cameras don't agree on how much of it the wall takes in: facade-way-473734202's outline starts at the downpipe between the cream and yellow houses (x about 1130) and runs off the photo's right edge; facade-way-383764627's runs from inside the yellow front (x 1050) to well into the tiled block (x 1450). The yellow house's width can't be measured in either: in facade-way-473734202 it runs off the frame's right edge with its top above the frame, and in facade-way-383764627 it is seen steeply along the street with a parked car across its ground floor. viewpoint:capela-santa-justa looks along the same row from its other end: its outline (x 95-410) runs from inside the purple house over the cream one to about the yellow house's far joint, all seen steeply on the frame's left. In facade-way-473734203 (38 m) the outline (x 985-1190) is on the tiled block's ground floor, behind parked cars and a van."
+    }
+   ]
   },
   "way/473734203": {
    "type": "block-1950s",
@@ -5193,7 +5987,14 @@
    "seen": "facade-way-473734204",
    "patch": [1786, 141, 1837, 218],
    "sure": true,
-   "notes": "A narrow terraced building of the 1940s-50s look: pale green render, grey moulded surrounds with small cornices round the windows and the door, a balcony with stone balusters. Only its lower floors at the photo's right edge; the count of 4 is from facade-way-525872962 (#4) and the LiDAR."
+   "notes": "A narrow terraced building of the 1940s-50s look: pale green render, grey moulded surrounds with small cornices round the windows and the door, a balcony with stone balusters. Only its lower floors at the photo's right edge; the count of 4 is from facade-way-525872962 (#4) and the LiDAR.",
+   "unread": [
+    {
+     "from": [-282.1, 987],
+     "to": [-282.7, 979.2],
+     "why": "Second pass, its three photos seen. In facade-way-473734204 (22 m) it is seen steeply along the street: its left end at x 1335, by the downpipe, but it runs out of the frame on the right and above the top. In facade-way-525872962 (22 px a metre) it is a 130 px sliver at a steep angle behind parked vans, and in facade-way-525872958 (11 px a metre) it is too small to tell a window from a door."
+    }
+   ]
   },
   "way/473734205": {
    "type": "block-1950s",
@@ -5238,7 +6039,14 @@
    "seen": "facade-way-473734207",
    "patch": [1642, 653, 1670, 701],
    "sure": false,
-   "notes": "Set back behind a gate and a black mesh screen: ivy up the left of its front, grimy walls, a tile roof with aerials; it looks neglected. A lower cream wall with a garage door to its left. Its outline's tall left part sits over the grey modern building next door. At dusk."
+   "notes": "Set back behind a gate and a black mesh screen: ivy up the left of its front, grimy walls, a tile roof with aerials; it looks neglected. A lower cream wall with a garage door to its left. Its outline's tall left part sits over the grey modern building next door. At dusk.",
+   "unread": [
+    {
+     "from": [-306.8, 891],
+     "to": [-305.1, 909.1],
+     "why": "In both photos (facade-way-473734207 and facade-way-525884709, at dusk, about 40 px a metre) the old house is set back behind a gate, garden walls and a black mesh screen, which hide its whole ground floor. Only about 11-13 m of the wall's 18.1 m shows. On its left it is behind the cream pier and the white building with the garage door, and on its right it runs into the taller grey building behind it, so its ends can't be told and neither storey can be placed along it."
+    }
+   ]
   },
   "way/473734208": {
    "type": "house",
@@ -5266,7 +6074,19 @@
    "seen": "facade-way-473734209",
    "patch": [1453, 794, 1485, 832],
    "sure": false,
-   "notes": "A ruin: here only a stretch of wall thick with ivy, a patch of cracked cream render below it, between the derelict old building with bricked-up granite-framed windows on the left and a roofless shell on the right. In facade-way-383783707 it is the old estate behind a high stained stone wall, a gabled two-storey house with a terracotta roof partly fallen in."
+   "notes": "A ruin: here only a stretch of wall thick with ivy, a patch of cracked cream render below it, between the derelict old building with bricked-up granite-framed windows on the left and a roofless shell on the right. In facade-way-383783707 it is the old estate behind a high stained stone wall, a gabled two-storey house with a terracotta roof partly fallen in.",
+   "unread": [
+    {
+     "from": [-298.9, 846.5],
+     "to": [-303.4, 813.1],
+     "why": "Hidden in all four of its photos. In facade-way-383761122 (42 m), viewpoint:fujacal-west (64 m) and facade-way-440209470 (75 m) the outline falls on the stone boundary wall with the billboards across the junction, and behind it only trees and the top of a dark roof show; no building front can be seen. In facade-way-383783707 (13 m, looking steeply along the road, the camera's outline not in the frame) the high plastered boundary wall hides all but the tops of derelict buildings behind it: a house's upper storey with blind windows under a broken roof and dormer gable (x 380-1100), and further right a roofless ruin and a house with iron balconies (x 1130 on); which of them, and which part, is this 33.7 m wall can't be told, and only their tops show."
+    },
+    {
+     "from": [-312.4, 855.9],
+     "to": [-313, 849.9],
+     "why": "Both photos show only trees and the stone boundary wall where the outline is, far off (under 30 px a metre)."
+    }
+   ]
   },
   "way/473739993": {
    "seen": null,
@@ -5474,7 +6294,25 @@
    "seen": "facade-way-525872958",
    "patch": [1882, 302, 1956, 397],
    "sure": true,
-   "notes": "A narrow old terraced house faced from top to bottom in blue-and-white patterned azulejos, reading pale blue-grey in this dull light; wrought-iron balconies on stone slabs at both upper floors, a door with an iron grille below. Only its left part is in the frame, at the photo's right edge."
+   "notes": "A narrow old terraced house faced from top to bottom in blue-and-white patterned azulejos, reading pale blue-grey in this dull light; wrought-iron balconies on stone slabs at both upper floors, a door with an iron grille below. Only its left part is in the frame, at the photo's right edge.",
+   "layout": [
+    {
+     "from": [-283.8, 963.2],
+     "to": [-284.7, 955.5],
+     "photo": "facade-way-525872958",
+     "storeys": [
+      [
+       ["shop", 1.8, 1.7],
+       ["door", 5.2, 1.4]
+      ],
+      [
+       ["window", 2.1, 1.3],
+       ["window", 5.1, 1.4]
+      ],
+      null
+     ]
+    }
+   ]
   },
   "way/525872959": {
    "type": "block-1950s",
@@ -5578,7 +6416,14 @@
    "seen": "facade-way-525884709",
    "patch": null,
    "sure": true,
-   "notes": "A modern flat-roofed house: a white ground storey with a wide sectional garage door and a deep parapet (its edge stained and cracked), two off-white storeys set back above it, the top one a box framing a wide window behind horizontal louvres. Dusk photo; the colour from the sunlit view in facade-way-592131918."
+   "notes": "A modern flat-roofed house: a white ground storey with a wide sectional garage door and a deep parapet (its edge stained and cracked), two off-white storeys set back above it, the top one a box framing a wide window behind horizontal louvres. Dusk photo; the colour from the sunlit view in facade-way-592131918.",
+   "unread": [
+    {
+     "from": [-311.5, 881.8],
+     "to": [-309.5, 888.1],
+     "why": "Both photos are at dusk. In facade-way-473734207 the ground floor's white wall (a wide garage door in it) runs on to the left, past a barred window, under one continuous parapet, with nothing to mark where this 6.6 m house starts. Its two upper storeys are a box set back behind that parapet and a terrace railing, on another plane than the ground floor's. In facade-way-525884709 it's close and at a sharp angle, and the white wall runs off the photo's left edge."
+    }
+   ]
   },
   "way/525884710": {
    "type": "house",
@@ -5770,7 +6615,19 @@
    "seen": "facade-way-592131918",
    "patch": [794, 819, 870, 845],
    "sure": true,
-   "notes": "A low garage at the end of the lane: a blotchy, patched pale-grey rendered wall with a grey metal gate, and in front of it a newer box rendered pale cream with a dark-grey band along its top. A flat roof; dark netting over the plot to its right."
+   "notes": "A low garage at the end of the lane: a blotchy, patched pale-grey rendered wall with a grey metal gate, and in front of it a newer box rendered pale cream with a dark-grey band along its top. A flat roof; dark netting over the plot to its right.",
+   "unread": [
+    {
+     "from": [-319.8, 882.2],
+     "to": [-312.6, 880],
+     "why": "In facade-way-525884708 (close) its right end is out of the photo, behind a dark blot on the lens; in facade-way-592131918 it is far down a lane, partly behind a lower white outbuilding and a shade net, its right end behind the stone wall in front, so which face it is isn't sure."
+    },
+    {
+     "from": [-324.3, 867.1],
+     "to": [-319.8, 882.2],
+     "why": "In facade-way-284713309 it is 43 m off and in shadow, and parked cars hide the lower part of its one storey; in facade-way-473734207 (close) its left end is out of the photo, behind a parked van."
+    }
+   ]
   },
   "way/592131919": {
    "type": "warehouse",
@@ -5787,7 +6644,14 @@
    "seen": "facade-way-592131919",
    "patch": [486, 666, 614, 710],
    "sure": true,
-   "notes": "A long single-storey workshop in white render over a grey-painted plinth, small barred windows with patterned iron grilles, a big dark double garage door at its right end, a flat roof behind a plain parapet."
+   "notes": "A long single-storey workshop in white render over a grey-painted plinth, small barred windows with patterned iron grilles, a big dark double garage door at its right end, a flat roof behind a plain parapet.",
+   "unread": [
+    {
+     "from": [-353.2, 875.8],
+     "to": [-332.8, 869.7],
+     "why": "Neither photo shows both its ends. In facade-way-592131919, close to (about 70-100 px a metre), the workshop runs out of the frame's left (an open doorway at the edge), and a car close to the camera covers the frame's right edge just past the big double garage door. The camera's outline ends in the middle of that door. In facade-way-525884708 it runs out of the frame's left too, and a parked van hides the garage door's right half. The white wall carries on past it with one more window to the stained annex, which may be its right end, but that doesn't match where the camera puts its end."
+    }
+   ]
   },
   "way/592131920": {
    "seen": null,
@@ -5972,7 +6836,14 @@
    "seen": "facade-way-982761181",
    "patch": [1382, 307, 1446, 384],
    "sure": true,
-   "notes": "A disused old two-storey building, more like an old factory than a house: a long cream rendered front under a terracotta tile roof, two rows of square windows, all bricked up, in grey stone frames, a moulded band between the floors; ivy over much of it, posters and graffiti on the ground floor."
+   "notes": "A disused old two-storey building, more like an old factory than a house: a long cream rendered front under a terracotta tile roof, two rows of square windows, all bricked up, in grey stone frames, a moulded band between the floors; ivy over much of it, posters and graffiti on the ground floor.",
+   "unread": [
+    {
+     "from": [-326.1, 767.9],
+     "to": [-337.3, 771.1],
+     "why": "Its ends can't be found: on this continuous run of derelict facade (its windows walled up), its left end is behind a tree trunk in one photo and out of the frame in the other, and its right end is under ivy in both."
+    }
+   ]
   },
   "way/982763824": {
    "type": "house",
@@ -6014,7 +6885,14 @@
    "seen": "facade-way-982766803",
    "patch": [1357, 192, 1472, 294],
    "sure": true,
-   "notes": "A plain flat-roofed block in cool grey render, white roller shutters in boxes over its windows, no balconies on these two faces; the ground floor is recessed in deep shadow under the floors above, behind a hedge. A strongly blue-tinted photo: grey judged against the white shutters."
+   "notes": "A plain flat-roofed block in cool grey render, white roller shutters in boxes over its windows, no balconies on these two faces; the ground floor is recessed in deep shadow under the floors above, behind a hedge. A strongly blue-tinted photo: grey judged against the white shutters.",
+   "unread": [
+    {
+     "from": [-152.4, 808.2],
+     "to": [-136.9, 802.9],
+     "why": "Its right end is in no photo. The grey block's south face runs from its corner (x about 975 in facade-way-440314431, 935 in facade-way-982766803) past the frame's right edge in facade-way-440314431, and in facade-way-982766803 the nearer yellow block at the frame's right edge (x 1455 on) hides the rest of it; neither shows its far end. In both, parked cars stand across its recessed ground floor, and the cameras put its west end some 220 px left of the block's corner, over the street. facade-way-383785797 is the same frame as facade-way-982766803 (gridded once)."
+    }
+   ]
   },
   "way/982766804": {
    "type": "block-1970s-90s",
@@ -6222,7 +7100,19 @@
    "seen": "facade-way-982774306",
    "patch": [1600, 307, 1696, 397],
    "sure": true,
-   "notes": "Seen from its plain side wall: stained grey render with a few small windows, a row of white garage doors along the ground floor on the slope, the top floor cut off by the photo. The outline also covers the right part of the tall cream-tiled block behind (and other photos' outlines for it fall on that block), but the height fits this one. Strong blue cast from the windscreen."
+   "notes": "Seen from its plain side wall: stained grey render with a few small windows, a row of white garage doors along the ground floor on the slope, the top floor cut off by the photo. The outline also covers the right part of the tall cream-tiled block behind (and other photos' outlines for it fall on that block), but the height fits this one. Strong blue cast from the windscreen.",
+   "unread": [
+    {
+     "from": [-118.7, 840.8],
+     "to": [-120.3, 836.5],
+     "why": "Which part of the grey block this is can't be told. In facade-way-982774306 the camera's outline (x 1095-1465) is drawn facing the camera across the street's open end (the yellow block far beyond, x 1095-1210) and the grey block's front; that front is seen steeply along the street (a plain rendered face with small windows over a row of garage doors), its upper storeys above the frame. A vertical edge at x about 1470 may be the map's 1.3 m step between this wall and wall 2, but left of it the face runs to the block's corner (x 1210) past three garage doors, far more than 4.5 m by their size, so where this wall begins isn't seen; and at that angle (the garage doors 30-45 px wide) its openings' edges couldn't be read to 0.1 m. In facade-way-383766235 the outline is at the frame's right edge over the pavement's end and the grass, the block off the frame. In facade-way-982804043 (43 m off) the outline (x 1475-1580) falls at the frame's right edge on a nearer building with glazed-in balconies, running off the frame; the grey block isn't in it."
+    },
+    {
+     "from": [-121.5, 837],
+     "to": [-122.7, 833.8],
+     "why": "Its only photo (facade-way-982774306) has it at the frame's right edge (the outline from x 1415 on), running off it: the grey block's face with garage doors right of the edge at x about 1470, seen steeply along the street, its upper storeys above the frame, its right end off the frame."
+    }
+   ]
   },
   "way/982777238": {
    "type": "block-1970s-90s",
@@ -6296,7 +7186,19 @@
    "seen": "facade-way-982804044",
    "patch": [1216, 179, 1293, 320],
    "sure": true,
-   "notes": "Cream render between white piers, a projecting bay glazed in as an enclosed balcony with parapets of dark-green glazed tiles laid like bricks; white roller shutters. Ordinary windows and an entrance on the ground floor; its top is out of the frame. The same terrace as the grey blocks in facade-lidar-x59z766, here repainted."
+   "notes": "Cream render between white piers, a projecting bay glazed in as an enclosed balcony with parapets of dark-green glazed tiles laid like bricks; white roller shutters. Ordinary windows and an entrance on the ground floor; its top is out of the frame. The same terrace as the grey blocks in facade-lidar-x59z766, here repainted.",
+   "unread": [
+    {
+     "from": [-91.7, 847.9],
+     "to": [-96.6, 849.5],
+     "why": "Second pass, its three photos seen (facade-way-982804044 and -982804045 are still the same frame; facade-way-982804043 is gridded now, from 54 m at 30 px a metre, and shows the whole five-storey front up to its eaves). The front is one continuous row of alternating bays (light rendered bays with single windows, dark green tiled bays with glazed balconies) with no joint between blocks, and the map has this 5.1 m piece and w3 on one line with 2.5 m between them, which matches no run of bays: in 982804043 the outline (x 725-850) straddles a light bay and a dark one, in 982804044 (x 915-1210) a light bay and the left part of a dark one. Where it begins and ends isn't seen; in 982804044 its top is out of the frame and a parked estate car is across its ground floor."
+    },
+    {
+     "from": [-99, 850.3],
+     "to": [-102.5, 851.5],
+     "why": "Second pass, its three photos seen. On the same continuous row of bays as w2, nothing marks its 3.7 m: in facade-way-982804043 the outline (x 905-995) falls on a narrow light bay with an entrance at its foot, behind a bare street tree and parked cars; in facade-way-982804044 (x 1345-1555) on the right part of a dark tiled bay and the light bay beside it, its top out of the frame, its ground floor behind the windscreen's glare and a parked car. Which piece of the front it is isn't clear."
+    }
+   ]
   },
   "way/982804045": {
    "type": "block-1970s-90s",
@@ -6310,7 +7212,19 @@
    "seen": "facade-way-982804045",
    "patch": [986, 154, 1075, 307],
    "sure": true,
-   "notes": "White render, stained, with balconies set between projecting pillars, their parapets in dark green brick-pattern tiles. Only the lower floors are in the photo. The ground-floor shop has decorated windows behind bars and a for-sale board. Strong cyan cast."
+   "notes": "White render, stained, with balconies set between projecting pillars, their parapets in dark green brick-pattern tiles. Only the lower floors are in the photo. The ground-floor shop has decorated windows behind bars and a for-sale board. Strong cyan cast.",
+   "unread": [
+    {
+     "from": [-77.5, 843.3],
+     "to": [-81.3, 844.6],
+     "why": "Which piece of the front it is still can't be told. In facade-way-982804044 (facade-way-982804045 is the same picture), nearly straight on, the front runs: a cream strip with the stair's entrance (x 20-300, about 3 m by its storey heights), a green balcony bay over the barred shop (x 290-670, about 4 m), a strip of a white pier and two cream window columns (x 670-1100, about 4.5 m), another green bay (x 1100-1480, about 4 m). Straight on, nothing shows which of these stand forward, and no run of them fits the map's 4 m piece, 2.5 m recess and 5.5 m piece; facade-way-982804043 (55 m) shows the same run (about 3.2, 4.2, 5.2 and 3.9 m) and no more. facade-way-982804046 has only 1.8 m of it at its right edge behind a parked car."
+    },
+    {
+     "from": [-84.1, 845.4],
+     "to": [-89.3, 847.2],
+     "why": "As w2: its outline falls on the green bay over the barred shop and the pier and cream strip right of it (x 465-780 in facade-way-982804044/045, x 532-665 in facade-way-982804043), and no bay or run of bays and strips there measures 5.5 m with a 2.5 m recess before it, so which part of the front it is can't be told."
+    }
+   ]
   },
   "way/982804046": {
    "type": "block-1970s-90s",
@@ -6324,7 +7238,19 @@
    "seen": "facade-way-982804046",
    "patch": [1798, 589, 1862, 755],
    "sure": true,
-   "notes": "Weathered white render with grey stained concrete piers; each floor's wide balcony bay glazed in with aluminium windows over a front of dark green glazed tiles. The ground floor, a shopfront of wood-framed glass behind iron grilles, closed. The top floors are out of the frame; cyan cast."
+   "notes": "Weathered white render with grey stained concrete piers; each floor's wide balcony bay glazed in with aluminium windows over a front of dark green glazed tiles. The ground floor, a shopfront of wood-framed glass behind iron grilles, closed. The top floors are out of the frame; cyan cast.",
+   "unread": [
+    {
+     "from": [-61.7, 838.2],
+     "to": [-66.1, 839.6],
+     "why": "Which part of the block's stepped front this 4.6 m wall is can't be told, and the cameras disagree. The front repeats bays of green-tiled balconies (open, or glazed in) between projecting rendered piers, with no joint showing where one building of the block ends. facade-way-982804047's camera puts it (x 1220-1400) on the right part of an open-balconied bay over a barred cafÃ© front; facade-way-982804046's (x 710-850) on the pier left of the big glazed-in bay. In both near photos the storeys over the first or second run above the frame, and parked vans stand across the ground floor. In facade-way-982804043 (the block's whole front, 61 m) its outline is at the frame's left edge (x 0-80), on the front's end behind a bare tree, its top drawn at about the third storey."
+    },
+    {
+     "from": [-68.9, 840.5],
+     "to": [-73, 841.9],
+     "why": "Which part of the stepped front this 4.4 m wall is can't be told (no joint between the block's buildings shows, and the cameras disagree). In facade-way-982804046 its outline (x 935-1140) falls inside the big glazed-in bay over the barred shop front, close up, its storeys over the first above the frame and a white van and a car across its ground floor. In facade-way-982804043 the outline (x 140-260) is on the front's left end, its top drawn at about the third storey instead of the front's 15.6 m eaves, behind a bare tree and the recycling bins. In facade-way-982804047 it is at the frame's right edge (x 1555 on), running off it, behind a parked white van."
+    }
+   ]
   },
   "way/982804047": {
    "type": "block-1970s-90s",
@@ -6338,7 +7264,19 @@
    "seen": "facade-way-982804047",
    "patch": [1389, 243, 1459, 320],
    "sure": true,
-   "notes": "One of a long terrace of identical blocks: deep concrete fins between the bays, white paint peeling to grey concrete, and deep projecting balconies faced in dark-green tiles. Its ground floor a café behind a black iron grille, beside the stair door."
+   "notes": "One of a long terrace of identical blocks: deep concrete fins between the bays, white paint peeling to grey concrete, and deep projecting balconies faced in dark-green tiles. Its ground floor a café behind a black iron grille, beside the stair door.",
+   "unread": [
+    {
+     "from": [-48.5, 833.9],
+     "to": [-52.1, 835],
+     "why": "Which piece of the repeating front it is can't be told, and its ground floor is behind the parked vans in both photos. In facade-way-982804046 the outline (x 465-540) falls inside a cream bay between two concrete piers (x 390-610), with nothing at 3.8 m to mark its ends, and the storeys above the second are out of the frame's top; in facade-way-982804047 it is a narrow steep strip (x 940-1010) on a concrete pier at 37 m."
+    },
+    {
+     "from": [-54.7, 835.9],
+     "to": [-59.7, 837.5],
+     "why": "As w3: in facade-way-982804046 its outline (x 560-690) straddles the cream bay's right part and the concrete pier beside it, so its ends can't be told; its ground floor is behind the white van in both photos, and in facade-way-982804047 it is seen steeply at the right, its top storeys out of the frame."
+    }
+   ]
   },
   "way/982804048": {
    "type": "block-1970s-90s",
@@ -6389,7 +7327,14 @@
    "seen": "facade-way-982804050",
    "patch": [1856, 349, 1997, 420],
    "sure": true,
-   "notes": "Only its two lowest floors are in frame at the edge: wide dark-framed windows over a band of dark-green panels on a projecting first floor, white render on the pilasters and side walls (the row's other blocks the same, with recessed balconies fronted in dark green); a ground floor of glazed shops between pillars clad in grey stone. Blue-tinted windscreen."
+   "notes": "Only its two lowest floors are in frame at the edge: wide dark-framed windows over a band of dark-green panels on a projecting first floor, white render on the pilasters and side walls (the row's other blocks the same, with recessed balconies fronted in dark green); a ground floor of glazed shops between pillars clad in grey stone. Blue-tinted windscreen.",
+   "unread": [
+    {
+     "from": [23.6, 810.3],
+     "to": [18.9, 811.8],
+     "why": "Second pass: facade-lidar-x59z766 and facade-way-982804050 are still the same image (facade-way-982804051, in the batch, isn't gridded for this wall). The wall is at the right edge, close and sharply oblique down the street: its left end at the pier by the shop front with the green sign (x 1390-1430), but the front runs on to the frame's edge with nothing marking its right end, the white estate car and the silver car stand across the ground floor's shop fronts, and the green-banded storeys above run off the top."
+    }
+   ]
   },
   "way/982804051": {
    "type": "block-2000s",
@@ -6513,7 +7458,14 @@
    "seen": "facade-way-983551345",
    "patch": [307, 506, 397, 576],
    "sure": true,
-   "notes": "A small two-storey terraced house under a tile roof, its front framed in red paint with an off-white rendered panel on the left and a sand-coloured stone-clad panel on the right; a café's awning (only a coffee brand on it) over the ground floor, mostly hidden by a van. The outline also takes in the older pinkish house with granite surrounds to its left."
+   "notes": "A small two-storey terraced house under a tile roof, its front framed in red paint with an off-white rendered panel on the left and a sand-coloured stone-clad panel on the right; a café's awning (only a coffee brand on it) over the ground floor, mostly hidden by a van. The outline also takes in the older pinkish house with granite surrounds to its left.",
+   "unread": [
+    {
+     "from": [-267.4, 1032.1],
+     "to": [-265.2, 1038.7],
+     "why": "In facade-way-983551345 its left end is at or past the photo's left edge (the house seen is narrower than its 7 m) and parked vans hide its ground floor; facade-way-983551349 is 39 m off, at 19 px a metre, behind traffic."
+    }
+   ]
   },
   "way/983551346": {
    "type": "old-house",
@@ -6527,7 +7479,14 @@
    "seen": "facade-way-983551346",
    "patch": [1843, 154, 1971, 256],
    "sure": true,
-   "notes": "A small terraced house in pale pink render (a touch lilac), its windows and door in wide flat surrounds painted grey, a grey band between the floors; a door () and a barred window below, a window with a white roller shutter above. A little azulejo panel of a saint beside the upper window; worn and stained."
+   "notes": "A small terraced house in pale pink render (a touch lilac), its windows and door in wide flat surrounds painted grey, a grey band between the floors; a door () and a barred window below, a window with a white roller shutter above. A little azulejo panel of a saint beside the upper window; worn and stained.",
+   "unread": [
+    {
+     "from": [-268.1, 1027.7],
+     "to": [-267.4, 1032.1],
+     "why": "Both photos are taken from the road beside it, looking along the street: the small pink house's left end (the downpipe by the cafÃ©) shows, but its right end is out of the frame in both. In facade-way-983551346 the ground floor's barred window is cut by the frame's edge, and in facade-way-983551347 a van close to the camera also hides the ground floor. Only some 2-3 m of its 4.5 m front shows whole."
+    }
+   ]
   },
   "way/983551347": {
    "type": "house",
@@ -6547,7 +7506,14 @@
    "seen": "facade-way-983551347",
    "patch": [1434, 576, 1485, 627],
    "sure": true,
-   "notes": "A narrow terraced house in yellow render, its windows framed in pale grey with a grey band over the café; the top storey is a glazed-in aluminium gallery under the roof's eaves. A white awning with a red edge over the café. The photo has a cyan cast."
+   "notes": "A narrow terraced house in yellow render, its windows framed in pale grey with a grey band over the café; the top storey is a glazed-in aluminium gallery under the roof's eaves. A white awning with a red edge over the café. The photo has a cyan cast.",
+   "unread": [
+    {
+     "from": [-268.9, 1022.1],
+     "to": [-268.1, 1027.7],
+     "why": "Which wall this is isn't clear. Up the street from the chapel's bell-cote the photos show, in turn, a white house with yellow trims and dark shutters, a white house with mauve-grey surrounds and roller-shutter boxes (two bays), the narrow yellow three-storey building with the cafÃ© and a glazed top gallery, and a pale-pink house; the map has 983551348 (5.5 m), this one (5.6 m), 983551346 (4.5 m) and 983551345 (7 m) after the chapel's front. The cameras of facade-way-983551347 and facade-way-983551346 (14 m) put this wall on the yellow cafÃ©'s front (x 975-1250 and 1005-1350); that of viewpoint:capela-santa-justa (7 m) puts its left end at the mauve-framed house's door (x 1215), running off the frame's right edge; and the earlier work disagrees too: the first pass read 983551348 as the yellow-trimmed house (which would make this the mauve-framed one), while refs/buildings.json describes 983551348 as the mauve-framed house and this one as the yellow cafÃ©. All the photos look steeply along the street, so the houses' widths can't settle it. The yellow front would otherwise read in facade-way-983551346 from its first floor up (both its ends, its two windows and the gallery under the eaves show; the parked car hides the left part of its cafÃ© floor). facade-way-473734201's camera (22 m) also puts it on the yellow front (x 1310-1440), there behind a white van. So three cameras and refs/buildings.json say the yellow café, one camera and the first pass's reading of the neighbour say the mauve-framed house."
+    }
+   ]
   },
   "way/983551348": {
    "type": "old-house",
@@ -6561,7 +7527,24 @@
    "seen": "facade-way-983551348",
    "patch": [1600, 717, 1664, 794],
    "sure": true,
-   "notes": "A small old terraced house of two low storeys under a terracotta roof: white render, the windows and door in broad surrounds painted a dusky mauve-brown, roller shutters added in boxes over the windows. In shade; low eaves, as the LiDAR says."
+   "notes": "A small old terraced house of two low storeys under a terracotta roof: white render, the windows and door in broad surrounds painted a dusky mauve-brown, roller shutters added in boxes over the windows. In shade; low eaves, as the LiDAR says.",
+   "layout": [
+    {
+     "from": [-269.7, 1016.7],
+     "to": [-268.9, 1022.1],
+     "photo": "landmark-capela-de-santa-justa-2",
+     "storeys": [
+      [
+       ["window", 1.8, 1],
+       ["door", 3.3, 0.7]
+      ],
+      [
+       ["window", 2.5, 0.8],
+       ["window", 4.3, 0.8]
+      ]
+     ]
+    }
+   ]
   },
   "way/983551349": {
    "type": "house",
@@ -6575,7 +7558,14 @@
    "seen": "facade-way-983551349",
    "patch": [896, 768, 947, 832],
    "sure": false,
-   "notes": "A long, mostly blank side wall painted terracotta red with a white band at first-floor level, a few small windows and a gabled tile roof; the ground floor is hidden by cars and a fence. Plain enough to be an old workshop rather than a house. The signs on it are road direction signs, not its own."
+   "notes": "A long, mostly blank side wall painted terracotta red with a white band at first-floor level, a few small windows and a gabled tile roof; the ground floor is hidden by cars and a fence. Plain enough to be an old workshop rather than a house. The signs on it are road direction signs, not its own.",
+   "unread": [
+    {
+     "from": [-265.2, 1038.7],
+     "to": [-264, 1043.5],
+     "why": "In facade-way-983551345 it's the red wall's narrow end under the sloping roof's edge, seen at an angle. Its whole ground floor and foot are behind a parked delivery van and people crossing, so no line low on it shows at both ends to make it straight (only a small window high up shows). In facade-way-983551349 it's a narrow strip about 34 m off, behind parked cars."
+    }
+   ]
   },
   "way/983551350": {
    "type": "warehouse",
@@ -6631,7 +7621,14 @@
    "seen": "facade-way-983551353",
    "patch": null,
    "sure": false,
-   "notes": "Only a sliver at the photo's left edge, in shade: a rendered wall of three or so storeys under a gabled roof's eave, one window. Its outline also spreads over the single-storey white building in front (6), which is another; a low tiled roof and a dark shop window at its foot."
+   "notes": "Only a sliver at the photo's left edge, in shade: a rendered wall of three or so storeys under a gabled roof's eave, one window. Its outline also spreads over the single-storey white building in front (6), which is another; a low tiled roof and a dark shop window at its foot.",
+   "unread": [
+    {
+     "from": [-252.1, 1002.4],
+     "to": [-261.7, 1005.4],
+     "why": "Which building it is still isn't clear. In facade-way-473734204 (43 m) the outline (x 125-485, its top at the 11 m eaves, y 465-485) takes in the one-storey white house (front x 270-525, about 6 m, one door, eaves at y 590, far below 11 m) and the billboard and the lower annex left of it, and nothing there stands 11 m high or 10 m long; in facade-way-473734203 (the same frame as facade-way-983551353) the house's front runs from behind the billboard (x 0-110) to x 445, its left end hidden. landmark-capela-de-santa-justa-3 isn't one the tool finds the wall in (it grids nothing for it)."
+    }
+   ]
   },
   "way/983551354": {
    "type": "block-1950s",
@@ -6654,7 +7651,14 @@
    "seen": "facade-way-983551354",
    "patch": [1894, 634, 1946, 666],
    "sure": true,
-   "notes": "Off-white render framed by dark-green painted bands along the piers, the slab edges and the eaves; stained concrete balconies with dark iron railings and white-framed windows with roller shutters. A butcher's under a dark fascia across the ground floor, its name in red and green letters. Three storeys seen in the steep view; LiDAR's 11.5 m eaves may mean a set-back top floor out of sight."
+   "notes": "Off-white render framed by dark-green painted bands along the piers, the slab edges and the eaves; stained concrete balconies with dark iron railings and white-framed windows with roller shutters. A butcher's under a dark fascia across the ground floor, its name in red and green letters. Three storeys seen in the steep view; LiDAR's 11.5 m eaves may mean a set-back top floor out of sight.",
+   "unread": [
+    {
+     "from": [-235.9, 997.7],
+     "to": [-242.1, 999.7],
+     "why": "No photo shows both its ends. In facade-way-983551354 the butcher's block is right beside the camera, seen steeply: from x 1290 its front runs out of the frame's right and top, a parked car and a price board before its shopfront; in facade-way-983551355 only its left end shows, at the right edge (x 1520) behind a parked car; in facade-way-383764628, still steep along the street, the outline (x 1105-1290) falls on the car-repair shop's front beside it and the block's ends can't be told among the balconies and piers, a parked car across its ground floor."
+    }
+   ]
   },
   "way/983551355": {
    "type": "block-1970s-90s",
@@ -6668,7 +7672,14 @@
    "seen": "facade-way-983551355",
    "patch": null,
    "sure": false,
-   "notes": "In deep shade: pale render framed by black-painted bands, a projecting concrete balcony stained with damp and an iron railing, white roller shutters; the ground floor set back under the upper floors as a dark covered space. The top is out of the frame (at least three storeys); the azulejo strips to its left are on the neighbour, 2."
+   "notes": "In deep shade: pale render framed by black-painted bands, a projecting concrete balcony stained with damp and an iron railing, white roller shutters; the ground floor set back under the upper floors as a dark covered space. The top is out of the frame (at least three storeys); the azulejo strips to its left are on the neighbour, 2.",
+   "unread": [
+    {
+     "from": [-226.7, 994.8],
+     "to": [-235.9, 997.7],
+     "why": "Second pass, its four photos seen. In facade-way-983551355 and -983551354 (42 and 30 px a metre) it is on a continuous row of balconied blocks with dark vertical bands, seen steeply along the street: the outline (x 1240-1540 and 1115-1390) has no visible joint at either end (in 983551355 its right edge cuts through a window, and the front runs on to the frame's edge), its storeys above the balcony run up towards the frame's top, and parked cars stand across the dark arcade of its ground floor. In facade-way-383764628 (15 px a metre) it is behind a parked estate car, and in facade-way-323646321 (13 px a metre) at the frame's right edge behind a parked 4x4: too small to tell its openings."
+    }
+   ]
   },
   "way/983551356": {
    "seen": null,
@@ -6689,7 +7700,14 @@
    "seen": "facade-way-983551357",
    "patch": [1920, 448, 2035, 550],
    "sure": true,
-   "notes": "Small white square tiles with tall strips of patterned azulejos (white with a blue-grey pattern) beside the windows and dark granite panels under them; projecting balconies with curved iron railings and wooden handrails. Ground floor of white garage doors with grilles over dark navy tiles, and a cream rendered pillar. Its floors counted in its other photo (facade-way-983551355 #2); here the top is out of frame."
+   "notes": "Small white square tiles with tall strips of patterned azulejos (white with a blue-grey pattern) beside the windows and dark granite panels under them; projecting balconies with curved iron railings and wooden handrails. Ground floor of white garage doors with grilles over dark navy tiles, and a cream rendered pillar. Its floors counted in its other photo (facade-way-983551355 #2); here the top is out of frame.",
+   "unread": [
+    {
+     "from": [-215.1, 991],
+     "to": [-226.7, 994.8],
+     "why": "All four of its photos look along the street, seeing the row's fronts at a sharp angle. In facade-way-983551357 the camera puts its left end at x about 1290 (on a tile-panelled front with balconies over a white grilled door on a blue base, no joint there) and it runs out of the frame's right edge, its upper storeys above the frame there and its ground floor behind a parked car. In facade-way-983551355 (36 m) the outline (x 1070-1245) is a narrow, steeply seen strip of the continuous row (balconies over shuttered ground-floor fronts in shade), about 14 px a metre along it, its right end perhaps at the dark pier where a plainer front with bigger windows begins (x about 1250), its left end at no joint; in facade-way-983551354 (36 m) it is a like strip (x 1000-1170) behind a parked car. In viewpoint:conselheiro-lobato (7 m off) the camera's outline doesn't fall in the frame."
+    }
+   ]
   },
   "way/983551358": {
    "type": "warehouse",
@@ -6720,7 +7738,14 @@
    "seen": "facade-way-983551359",
    "patch": [1843, 269, 1920, 333],
    "sure": true,
-   "notes": "White relief-patterned tiles with dark grey-green textured panels beside and under the windows; curved projecting balconies with wavy iron railings and brown wooden handrails; the ground floor of grey and white garage doors over a dark blue tiled base. In shade and cyan-tinted; facade-way-983551357 (#3) shows the same."
+   "notes": "White relief-patterned tiles with dark grey-green textured panels beside and under the windows; curved projecting balconies with wavy iron railings and brown wooden handrails; the ground floor of grey and white garage doors over a dark blue tiled base. In shade and cyan-tinted; facade-way-983551357 (#3) shows the same.",
+   "unread": [
+    {
+     "from": [-202, 986.8],
+     "to": [-215.1, 991],
+     "why": "Its right end is out of every photo. Both looking steeply along the street at the tiled block: in viewpoint:conselheiro-lobato its outline runs from x 950 out of the photo's right edge (the foot's line leaves through the bottom right), and in facade-lidar-x-234z972 (facade-way-983551359 and type-block-1970s-1990s-2 are the same frame, which the tool grids once) from x 1255 out of the right edge; in both parked cars stand across the car workshops' ground floor."
+    }
+   ]
   },
   "way/983551360": {
    "type": "warehouse",
@@ -6782,7 +7807,14 @@
    "seen": "facade-way-983551364",
    "patch": [1741, 307, 1792, 358],
    "sure": true,
-   "notes": "Walls of small pale grey-white square tiles; the projecting balconies' solid fronts and panels under the windows are clad in a speckled beige-and-brown mosaic, a second colour almost as prominent. The ground floor is dark brown brick-like tiles with wide dark openings. The face is in shade with a blue cast; the colour is checked in facade-lidar-x-193z966 (#1), an overcast photo."
+   "notes": "Walls of small pale grey-white square tiles; the projecting balconies' solid fronts and panels under the windows are clad in a speckled beige-and-brown mosaic, a second colour almost as prominent. The ground floor is dark brown brick-like tiles with wide dark openings. The face is in shade with a blue cast; the colour is checked in facade-lidar-x-193z966 (#1), an overcast photo.",
+   "unread": [
+    {
+     "from": [-170.4, 976.6],
+     "to": [-189, 982.6],
+     "why": "Seen nearly end on along the street in both photos (facade-lidar-x-193z966, facade-way-983551364): it runs out of each on the right, its 19.5 m mostly past the edge."
+    }
+   ]
   },
   "way/983551365": {
    "seen": null,
@@ -6877,7 +7909,14 @@
    "seen": "facade-way-983551373",
    "patch": null,
    "sure": false,
-   "notes": "Behind a row of conifers, seen from a bridge: only the tops of a big low shed, a greyish-beige rendered gable end with a shallow roof, and further right a longer pale part under a sheet roof running on to the white warehouse 1. Its outline also takes in a small house on the left."
+   "notes": "Behind a row of conifers, seen from a bridge: only the tops of a big low shed, a greyish-beige rendered gable end with a shallow roof, and further right a longer pale part under a sheet roof running on to the white warehouse 1. Its outline also takes in a small house on the left.",
+   "unread": [
+    {
+     "from": [-93.7, 1044.1],
+     "to": [-77.6, 1038.3],
+     "why": "In facade-way-983551373, seen from a footbridge, a row of conifers and bushes hides the shed's wall all along: only the tops of its gables and roofs show over them. In facade-way-983551368 the camera's outline falls on sky and a lamp post over a riverside path, with the river's trees on the left and a modern building behind a red fence on the right; the shed isn't seen."
+    }
+   ]
   },
   "way/983551374": {
    "type": "warehouse",
@@ -6891,7 +7930,14 @@
    "seen": "facade-way-983551374",
    "patch": [300, 230, 380, 280],
    "sure": true,
-   "notes": "A tall single-storey warehouse gable end in painted concrete blocks with pilasters, a low-pitched roof of grey sheets, two small windows high up and a big beige sheet-metal door. Behind conifers and shrubs."
+   "notes": "A tall single-storey warehouse gable end in painted concrete blocks with pilasters, a low-pitched roof of grey sheets, two small windows high up and a big beige sheet-metal door. Behind conifers and shrubs.",
+   "unread": [
+    {
+     "from": [-79, 1034.1],
+     "to": [-69.6, 1027.6],
+     "why": "Its one storey can't be read across its width. In facade-way-983551374 (small, soft, both ends in the photo) the conifers stand across its left third from the foot to the eaves (x 100-300) and shrubs across its foot; on the rest only a high window (x 230-270), two small high windows (x 445-490) and the large loading door (x 410-520) show. In facade-way-983551375 (the same gable, at the left of the two, x 155-620) the fig tree hides the lower half of its right part and shrubs its left end's foot; facade-way-983551376 (the same frame as type-warehouse-1, which the tool grids once) has it far off behind the railings and trees."
+    }
+   ]
   },
   "way/983551375": {
    "type": "warehouse",
@@ -6905,7 +7951,14 @@
    "seen": "facade-way-983551375",
    "patch": [400, 420, 500, 480],
    "sure": true,
-   "notes": "Two tall gabled sheds side by side under roofs of sheets: the left one in grimy whitewashed blocks with a big wooden door and two small windows high up, the right one in bare grey concrete blocks with pale grey metal sheets in its gable. Seen across a stream over bushes and young trees."
+   "notes": "Two tall gabled sheds side by side under roofs of sheets: the left one in grimy whitewashed blocks with a big wooden door and two small windows high up, the right one in bare grey concrete blocks with pale grey metal sheets in its gable. Seen across a stream over bushes and young trees.",
+   "unread": [
+    {
+     "from": [-69.6, 1027.6],
+     "to": [-54.4, 1012.2],
+     "why": "Its one tall storey can't be read across its width. In facade-way-983551375 both ends show (the two gables from x 215 to 950), but the fig tree and the conifers stand across the lower half of the wall from x 350 to the right end (only the left gable's two small high windows and the large door at x 300-350 show whole, and the right gable's upper half, blank), so the storey is hidden in part and there's no storey left to read. In trees-24225079260410882-270 the right gable runs out of the frame and the left one's foot is behind the fig; in facade-way-983551376 (the same picture as type-warehouse-1, 42 m) it's behind the car park's railings, the trees and the low sheds in front."
+    }
+   ]
   },
   "way/983551376": {
    "type": "warehouse",
@@ -6967,7 +8020,14 @@
    "seen": "facade-way-983551379",
    "patch": [1894, 230, 1997, 307],
    "sure": true,
-   "notes": "The front is tiled all over in blue-and-white patterned azulejos (a ring motif), with projecting balconies and white wavy iron railings; the ground floor is dark shopfronts. In shade under a blue sky; the top floor is cut off by the photo, the count leans on facade-way-983551380 (#3) and the LiDAR."
+   "notes": "The front is tiled all over in blue-and-white patterned azulejos (a ring motif), with projecting balconies and white wavy iron railings; the ground floor is dark shopfronts. In shade under a blue sky; the top floor is cut off by the photo, the count leans on facade-way-983551380 (#3) and the LiDAR.",
+   "unread": [
+    {
+     "from": [-104.4, 955.3],
+     "to": [-114.5, 958.5],
+     "why": "No photo shows both its ends. All four look steeply along the street: in facade-way-983551379 it runs from x 1315 out of the photo's right and top, a white van across its ground floor; in facade-way-983551380 only its left end shows, at the right edge (x 1490); in facade-way-983551372 (49 m, about 13 px a metre) and facade-way-983551371 (67 m, 6 px a metre) it's a narrow slanting strip among the row's tiled fronts and balconies, where its ends can't be told, with parked cars along its foot."
+    }
+   ]
   },
   "way/983551380": {
    "type": "block-1950s",
@@ -6984,7 +8044,14 @@
    "seen": "facade-way-983551380",
    "patch": [1690, 128, 1741, 256],
    "sure": true,
-   "notes": "Its front all in glazed tiles, white with a grey diamond pattern (a bolder pattern in the balcony recesses), projecting balconies with white iron railings, ochre panels beside some windows; a blue grated door and a white sectional garage door between dark tiled pillars. In facade-way-983551379 the outlines sit one building to the right, on the blue azulejo front next door."
+   "notes": "Its front all in glazed tiles, white with a grey diamond pattern (a bolder pattern in the balcony recesses), projecting balconies with white iron railings, ochre panels beside some windows; a blue grated door and a white sectional garage door between dark tiled pillars. In facade-way-983551379 the outlines sit one building to the right, on the blue azulejo front next door.",
+   "unread": [
+    {
+     "from": [-94.8, 952.2],
+     "to": [-104.4, 955.3],
+     "why": "Where it begins and ends on the continuous tiled row isn't seen. In facade-way-983551380 it's seen nearly end on (its outline x 1265-1515, about 250 px for 10 m), its balconies standing out across its windows, its top cut by the photo's top at the right end, and nothing marks its ends (the ground floor's blue gate, door and garage door run across the outline's ends); in facade-way-983551379 (42 m) it's a narrower strip (x 1170-1335), steeper still, behind a parked car; facade-way-983551372 and facade-way-983551371 have it at 9 and 5 px a metre."
+    }
+   ]
   },
   "way/983551381": {
    "type": "block-1950s",
@@ -7070,7 +8137,14 @@
    "seen": "facade-way-983551384",
    "patch": [1664, 506, 1715, 557],
    "sure": true,
-   "notes": "Panels of speckled grey mosaic between small balconies set in cream-rendered recesses, the balconies with cream-painted railings; a flat roof with a plain parapet. Twin of its left neighbour #2, the downpipe between their ground floors marks the line."
+   "notes": "Panels of speckled grey mosaic between small balconies set in cream-rendered recesses, the balconies with cream-painted railings; a flat roof with a plain parapet. Twin of its left neighbour #2, the downpipe between their ground floors marks the line.",
+   "unread": [
+    {
+     "from": [-51.7, 938.2],
+     "to": [-64.9, 942.5],
+     "why": "Second pass, its four photos seen. In facade-way-983551384 the Vegga Home block is right beside the camera, seen steeply along the street: the outline starts at the shop's sign (x 1240-1295) and runs out of the frame's right and top, so its near end isn't in the photo, and a parked car stands across the shopfront. In facade-way-983551383 and -382 (15 and 10 px a metre) the outline falls instead on an older building with wavy iron balconies, a garage door and a mosaic pier beside a shop with red grilles, and in -380 (5 px a metre) on a far front: too small to tell its openings, and which building it is isn't sure."
+    }
+   ]
   },
   "way/983551385": {
    "type": "block-1970s-90s",
@@ -7121,7 +8195,14 @@
    "seen": "facade-way-983551387",
    "patch": [1843, 166, 1894, 256],
    "sure": true,
-   "notes": "Speckled grey-beige rough-cast render like granite chips, its windows in recessed niches lined with small dark mosaic, each with a shallow balconette with white railings. A supermarket's shutter and sign on the ground floor, granite-block pillars. Top out of the frame; floors counted along the terrace in facade-way-983551384, where a set-back top floor shows further on."
+   "notes": "Speckled grey-beige rough-cast render like granite chips, its windows in recessed niches lined with small dark mosaic, each with a shallow balconette with white railings. A supermarket's shutter and sign on the ground floor, granite-block pillars. Top out of the frame; floors counted along the terrace in facade-way-983551384, where a set-back top floor shows further on.",
+   "unread": [
+    {
+     "from": [-19.8, 927.9],
+     "to": [-38.5, 934],
+     "why": "No photo shows both its ends. In facade-way-983551387 it runs, steeply along the street, from x 1185 out of the frame's right and top, parked cars across its shopfronts; in facade-way-983551388 and facade-way-983551389 only its left end shows at the right edge (x 1440 and x 1520), behind a parked car and a post (and, in facade-way-983551389, the windscreen's glare); in facade-way-983551384 (55 m, about 8 px a metre) it's a narrow slanting strip among the row's balconies, too small to read."
+    }
+   ]
   },
   "way/983551388": {
    "type": "block-1950s",
@@ -7144,7 +8225,14 @@
    "seen": "facade-way-983551388",
    "patch": null,
    "sure": true,
-   "notes": "Stained white render with vertical strips of blue-green checkered mosaic between windows, and balconies along the front with geometric iron railings. A car showroom below with a black panelled fascia over the glazing; a hipped roof. In shade, with a cyan cast."
+   "notes": "Stained white render with vertical strips of blue-green checkered mosaic between windows, and balconies along the front with geometric iron railings. A car showroom below with a black panelled fascia over the glazing; a hipped roof. In shade, with a cyan cast.",
+   "unread": [
+    {
+     "from": [-0.2, 921.6],
+     "to": [-19.8, 927.9],
+     "why": "A piece of a long block front of balconied bays over a dark car-dealer's shop front, three storeys as counted. The facade runs on through both its ends with nothing to mark them: in both photos (983551388, 983551389) the bays repeat about every 10 m, the camera puts its left end by the patterned stairwell strip at the entrance, and its right end falls at or past the frame's right edge, behind the lamp post and the road sign. The ground floor is behind parked cars."
+    }
+   ]
   },
   "way/983551389": {
    "type": "block-1950s",
@@ -7167,7 +8255,14 @@
    "seen": "facade-way-983551389",
    "patch": [762, 256, 796, 371],
    "sure": true,
-   "notes": "The corner of a long block: weathered white render, a balcony along each floor with dark green geometric iron railings, strips of black-and-white patterned mosaic up the front between windows, a hipped tile roof. A tall ground floor of glass in black cladding, the Safelycar car showroom, whose name sits further along under 1."
+   "notes": "The corner of a long block: weathered white render, a balcony along each floor with dark green geometric iron railings, strips of black-and-white patterned mosaic up the front between windows, a hipped tile roof. A tall ground floor of glass in black cladding, the Safelycar car showroom, whose name sits further along under 1.",
+   "unread": [
+    {
+     "from": [11.2, 917.9],
+     "to": [-0.2, 921.6],
+     "why": "Second pass: in facade-way-983551389 and facade-way-983551388 the block's left end is clear (its corner with the end wall, the end wall seen edge-on with its narrow windows), and its first bay of balconies ends at a break about 9-10 m along (x 1045-1060 in 983551389), but the map's 12 m runs past that into the second bay, and nothing on the uniform front (balconies, tiled strips, eaves, the dark glazed showroom under them) marks a break 12 m along, so its right end can't be placed. facade-way-983551387 has it at 7 px a metre. Parked and moving cars stand across the showroom in both near photos."
+    }
+   ]
   },
   "way/983557832": {
    "type": "warehouse",
@@ -7195,7 +8290,14 @@
    "seen": "viewpoint:lobato-east",
    "patch": null,
    "sure": false,
-   "notes": "A single-storey row of shops in front of the 4-storey blocks, white awnings and fascias with red lettering and a green sign, far off in dusk light with a cyan cast. In facade-way-983563072 it shows pale-grey pillars between glazed shopfronts under red signs."
+   "notes": "A single-storey row of shops in front of the 4-storey blocks, white awnings and fascias with red lettering and a green sign, far off in dusk light with a cyan cast. In facade-way-983563072 it shows pale-grey pillars between glazed shopfronts under red signs.",
+   "unread": [
+    {
+     "from": [40.8, 877.9],
+     "to": [48.7, 887],
+     "why": "A low row of shops 47-49 m off in both photos: in viewpoint:lobato-east its left end is out of the photo and parked cars and trees hide its front; in type-corner-block-with-shops-2 it is a small band behind parked cars, a lamp post and a sign."
+    }
+   ]
   },
   "way/983560329": {
    "type": "commercial",
@@ -7343,7 +8445,14 @@
    "seen": "facade-way-984457566",
    "patch": null,
    "sure": false,
-   "notes": "Across the river behind a lamp post, trees and a red footbridge: a long blank wall of grey concrete blocks, stained, with a low roof of corrugated sheets just showing over it. It could be a boundary wall with the low building behind it; no windows or doors seen."
+   "notes": "Across the river behind a lamp post, trees and a red footbridge: a long blank wall of grey concrete blocks, stained, with a low roof of corrugated sheets just showing over it. It could be a boundary wall with the low building behind it; no windows or doors seen.",
+   "unread": [
+    {
+     "from": [50.3, 951.2],
+     "to": [49.4, 956.7],
+     "why": "In both photos (facade-way-984457567 and facade-way-984457566, 30-37 m off across the river, about 20-25 px a metre) the camera's outline falls on a small pale ribbed front (corrugated sheeting, or a roller door) beside a brown-red wall, just behind the red footbridge. The bridge's truss is in front of it from about half its height down, and a tree is in front of its right part. Neither its storey across nor its right end can be read."
+    }
+   ]
   },
   "way/984457567": {
    "type": "warehouse",

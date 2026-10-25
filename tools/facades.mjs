@@ -113,9 +113,13 @@ export function layoutOnRing(layout, ring) {
       if (hi - lo < 1) continue;
       // The side runs with the wall (sa < sb) or against it.
       const fwd = sb > sa;
-      out[k] = w.storeys.map((st) => st && st.filter(([, at, ow]) => { const m = at + ow / 2; return m >= lo && m <= hi; }).map(([kind, at, ow]) => {
-        const near = fwd ? at - sa : sa - (at + ow), r = Math.round;
-        return [kind, r(Math.max(0, Math.min(L - ow, near)) * 10) / 10, ow];
+      // Each opening's part on the side: one round a bend in the wall is cut at it, a part kept if it is
+      // 0.3 m or more or holds the opening's middle.
+      out[k] = w.storeys.map((st) => st && st.flatMap(([kind, at, ow]) => {
+        const s0 = Math.max(at, lo), s1 = Math.min(at + ow, hi), m = at + ow / 2, r = (v) => Math.round(v * 10) / 10;
+        if (s1 <= s0 || (s1 - s0 < 0.3 && !(m >= lo && m <= hi))) return [];
+        const near = fwd ? s0 - sa : sa - s1;
+        return [[kind, r(Math.max(0, Math.min(L - (s1 - s0), near))), r(s1 - s0)]];
       }));
       break;
     }

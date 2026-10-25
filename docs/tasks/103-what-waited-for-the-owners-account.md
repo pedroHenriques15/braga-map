@@ -85,6 +85,7 @@ task's Notes as "decided by the session, for the owner to confirm".
 | 085 | The setts, calçada and asphalt seen up close at 085's viewpoints are party-kart's street drawings (256 px canvases), not braga-map's textures: in 085, or a task of their own? | In 085: on Ultra the streets' drawings made at 1024 px (drawn finer, not scaled), about 80 MB more on the card (Ultra's textures ~540 MB); High and below as they are (the coordinator, on worker-2's recommendation) | 085's landing |
 | 085 | Its smaller choices on Ultra | Each kind of ground's roughness a number near the land's 0.96 (at 0.7 the setts' joints washed pale); the six kinds' textures one array on Ultra only, so High and below stay byte-identical; three's default anisotropy raised on Ultra so every texture takes the card's most; what was built for Ultra stays if the game steps down to High | 085's landing |
 | 089 | Its step 1, the far trees past the near reach: a lit crown of each tree's own shape was tried and looked worse than the billboards (blobs, not leaves) | Taken out: 089 is the near trees in the wind and the deciduous kinds' limbs; the billboards past 700 m stay; the octahedral impostors are task 128; its first Done when stays open | 089's landing |
+| 089 | Draw into each shadow cascade only the near trees that could shade it | Not kept: built, it saved 0.3-0.4 ms of the trees' 3.7 ms of shadows at `falperra` (2560x1440), and to be safe on slopes it needs the ground's height, more code than it saves; the cost is the leaf cards in the near maps, task 129 | 089's landing |
 | 088 | New tree kinds for the species found | None: no species reaches the task's ~50 trees on the photos' evidence (willows 23, planes 25, hackberries 20), and the hackberries are drawn as "broadleaf", whose bark is already a hackberry's; the kinds stay nine | 088's landing |
 | 088 | Carry a row's species past what the photos show (the point cloud's spacing) | No: a row's species goes only as far as a photo shows the row, as decision 051 has it | 088's landing |
 | 081 | How far Ultra draws the trees in full | 700 m, by a frame under 16 ms while moving (a frame after gathering them: 12 ms at 700 m, 18 at 1,000, at 2560 × 1440); a still frame holds 1,000 m at 4.6 ms | 081's landing |
@@ -246,6 +247,14 @@ picks it up can go on from here.
     round goes up at Ultra), drafted; 123 split from it.
   - **The coordinator's watcher was down from 18:51 to 21:58** (not re-armed after a message), so ready
     tasks waited for their marks and turns: 102, 065, 090, 111, 112 and 059.
+  - **Claude's marks, put right at 089's round** (the coordinator, 2026-10-25): rounds marked side by
+    side each took their places' entries from their own branch, so some later files copied an entry
+    from before an earlier landing's change. `after059` had `capela-sao-joao` back at 3 with the vans
+    112 took out and `viriato-amaral-nunes` back at 1, and `after085` carried that 3 on; in all, 12
+    places had an older mark or comment in a later file. Each was checked against its shot on main (089's `before089`/`after089`, Ultra) and given the
+    entry of the task that changed it. `.cache/scorecard/marks/2026-10-25-after089.json` holds all 33
+    as they stand: mean 2.64 (`capela-sao-joao` 4, `travessa-lobato` 3, `viriato-amaral-nunes` 2,
+    `liberdade` 3). It's the file to take when the rounds go up; the files of 059 and 085 aren't.
 
 ## Read first
 

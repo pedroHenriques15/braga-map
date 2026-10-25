@@ -182,6 +182,8 @@ finer, every texture filtered at the card's most (085, decision 076).
   086).
 - **126** The arenas' insides take their doors and windows from the facades' layouts (split from 086).
 - **128** On Ultra, the far trees as impostors baked from each kind's near tree (found by 089).
+- **129** On Ultra, the near trees' shadows for less: cheaper crowns in the near cascades (found by
+  089).
 - **099** The whole map at the open world's detail, the open world grown over it (after 038). Held by
   the owner (2026-10-24): not done for now, for its cost (its Notes).
 - **100** The street furniture the point cloud finds, for 020 to draw: done (decision 062), braga-map

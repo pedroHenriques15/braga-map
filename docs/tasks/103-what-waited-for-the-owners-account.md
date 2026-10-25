@@ -245,6 +245,12 @@ picks it up can go on from here.
     byte-identical. Its round at Ultra: no mark moved. Not verified: Ultra on a card smaller than the
     owner's RTX 4060 Ti (~550 MB of textures). Found: 124 (the budget's textures uncounted) and 127 (a
     round goes up at Ultra), drafted; 123 split from it.
+  - **089** (worker-1): landed braga-map `80c4702` (decision 077), no version, and party-kart `4ee6d35`.
+    On Ultra the near trees in the wind (a breeze in gusts, still in `?scenery` shots) and the
+    deciduous kinds' limbs within 150 m; the far trees still billboards past 700 m, its first Done when
+    open (128: impostors; a lit crown of each tree's shape was tried and looked worse). Its round at
+    Ultra: no mark moved; High and Low the same to the pixel. Measured: the near trees' shadows are 3.7
+    of 9.8 ms at `falperra`, 2560x1440 (129, drafted).
   - **The coordinator's watcher was down from 18:51 to 21:58** (not re-armed after a message), so ready
     tasks waited for their marks and turns: 102, 065, 090, 111, 112 and 059.
   - **Claude's marks, put right at 089's round** (the coordinator, 2026-10-25): rounds marked side by

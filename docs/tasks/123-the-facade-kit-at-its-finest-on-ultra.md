@@ -66,8 +66,8 @@ Ultra; the facades are a piece of work of their own, split from it (2026-10-24).
   reveals show along their edges, a shutter box's lip, a garage door's mullions and a glazed ground
   floor's frames.
 - **Budget** (Ultra; High and Low unchanged): the same draw calls and triangles; textures 511 MB against
-  462 (the kit's three textures 59 MB with their mipmaps, 49 more than High's two). A frame at 1920 by
-  1440, two runs each back to back with main: 8.4 to 8.8 ms either way (one run of `fujacal-start` 9.1).
-  Building the city 15.4 to 16.6 s against 15.0 to 15.7. Nothing more to download.
+  462 (the kit's three textures 59 MB with their mipmaps, 49 more than High's two). Nothing more to
+  download. The frames and the city's building, to be taken again: these rounds and timings were
+  taken while the owner's game ran (it started at 21:30), so their times don't count.
 - **Decided by the session, for the owner to confirm:** Ultra's kit at 512 a side; the depths above; the
   relief's 3 cm edges.

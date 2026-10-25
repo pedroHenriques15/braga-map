@@ -15,7 +15,7 @@ roadmap: Ultra · Braga at its most real
 Task 093 gives each deciduous kind its year on Ultra (bare, budding, in leaf, turning, falling). But a
 tree reaches the game as its kind, not its species (decision 070: "a kind is a look to draw"), and the
 species 088 saw that don't keep a broadleaf's year are drawn as "broadleaf": the photos' few evergreen
-broadleaves (4, and an oleander) would go bare in winter, the Judas trees (6) wouldn't flower pink in
+broadleaves (4, and an oleander) would go bare in winter (093's evergreen broadleaf took them), the Judas trees (6) wouldn't flower pink in
 spring, and COS2025's acacia woods (about 45 ha, evergreen, yellow in flower in February and March)
 would go bare with them (worker-1, task 093, 2026-10-25).
 
@@ -38,7 +38,8 @@ would go bare with them (worker-1, task 093, 2026-10-25).
 
 ## Done when
 
-- [ ] The Judas trees and the acacia woods are kinds of their own in the tiles; `npm test` checks each species seen is its kind.
+- [ ] The Judas trees and the acacia woods are kinds of their own in the tiles; `npm test` checks each
+  species seen is its kind.
 - [ ] On Ultra at `?time=` in March, the acacias in flower and the Judas trees budding, beside
   reference photos of that season; rated no lower.
 - [ ] `npm test` here, `npm test` and `npm run check` in party-kart pass.

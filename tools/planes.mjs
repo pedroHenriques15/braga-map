@@ -251,8 +251,9 @@ function groupsOf(c, main) {
 
 // The roof from the regions of 2 m² or more (the 12 biggest): all of them, then, one at a time, without
 // the one the roof lies closest to its cells without (each cell's distance counted to a metre at most,
-// so what stands on the roof doesn't decide it), while that's no more than 1 cm further: a plane a
-// step away (a wing lower down, a dormer's) or a strip along a ridge goes, a gable's two slopes stay.
+// so what stands on the roof doesn't decide it), while that's closer, or no more than 1 cm further and
+// no more than 5 cm further from that plane's own cells: a plane a step away (a wing lower down, a
+// dormer's) or a strip along a ridge goes; a gable's two slopes stay, and a small hip.
 function roofOf(c, reg) {
   const big = reg.list.filter((r) => r.cells.length * S * S >= 2).sort((p, q) => q.cells.length - p.cells.length).slice(0, 12);
   if (!big.length) return null;
@@ -263,14 +264,15 @@ function roofOf(c, reg) {
     const planes = main.map((r) => r.plane), groups = groupsOf(c, main);
     let e = 0;
     for (const k of cells) { const [a, b] = pt(k); e += Math.min(1, Math.abs(c.h[k] - roofHeight(planes, groups, a, b))); }
-    return { e: e / cells.length, groups };
+    return { e: e / cells.length, groups, at: (r) => { let f = 0; for (const k of r.cells) { const [a, b] = pt(k); f += Math.min(1, Math.abs(c.h[k] - roofHeight(planes, groups, a, b))); } return f / r.cells.length; } };
   };
   let main = big, best = misfit(main);
   while (main.length > 1) {
     let pick = null;
     for (let i = 0; i < main.length; i++) {
       const rest = main.filter((_, j) => j !== i), tried = misfit(rest);
-      if (tried.e <= best.e + 0.01 && (!pick || tried.e < pick.tried.e)) pick = { rest, tried };
+      const ok = tried.e < best.e || (tried.e <= best.e + 0.01 && tried.at(main[i]) <= best.at(main[i]) + 0.05);
+      if (ok && (!pick || tried.e < pick.tried.e)) pick = { rest, tried };
     }
     if (!pick) break;
     main = pick.rest;
@@ -282,7 +284,7 @@ function roofOf(c, reg) {
 // What stands on a roof (`height(a, b)` its surface): each set of cells side by side more than 40 cm
 // over it, as a box lined up with the part, its top where most of its points are. One that fills
 // less than half of its box (a parapet along the walls, an L of something) isn't one; nor one bigger
-// than a third of the roof, or a mast (one or two cells more than 3 m up), or a cell alone under 80 cm
+// than a third of the roof or longer than 20 m (a storey more over part of it), or a mast (one or two cells more than 3 m up), or a cell alone under 80 cm
 // up (the points' noise at a roof's edge).
 function blocksOn(c, height, roofArea) {
   const { na, nb, h, inn } = c, n = na * nb, over = new Uint8Array(n);
@@ -308,7 +310,7 @@ function blocksOn(c, height, roofArea) {
     const is = cells.map((k) => k % na), js = cells.map((k) => Math.floor(k / na));
     const i0 = Math.min(...is), i1 = Math.max(...is), j0 = Math.min(...js), j1 = Math.max(...js);
     const box = (i1 - i0 + 1) * (j1 - j0 + 1);
-    if (cells.length < 0.5 * box || cells.length * S * S > roofArea / 3) continue;
+    if (cells.length < 0.5 * box || cells.length * S * S > roofArea / 3 || Math.max(i1 - i0 + 1, j1 - j0 + 1) * S > 20) continue;
     const top = quantile(cells.map((k) => h[k]), 0.75), rise = top - quantile(cells.map((k) => { const i = k % na; return height(c.A(i), c.B((k - i) / na)); }), 0.5);
     if ((cells.length <= 2 && rise > 3) || (cells.length === 1 && rise < 0.8)) continue;
     out.push({ a0: c.A(i0) - S / 2, a1: c.A(i1) + S / 2, b0: c.B(j0) - S / 2, b1: c.B(j1) + S / 2, top, cells: cells.length });
@@ -373,6 +375,39 @@ export function planesOf(ring, top, ground, shape) {
   if (roof && (shape.roof !== ROOF.flat || roof.planes.some((p) => Math.hypot(p.ga, p.gb) > 0.1))) use = { fn: (a, b) => roofHeight(roof.planes, roof.groups, a, b), roof };
   const blocks0 = blocksOn(c, oldAB, area), res0 = misfit(oldAB, blocks0);
   let blocks = blocks0, res = res0, planes = null, groups = null, fn = oldAB;
+  // Nowhere over the part, its corners and the cells no point fell in too, higher than its highest
+  // points (30 cm over most of them) or lower than a metre over its ground: a plane carried on past its
+  // own cells (a slope of the next building's, a lone one of two) is no roof.
+  if (use) {
+    const hs = roofCells.map((k) => c.h[k]), hi = quantile(hs, 0.99) + 0.3, lo = ground + 1;
+    const over = [...c.ab, ...Array.from(c.inn.keys()).filter((k) => c.inn[k]).map(at)].some(([a, b]) => { const z = use.fn(a, b); return z > hi || z < lo; });
+    if (over) use = null;
+  }
+  // Nor along the walls, every 50 cm, more than 40 cm over the points within a metre inside them (or
+  // where there are none, 50 cm over the shape) where the shape isn't as high: a gable carried on over
+  // a hip no point fell on would raise the walls under it to the ridge. Over a tenth of them by more
+  // than 30 cm, or one by 60. (Where the part takes in a lower roof than its own, both are too high.)
+  if (use) {
+    let bad = 0, n = 0, worst = 0;
+    for (let q = 0; q < c.ab.length; q++) {
+      const [pa, pb] = c.ab[q], [qa, qb] = c.ab[(q + 1) % c.ab.length], L = Math.hypot(qa - pa, qb - pb);
+      for (let t = 0.25; t < L; t += 0.5) {
+        const a = pa + ((qa - pa) * t) / L, b = pb + ((qb - pb) * t) / L, i0 = Math.floor((a - c.a0) / S), j0 = Math.floor((b - c.b0) / S);
+        let near = -Infinity;
+        for (let j = j0 - 2; j <= j0 + 2; j++) for (let i = i0 - 2; i <= i0 + 2; i++) {
+          if (i < 0 || j < 0 || i >= c.na || j >= c.nb) continue;
+          const k = j * c.na + i;
+          if (c.inn[k] && c.h[k] === c.h[k] && Math.hypot(c.A(i) - a, c.B(j) - b) <= 1) near = Math.max(near, c.h[k]);
+        }
+        const z = use.fn(a, b), d = z - (near > -Infinity ? near + 0.1 : oldAB(a, b) + 0.2);
+        n++;
+        if (z < oldAB(a, b) + 0.3) continue;
+        if (d > 0.3) bad++;
+        worst = Math.max(worst, d);
+      }
+    }
+    if (worst > 0.6 || bad > 0.1 * n) use = null;
+  }
   if (use) {
     const b1 = blocksOn(c, use.fn, area), r1 = misfit(use.fn, b1);
     if (r1 < res0 - 0.05 && r1 < 0.85 * res0) {

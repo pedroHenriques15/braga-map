@@ -51,3 +51,32 @@ its ridge's direction, pitch, eaves and ridge heights and parts where the roof s
 ## Out of scope
 
 - The facades under them: 086.
+
+## Notes
+
+- **How the planes are found** (`tools/planes.mjs`, after `roofs.mjs`, into a new `.cache/planes.json`;
+  `node tools/planes.mjs try <id>` draws a part's cells, regions and misfits): each measured part's 50 cm
+  cells (the top of DGT's building points, as `roofs.mjs` boils them down) are grown into regions from
+  the flattest cell left, a cell joining a plane within 25 cm of it and sloping its way within about
+  20°; regions on the same plane are one, touching or not. The roof is then the highest of a few
+  groups' lowest plane (a region's group: the planes over it, or level within 15 cm, over 90% of its
+  cells), so a group's planes meet in its ridges and hips and two groups' in a valley: an L's, a T's,
+  a mansard, a half-hip. Of the regions of 2 m² or more, all are taken, then the one the roof lies
+  closest to its cells without is dropped, one at a time, while that's closer, or no more than 1 cm
+  further and no more than 5 cm further from that plane's own cells: a strip along a ridge (the slope
+  fit across it), a wing a step lower or a dormer's plane goes; a gable's two slopes and a small hip
+  stay.
+- **Where the shape stays:** where the planes fit the cells no better than the part's shape (by 5 cm
+  and 15%), and where the roof they make would be higher than the part's highest points or under a
+  metre over its ground anywhere over it, or higher along its walls than the points within a metre
+  inside them where the shape isn't as high (a plane carried on past its own cells: the first run
+  raised two houses' walls at `monte-da-forca` and one at `bom-jesus` towards their ridges). A flat
+  part takes planes only where they slope (more than 6°); its walls stand to its eaves round them, so
+  a parapet stays round a deck.
+- **What stands on a roof:** each set of cells side by side more than 40 cm over it, as a box lined up
+  with the part, its top where three quarters of its points are under: not one that fills less than
+  half its box (a parapet, an L), one over a third of the roof or longer than 20 m (a storey more over
+  part of it), a mast (one or two cells more than 3 m up), or a cell alone under 80 cm up (the points'
+  noise at an edge). Only where the roof under it fits (within 35 cm).
+- **The overhang:** of the cells just outside the ring (to 1.5 m), those whose points lie on the roof's
+  planes carried on (within 40 cm), in bands of 50 cm.

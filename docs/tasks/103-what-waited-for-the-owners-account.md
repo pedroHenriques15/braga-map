@@ -266,6 +266,12 @@ picks it up can go on from here.
     level it's judged at: `tools/round.mjs` takes `--level`, Ultra by default for a round shot with it,
     and records it in `refs/rounds.json` (the 23 rounds there say `high`); the scorecard says a round's
     level beside its label. Not verified in a browser: the page's four text changes.
+  - **086** (worker-2): landed braga-map `86a99fe`, 1.42.0 (tagged, decision 080), and party-kart
+    `8ee2879`, pinned to v1.42.0. Each facade's doors and windows from its photos: 16 walls of 15
+    buildings read (`refs/buildings.json`'s `layout`), 120 left with why (`unread`), every reading checked
+    against its image by the worker. Its round, at High only (the brief hadn't said Ultra; rule 18 since):
+    no mark moved; `lobato-crossing`'s corner glazing and `fujacal-west`'s windows read. Found: 131
+    (drafted). Not verified: the layouts at Ultra, Medium, a phone.
   - **The coordinator's watcher was down from 18:51 to 21:58** (not re-armed after a message), so ready
     tasks waited for their marks and turns: 102, 065, 090, 111, 112 and 059.
   - **Claude's marks, put right at 089's round** (the coordinator, 2026-10-25): rounds marked side by

@@ -35,7 +35,7 @@ storeys should count from that street, as the photos show them.
 
 ## Read first
 
-- `tools/buildings.mjs` (the bases and heights), `tools/layouts.mjs` (086); task 086's Notes (the two
+- `tools/buildings.mjs` and `tools/heights.mjs` (the bases and heights), `tools/layouts.mjs` (086); task 086's Notes (the two
   buildings, where they were found); decision 080.
 
 ## Done when

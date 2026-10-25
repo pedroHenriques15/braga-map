@@ -97,6 +97,7 @@ task's Notes as "decided by the session, for the owner to confirm".
 | 081 | How far Ultra draws the trees in full | 700 m, by a frame under 16 ms while moving (a frame after gathering them: 12 ms at 700 m, 18 at 1,000, at 2560 × 1440); a still frame holds 1,000 m at 4.6 ms | 081's landing |
 | 081 | Step 2's "the haze's far plane at the most the city holds" on Ultra | Left as High's: the camera's far plane is already 30 km, and the haze is the light's, matched to the photos (decision 037) | 081's landing |
 | 105 | The chair (Joel's) and the trolley (Joel F.'s) are smaller than 2.8 m today: brought to 2.8 m, or kept in proportion? | Every body drawn at 0.7 of its model, so every driver stays the same size (the chair 2.06 m long, the trolley 2.16 m); the banger at 0.65 to fit 2.8 m (from 4.30), its driver 7% smaller | 105's landing |
+| (the run) | The owner plays games on this PC (a game at 15:43 on 2026-10-25, whose frames the shots slowed): do the run's heavy jobs wait? | Yes: no shots, probes, timings, world builds or `npm ci` start while a game runs (the workers check for it before each heavy job and between its chunks); code and tests go on. Frame times taken during a game are taken again | (outside git; the workers' brief, rule 20) |
 
 ## Progress
 
@@ -282,6 +283,12 @@ picks it up can go on from here.
     entry of the task that changed it. `.cache/scorecard/marks/2026-10-25-after089.json` holds all 33
     as they stand: mean 2.64 (`capela-sao-joao` 4, `travessa-lobato` 3, `viriato-amaral-nunes` 2,
     `liberdade` 3). It's the file to take when the rounds go up; the files of 059 and 085 aren't.
+  - **Memory ran critically low at 14:2x on 2026-10-25** (a party-kart `npm test`, 11 or more processes
+    of 0.6-0.8 GB, beside 093's shots): Claude Code stopped the coordinator's watcher and worker-3's
+    wait for the lock, and 044 paused until 16:38. The workers' brief since: party-kart's tests four
+    files at a time (rule 19). And at 15:43 the owner played a game on this PC, whose frames the
+    shots slowed: no heavy job starts while one runs (rule 20; decided by the session, for the owner
+    to confirm). The watcher stays off until the owner restarts it, so messages wait for a check.
 
 ## Read first
 

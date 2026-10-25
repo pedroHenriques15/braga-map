@@ -67,7 +67,9 @@ Ultra; the facades are a piece of work of their own, split from it (2026-10-24).
   floor's frames.
 - **Budget** (Ultra; High and Low unchanged): the same draw calls and triangles; textures 511 MB against
   462 (the kit's three textures 59 MB with their mipmaps, 49 more than High's two). Nothing more to
-  download. The frames and the city's building, to be taken again: these rounds and timings were
-  taken while the owner's game ran (it started at 21:30), so their times don't count.
+  download. A frame at 1920 by 1440, back to back with main after the owner's game had closed: 6.2 to
+  6.7 ms against 6.3 to 7.1, the same within the runs' spread. In a first run `conselheiro-lobato` took
+  160 ms on 123, while a Java process of the owner's came and went; in two more, 7.7 and 6.3 ms.
+  (The rounds' own times were taken beside the game and don't count.)
 - **Decided by the session, for the owner to confirm:** Ultra's kit at 512 a side; the depths above; the
   relief's 3 cm edges.

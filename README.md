@@ -322,7 +322,7 @@ node tools/species.mjs summer   # Mapillary's panoramas in leaf round the shoote
 node tools/textures.mjs  # the textures refs/textures.json asks for, made, not photographed: world/textures/ (about ten minutes, Ultra's most of it)
 node tools/cover.mjs   # what the ground is every 50 cm under the Volta dos Amigos' box, and the cars parked: world/cover/ (3 minutes, 10 the first time)
 npm run minecraft  # the world as a Minecraft world (Java, 26.3): .cache/minecraft/Braga (30 s; --out, --box and --force: "A Minecraft world" below)
-node tools/round.mjs <round> --label "…" [--shots <party-kart>/shots]  # a round of party-kart's shots, in a few sheets, for the scorecard
+node tools/round.mjs <round> --label "…" [--shots <party-kart>/shots] [--level ultra|high]  # a round of party-kart's shots, in a few sheets, for the scorecard
 node tools/scorecard.mjs files <listing>      # what the scorecard lacks of .cache/scorecard/, in publishes inside their limits
 node tools/scorecard.mjs marks <claude.json>  # Claude's waiting marks added to its document, to set pinned to its version
 ```
@@ -711,10 +711,15 @@ streets; when a track moves enough to change the edge, run the three again until
   `.cache/cover/<tile>.png`.
   `test/cover.test.js` checks every tile is classed at every level, the shooter's area and the open
   world's ground mostly what the map says it is, the kinds' photos, the cars, and the areas' holes.
-- `round.mjs` prepares one of those rounds for the scorecard (`scorecard/index.html`): its High
-  shots and the photos, 960 pixels wide, and the lists the page reads, in `.cache/scorecard/` as
-  they're published beside the page. It records the round in `refs/rounds.json` (committed): its
-  label, the tasks it shows, a note, and the commits it was shot on. The page keeps each person's
+- `round.mjs` prepares one of those rounds for the scorecard (`scorecard/index.html`): its shots
+  at the level it's judged at and the photos, 960 pixels wide, and the lists the page reads, in
+  `.cache/scorecard/` as they're published beside the page. The level is Ultra for a round shot with
+  it (party-kart's `shots.mjs --ultra`, since task 081), High for one before, or as `--level` says
+  (task 127), and the page says it beside the round's label. It records the round in
+  `refs/rounds.json` (committed): its label, the tasks it shows, a note, the commits it was shot on
+  and its level; prepared again, it keeps that level. `--out` and `--log` put the files and the
+  record somewhere else than `.cache/scorecard/` and `refs/rounds.json`, as a worktree's round
+  before it lands. The page keeps each person's
   ratings and comments in the artifact's database, one document each (`scores/<their id>`). A
   version holds 511 files at most, so a round's shots go up in a few sheets, not a file each (task
   062): `rounds/<round>-<n>.jpg`, at most 9 shots a sheet, three across (about 6 megapixels, which

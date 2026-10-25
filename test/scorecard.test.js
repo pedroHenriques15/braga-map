@@ -1,11 +1,17 @@
 // What goes up on the scorecard when its rounds were made where it couldn't be published (task 064,
 // tools/scorecard.mjs): the files the page lacks, in publishes inside their limits, and Claude's
 // waiting marks added to its document without touching a round it has. Where .cache/scorecard/marks/
-// has marks waiting, each is a whole round's.
+// has marks waiting, each is a whole round's. And a round goes up at the level it's judged at (task
+// 127, tools/round.mjs).
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { test } from 'node:test';
+import zlib from 'node:zlib';
+import jpeg from 'jpeg-js';
+import { CACHE } from '../tools/geo.mjs';
 import { LIMITS, OUT, listed, merge, needed, plan } from '../tools/scorecard.mjs';
 
 const { rounds } = JSON.parse(fs.readFileSync(new URL('../refs/rounds.json', import.meta.url), 'utf8'));
@@ -76,4 +82,75 @@ test('the marks waiting in .cache/scorecard/marks/ are whole rounds', { skip: !f
   // A round still on its task's branch isn't in main's refs/rounds.json yet.
   const known = Object.fromEntries(Object.entries(marks).filter(([id]) => rounds.some((r) => r.id === id)));
   assert.deepEqual(merge({ rounds: {} }, known, rounds).added.sort(), Object.keys(known).sort());
+});
+
+test('every round says the level its shots are, those before task 127 High', () => {
+  for (const r of rounds) assert.ok(['ultra', 'high'].includes(r.level), `${r.id}: ${r.level}`);
+  for (const r of rounds.filter((r) => r.made < '2026-10-25')) assert.equal(r.level, 'high', r.id);
+});
+
+// A PNG all one colour, 8-bit RGB, as Playwright saves a shot.
+function png(w, h, rgb) {
+  const raw = Buffer.alloc((w * 3 + 1) * h);
+  for (let y = 0; y < h; y++) for (let x = 0; x < w; x++) raw.set(rgb, y * (w * 3 + 1) + 1 + x * 3);
+  const chunk = (type, data) => {
+    const body = Buffer.concat([Buffer.from(type, 'ascii'), data]), out = Buffer.alloc(body.length + 8);
+    out.writeUInt32BE(data.length, 0);
+    body.copy(out, 4);
+    out.writeUInt32BE(zlib.crc32(body), body.length + 4);
+    return out;
+  };
+  const head = Buffer.alloc(13);
+  head.writeUInt32BE(w, 0);
+  head.writeUInt32BE(h, 4);
+  head[8] = 8;
+  head[9] = 2;
+  return Buffer.concat([Buffer.from([137, 80, 78, 71, 13, 10, 26, 10]), chunk('IHDR', head), chunk('IDAT', zlib.deflateSync(raw)), chunk('IEND', Buffer.alloc(0))]);
+}
+
+const photos = viewpoints.every((v) => fs.existsSync(path.join(CACHE, 'refs', `${v.id}.jpg`)));
+test("a round goes up at Ultra when it was shot at Ultra, else at High, or as --level says, and its entry says which (task 127)", { skip: !photos && 'no photos in .cache/refs (node tools/refs.mjs)' }, () => {
+  // Two places shot red at Ultra, 1280 by 720, and blue at High, 960 by 720; prepared somewhere of its
+  // own, the page's photos already there so they aren't made again.
+  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), 'round-'));
+  try {
+    const places = viewpoints.slice(0, 2).map((v) => v.id);
+    const shoot = (id, levels) => {
+      fs.mkdirSync(path.join(tmp, 'shots', id), { recursive: true });
+      fs.writeFileSync(path.join(tmp, 'shots', id, 'stats.json'), JSON.stringify({ made: '2026-10-25T12:00:00.000Z', game: 'abc1234', map: '1.41.0' }));
+      for (const [level, w, rgb] of levels) {
+        fs.mkdirSync(path.join(tmp, 'shots', id, level));
+        for (const v of places) fs.writeFileSync(path.join(tmp, 'shots', id, level, `${v}.png`), png(w, 720, rgb));
+      }
+    };
+    const ULTRA = ['ultra', 1280, [200, 20, 20]], HIGH = ['high', 960, [20, 20, 200]];
+    shoot('2026-10-25-ultra', [ULTRA, HIGH]);
+    shoot('2026-10-25-high', [HIGH]);
+    const out = path.join(tmp, 'scorecard'), log = path.join(tmp, 'rounds.json');
+    if (fs.existsSync(path.join(OUT, 'photos'))) fs.cpSync(path.join(OUT, 'photos'), path.join(out, 'photos'), { recursive: true });
+    const round = (id, ...more) => {
+      execFileSync(process.execPath, ['tools/round.mjs', id, '--shots', path.join(tmp, 'shots'), '--out', out, '--log', log, '--label', 'T', ...more], { cwd: new URL('..', import.meta.url), stdio: 'pipe' });
+      return JSON.parse(fs.readFileSync(log, 'utf8')).rounds.find((r) => r.id === id);
+    };
+    // The colour in the middle of a place's piece of its sheet.
+    const colour = (r, v) => {
+      const [w, h, n, x, y] = r.shots[v], img = jpeg.decode(fs.readFileSync(path.join(out, 'rounds', `${r.id}-${n}.jpg`)));
+      const k = ((y + (h >> 1)) * img.width + x + (w >> 1)) * 4;
+      return img.data[k] > img.data[k + 2] ? 'red' : 'blue';
+    };
+    let r = round('2026-10-25-ultra');
+    assert.equal(r.level, 'ultra');
+    for (const v of places) assert.deepEqual([...r.shots[v].slice(0, 2), colour(r, v)], [960, 540, 'red']);
+    r = round('2026-10-25-ultra', '--level', 'high');
+    assert.equal(r.level, 'high');
+    for (const v of places) assert.deepEqual([...r.shots[v].slice(0, 2), colour(r, v)], [960, 720, 'blue']);
+    assert.equal(round('2026-10-25-ultra').level, 'high', 'prepared again, at the level it had');
+    r = round('2026-10-25-high');
+    assert.equal(r.level, 'high');
+    for (const v of places) assert.deepEqual([...r.shots[v].slice(0, 2)], [960, 720]);
+    assert.throws(() => round('2026-10-25-high', '--level', 'ultra'), /no ultra shots/);
+    assert.throws(() => round('2026-10-25-high', '--level', 'low'), /one of ultra, high/);
+  } finally {
+    fs.rmSync(tmp, { recursive: true, force: true });
+  }
 });

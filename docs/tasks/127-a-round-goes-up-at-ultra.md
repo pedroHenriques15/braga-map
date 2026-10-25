@@ -1,5 +1,5 @@
 ---
-status: todo
+status: doing
 priority: medium
 kind: code
 repo: braga-map
@@ -34,11 +34,24 @@ was judged, and the scorecard would show High where the marks are Ultra's.
 
 ## Done when
 
-- [ ] `node tools/round.mjs <round> --level ultra` makes a round's sheets from its Ultra shots, and its
-  entry says so; a test.
-- [ ] `npm test` passes.
+- [x] `node tools/round.mjs <round> --level ultra` makes a round's sheets from its Ultra shots, and its
+  entry says so; a test. (`test/scorecard.test.js`, a made-up round red at Ultra and blue at High; and
+  `2026-10-24-after081` prepared into the scratchpad: 33 Ultra shots in 4 sheets, its entry `ultra`.)
+- [x] `npm test` passes. (159/159.)
 
 ## Notes
 
 - Found by worker-2 in task 085 (2026-10-25), drafted by the coordinator. The rounds of this run that
   wait in task 103 are Ultra's from 081 on.
+- **Done, 2026-10-25 (worker-3):** `tools/round.mjs` takes `--level ultra|high`; without it, a round
+  already recorded keeps the level it had, and a new one is Ultra when its folder has `ultra/`
+  (`shots.mjs --ultra`), else High. The entry records `level`, after `map`; the 23 rounds already in
+  `refs/rounds.json` say `high` (they were all put up from `high/`, so their sheets stay as they are).
+  The page says the level beside a round's label, as the game names it ("Ultra", "Alta"): in the list
+  of rounds, the round's title, the summary's columns and "Ver a ronda anterior"; a round without one
+  is High there too, as `data/rounds.json` already up is until a round goes up with the new lists.
+- `--out` and `--log` put the files and the record somewhere else than `.cache/scorecard/` and
+  `refs/rounds.json`: the test prepares its round in a folder of its own, and a worktree can prepare
+  a round without writing the shared `.cache` before it lands.
+- `tools/scorecard.mjs` needed nothing: it works from each round's sheets and shots, whatever their
+  level.

@@ -1,19 +1,24 @@
-// Prepares a round of shots for the scorecard, the shared page "Braga real" (task 003): the High
-// shots of ../party-kart/shots/<round>/ (party-kart's scripts/shots.mjs, task 002) and each
-// viewpoint's real photo, 960 pixels wide as JPEGs, with the lists the page reads. They land in
-// .cache/scorecard/, laid out as they're published beside the page:
+// Prepares a round of shots for the scorecard, the shared page "Braga real" (task 003): the shots of
+// ../party-kart/shots/<round>/ (party-kart's scripts/shots.mjs, task 002) at the level it's judged at
+// and each viewpoint's real photo, 960 pixels wide as JPEGs, with the lists the page reads. The level
+// is Ultra for a round shot with it (shots.mjs --ultra, since task 081: decision 069), High for one
+// before (decision 012), or as --level says (task 127). They land in .cache/scorecard/, laid out as
+// they're published beside the page:
 //
 //   photos/<id>.jpg           each viewpoint's photo, from .cache/refs/ (node tools/refs.mjs)
-//   rounds/<round>-<n>.jpg    the round's High shots, in a few sheets (task 062)
+//   rounds/<round>-<n>.jpg    the round's shots, in a few sheets (task 062)
 //   data/viewpoints.json      the viewpoints: names, areas, and each photo's credit and size
 //   data/rounds.json          every round so far, oldest first
 //
 // The rounds are recorded in refs/rounds.json, which is committed: each one's label, the tasks it
-// shows, a note, the commits it was shot on, its sheets and where each shot is in them. Preparing a
-// round again replaces its entry and its sheets.
+// shows, a note, the commits it was shot on, the level its shots are, its sheets and where each shot
+// is in them. Preparing a round again replaces its entry and its sheets, at the level it had.
 //
 // node tools/round.mjs 2026-10-13-baseline --label "Ponto de partida" --tasks 002 --note "…"
 // node tools/round.mjs <round> --shots ../party-kart-021/shots …   shot in another party-kart checkout
+// node tools/round.mjs <round> --level high …   its High shots, though it was shot at Ultra too
+// node tools/round.mjs <round> --out <dir> --log <file> …   somewhere else than .cache/scorecard/ and
+//                                                   refs/rounds.json: a worktree's, before it lands
 // node tools/round.mjs --pack   only packs the rounds still kept a file a shot, rounds/<round>/<id>.jpg
 import crypto from 'node:crypto';
 import fs from 'node:fs';
@@ -25,18 +30,20 @@ import { inShooter } from './sections.mjs';
 
 const W = 960;
 const QUALITY = 82;
-const OUT = path.join(CACHE, 'scorecard');
-const LOG = path.join(ROOT, 'refs', 'rounds.json');
+// The levels a round goes up at: what its marks judge (decisions 012 and 069).
+const LEVELS = ['ultra', 'high'];
 
 const args = process.argv.slice(2);
 const opt = (k) => {
   const i = args.indexOf(`--${k}`);
   return i >= 0 ? args[i + 1] : undefined;
 };
+const OUT = path.resolve(ROOT, opt('out') ?? path.join(CACHE, 'scorecard'));
+const LOG = path.resolve(ROOT, opt('log') ?? path.join('refs', 'rounds.json'));
 const SHOTS = path.resolve(ROOT, opt('shots') ?? '../party-kart/shots');
-const id = args.find((a, i) => !a.startsWith('--') && !['--label', '--tasks', '--note', '--shots'].includes(args[i - 1]));
+const id = args.find((a, i) => !a.startsWith('--') && !['--label', '--tasks', '--note', '--shots', '--level', '--out', '--log'].includes(args[i - 1]));
 if (!id && !args.includes('--pack')) {
-  console.error('node tools/round.mjs <round> --label "…" [--tasks 002,009] [--note "…"]   a folder of ../party-kart/shots/');
+  console.error('node tools/round.mjs <round> --label "…" [--tasks 002,009] [--note "…"] [--level ultra|high]   a folder of ../party-kart/shots/');
   process.exit(1);
 }
 const dir = id && path.join(SHOTS, id);
@@ -210,16 +217,20 @@ function pack(rid, own) {
 }
 
 const log = fs.existsSync(LOG) ? JSON.parse(fs.readFileSync(LOG, 'utf8')) : { about: '', rounds: [] };
-log.about = 'The rounds of shots on the scorecard "Braga real" (task 003), oldest first: each one\'s label, the tasks it shows, a note, when it was shot, on which party-kart commit and braga-map version, its sheets\' sizes, and each viewpoint\'s shot: [w, h, sheet, x, y, hash], its size, its sheet rounds/<id>-<sheet>.jpg and where it is in it, and the start of the SHA-1 of the shot on its own as a JPEG; or [w, h, round], the same as that earlier round\'s. The pictures are in party-kart\'s shots/<id>/; node tools/round.mjs <id> prepares them for the page.';
+log.about = 'The rounds of shots on the scorecard "Braga real" (task 003), oldest first: each one\'s label, the tasks it shows, a note, when it was shot, on which party-kart commit and braga-map version, the level its shots are (ultra or high, task 127), its sheets\' sizes, and each viewpoint\'s shot: [w, h, sheet, x, y, hash], its size, its sheet rounds/<id>-<sheet>.jpg and where it is in it, and the start of the SHA-1 of the shot on its own as a JPEG; or [w, h, round], the same as that earlier round\'s. The pictures are in party-kart\'s shots/<id>/; node tools/round.mjs <id> prepares them for the page.';
 
-// The round's High shots, each shrunk to 960 pixels across.
+// The round's shots at its level, each shrunk to 960 pixels across.
 const fresh = new Map();
 let round;
 if (id) {
   const stats = JSON.parse(fs.readFileSync(path.join(dir, 'stats.json'), 'utf8'));
+  const old = log.rounds.find((r) => r.id === id);
+  const level = opt('level') ?? old?.level ?? (fs.existsSync(path.join(dir, 'ultra')) ? 'ultra' : 'high');
+  if (!LEVELS.includes(level)) throw new Error(`--level ${level}: one of ${LEVELS.join(', ')}`);
+  if (!fs.existsSync(path.join(dir, level))) throw new Error(`no ${level} shots in ${dir}`);
   const shots = {}, own = [];
   for (const v of viewpoints) {
-    const src = path.join(dir, 'high', `${v.id}.png`);
+    const src = path.join(dir, level, `${v.id}.png`);
     if (!fs.existsSync(src)) {
       console.log(`${v.id}: not in this round`);
       continue;
@@ -228,7 +239,6 @@ if (id) {
     own.push({ v: v.id, img, hash: digest(jpeg.encode(img, QUALITY).data) });
     shots[v.id] = [img.width, img.height];
   }
-  const old = log.rounds.find((r) => r.id === id);
   round = {
     id,
     label: opt('label') ?? old?.label ?? id,
@@ -238,6 +248,7 @@ if (id) {
     made: stats.made,
     game: stats.game,
     map: stats.map,
+    level,
     shots,
   };
   log.rounds = [...log.rounds.filter((r) => r.id !== id), round].sort((a, b) => (a.made < b.made ? -1 : 1));
@@ -286,7 +297,7 @@ const kb = (files) => Math.round(files.reduce((s, f) => s + fs.statSync(path.joi
 const sheetsOf = (r) => r.sheets.map((_, n) => `rounds/${r.id}-${n + 1}.jpg`);
 for (const r of packed) {
   const own = Object.values(r.shots).filter((e) => typeof e[2] !== 'string').length, same = Object.keys(r.shots).length - own;
-  console.log(`${r.id}: ${own} shots of its own in ${r.sheets.length} sheet${r.sheets.length === 1 ? '' : 's'} (${kb(sheetsOf(r))} kB)${same ? `, ${same} the same as an earlier round's` : ''}`);
+  console.log(`${r.id}: ${own} ${r.level === 'ultra' ? 'Ultra' : 'High'} shots of its own in ${r.sheets.length} sheet${r.sheets.length === 1 ? '' : 's'} (${kb(sheetsOf(r))} kB)${same ? `, ${same} the same as an earlier round's` : ''}`);
 }
 console.log(`${list.length} photos (${kb(list.map((v) => `photos/${v.id}.jpg`))} kB), all in ${path.relative(ROOT, OUT)}`);
 console.log(`publish beside the page: ${[...packed.flatMap(sheetsOf), 'data/rounds.json', ...(log.rounds.length === 1 ? ['photos/*.jpg', 'data/viewpoints.json'] : [])].join(' ')}`);

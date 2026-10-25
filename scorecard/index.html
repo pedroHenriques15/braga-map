@@ -203,6 +203,10 @@ footer p { margin: 0; max-width: 90ch; }
 
   const AREAS = { route: 'Percurso', shooter: 'Fujacal', skyline: 'Horizonte' };
   const LEVELS = ['', 'Não é Braga', 'Pouco parecido', 'Parecido', 'Muito parecido', 'Juro que é real'];
+  // The graphics level a round's shots are, as the game names it (task 127): Ultra since task 081,
+  // High before it (a round that doesn't say is High).
+  const QUALITY = { ultra: 'Ultra', high: 'Alta' };
+  const quality = (r) => QUALITY[r.level] ?? QUALITY.high;
   const MAX_NOTE = 400;
   const one = (x) => x.toLocaleString('pt-PT', { minimumFractionDigits: 1, maximumFractionDigits: 1 });
   const day = (d) => new Date(d + 'T12:00:00').toLocaleDateString('pt-PT', { day: 'numeric', month: 'long', year: 'numeric' });
@@ -268,7 +272,7 @@ footer p { margin: 0; max-width: 90ch; }
       return;
     }
     const sel = $('#round');
-    sel.replaceChildren(...[...S.rounds].reverse().map((r, i) => h('option', { value: r.id }, `${r.label}${i === 0 ? ' (aberta)' : ''}`)));
+    sel.replaceChildren(...[...S.rounds].reverse().map((r, i) => h('option', { value: r.id }, `${r.label} · ${quality(r)}${i === 0 ? ' (aberta)' : ''}`)));
     sel.disabled = S.rounds.length < 2;
     sel.addEventListener('change', () => { S.round = sel.value; build(); });
     S.round = latest().id;
@@ -281,7 +285,7 @@ footer p { margin: 0; max-width: 90ch; }
     const r = S.rounds.find((x) => x.id === S.round);
     const i = S.rounds.indexOf(r);
     const before = i > 0 ? S.rounds[i - 1] : null;
-    $('#roundTitle').textContent = `${r.label}, ${day(r.date)}`;
+    $('#roundTitle').textContent = `${r.label}, qualidade ${quality(r)}, ${day(r.date)}`;
     const tasks = r.tasks.length ? ` Mostra ${r.tasks.length > 1 ? 'as tarefas' : 'a tarefa'} ${r.tasks.join(', ')}.` : '';
     $('#roundNote').textContent = `${r.note}${tasks}${isOpen(r.id) ? '' : ' Esta ronda está fechada: as notas dão-se na mais recente.'}`;
     S.cards.clear();
@@ -324,12 +328,12 @@ footer p { margin: 0; max-width: 90ch; }
 
     let back = null;
     if (prev && shot && (prev.src !== shot.src || prev.style !== shot.style)) {
-      back = h('button', { class: 'link', type: 'button', 'aria-pressed': 'false' }, `Ver a ronda anterior (${before.label})`);
+      back = h('button', { class: 'link', type: 'button', 'aria-pressed': 'false' }, `Ver a ronda anterior (${before.label}, ${quality(before)})`);
       back.addEventListener('click', () => {
         const on = back.getAttribute('aria-pressed') !== 'true';
         back.setAttribute('aria-pressed', String(on));
         place(img, on ? prev : shot);
-        right.textContent = on ? `Jogo, ${before.label}` : 'Jogo';
+        right.textContent = on ? `Jogo, ${before.label}, ${quality(before)}` : 'Jogo';
       });
     }
     const p = v.photo;
@@ -423,7 +427,7 @@ footer p { margin: 0; max-width: 90ch; }
       const xs = vps.map((v) => avgOf(r.id, v.id)).filter(Boolean);
       return xs.length ? h('td', {}, one(xs.reduce((s, x) => s + x.a, 0) / xs.length), h('span', { class: 'n' }, `(${xs.length} sítios)`)) : h('td', { class: 'hide' }, '–');
     };
-    const head = h('tr', {}, h('th', {}, 'Sítio'), ...S.rounds.map((r) => h('th', {}, r.label, h('br'), day(r.date))));
+    const head = h('tr', {}, h('th', {}, 'Sítio'), ...S.rounds.map((r) => h('th', {}, r.label, h('br'), `${day(r.date)} · ${quality(r)}`)));
     const areas = [['all', 'Todos os sítios'], ['route', 'Percurso'], ['shooter', 'Fujacal'], ['skyline', 'Horizonte']]
       .map(([k, label]) => h('tr', { class: 'area' }, h('td', {}, label), ...S.rounds.map((r) => areaCell(r, k))));
     const rows = S.views.map((v) => h('tr', {}, h('td', {}, v.nome), ...S.rounds.map((r) => cell(r, v))));

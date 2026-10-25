@@ -1,5 +1,5 @@
 {
-  "about": "The rounds of shots on the scorecard \"Braga real\" (task 003), oldest first: each one's label, the tasks it shows, a note, when it was shot, on which party-kart commit and braga-map version, its sheets' sizes, and each viewpoint's shot: [w, h, sheet, x, y, hash], its size, its sheet rounds/<id>-<sheet>.jpg and where it is in it, and the start of the SHA-1 of the shot on its own as a JPEG; or [w, h, round], the same as that earlier round's. The pictures are in party-kart's shots/<id>/; node tools/round.mjs <id> prepares them for the page.",
+  "about": "The rounds of shots on the scorecard \"Braga real\" (task 003), oldest first: each one's label, the tasks it shows, a note, when it was shot, on which party-kart commit and braga-map version, the level its shots are (ultra or high, task 127), its sheets' sizes, and each viewpoint's shot: [w, h, sheet, x, y, hash], its size, its sheet rounds/<id>-<sheet>.jpg and where it is in it, and the start of the SHA-1 of the shot on its own as a JPEG; or [w, h, round], the same as that earlier round's. The pictures are in party-kart's shots/<id>/; node tools/round.mjs <id> prepares them for the page.",
   "rounds": [
     {
       "id": "2026-10-13-baseline",
@@ -12,6 +12,7 @@
       "made": "2026-10-13T21:53:14.991Z",
       "game": "ac47bf0",
       "map": "1.2.0",
+      "level": "high",
       "shots": {
         "fujacal-start": [960, 720, 1, 8, 8, "2a63189a1bac"],
         "imaculada-conceicao": [960, 720, 1, 984, 8, "85273a11ae6a"],
@@ -63,6 +64,7 @@
       "made": "2026-10-14T10:23:43.519Z",
       "game": "6309e63",
       "map": "1.3.0",
+      "level": "high",
       "shots": {
         "fujacal-start": [960, 720, 1, 8, 8, "752d98f34545"],
         "imaculada-conceicao": [960, 720, 1, 984, 8, "873bf463e4d5"],
@@ -115,6 +117,7 @@
       "made": "2026-10-14T23:08:22.130Z",
       "game": "f6d2eba",
       "map": "1.7.0",
+      "level": "high",
       "shots": {
         "fujacal-start": [960, 720, 1, 8, 8, "e38121e902c3"],
         "imaculada-conceicao": [960, 720, 1, 984, 8, "1a8d9e598748"],
@@ -166,6 +169,7 @@
       "made": "2026-10-15T08:42:31.089Z",
       "game": "af048ce",
       "map": "1.9.1",
+      "level": "high",
       "shots": {
         "fujacal-start": [960, 720, 1, 8, 8, "7ec8c139f5fd"],
         "imaculada-conceicao": [960, 720, 1, 984, 8, "53c8b7ccf157"],
@@ -215,6 +219,7 @@
       "made": "2026-10-15T18:19:47.924Z",
       "game": "4ef5a70",
       "map": "1.14.0",
+      "level": "high",
       "shots": {
         "fujacal-start": [960, 720, 1, 8, 8, "11c740b66ca3"],
         "imaculada-conceicao": [960, 720, 1, 984, 8, "4d0a867c7262"],
@@ -264,6 +269,7 @@
       "made": "2026-10-16T12:52:27.076Z",
       "game": "4f0d075",
       "map": "1.15.0",
+      "level": "high",
       "shots": {
         "fujacal-start": [960, 720, 1, 8, 8, "f097308220dd"],
         "imaculada-conceicao": [960, 720, 1, 984, 8, "54406472c4b9"],
@@ -313,6 +319,7 @@
       "made": "2026-10-16T13:17:57.519Z",
       "game": "8e21b33",
       "map": "1.16.0",
+      "level": "high",
       "shots": {
         "fujacal-start": [960, 720, 1, 8, 8, "389ba16775c5"],
         "imaculada-conceicao": [960, 720, 1, 984, 8, "8304cab39d11"],
@@ -362,6 +369,7 @@
       "made": "2026-10-16T15:47:33.990Z",
       "game": "d2d8be7",
       "map": "1.17.1",
+      "level": "high",
       "shots": {
         "fujacal-start": [960, 720, 1, 8, 8, "d4f21b4e7854"],
         "imaculada-conceicao": [960, 720, 1, 984, 8, "c3372a8f0951"],
@@ -411,6 +419,7 @@
       "made": "2026-10-16T16:20:21.911Z",
       "game": "ad9814e",
       "map": "1.18.0",
+      "level": "high",
       "shots": {
         "fujacal-start": [960, 720, 1, 8, 8, "81900859bc6c"],
         "imaculada-conceicao": [960, 720, 1, 984, 8, "b1ab0f6da565"],
@@ -460,6 +469,7 @@
       "made": "2026-10-16T19:15:42.477Z",
       "game": "d49612c with changes",
       "map": "1.18.1",
+      "level": "high",
       "shots": {
         "fujacal-start": [960, 720, "2026-10-16-after017"],
         "imaculada-conceicao": [960, 720, 1, 8, 8, "0cf050371d5c"],
@@ -506,6 +516,7 @@
       "made": "2026-10-17T11:12:24.768Z",
       "game": "909539b",
       "map": "1.18.1",
+      "level": "high",
       "shots": {
         "fujacal-start": [960, 720, 1, 8, 8, "255fd05fda87"],
         "imaculada-conceicao": [960, 720, 1, 984, 8, "2f5eee579b95"],
@@ -555,6 +566,7 @@
       "made": "2026-10-17T11:26:36.352Z",
       "game": "a86355b",
       "map": "1.19.0",
+      "level": "high",
       "shots": {
         "fujacal-start": [960, 720, 1, 8, 8, "04a4197d53d1"],
         "imaculada-conceicao": [960, 720, 1, 984, 8, "2941e910b1ba"],
@@ -607,6 +619,7 @@
       "made": "2026-10-17T14:25:36.796Z",
       "game": "fd4dc07",
       "map": "1.20.1",
+      "level": "high",
       "shots": {
         "fujacal-start": [960, 720, 1, 8, 8, "70f13a2ab0e8"],
         "imaculada-conceicao": [960, 720, 1, 984, 8, "0137b1802ec4"],
@@ -659,6 +672,7 @@
       "made": "2026-10-17T20:55:35.649Z",
       "game": "09d0f7c",
       "map": "1.21.1",
+      "level": "high",
       "shots": {
         "fujacal-start": [960, 720, "2026-10-17-after026"],
         "imaculada-conceicao": [960, 720, "2026-10-17-after026"],
@@ -711,6 +725,7 @@
       "made": "2026-10-17T21:13:11.759Z",
       "game": "d020388",
       "map": "1.21.1",
+      "level": "high",
       "shots": {
         "fujacal-start": [960, 720, 1, 8, 8, "a771d28585cb"],
         "imaculada-conceicao": [960, 720, 1, 984, 8, "2f981cbbd727"],
@@ -763,6 +778,7 @@
       "made": "2026-10-17T22:33:29.809Z",
       "game": "9256881",
       "map": "1.22.0",
+      "level": "high",
       "shots": {
         "fujacal-start": [960, 720, 1, 8, 8, "0d7738788d25"],
         "imaculada-conceicao": [960, 720, 1, 984, 8, "d532c749b647"],
@@ -817,6 +833,7 @@
       "made": "2026-10-18T01:41:02.147Z",
       "game": "ad143d0",
       "map": "1.23.0",
+      "level": "high",
       "shots": {
         "fujacal-start": [960, 720, 1, 8, 8, "b83bd54ca9b2"],
         "imaculada-conceicao": [960, 720, 1, 984, 8, "6da62d1df4e0"],
@@ -871,6 +888,7 @@
       "made": "2026-10-18T12:32:50.308Z",
       "game": "52dec10 with changes",
       "map": "1.24.0",
+      "level": "high",
       "shots": {
         "fujacal-start": [960, 720, 1, 8, 8, "418c83181b24"],
         "imaculada-conceicao": [960, 720, 1, 984, 8, "d22042bafb87"],
@@ -924,6 +942,7 @@
       "made": "2026-10-18T14:21:56.103Z",
       "game": "a62fd8b with changes",
       "map": "1.25.0",
+      "level": "high",
       "shots": {
         "fujacal-start": [960, 720, 1, 8, 8, "f48ce4d2a9f0"],
         "imaculada-conceicao": [960, 720, 1, 984, 8, "e762b83d7026"],
@@ -977,6 +996,7 @@
       "made": "2026-10-18T14:50:14.145Z",
       "game": "cdf6867 with changes",
       "map": "1.26.0",
+      "level": "high",
       "shots": {
         "fujacal-start": [960, 720, 1, 8, 8, "6a190345d693"],
         "imaculada-conceicao": [960, 720, 1, 984, 8, "978f5cb0f562"],
@@ -1030,6 +1050,7 @@
       "made": "2026-10-18T17:00:37.154Z",
       "game": "b38c87e",
       "map": "1.27.0",
+      "level": "high",
       "shots": {
         "fujacal-start": [960, 720, 1, 8, 8, "a2f782d2ee8e"],
         "imaculada-conceicao": [960, 720, 1, 984, 8, "a520c9ab840c"],
@@ -1083,6 +1104,7 @@
       "made": "2026-10-18T18:18:07.101Z",
       "game": "613db39 with changes",
       "map": "1.28.0",
+      "level": "high",
       "shots": {
         "fujacal-start": [960, 720, 1, 8, 8, "c277ed0e972c"],
         "imaculada-conceicao": [960, 720, 1, 984, 8, "bde9ffd6b1c2"],
@@ -1136,6 +1158,7 @@
       "made": "2026-10-18T19:34:01.790Z",
       "game": "2e21899",
       "map": "1.29.0",
+      "level": "high",
       "shots": {
         "fujacal-start": [960, 720, 1, 8, 8, "631db1386521"],
         "imaculada-conceicao": [960, 720, 1, 984, 8, "7f9223afda6c"],

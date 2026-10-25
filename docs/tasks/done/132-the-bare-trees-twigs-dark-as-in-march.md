@@ -1,5 +1,5 @@
 ---
-status: doing
+status: done
 priority: medium
 kind: code
 repo: party-kart
@@ -41,10 +41,17 @@ lattice that thins to a soft brownish-grey mass far off.
 
 ## Done when
 
-- [ ] On Ultra on 13 March the bare crowns are dark twigs against the sky, close up and far off, beside
+- [x] On Ultra on 13 March the bare crowns are dark twigs against the sky, close up and far off, beside
   the photos of bare trees; no pale haze, stipple or white blotch over the town.
-- [ ] High, Medium and Low unchanged; rated no lower.
-- [ ] party-kart's tests (four at a time) and `npm run check` pass; the cost in its budget.
+  > `shots/2026-10-25-after132` against `after093` and the photos (Notes, "The round"); marked by the
+  > coordinator: close up dark lattices against the sky, far off a grey-brown mass where the white
+  > blotches were, nothing pink at `bom-jesus`; "no stipple" met at 1:1, a fine hatch left far off at
+  > `estadio` (`.cache/scorecard/marks/2026-10-25-after132.json`).
+- [x] High, Medium and Low unchanged; rated no lower.
+  > High and Low: 33 of 33 the same to the pixel, measured. Medium isn't shot in a round, and every
+  > change is in Ultra's frame or Ultra's season code. No mark moved (mean 2.64).
+- [x] party-kart's tests (four at a time) and `npm run check` pass; the cost in its budget.
+  > 166 and `npm run check`, on main with braga-map 1.44.0; the budget's "Ultra's bare twigs dark".
 
 ## Notes
 
@@ -105,5 +112,6 @@ lattice that thins to a soft brownish-grey mass far off.
     462 MB.
   - A buffer the screen's size more: 29 MB at 2560 by 1440, in half floats.
   - In party-kart's budget, "Ultra's bare twigs dark".
-- party-kart's tests four at a time (164) and `npm run check` pass. 132 touches no braga-map code or
+- party-kart's tests four at a time (164, then 166 on main's 1.44.0 at the landing) and `npm run check`
+  pass. 132 touches no braga-map code or
   data, so it's no new braga-map version.

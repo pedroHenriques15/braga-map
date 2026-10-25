@@ -162,7 +162,8 @@ decision 080); and on Ultra the trees in their season by the date, each deciduou
 in leaf, turning and falling in its own year, the broadleaves that keep their leaves a tenth kind (093,
 decision 081); and on Ultra each measured roof as its points have it where they fit it better than its
 shape, its ridges, hips and valleys, what stands on it as boxes and its overhang measured (087, decision
-082).
+082); and the bare trees' twigs dark against the sky, a soft grey-brown mass far off, not a pale haze
+(132).
 
 - **083** The ground at 50 cm over the whole map, finest near the player (after 038).
 - **084** On Ultra, the streets on the land's own triangles (after 083).
@@ -192,8 +193,6 @@ shape, its ridges, hips and valleys, what stands on it as boxes and its overhang
   089).
 - **130** The Judas trees and the acacias as kinds of their own, for their
   year on Ultra (found by 093).
-- **132** The bare trees' twigs dark against the sky, as in March, not a pale haze (found in
-  093's round; before the deploy).
 - **133** On Ultra, fallen leaves under the deciduous trees in autumn (093's What 3, left for a task
   of its own).
 - **134** The roofs' solar panels and gutters, as the orthophoto and the points have them (087's

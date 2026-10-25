@@ -67,7 +67,7 @@ export const TREES = {
         low: { url: new URL('./textures/trees/tree-broadleaf-twigs-low.ktx2', import.meta.url).href, w: 128, h: 128, bytes: 9191 } },
       ultra: { colour: { url: new URL('./textures/trees/tree-broadleaf-twigs-ultra.ktx2', import.meta.url).href, w: 1024, h: 1024, bytes: 97948 } },
       made: { generator: 'twigs', ref: 'Poly Haven\'s chinese_hackberry_bark, greyed', match: { mean: [80, 71, 60], contrast: 9.2 } } },
-    year: { bud: 105, full: 140, turn: 300, fall: 330, bare: 352, autumn: '#a8823e' },
+    year: { bud: 105, full: 140, turn: 318, fall: 342, bare: 360, autumn: '#b9a45a' },
   },
   pine: {
     bark: { id: 'tree-pine-bark', metres: 2, mean: [104, 84, 65],

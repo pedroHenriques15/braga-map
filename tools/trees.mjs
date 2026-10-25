@@ -411,7 +411,7 @@ export const EVERGREEN = new Set(['pine', 'eucalyptus', 'conifer', 'palm', 'ever
 // its leaves come). An evergreen kind has no row but for its flowers. The rows past the nine are ready
 // for kinds still to come (task 130). Where each date comes from: docs/SOURCES.md, "The trees' year".
 export const YEAR = {
-  broadleaf: { bud: 105, full: 140, turn: 300, fall: 330, bare: 352, autumn: '#a8823e' },
+  broadleaf: { bud: 105, full: 140, turn: 318, fall: 342, bare: 360, autumn: '#b9a45a' },
   poplar: { bud: 80, full: 130, turn: 292, fall: 322, bare: 340, autumn: '#e2c23e' },
   plane: { bud: 84, full: 135, turn: 298, fall: 332, bare: 355, autumn: '#b48a4a' },
   lime: { bud: 95, full: 125, turn: 272, fall: 310, bare: 330, autumn: '#d8b840', flowers: { from: 160, to: 185, colour: '#d8d48a' } },

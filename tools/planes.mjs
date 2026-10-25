@@ -414,8 +414,13 @@ export function planesOf(ring, top, ground, shape) {
       blocks = b1;
       res = r1;
       fn = use.fn;
-      // On the map: c + gx·x + gz·z.
-      planes = use.roof.planes.map((p) => [p.c, p.ga * c.ux - p.gb * c.uz, p.ga * c.uz + p.gb * c.ux].map((v, i) => Math.round(v * (i ? 1000 : 100)) / (i ? 1000 : 100)));
+      // On the map: c + gx·x + gz·z, its slopes to a thousandth and c taken after them, true at the
+      // part's middle. (Kept at the map's origin, a thousandth's rounding was 65 cm 1.3 km out.)
+      const ma = c.ab.reduce((s, p) => s + p[0], 0) / c.ab.length, mb = c.ab.reduce((s, p) => s + p[1], 0) / c.ab.length, [mx, mz] = toMap(ma, mb);
+      planes = use.roof.planes.map((p) => {
+        const gx = Math.round((p.ga * c.ux - p.gb * c.uz) * 1000) / 1000, gz = Math.round((p.ga * c.uz + p.gb * c.ux) * 1000) / 1000;
+        return [Math.round((on(p, ma, mb) - gx * mx - gz * mz) * 100) / 100, gx, gz];
+      });
       groups = use.roof.groups;
     }
   }

@@ -43,6 +43,22 @@ test('an L: its four planes in two groups, the valleys where they meet, and the 
   assert.ok(r.over >= 0.3 && r.over <= 0.7, `overhang ${r.over}`);
 });
 
+test('the L 4 km out on the map, turned: its planes as true as at its middle', () => {
+  // As written down (slopes to a thousandth): half a thousandth's rounding is 2 m at 4 km from the map's
+  // origin, so each plane's height is taken at the part's middle. Turned 20°, so its slopes aren't
+  // thousandths.
+  const X = 4000, Z = -1500, k = Math.cos(0.35), s = Math.sin(0.35);
+  const to = ([x, z]) => [X + x * k - z * s, Z + x * s + z * k], back = (x, z) => [(x - X) * k + (z - Z) * s, -(x - X) * s + (z - Z) * k];
+  const far = L.map(to);
+  const r = planesOf(far, (x, z) => top(...back(x, z)), 100, { ...shape, pts: far, dir: 0.35 });
+  assert.ok(r.planes, 'its own planes');
+  const planes = r.planes.map(([c, gx, gz]) => ({ c, ga: gx, gb: gz }));
+  for (const p of [[3, 3], [9, 10], [0.5, 0.5], [8, 2], [10, 1], [9, 5], [11.5, 13.5]]) {
+    const h = roofHeight(planes, r.groups, ...to(p));
+    assert.ok(Math.abs(h - roof(...p)) < 0.12, `${h.toFixed(2)} at ${p}, not ${roof(...p).toFixed(2)}`);
+  }
+});
+
 test("a gable that is its shape keeps it, with what stands on it", () => {
   const box = [[0, 0], [12, 0], [12, 6], [0, 6]];
   const r = planesOf(box, (x, z) => (x >= 0 && x < 12 && z >= 0 && z < 6 ? (chimney(x, z) ? wingA(x, 3) + 1.5 : wingA(x, z)) : NaN), 100, { ...shape, pts: box });

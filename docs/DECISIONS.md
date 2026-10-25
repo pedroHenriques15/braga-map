@@ -2325,3 +2325,34 @@ front the map's wall is, or an end in no photo: the photos are drive-by ones, al
 
 The alternative, the openings placed from the cameras' poses, put a block's foot on the road; and
 reading every wall a photo shows at all, however steep or far, would draw guesses as if they were seen.
+
+## 081 · On Ultra the trees are in their season by the date, and a broadleaf that keeps its leaves is a kind of its own
+
+*2026-10-25 · task 093 · decided by the session with the coordinator, for the owner to confirm (task 103) · adds to decisions 037, 043, 051, 069 and 070*
+
+The trees were in summer leaf all year, and the game's day is 13 March (decision 037), when the
+avenues' planes and limes are bare. Since task 093:
+
+- **Each kind's year in Braga** (`tools/trees.mjs`'s `YEAR`, in `treeKinds`' `year`): when its buds
+  burst, its leaves are full, they turn and fall, their colour then, and its flowers. Spring rests on
+  measurements in Galicia; autumn is estimated (`docs/SOURCES.md`, "The trees' year"), and moved later
+  for the broadleaves after a November photo.
+- **A deciduous kind's bare twigs**, a card of them made as its leaves are (`twigsSVG`), matched to its
+  bark toned darker.
+- **On Ultra only** (the owner, 2026-10-24): each crown in its season, card by card. Bare twigs and
+  forking limbs in winter; a spring's paler green; its autumn colour; the limes' flowers in June. The
+  billboards are baked in the season, and the shadows follow it. High, Medium and Low draw as before,
+  to the pixel.
+- **The evergreen broadleaf, a tenth kind**, drawn in the broadleaf's textures. It's given to the
+  broadleaves the map or the photos name as evergreen, to COS2025's broadleaf woods but the oaks', and,
+  no name telling otherwise, to the broadleaves on its green spaces and scrub. With the broadleaf all
+  deciduous, the hills went bare where their winter photos have them green; COS2025's urban classes
+  couldn't tell the hills' from the avenues', but its green spaces did. A park's trees a photo shows
+  bare are named so (twelve of the Parque da Ponte's).
+- **Left for tasks of their own:** the Judas trees and the acacias, kinds with their flowers (task
+  130); the lawns by the month (068); each round at its photo's moment (091), so that the nine
+  viewpoints whose photos are in leaf aren't set beside March's bare trees.
+
+What it costs, on Ultra at 2560 by 1440 on 13 March: 0.1–0.8 ms a frame (`falperra` 10.6 ms against 10.0),
+the gathers as they were; at 720 pixels high, 11 more draw calls and about 0.9 M more triangles (median).
+The twigs download 7 to 162 KB a file, Ultra's 87 to 162 KB.

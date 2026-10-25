@@ -158,14 +158,15 @@ finer, every texture filtered at the card's most (085, decision 076); and on Ult
 the wind, the deciduous kinds' limbs within 150 m, the far ones still billboards (089, decision 077);
 and each facade's doors and windows where its photo has them, for the 16 street walls in the shooter's
 area a photo shows clearly enough, read straight on by sessions, the rest in their kind's rhythm (086,
-decision 080).
+decision 080); and on Ultra the trees in their season by the date, each deciduous kind bare, budding,
+in leaf, turning and falling in its own year, the broadleaves that keep their leaves a tenth kind (093,
+decision 081).
 
 - **083** The ground at 50 cm over the whole map, finest near the player (after 038).
 - **084** On Ultra, the streets on the land's own triangles (after 083).
 - **087** Roofs as the point cloud has them: every plane, chimney, dormer and terrace.
 - **091** Each viewpoint shot at its photo's hour and weather (blocked: it changes decision 037).
 - **092** Night: the lamps lighting the streets, the windows lit, Bom Jesus floodlit.
-- **093** The seasons: bare trees in winter, the jacarandas in June (after 088).
 - **094** Life in the streets: traffic, the TUB's buses, people (after 020).
 - **095** The shops' and cafés' ground floors with insides, made up (after 086).
 - **096** The Rio Este with its banks, walls and weirs, and the streams drawn.

@@ -42,7 +42,7 @@ world.height(x, z); // the ground: every 2 m or 10 m on the tiles loaded, every 
 world.buildings; // [{ kind, roof, ends, dir, pitch, y, h, ridge, floors, roofColor, facade, … pts }], and areas, lines…
 world.lines; // every street and the railway: [{ kind, level, w, name, pts, heights? }], name the map's or null
 world.trees; // every tree: [{ x, z, cx, cz, kind, h, crown, foot, trunk, mapped, filled }], as DGT's LiDAR measured it
-map().treeKinds; // each kind of tree with its bark's and its leaves' photos: [{ kind, evergreen, bark, leaves }]
+map().treeKinds; // each kind of tree with its bark's and its leaves' textures, its bare twigs' and its year: [{ kind, evergreen, bark, leaves, twigs, year }]
 world.signs; // the shops' signs: [{ text, colour, from, to, y, h }], on their buildings' walls
 world.stops; // every bus stop: [{ x, z, shelter }]
 world.plates; // in the open world's area, the streets' name plates: [{ name, on, x, z, face, y }], map().plateSize [w, h]
@@ -223,8 +223,8 @@ map().groundKinds; // the kinds it says, each with its texture: [{ kind, texture
   them (`tools/trees.mjs`), each where it stands (its crown's top), as tall as it is, its crown as
   wide (as a disc as big as it is from above) and its foot as high (where its trunk goes into it),
   its crown's middle where its leaves are (`cx`, `cz`: off its trunk where it spreads to one side,
-  task 063), and of its kind: a broadleaf, a pine, a eucalyptus, a cypress or a cedar, a poplar, a palm, a
-  plane, a lime or a birch. Its kind is the species a session saw in the photos (task 061,
+  task 063), and of its kind: a broadleaf, an evergreen broadleaf, a pine, a eucalyptus, a cypress or a cedar, a poplar, a
+  palm, a plane, a lime or a birch. Its kind is the species a session saw in the photos (task 061,
   `refs/trees.json`): every tree within 60 m of seven viewpoints' cameras and in their view, the rows
   along the route's avenues the photos show (the hackberries of the Imaculada Conceição, the Porfírio da
   Silva and the 31 de Janeiro, the Imaculada's limes clipped into balls, the 31 de Janeiro's robinias),
@@ -237,7 +237,9 @@ map().groundKinds; // the kinds it says, each with its texture: [{ kind, texture
   high (a eucalyptus), and a tall tree that holds its crown high and is dark in the near-infrared, as
   needles are (a pine). Planes, limes, birches and palms only where a photo or the map has them. Each kind
   says whether it keeps its leaves in winter (`map().treeKinds`' `evergreen`: the pines, eucalyptus,
-  cypresses and cedars, and palms). OpenStreetMap's trees in no crown (planted
+  cypresses and cedars, palms, and the evergreen broadleaves: those the map or the photos name
+  evergreen, those of COS2025's broadleaf woods but the oaks', and, no name telling otherwise, those on
+  its green spaces and scrub, task 093). OpenStreetMap's trees in no crown (planted
   since July 2025, or under 3 m then) are kept as young trees. A crown with no trunk under it (narrow,
   its leaves in its upper half) that meets a taller one is a limb of that tree, reaching out over a
   square or a path, and part of its crown (decision 047). None stands on a carriageway: a crown's top
@@ -248,7 +250,10 @@ map().groundKinds; // the kinds it says, each with its texture: [{ kind, texture
   its trunk to; a street tree stands in its pavement. Its trunk's thickness
   is what a tree that tall and that wide usually has (`trunk`; the LiDAR doesn't see a trunk). Each
   kind has a texture of its bark and a spray of its leaves (`map().treeKinds`, made, not
-  photographed: task 082), as the ground's kinds have theirs. Where the point cloud wasn't fetched (nowhere on the map today),
+  photographed: task 082), as the ground's kinds have theirs; a deciduous kind a card of its bare
+  twigs too, and each kind its year in Braga: when its buds burst, its leaves are full, they turn and
+  fall, their autumn colour and its flowers (`year`, task 093; the evergreen broadleaf drawn in the
+  broadleaf's). Where the point cloud wasn't fetched (nowhere on the map today),
   the map's trees and its woods and parks filled in, at their kind's usual size (`filled`).
 - **What the ground is** (task 016, decision 034), every 50 cm under the Volta dos Amigos' box (48
   tiles, the shooter's area and the open world's among them): asphalt, paving, setts, grass, bare

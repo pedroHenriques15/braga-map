@@ -110,7 +110,9 @@ export function layoutOnRing(layout, ring) {
       const cos = Math.abs(((b[0] - a[0]) * ux + (b[1] - a[1]) * uz) / L);
       if (cos < Math.cos((12 * Math.PI) / 180) || off(a) > 1 || off(b) > 1) continue;
       const sa = along(a), sb = along(b), lo = Math.max(0, Math.min(sa, sb)), hi = Math.min(WL, Math.max(sa, sb));
-      if (hi - lo < 1) continue;
+      // Only a side that is the wall, give or take a metre at its ends (or a fifth of it): one running on
+      // past the wall's end has openings no photo read, and stays in its kind's rhythm.
+      if (hi - lo < 1 || L - (hi - lo) > Math.max(1, L / 5)) continue;
       // The side runs with the wall (sa < sb) or against it.
       const fwd = sb > sa;
       // Each opening's part on the side: one round a bend in the wall is cut at it, a part kept if it is

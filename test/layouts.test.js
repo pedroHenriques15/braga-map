@@ -56,6 +56,8 @@ test('a layout comes onto the sides of a ring that run along its wall, whichever
   // A shop window 4–6.5 m along runs round the cut at x = 5: each side has its part.
   const c = layoutOnRing([{ ...layout[0], storeys: [[['shop', 4, 2.5]]] }], [[0, 0], [5, 0], [10, 0], [10, -8], [0, -8]]);
   assert.deepEqual([c[0], c[1]], [[[['shop', 4, 1]]], [[['shop', 0, 1.5]]]]);
+  // A side running on 3 m past the wall's end: none on it, as no photo read what is past the end.
+  assert.equal(layoutOnRing(layout, [[8, 0], [13, 0], [13, -8], [8, -8]]), null);
   // Nowhere near it: none.
   assert.equal(layoutOnRing(layout, [[0, 5], [10, 5], [10, 9], [0, 9]]), null);
   assert.deepEqual(OPENINGS, ['window', 'door', 'garage', 'shop', 'balcony']);

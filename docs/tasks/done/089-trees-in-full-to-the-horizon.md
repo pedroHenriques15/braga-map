@@ -1,5 +1,5 @@
 ---
-status: doing
+status: done
 priority: low
 kind: code
 repo: party-kart
@@ -39,10 +39,16 @@ beyond, dithered over 25 m; crowns lean, leaves tinted to Braga's summer green (
 ## Done when
 
 - [ ] From `picoto-top`, `bom-jesus`, `sameiro` and `falperra`, the woods on Ultra have depth and
-  light, not cards; rated no lower.
-- [ ] Trees move in the wind in the game, not in `?scenery` shots.
-- [ ] The cost is in the budget's Ultra column; High and below unchanged; `npm test` and
-  `npm run check` pass.
+  light, not cards; rated no lower. Open: the trees past the near ones stay billboards (Notes); the
+  impostors are task 128.
+- [x] Trees move in the wind in the game, not in `?scenery` shots: `alameda-fujacal` at 10 s and
+  10.5 s differs over 5% of its pixels; at the clock's 0 nothing moves, so the round's Ultra shots
+  differ from `before089` only by the limbs and a few levels' noise.
+- [x] The cost is in the budget's Ultra column; High and below unchanged; `npm test` and
+  `npm run check` pass: party-kart `docs/architecture.md`, "Ultra's trees in the wind"; High and
+  Low 33 of 33 the same to the pixel in the round (Medium not shot: the wind and the limbs are
+  Ultra's alone); `npm test` 160 of 160 and `npm run check` in party-kart, `npm test` 156 of 156
+  here.
 
 ## Out of scope
 

@@ -152,13 +152,13 @@ area's trees their species where a photo shows one, in leaf too, the kinds stayi
 decision 070); and Ultra's light, on WebGL: the sun's shadows in four cascades to 2 km, the corners'
 occlusion and the edges smoothed (090, decision 071); and Ultra's textures at their finest: each made
 texture at twice High's size, the ground's and the barks' relief, the streets' drawings four times
-finer, every texture filtered at the card's most (085, decision 076).
+finer, every texture filtered at the card's most (085, decision 076); and on Ultra the near trees in
+the wind, the deciduous kinds' limbs within 150 m, the far ones still billboards (089, decision 077).
 
 - **083** The ground at 50 cm over the whole map, finest near the player (after 038).
 - **084** On Ultra, the streets on the land's own triangles (after 083).
 - **086** Each facade's doors and windows where they are, read from its photos.
 - **087** Roofs as the point cloud has them: every plane, chimney, dormer and terrace.
-- **089** On Ultra, the trees in full to the horizon, moving in the wind.
 - **091** Each viewpoint shot at its photo's hour and weather (blocked: it changes decision 037).
 - **092** Night: the lamps lighting the streets, the windows lit, Bom Jesus floodlit.
 - **093** The seasons: bare trees in winter, the jacarandas in June (after 088).

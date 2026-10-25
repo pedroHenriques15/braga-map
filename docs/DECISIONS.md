@@ -2222,3 +2222,30 @@ at their finest:
 48 files, 44 MB (the ground's normal maps 29 of it); High's and below are byte for byte as they were.
 In the game, Ultra downloads some 40 MB more than High and holds about 170 MB more on the card, its frame
 as it was (party-kart's budget, "Ultra's textures").
+
+## 077 · Ultra's trees: the near ones in the wind, the deciduous kinds with their limbs, the far ones still billboards
+
+*2026-10-25 · task 089 · decided by the session, for the owner to confirm (task 103) · adds to decisions 043, 051 and 069*
+
+Task 089 asked for the trees in full to the horizon on Ultra, moving in the wind. What it does:
+
+- **The near trees sway** (party-kart `WIND` in `src/render/trees.ts`): a breeze from the
+  west-south-west, as the photos' afternoon had, in gusts that cross the city every half a minute or
+  so, each tree on its own beat, a crown's top about 30 cm at most over a trunk that stands still, and
+  their shadows with them. By the game's clock: still at 0, so `?scenery` and every round are still.
+- **The kinds that drop their leaves** (decision 051's `evergreen`, false) have four limbs in their
+  bark within 150 m, from each tree's own trunk top into its leaves: the ground the seasons (093) will
+  stand bare trees on.
+- **Past the near trees, the billboards stay.** A crown of each tree's own, lit and in the cascades'
+  shadows, was tried past 400 m and read as blobs towards the sun and smooth balls from above, worse
+  than the billboards. The impostors baked from each kind's near tree are task 128.
+- **Every near tree still goes into every cascade of the sun's shadows.** What they cost there is the
+  leaf cards filling the fine near maps (1.3 and 0.9 ms of a 9.8 ms frame at `falperra`, 2560 by
+  1440, in the first two cascades), not their number: leaving out of each cascade the trees that
+  couldn't shade it saved 0.3–0.4 ms, and to be sure of every shadow on Braga's slopes it would need the
+  ground's height. Cheaper crowns in those cascades are task 129.
+
+What it costs: a frame at 720 pixels high of 3.45–7.51 ms (3.37–7.25 before), 10.0–10.1 ms at
+`falperra` at 2560 by 1440 (9.8); a gather of the near trees 1.8 ms (1.5). High and Low draw as before,
+to the pixel, and Medium with them, the wind and the limbs being Ultra's alone (party-kart's budget,
+"Ultra's trees in the wind").

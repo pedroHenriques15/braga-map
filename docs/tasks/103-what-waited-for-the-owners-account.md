@@ -103,6 +103,7 @@ task's Notes as "decided by the session, for the owner to confirm".
 | 123 | How fine Ultra's facade kit is, and how deep its parts | 512 a side, twice High's; the parts' depths: a frame 10 cm in its reveal, glass 14, a sill 6 out, a stone frame 4, a shop's glass 10 in, an arcade 80; the relief's edges 3 cm (1.5 was too fine to read 10 m off) | decision 083, 123's landing |
 | 116 | The LiDAR's "buildings" on the car parks: drawn as a canopy of their own, or left out? Which are canopies? | Left out (the games don't draw a thin roof on posts): on a car park, under 4.6 m and not beside a building of the map's, a dark tilted single plane (solar), a light top sloping all over as pyramids do (tents) or a light flat one 10 m long or more (awnings); a row of site cabins stays a building | decision 084, 116's landing |
 | 117 | How Ultra reflects, and how much | From the frame itself (screen-space), by Schlick's Fresnel from 4%, the sky's environment off the screen; the Rio Este fully, the windows' panes as 123 marks them, a wet street 0.6 and its paint 0.5, spread 0.04 of the way (mirror-sharp, the road read as flooded) | decision 086, 117's landing |
+| (the run) | The deploy's `npm test` failed on the world's ground's 2 s timing with every test file at once (2.6 s; 1.4 s alone): loosen the test, or run the files fewer at a time? | party-kart's `npm test` four files at a time (`--test-concurrency=4`, the workers' rule 19), the test's 2 s kept; 170/170 in 46 s | party-kart `7a846a6` |
 
 ## Progress
 

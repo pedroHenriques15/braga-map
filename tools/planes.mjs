@@ -24,7 +24,7 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { CACHE, readCache } from './geo.mjs';
 import { footprints, half, inside, minRect, rectAxis, ringOf, simplify } from './osm.mjs';
-import { topAt } from './roofs.mjs';
+import { ROOFS, topAt } from './roofs.mjs';
 import { inShooter } from './sections.mjs';
 
 const S = 0.5; // the cells' spacing, in the part's own frame
@@ -449,7 +449,7 @@ export function planesOf(ring, top, ground, shape) {
 
 // Every building roofs.mjs measured, with its outline and its parts' as world.mjs draws them.
 function allBuildings() {
-  const r = readCache('roofs.json');
+  const r = readCache(ROOFS);
   const outlines = new Map();
   for (const e of footprints(readCache('osm/buildings.json'))) {
     const pts = ringOf(e);
@@ -507,7 +507,7 @@ if (process.argv[1] && path.resolve(process.argv[1]) === fileURLToPath(import.me
   const { out: list, shift } = allBuildings();
   if (mode === 'try') {
     const b = list.find((q) => q.id === rest[0]);
-    if (!b) throw new Error(`no building ${rest[0]} in roofs.json`);
+    if (!b) throw new Error(`no building ${rest[0]} in ${ROOFS}`);
     const parts = partsOf(b, shift);
     for (const [k, p] of parts.entries()) {
       if (!p || (rest[1] != null && +rest[1] !== k)) continue;

@@ -2454,3 +2454,17 @@ crease). Since task 044:
 
 What it costs: tiles 16.7 MB against 15.7; triangles on Ultra +1-2%, High +6-8%, Low +8-12%; the same
 draw calls and frames.
+
+## 086 · On Ultra, reflections from the frame itself
+
+*2026-10-26 · task 117 · decided by the session (worker-1, the coordinator), for the owner to confirm (task 103) · adds to decision 071*
+
+Ultra reflected only the sky's environment. Since task 117, a pass after the resolve sends each
+reflecting pixel's ray through the frame's depth and takes what it hits (screen-space reflections), by
+Schlick's Fresnel from glass's and water's 4% straight on, faded at the screen's edge and from 150 to
+400 m; off the screen, or where it finds nothing, the sky's environment as before. What reflects says
+so in the frame's alpha: the Rio Este fully, the windows' panes as task 123's relief marks them, a wet
+street (`?weather=grey`, `rain`) 0.6 and its paint 0.5, spread 0.04 of the way up and down the screen.
+It needs no buffer of its own. High, Medium and Low draw as before, to the pixel.
+
+What it costs: a draw call; the busiest view's frame 0.1 ms more at 1920 by 1440, 0.4 ms in the rain.

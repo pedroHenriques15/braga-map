@@ -164,7 +164,8 @@ decision 081); and on Ultra each measured roof as its points have it where they 
 shape, its ridges, hips and valleys, what stands on it as boxes and its overhang measured (087, decision
 082); and the bare trees' twigs dark against the sky, a soft grey-brown mass far off, not a pale haze
 (132); and on Ultra the facade kit drawn at twice High's size, its bays in relief, their panes marked
-(123, decision 083).
+(123, decision 083); and on Ultra the windows' panes, the Rio Este and the wet streets reflecting the
+city from the frame itself (117, decision 086).
 
 - **083** The ground at 50 cm over the whole map, finest near the player (after 038).
 - **084** On Ultra, the streets on the land's own triangles (after 083).
@@ -180,7 +181,6 @@ shape, its ridges, hips and valleys, what stands on it as boxes and its overhang
 - **104** The open world's own landmarks that aren't models yet, split from 098 (the owner,
   2026-10-24): a parish church, a chapel, two wayside shrines, a bust, a swing, a statue, an
   installation and the fountains.
-- **117** On Ultra, reflections: the windows, the Rio Este and the wet streets (found by 090).
 - **118** On Ultra, the light bounced off a sunlit facade into a shaded street (found by 090).
 - **119** On Ultra, a volumetric haze and the clouds' shadows on the land (found by 090).
 - **120** On Ultra, shadows that soften with distance from what casts them (found by 090).

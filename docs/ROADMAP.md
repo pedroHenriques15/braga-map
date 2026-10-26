@@ -65,7 +65,8 @@ from, 15 of them moved off where Mapillary puts them (058, decision 041); and ev
 in a few sheets, so the scorecard holds about 100 more rounds (062, decision 045); and the six
 rounds made while the scorecard was out of reach, 052's to 061's, put up with Claude's marks (064,
 `tools/scorecard.mjs`); and a round put up at the level it's judged at, Ultra since 081, the page
-saying which (127, decision 079).
+saying which (127, decision 079); and a round shot in chunks keeping every chunk's shots and
+frame times, a chunk on another build refused (137).
 
 - **124** The budget counts every texture, those a shader takes alone too (found by 085).
 - **103** What waited for the owner's account: the rounds, marks, pages and tags the sessions left
@@ -182,7 +183,6 @@ city from the frame itself (117, decision 086).
   2026-10-24): a parish church, a chapel, two wayside shrines, a bust, a swing, a statue, an
   installation and the fountains.
 - **118** On Ultra, the light bounced off a sunlit facade into a shaded street (found by 090).
-- **137** A round shot in chunks keeps every chunk's frame times (found by 117).
 - **119** On Ultra, a volumetric haze and the clouds' shadows on the land (found by 090).
 - **120** On Ultra, shadows that soften with distance from what casts them (found by 090).
 - **125** On Ultra, a facade's openings with depth: reveals, sills, frames, shutter boxes (split from

@@ -104,6 +104,7 @@ task's Notes as "decided by the session, for the owner to confirm".
 | 116 | The LiDAR's "buildings" on the car parks: drawn as a canopy of their own, or left out? Which are canopies? | Left out (the games don't draw a thin roof on posts): on a car park, under 4.6 m and not beside a building of the map's, a dark tilted single plane (solar), a light top sloping all over as pyramids do (tents) or a light flat one 10 m long or more (awnings); a row of site cabins stays a building | decision 084, 116's landing |
 | 117 | How Ultra reflects, and how much | From the frame itself (screen-space), by Schlick's Fresnel from 4%, the sky's environment off the screen; the Rio Este fully, the windows' panes as 123 marks them, a wet street 0.6 and its paint 0.5, spread 0.04 of the way (mirror-sharp, the road read as flooded) | decision 086, 117's landing |
 | (the run) | The deploy's `npm test` failed on the world's ground's 2 s timing with every test file at once (2.6 s; 1.4 s alone): loosen the test, or run the files fewer at a time? | party-kart's `npm test` four files at a time (`--test-concurrency=4`, the workers' rule 19), the test's 2 s kept; 170/170 in 46 s | party-kart `7a846a6` |
+| 137 | The owner's order puts the medium tasks before the low ones, and 137 is low; but every round from now is shot in chunks, and only the last chunk's frame times were kept | 137 first, as a dependency of every round after it (the budget's evidence): the solo session's order, in `_coord/board.md` | 137's landing |
 
 ## Progress
 
@@ -360,6 +361,14 @@ picks it up can go on from here.
     044). party-kart's `npm test` now runs four files at a time, as the workers' rule 19 had it
     (decided by the session, for the owner to confirm); 170/170, and the deploy went through.
     Not verified: the live game played (a race, a room, on a phone).
+  - **The solo session** (from 2026-10-26 11:00, the owner's `_coord/resume-prompt.md`): one session
+    works the rest of the queue alone, landing, marking, tagging and pinning itself, and deploys once
+    after the last task. Its order is in `_coord/board.md`: 137, then the medium tasks (018, 020, 076,
+    038 for 083, 083, 115, 121, 122), then the low ones by number, 053 last.
+  - **137** (the solo session): landed party-kart `8ec96cb` and braga-map's docs, no version. A round
+    shot in chunks keeps every chunk's shots and frame times in its `stats.json` and page; a chunk on
+    another commit, map version or weather stops before it shoots. Tests 170/170, check passes. Not
+    verified: a viewpoint shot again in a later chunk (read, not run), Medium.
   - **The owner's games** (2026-10-25 evening): a javaw (21:30-22:08), FACEIT (22:20-22:25) and cs2
     (22:27-00:07) held the heavy jobs (rule 20); two workers' timings taken beside them were voided and
     taken again.

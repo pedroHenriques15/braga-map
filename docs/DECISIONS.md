@@ -2425,3 +2425,32 @@ The games don't draw a canopy (a thin roof on posts), so it's left out rather th
 own; a game that draws one can take the LiDAR's back. 43 of the 107 go (28 tents, 11 pieces of solar
 canopies, 2 flat awnings, 2 pieces at a tent's end); under 4.6 m on a car park, 82 become 38. The site
 cabins and the booths stay, as buildings. No viewpoint sees one closer than 230 m.
+
+## 085 · A ground pavement's heights are the data's, level from its kerb at 2% across at most
+
+*2026-10-26 · task 044 · the owner's answers of 2026-10-16; the 3 cm and the rules past them decided by the session (worker-3), for the owner to confirm (task 103) · adds to decisions 021, 023 and 024*
+
+A pavement on the ground had no heights: each game draped it on the 2 m ground a kerb over it, so it
+creased and heaved where the ground under it took in a building's base, a bank, a ruin (`bom-jesus`'s
+crease). Since task 044:
+
+- **braga-map lays every ground pavement, reservation, island and raised path** (`tools/streets.mjs`,
+  `paveHeights`): on its kerb, a point is at the carriageway's ground there plus the kerb (at the ground
+  where the kerb's dropped); off it, at the kerb's top, rising or falling towards its back as the land
+  does, 2% across at most; between two kerbs across from each other (within 45°), from one top to the
+  other's; within 1.2 m of a dropped kerb, sloping down to it. A point's kerb is the nearest the way to
+  which runs over the pavements, crosses no wall and keeps 25 cm off a retaining wall's foot; with none,
+  it's at the land and a kerb. Where a path on the land leaves the pavements, the pavement eases back to
+  the land over 12% of the difference (1.2 to 8 m). A reservation or island meets a pavement at its
+  heights; the ground's pieces are snap-rounded together.
+- **The tiles carry them** in centimetres: a piece laid at heights of its own has 64 (`LAID`) in its
+  first number; a point is added along a ring only where a straight line would be more than 3 cm off
+  the heights (a point every 2 m took the tiles from 14.3 to 22.0 MB; 1 cm, 16.5 MB). A reader that
+  doesn't know `LAID` misreads the tile: a minor version.
+- **A game draws and drives them as one surface** (decision 024): party-kart holds the land a kerb
+  under a laid pavement, cuts it along the pavement's back where it's more than 30 cm over it (the
+  pavement's granite face meeting it), and triangulates the streets' surfaces Delaunay's inside their
+  outlines, so no long sliver along a kerb takes its height from far off.
+
+What it costs: tiles 16.7 MB against 15.7; triangles on Ultra +1-2%, High +6-8%, Low +8-12%; the same
+draw calls and frames.

@@ -115,11 +115,10 @@ its kind's in its own colours, as a session saw it in its photos or guessed from
 decision 036); every tree as the LiDAR measured it and of its kind, near in its bark and leaves and
 far as its kind's billboard (019, decision 043); and the trees near seven viewpoints the species their
 photos show, the rows along the avenues they show and the Parque da Ponte's limes, with the plane,
-the lime and the birch drawn as their own, each kind deciduous or evergreen (061, decision 051).
+the lime and the birch drawn as their own, each kind deciduous or evergreen (061, decision 051); and
+the pavements level from their kerbs, 2% across at most, their heights in the tiles (044, decision 085).
 
 - **018** Road markings and pavements as they are: Portugal's lines, Braga's pavements.
-- **044** Pavements level from the kerb, not draped over the ground's bumps (found by 035's
-  round).
 - **122** The land's texture isn't stretched on a steep slope: `alvaro-carneiro` (found by 111).
 - **068** The lawns green as in March, where the 2025 orthophoto has them dry (found by 014).
 

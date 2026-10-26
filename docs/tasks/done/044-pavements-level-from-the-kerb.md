@@ -1,5 +1,5 @@
 ---
-status: doing
+status: done
 priority: medium
 kind: code
 repo: both
@@ -78,14 +78,22 @@ Steps:
 
 ## Done when
 
-- [ ] Every pavement, reservation and island on the ground in the tiles has `ys`, and so does every
+- [x] Every pavement, reservation and island on the ground in the tiles has `ys`, and so does every
   raised path: at its kerb within 1 cm of the carriageway's ground plus the kerb, and, except
-  between two kerbs, no steeper than 2% across from it (braga-map's `test/streets.test.js`).
-- [ ] No pavement creases or heaves where the street beside it is smooth: `bom-jesus`, `devesa`,
-  `lobato-pavement` shot again, before and after.
-- [ ] `bom-jesus` scores no lower than the round before.
-- [ ] Karts stand on the pavements as drawn (party-kart's `test/streets.test.ts` and
-  `test/ground.test.ts`), and the budget is measured.
+  between two kerbs, no steeper than 2% across from it (braga-map's `test/streets.test.js`; 172/172
+  on 1.45.0's world; the 554 points with no kerb bounding them at the land's, and those a path's mouth
+  eases, as Notes say).
+- [x] No pavement creases or heaves where the street beside it is smooth: `bom-jesus`, `devesa`,
+  `lobato-pavement` shot again, before and after (`2026-10-26-before044b`, main `8750ea3` on 1.45.0
+  from a fresh worktree after `npm ci`, and `2026-10-26-after044b`, with `lobato-crossing` and
+  `travessa-fujacal`, at Ultra, High and Low: `bom-jesus` level from its kerb to the wall, `devesa`'s
+  white hump gone, `lobato-pavement` level as before; one new fault, at `travessa-fujacal`'s end, task
+  136).
+- [x] `bom-jesus` scores no lower than the round before (3, as in `2026-10-25-after123`; no mark of
+  the five moved, mean 2.64, the coordinator's marks at Ultra,
+  `.cache/scorecard/marks/2026-10-26-after044b.json`).
+- [x] Karts stand on the pavements as drawn (party-kart's `test/streets.test.ts` and
+  `test/ground.test.ts`, 169/169 on 1.45.0), and the budget is measured (Notes).
 
 ## Out of scope
 
@@ -174,3 +182,20 @@ Steps:
     mound by the garages at (440, 1029), the ruin the LiDAR took for ground (Out of scope, task
     043's kind), was a pavement draped over it. It's now the land itself behind a level pavement,
     faced in granite up to the land's 2 m triangles, so its top is jagged.
+  - **The sawtooth at `bom-jesus`'s kerb** (worker-3, 2026-10-25, found in the coordinator's look at
+    the first round): white teeth of calçada under the kerbstones. Ear clipping left long slivers where
+    a laid ring's points nearly line up, and the one just inside the kerb ran 19 m along it, taking its
+    height from far off: the pavement 5 cm in from the kerb up to 10 cm under the kerb's top.
+    party-kart's `tin.ts` `surface()` now flips earcut's triangles to Delaunay's inside the outline,
+    keeping its edges. Along the open area's kerbs, 5 cm in, the pavement is more than 2 cm off its
+    heights on 2.3 km of 92 (26.6 before the flip) and more than 5 cm on 1.25 km (8.7); the pavements
+    take 101 k triangles where they took 136 k, the carriageways 114 k where they took 244 k. A laid
+    pavement's outline points take its own height without fail (`ground.ts`).
+- 2026-10-26, the coordinator: **landed** while worker-3 was idle (the owner: "finish it"), rebased on
+  main's 1.45.0 (116's), its world built again there (tiles 16,745 KB against 1.45.0's 15,728), tests
+  172/172 and party-kart's 169/169, check passes. Its round again, five views at Ultra, High and Low
+  (`2026-10-26-before044b` and `2026-10-26-after044b`): triangles Ultra +1-2%, High +6-8%, Low +8-12%;
+  draw calls the same; frames the same within the runs' spread; pixels over 24 of 255 changed on
+  1.4-8.2% of each view. Found: at `travessa-fujacal`'s end a steep pale triangle of calçada climbs the
+  bank beside the retaining wall, where the photo has grass and main has the land (on Ultra and High;
+  task 136). Its mark stays 3: the rest of the view is as before. Decision 085.

@@ -119,6 +119,8 @@ the lime and the birch drawn as their own, each kind deciduous or evergreen (061
 the pavements level from their kerbs, 2% across at most, their heights in the tiles (044, decision 085).
 
 - **018** Road markings and pavements as they are: Portugal's lines, Braga's pavements.
+- **136** A pavement up a bank: a pale triangle of calçada at the Travessa do Fujacal's end (found
+  by 044).
 - **122** The land's texture isn't stretched on a steep slope: `alvaro-carneiro` (found by 111).
 - **068** The lawns green as in March, where the 2025 orthophoto has them dry (found by 014).
 

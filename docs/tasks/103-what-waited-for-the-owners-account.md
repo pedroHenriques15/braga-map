@@ -352,6 +352,13 @@ picks it up can go on from here.
     chunk's frame times. Not verified: Medium, a phone, the Rio Este in a round (no viewpoint sees it).
   - **The workers' sessions** (2026-10-26, from 00:07): idle, and refusing cross-session messages, so
     the coordinator landed 116, 044 and 117 itself; worker-2 had stopped at 22:24.
+  - **The deploy** (2026-10-26 03:00, the owner's "once, at the end"): party-kart `7a846a6` on braga-map
+    1.46.0, live as `index-BHY4myrZ.js` (the live script compared with the build byte for byte), peer
+    prefix `pk44`. Its first try stopped at its own `npm test`: with every test file at once (27 on
+    this PC) the world's ground's build took 2.6 s against its test's 2 s (1.4 s alone, slower since
+    044). party-kart's `npm test` now runs four files at a time, as the workers' rule 19 had it
+    (decided by the session, for the owner to confirm); 170/170, and the deploy went through.
+    Not verified: the live game played (a race, a room, on a phone).
   - **The owner's games** (2026-10-25 evening): a javaw (21:30-22:08), FACEIT (22:20-22:25) and cs2
     (22:27-00:07) held the heavy jobs (rule 20); two workers' timings taken beside them were voided and
     taken again.

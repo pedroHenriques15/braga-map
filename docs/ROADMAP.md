@@ -94,12 +94,11 @@ a wall of the map's as high as it says where the ground steps along it, and the 
 Ponte's chapel not a building (112, decision 074); and the map's sidewalks pavements where the
 streets' don't reach, the Avenida da Liberdade's calçada beside its red lane among them (059, decision 075);
 and a flight of steps meeting the street, the pavement or the path at its foot and its top, a kart going
-up 131 of the 140 from their foot (051, decision 078).
+up 131 of the 140 from their foot (051, decision 078); and the LiDAR's canopies over the car parks,
+the tents, the solar panels and the long awnings, not buildings (116, decision 084).
 
 - **113** A wall keeps its gap where a footway gives way to a square's paving (found by 041).
 - **121** A steep bank the LiDAR finds isn't a retaining wall: Santo Adrião's (found by 111).
-- **116** The LiDAR's "buildings" on the map's car parks: 85, most of them vans, lorries or shade
-  canopies drawn as buildings (found by 112).
 - **131** A building's storeys from its street: a drawn part standing under the street, a wall too
   low (found by 086).
 - **115** The ground steps at a held street's edge, not slopes into it: the João XXI's upper lane,

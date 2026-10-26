@@ -1,5 +1,5 @@
 ---
-status: doing
+status: done
 priority: medium
 kind: code
 repo: braga-map
@@ -39,9 +39,15 @@ too wide for.
 
 ## Done when
 
-- [ ] The 85 looked at, each kind counted; the rule's test; no row of vehicles on a car park drawn as a
-  building.
-- [ ] `npm test` passes; the viewpoints that see one shot again, no lower.
+- [x] The 85 looked at, each kind counted; the rule's test; no row of vehicles on a car park drawn as a
+  building (107 on 1.42.0's tiles looked at and counted in Notes; `test/roofs.test.js`'s made-up
+  canopies and not, `test/footprints.test.js`'s at most 40 under 4.6 m on a car park; the white rows
+  that looked like vans are site cabins, which stay).
+- [x] `npm test` passes; the viewpoints that see one shot again, no lower (171/171 on main's 1.44.0;
+  `pascoal-fernandes` and `egidio-guimaraes`, the two with one inside their view's angle, shot before
+  and after at Ultra, High and Low, `2026-10-25-before116` and `2026-10-25-after116`, on 1.42.0 and
+  1.43.0: the same at Ultra and High, so no mark moves; not shot again on 1.44.0, where the same 10
+  tiles change).
 
 ## Notes
 
@@ -109,3 +115,13 @@ too wide for.
 - `ROOFS` (`.cache/roofs.json` by default) names the file roofs.mjs writes and world.mjs reads, so a
   task tries it out without the shared one (`.cache/roofs-116.json` here). At landing it takes
   roofs.json's place.
+- 2026-10-26, the coordinator: **landed** at worker-3's merge turn while it was idle (the owner: "finish
+  it"), from `acecb30` rebased on main's 1.44.0. Task 087 had landed meanwhile, and its
+  `.cache/planes.json` keys a building the map lacks by its place in roofs.json's `found`: 116 takes 30
+  of them out, so 5,755 were renumbered and would have been drawn with others' roofs. So, under the
+  lock: roofs-116.json over roofs.json (the shared one kept as `.cache/roofs-pre116.json`, planes.json
+  and walls.json beside it), `node tools/planes.mjs` again (103 s; each of the map's 13,022 buildings
+  and the LiDAR's 7,221 compared with before by its outline: the same planes, renumbered), `node
+  tools/walls.mjs` (the nine pieces turned concrete, three of the LiDAR's retaining walls and a hedge
+  gone, as worker-3 measured), `npm run world` (the same 10 tiles change as on 1.43.0), tests 171/171.
+  `tools/planes.mjs` reads the file `ROOFS` names now, as `world.mjs` does. Decision 084.

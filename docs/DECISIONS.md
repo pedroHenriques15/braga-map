@@ -2405,3 +2405,23 @@ the task supposed. Since task 123, on Ultra only:
 What it costs on Ultra: textures 511 MB against 462 (the kit's three textures 59 MB with their mipmaps),
 the same draw calls and triangles, the frame the same within the runs' spread (6.2–6.7 ms at 1920 by
 1440 against 6.2–7.1), the city built about half a second slower; nothing more to download.
+
+## 084 · A canopy over a car park isn't a building: a tent's, a solar panel's, a long awning's
+
+*2026-10-26 · task 116 · decided by the session (worker-3), for the owner to confirm (task 103) · adds to decisions 025 (the buildings the map lacks) and 074*
+
+Of the LiDAR's buildings on the map's car parks (107 on 1.42.0's tiles), most were canopies over the bays:
+rows of white or grey pyramid tents, pieces of solar canopies, long flat awnings. The games drew each as
+a solid block. Since task 116, `tools/roofs.mjs` leaves one out (`canopyOf`, `topShape`) when it's on a
+car park, under 4.6 m and not beside a building the map has (30% of its outline within 1.5 m of one), and:
+
+- **solar:** dark (under 140 of 255), one plane (under 20 cm off it), tilted 10% or more or blue;
+- **a tent:** light (160 or more), its top as bumpy as pyramids are (20 to 45 cm off a plane, or 18 cm
+  and 5 m long or more) and sloping all over as their faces do (half its cells 12% or steeper), so a row
+  of site cabins, as bumpy at the steps between their flat tops, stays;
+- **flat:** light (175 or more), under 20 cm off a plane and 10 m long or more.
+
+The games don't draw a canopy (a thin roof on posts), so it's left out rather than drawn as a kind of its
+own; a game that draws one can take the LiDAR's back. 43 of the 107 go (28 tents, 11 pieces of solar
+canopies, 2 flat awnings, 2 pieces at a tent's end); under 4.6 m on a car park, 82 become 38. The site
+cabins and the booths stay, as buildings. No viewpoint sees one closer than 230 m.

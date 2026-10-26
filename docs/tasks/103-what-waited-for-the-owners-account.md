@@ -101,6 +101,7 @@ task's Notes as "decided by the session, for the owner to confirm".
 | (the run) | 093 puts Ultra's trees in their season, and the rounds are shot on the default 13 March while the photos are of many months (nine of May to July, in leaf, and two of late April: worker-1's count): is a bare tree beside a photo's leaves marked down? | No: a place's trees are judged as they'd be on the round's date (that place's species, bare or in leaf then), so a round doesn't lose marks for its date, until 091 shoots each viewpoint at its photo's moment; a tree's look (its shape, its colour) is judged as before. Written in the marks' scale | 093's round, `2026-10-25-after093` |
 | 087 | How a roof is built from the points, and where it's kept to its shape | On Ultra only, its own planes where they fit the points better than its shape, kept to the shape where they'd stand past the points, under a metre over the ground or raise the walls over the points; `bom-jesus`'s white house as its 2025 points have it (its camera side about a metre higher than its 2019 photo shows) | decision 082, 087's landing |
 | 123 | How fine Ultra's facade kit is, and how deep its parts | 512 a side, twice High's; the parts' depths: a frame 10 cm in its reveal, glass 14, a sill 6 out, a stone frame 4, a shop's glass 10 in, an arcade 80; the relief's edges 3 cm (1.5 was too fine to read 10 m off) | decision 083, 123's landing |
+| 116 | The LiDAR's "buildings" on the car parks: drawn as a canopy of their own, or left out? Which are canopies? | Left out (the games don't draw a thin roof on posts): on a car park, under 4.6 m and not beside a building of the map's, a dark tilted single plane (solar), a light top sloping all over as pyramids do (tents) or a light flat one 10 m long or more (awnings); a row of site cabins stays a building | decision 084, 116's landing |
 
 ## Progress
 
@@ -319,8 +320,18 @@ picks it up can go on from here.
     off (71-91 for most kinds). Its round: no mark moved. Cost: textures 511 MB against 462, the
     frame the same within the runs' spread (timed again after a run beside the owner's game, which
     didn't count). Not verified: Medium, a phone.
-  - **The owner's games** (2026-10-25 evening): a javaw (21:30-22:08) and FACEIT (from 22:20) held the
-    heavy jobs (rule 20); two workers' timings taken beside them were voided and taken again.
+  - **116** (worker-3, landed by the coordinator at its merge turn while it was idle, 2026-10-26):
+    braga-map `cfb0a27`, 1.45.0 (tagged, decision 084), and party-kart `8750ea3`, pinned to v1.45.0.
+    The LiDAR's tents, solar canopies and long awnings on the car parks left out: 43 of 107, those under
+    4.6 m 82 → 38; the site cabins and booths stay. 087 had landed meanwhile and keys a building the map
+    lacks by its place in roofs.json, which 116 renumbers (5,755 of them): its planes were made again on
+    116's roofs before the world was built, and every building compared with before (the same planes).
+    Tests 171/171 and 169/169, check passes. Its round (two views, on 1.42.0 and 1.43.0): the same at
+    Ultra and High; not shot again on 1.44.0, where the same 10 tiles change. The shared roofs.json,
+    planes.json and walls.json from before are kept in `.cache/` as `*-pre116.json`.
+  - **The owner's games** (2026-10-25 evening): a javaw (21:30-22:08), FACEIT (22:20-22:25) and cs2
+    (22:27-00:07) held the heavy jobs (rule 20); two workers' timings taken beside them were voided and
+    taken again.
   - **Memory ran critically low at 14:2x on 2026-10-25** (a party-kart `npm test`, 11 or more processes
     of 0.6-0.8 GB, beside 093's shots): Claude Code stopped the coordinator's watcher and worker-3's
     wait for the lock, and 044 paused until 16:38. The workers' brief since: party-kart's tests four

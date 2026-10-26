@@ -1,5 +1,5 @@
 ---
-status: todo
+status: doing
 priority: low
 kind: code
 repo: party-kart

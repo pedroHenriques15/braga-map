@@ -182,6 +182,7 @@ city from the frame itself (117, decision 086).
   2026-10-24): a parish church, a chapel, two wayside shrines, a bust, a swing, a statue, an
   installation and the fountains.
 - **118** On Ultra, the light bounced off a sunlit facade into a shaded street (found by 090).
+- **137** A round shot in chunks keeps every chunk's frame times (found by 117).
 - **119** On Ultra, a volumetric haze and the clouds' shadows on the land (found by 090).
 - **120** On Ultra, shadows that soften with distance from what casts them (found by 090).
 - **125** On Ultra, a facade's openings with depth: reveals, sills, frames, shutter boxes (split from
